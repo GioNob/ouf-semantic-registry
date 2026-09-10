@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
   private static final Set<String> RDF=Set.of("text/turtle","application/ld+json","application/rdf+xml");
   private final SchemaGovProperties cfg;private final BoundedGatewayClient client;private final ObjectMapper json;private final Clock clock;
   private final AtomicInteger consecutiveFailures=new AtomicInteger();private final AtomicReference<Instant> openUntil=new AtomicReference<>();
+  @Autowired
   public SchemaGovProvider(SchemaGovProperties cfg,ObjectMapper json){this(cfg,new BoundedGatewayClient(cfg.connectTimeout()),json,Clock.systemUTC());}
   SchemaGovProvider(SchemaGovProperties cfg,BoundedGatewayClient client,ObjectMapper json,Clock clock){this.cfg=cfg;this.client=client;this.json=json;this.clock=clock;}
   public String providerId(){return "SCHEMA_GOV_IT";}
