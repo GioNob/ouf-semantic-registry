@@ -1,8 +1,24 @@
 {
-  "status": "BLOCKED_TOOLCHAIN_UNAVAILABLE",
-  "checked_at": "2026-09-10T00:00:00Z",
-  "required": ["Java 21 JDK", "Maven 3.9.x"],
-  "available": ["Java 17 runtime without javac", "Node.js", "embedded PostgreSQL 16.14"],
-  "network_attempt": "cancelled by environment network policy before download approval",
-  "consequence": "Java/Jena tests are authored but not reported as executed or passed"
+  "status": "PASS",
+  "verified_at": "2026-09-10T17:59:00Z",
+  "repository": "GioNob/ouf-semantic-registry",
+  "commit_sha": "88f1ff7450652aa2d0ba6ad95d0639d51b4de46b",
+  "github_actions_run_id": 34511366650,
+  "github_actions_url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/34511366650",
+  "toolchain": {
+    "java": "Temurin 21",
+    "database": "PostgreSQL 17.11",
+    "build": "Maven clean verify"
+  },
+  "result": {
+    "tests": 23,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "flyway_migrations": 6,
+    "spring_boot_package": "PASS",
+    "container_non_root_smoke": "PASS"
+  },
+  "pairwise_executed": false,
+  "production_ready_claimed": false
 }

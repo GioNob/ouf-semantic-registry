@@ -8,19 +8,20 @@ This is the full-module workstream, not the earlier pilot. Current checkpoint:
 - governed approval and atomic/idempotent publication: implemented and DB-tested;
 - discovery request/candidate persistence, provider SPI and lease/recovery claims:
   implemented; V1-V3 migrations and concurrent claims DB-tested;
-- local-only RDF parser with media/size/DTD/entity guards: implemented, pending the
-  Java 21/Jena build and adversarial parser suite;
+- local-only RDF parser with media/size/DTD/entity guards: implemented and
+  verified by the Java 21/Jena adversarial parser suite;
 - schema.gov.it/OntoPiA adapter boundary: implemented through configurable Urban
   API Gateway routes; no undocumented public endpoint is hard-coded;
 - candidate adoption, immutable local snapshot, provenance and idempotent replay:
   implemented and DB-tested;
 - live provider connectivity remains environment-required until the Gateway
   owner supplies the concrete route bindings and response contract;
-- Java/Jena adversarial tests are authored but not yet executed: the current
-  workspace has a Java 17 runtime (compiler module but no Java 21 JDK) and no
-  Maven installation; external toolchain download was blocked by environment
-  policy. This is recorded as BLOCKED, never as PASS;
-- observability and full acceptance traceability: not yet complete;
+- GitHub Actions run 34511366650 executed the complete Maven suite with Temurin
+  Java 21 and PostgreSQL 17.11: 23 tests passed, zero failures/errors/skips, all
+  six Flyway migrations applied, Spring Boot package built;
+- the production container image was built and its non-root runtime identity
+  verified by the same run;
+- observability and full acceptance traceability: still to be completed;
 - production readiness: **not claimed**.
 # Incremento discovery schema.gov.it / OntoPiA
 
@@ -29,7 +30,8 @@ This is the full-module workstream, not the earlier pilot. Current checkpoint:
 - Fetch RDF bounded, deduplicazione URI e massimo candidati configurabile (default 10).
 - Retry solo per indisponibilità/429/5xx, numero tentativi e backoff limitati; circuit breaker locale diagnostico.
 - Worker schedulato con lease/recovery PostgreSQL e isolamento degli errori per provider.
-- Test di integrazione con Gateway HTTP locale aggiunto; esecuzione Java in attesa del toolchain Java 21/Maven.
+- Test di integrazione con Gateway HTTP locale eseguito nella suite Java 21:
+  PASS. La connettività verso route Gateway reali resta environment-required.
 
 # Incremento validation e compatibility
 
@@ -39,7 +41,8 @@ This is the full-module workstream, not the earlier pilot. Current checkpoint:
 - Publication gate fail-closed vincolato a un PASS riferito allo stesso `row_version` e allo stesso hash del contenuto corrente.
 - Classificazione deterministica delle modifiche e ImpactReport append-only con conteggio di artefatti, publication set e consumer registrati.
 - Risoluzione dei SemanticReference esclusivamente sulla tripla esatta semanticId/revisionId/publicationSetId; nessun fallback ad ACTIVE/latest.
-- Suite concreta V1-V5 superata su PostgreSQL 16.14: 10 controlli. PostgreSQL 17 e test Java/Spring restano gate separati non ancora attestati.
+- Suite concreta V1-V5 già superata nel laboratorio PostgreSQL 16.14; il gate
+  Java/Spring ha ora applicato V1-V6 su PostgreSQL 17.11 con esito positivo.
 
 # Incremento RDF interchange e change governance
 
@@ -51,4 +54,5 @@ This is the full-module workstream, not the earlier pilot. Current checkpoint:
 - MigrationProposal governata: proposta separata dalla decisione umana; un BREAKING change non viene pubblicato senza proposta APPROVED.
 - Corretto lo switch di lifecycle: al nuovo publish la revisione precedentemente ACTIVE diventa DEPRECATED senza mutarne il contenuto.
 - Suite concreta V1-V6 superata su PostgreSQL 16.14: 9 controlli; regressione V1-V5 nuovamente verde (10 controlli).
-- I test Jena di transcodifica e identity/type binding sono presenti ma restano non eseguiti fino alla disponibilità del toolchain Java 21/Maven.
+- I test Jena di transcodifica e identity/type binding sono stati eseguiti con
+  Java 21 e risultano verdi nella run GitHub Actions 34511366650.

@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-09-10",
   "gate": "GitHub Actions Java 21 / Maven / PostgreSQL 17",
-  "status": "READY_NOT_EXECUTED",
+  "status": "PASS",
   "local_validation": {
     "workflow_yaml": "PASS",
     "pom_xml": "PASS",
@@ -23,7 +23,14 @@
     "claims_pairwise_pass": false
   },
   "remote_execution": {
-    "executed": false,
-    "reason": "No GitHub repository or connected GitHub account is available in this workspace yet."
+    "executed": true,
+    "repository": "GioNob/ouf-semantic-registry",
+    "commit_sha": "88f1ff7450652aa2d0ba6ad95d0639d51b4de46b",
+    "run_id": 34511366650,
+    "run_url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/34511366650",
+    "conclusion": "success",
+    "tests": {"executed": 23, "passed": 23, "failed": 0, "skipped": 0},
+    "flyway": {"postgresql": "17.11", "migrations_applied": 6},
+    "container_non_root_smoke": "PASS"
   }
 }
