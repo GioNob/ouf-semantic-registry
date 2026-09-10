@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-09-10T12:23:36Z",
+  "increment": "schema.gov.it/OntoPiA discovery worker and bounded provider",
+  "executed": [
+    {"gate":"governed-publication-postgresql","status":"PASS","database":"PostgreSQL 16.14","checks":7},
+    {"gate":"discovery-adoption-postgresql","status":"PASS","database":"PostgreSQL 16.14","checks":8},
+    {"gate":"bounded-gateway-client-smoke","status":"PASS_WITH_TOOLCHAIN_QUALIFICATION","runtime":"OpenJDK 17 compiler module/runtime","checks":["same-origin bounded response","redirect rejection"]}
+  ],
+  "authored_not_executed": [
+    "SchemaGovProviderIntegrationTest: SPARQL JSON normalization, URI deduplication, bounded RDF fetch",
+    "SchemaGovProviderIntegrationTest: bounded transient retry",
+    "SchemaGovProviderTest: query escaping and OWL property coverage"
+  ],
+  "blocked_gate": {
+    "gate": "maven-java21-test",
+    "status": "BLOCKED_TOOLCHAIN_DEPENDENCY_RESOLUTION",
+    "detail": "npm tooling installed; Maven artifact resolution was denied by environment network policy before download. External commands were bounded by timeout."
+  },
+  "production_claim": false
+}

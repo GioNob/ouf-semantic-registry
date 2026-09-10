@@ -1,0 +1,36 @@
+spring:
+  application.name: ouf-semantic-registry
+  datasource:
+    url: ${OUF_SEM_DB_URL:jdbc:postgresql://127.0.0.1:5432/ouf_semantic}
+    username: ${OUF_SEM_DB_USER:ouf_semantic}
+    password: ${OUF_SEM_DB_PASSWORD:change-me}
+  flyway:
+    enabled: true
+    schemas: ouf_sem
+    default-schema: ouf_sem
+management:
+  endpoints.web.exposure.include: health,info,prometheus,metrics
+  endpoint.health.probes.enabled: true
+server:
+  port: ${PORT:8080}
+ouf:
+  semantic:
+    providers:
+      schema-gov:
+        enabled: ${OUF_SCHEMA_GOV_ENABLED:false}
+        gateway-base-url: ${OUF_SCHEMA_GOV_GATEWAY_BASE_URL:https://gateway.invalid}
+        # Deployment bindings: the Gateway owns the concrete schema.gov.it routes.
+        # No undocumented public endpoint is hard-coded in this module.
+        search-path: ${OUF_SCHEMA_GOV_SEARCH_PATH:/semantic-providers/schema-gov/sparql}
+        fetch-path: ${OUF_SCHEMA_GOV_FETCH_PATH:/semantic-providers/schema-gov/fetch}
+        connect-timeout: 2s
+        request-timeout: 5s
+        max-response-bytes: 8388608
+        max-candidates: 10
+        max-attempts: 2
+        retry-backoff: 100ms
+        circuit-failure-threshold: 3
+        circuit-open-duration: 30s
+    discovery-worker:
+      enabled: ${OUF_DISCOVERY_WORKER_ENABLED:true}
+      fixed-delay: ${OUF_DISCOVERY_WORKER_DELAY:2s}

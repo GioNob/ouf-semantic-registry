@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-09-10T12:58:58Z",
+  "increment": "RDF interchange, content negotiation and governed semantic change",
+  "status": "PASS_WITH_BOM_QUALIFICATION",
+  "database": "PostgreSQL 16.14",
+  "executed_checks": [
+    "V1-V6 compile",
+    "change notice idempotency",
+    "change notice conflict rejection",
+    "breaking gate without migration",
+    "approved migration unlocks publication",
+    "new publication set",
+    "previous ACTIVE becomes DEPRECATED",
+    "new revision becomes ACTIVE",
+    "RDF snapshot immutability"
+  ],
+  "regression": {"suite":"validation-impact V1-V5","status":"PASS","checks":10},
+  "authored_not_executed": [
+    "Jena round-trip Turtle/JSON-LD/RDF-XML/N-Triples",
+    "owl:imports serialized without dereference",
+    "RDF semantic identity/type mismatch rejection",
+    "Vocabulary CSV serialization"
+  ],
+  "not_claimed": ["PostgreSQL 17 certification","Java 21/Spring/Jena execution","pairwise execution","production readiness"]
+}

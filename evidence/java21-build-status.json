@@ -1,0 +1,8 @@
+{
+  "status": "BLOCKED_TOOLCHAIN_UNAVAILABLE",
+  "checked_at": "2026-09-10T00:00:00Z",
+  "required": ["Java 21 JDK", "Maven 3.9.x"],
+  "available": ["Java 17 runtime without javac", "Node.js", "embedded PostgreSQL 16.14"],
+  "network_attempt": "cancelled by environment network policy before download approval",
+  "consequence": "Java/Jena tests are authored but not reported as executed or passed"
+}

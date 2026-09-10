@@ -1,0 +1,21 @@
+{
+  "name": "ouf-semantic-registry-build-tooling",
+  "private": true,
+  "version": "1.0.0",
+  "java": {
+    "dependencies": [
+      {"groupId":"org.springframework.boot","artifactId":"spring-boot-starter-web","version":"3.5.5"},
+      {"groupId":"org.springframework.boot","artifactId":"spring-boot-starter-validation","version":"3.5.5"},
+      {"groupId":"org.springframework.boot","artifactId":"spring-boot-starter-jdbc","version":"3.5.5"},
+      {"groupId":"org.springframework.boot","artifactId":"spring-boot-starter-actuator","version":"3.5.5"},
+      {"groupId":"org.flywaydb","artifactId":"flyway-database-postgresql","version":"11.7.2"},
+      {"groupId":"org.postgresql","artifactId":"postgresql","version":"42.7.7"},
+      {"groupId":"org.apache.jena","artifactId":"jena-arq","version":"5.5.0"},
+      {"groupId":"org.apache.jena","artifactId":"jena-shacl","version":"5.5.0"},
+      {"groupId":"org.springframework.boot","artifactId":"spring-boot-starter-test","version":"3.5.5"}
+    ]
+  },
+  "dependencies": {
+    "@cubejs-backend/node-java-maven": "0.1.3"
+  }
+}

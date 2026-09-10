@@ -1,0 +1,29 @@
+{
+  "generated_at": "2026-09-10",
+  "gate": "GitHub Actions Java 21 / Maven / PostgreSQL 17",
+  "status": "READY_NOT_EXECUTED",
+  "local_validation": {
+    "workflow_yaml": "PASS",
+    "pom_xml": "PASS",
+    "pairwise_shell_syntax": "PASS",
+    "evidence_script_syntax": "PASS",
+    "source_checksums": "PASS"
+  },
+  "module_ci": {
+    "java": "Temurin 21",
+    "maven": "runner Maven with dependency cache and bounded network/read timeouts",
+    "database": "postgres:17-alpine service",
+    "tests": "mvn clean verify",
+    "container": "multi-stage Java 21 image, non-root runtime",
+    "evidence_retention_days": 30
+  },
+  "pairwise_ci": {
+    "status": "FAIL_CLOSED_UNTIL_VERSIONED_FIXTURES_EXIST",
+    "topology": "semantic-registry + one immutable peer image",
+    "claims_pairwise_pass": false
+  },
+  "remote_execution": {
+    "executed": false,
+    "reason": "No GitHub repository or connected GitHub account is available in this workspace yet."
+  }
+}

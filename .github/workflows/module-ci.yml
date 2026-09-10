@@ -1,0 +1,84 @@
+name: Semantic Registry module CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: semantic-registry-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  java21-postgresql17:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: ouf_semantic
+          POSTGRES_USER: ouf_semantic
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ouf_semantic -d ouf_semantic"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      OUF_SEM_DB_URL: jdbc:postgresql://127.0.0.1:5432/ouf_semantic
+      OUF_SEM_DB_USER: ouf_semantic
+      OUF_SEM_DB_PASSWORD: ci-only-password
+      OUF_DISCOVERY_WORKER_ENABLED: "false"
+      MAVEN_OPTS: >-
+        -Dmaven.wagon.http.connectionTimeout=10000
+        -Dmaven.wagon.http.readTimeout=30000
+        -Djava.net.preferIPv4Stack=true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Verify frozen source checksums
+        run: sha256sum -c evidence/source-checksums.txt
+      - name: Compile, test and package with bounded Maven execution
+        run: timeout --signal=TERM --kill-after=30s 20m mvn -B -ntp clean verify
+      - name: Record runner evidence
+        if: always()
+        env:
+          CI_JOB_STATUS: ${{ job.status }}
+          CI_RUN_ID: ${{ github.run_id }}
+          CI_COMMIT_SHA: ${{ github.sha }}
+        run: node scripts/write-ci-evidence.mjs
+      - name: Upload test and build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-registry-java21-postgresql17-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            target/surefire-reports/
+            target/*.jar
+            target/ci-evidence.json
+            evidence/source-checksums.txt
+
+  container-smoke:
+    needs: java21-postgresql17
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build production image
+        run: docker build --tag ouf-semantic-registry:${{ github.sha }} .
+      - name: Inspect image as non-root
+        run: test "$(docker image inspect ouf-semantic-registry:${{ github.sha }} --format '{{.Config.User}}')" = "10001:10001"
+

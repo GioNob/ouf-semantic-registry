@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-09-10T12:44:31Z",
+  "increment": "validation, compatibility, impact and exact reference resolution",
+  "status": "PASS_WITH_BOM_QUALIFICATION",
+  "database": "PostgreSQL 16.14",
+  "checks": [
+    "V1-V5 compile",
+    "unresolved reference failure",
+    "green validation",
+    "publication gate",
+    "stale validation rejection",
+    "exact publication reference",
+    "consumer registration impact",
+    "domain/range scoped dependencies",
+    "breaking cardinality classification",
+    "append-only impact evidence"
+  ],
+  "not_claimed": [
+    "PostgreSQL 17 certification",
+    "Java 21/Spring API execution",
+    "pairwise or cross-module execution",
+    "full SEM acceptance catalog completion"
+  ],
+  "production_claim": false
+}

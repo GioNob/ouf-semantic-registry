@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "checks": [
+    "V1-V4 compile",
+    "SKIP LOCKED exclusive claims",
+    "terminal CAS",
+    "bounded lease schema",
+    "candidate adoption",
+    "snapshot provenance",
+    "idempotent adoption",
+    "adopted bytes immutable"
+  ],
+  "database": "PostgreSQL 16.14 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit"
+}

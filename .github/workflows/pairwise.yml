@@ -1,0 +1,45 @@
+name: Pairwise integration gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      peer_image:
+        description: Immutable image reference for the second OUF module
+        required: true
+        type: string
+      fixture_set:
+        description: Versioned fixture directory under pairwise/fixtures
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  semantic-plus-peer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate bounded inputs
+        env:
+          PEER_IMAGE: ${{ inputs.peer_image }}
+          FIXTURE_SET: ${{ inputs.fixture_set }}
+        run: ./pairwise/run-pairwise.sh validate-inputs
+      - name: Build semantic module
+        run: docker build --tag ouf-semantic-registry:pairwise .
+      - name: Execute 1+1 contract fixtures
+        env:
+          PEER_IMAGE: ${{ inputs.peer_image }}
+          FIXTURE_SET: ${{ inputs.fixture_set }}
+        run: timeout --signal=TERM --kill-after=30s 20m ./pairwise/run-pairwise.sh execute
+      - name: Upload pairwise evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-pairwise-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: pairwise/evidence/
+
