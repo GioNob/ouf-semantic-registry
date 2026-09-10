@@ -51,7 +51,7 @@ CREATE OR REPLACE FUNCTION ouf_sem.require_green_validation() RETURNS trigger LA
 DECLARE v_revision_no integer;v_impact ouf_sem.impact_report%ROWTYPE;
 BEGIN
  IF NEW.lifecycle_status='ACTIVE' AND OLD.lifecycle_status<>'ACTIVE' THEN
-  IF NOT EXISTS(SELECT 1 FROM ouf_sem.validation_run v WHERE v.revision_id=NEW.revision_id AND v.status='PASS' AND v.error_count=0 AND v.validated_row_version=NEW.row_version AND v.validated_content_hash=encode(digest((NEW.label_json::text||NEW.description_json::text||NEW.definition_json::text)::bytea,'sha256'),'hex')) THEN RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='SEMANTIC_VALIDATION_REQUIRED';END IF;
+  IF NOT EXISTS(SELECT 1 FROM ouf_sem.validation_run v WHERE v.revision_id=NEW.revision_id AND v.status='PASS' AND v.error_count=0 AND v.validated_row_version=NEW.row_version AND v.validated_content_hash=encode(public.digest((NEW.label_json::text||NEW.description_json::text||NEW.definition_json::text)::bytea,'sha256'),'hex')) THEN RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='SEMANTIC_VALIDATION_REQUIRED';END IF;
   SELECT revision_no INTO v_revision_no FROM ouf_sem.artifact_revision WHERE revision_id=NEW.revision_id;
   IF v_revision_no>1 THEN
    SELECT * INTO v_impact FROM ouf_sem.impact_report WHERE to_revision_id=NEW.revision_id ORDER BY created_at DESC LIMIT 1;

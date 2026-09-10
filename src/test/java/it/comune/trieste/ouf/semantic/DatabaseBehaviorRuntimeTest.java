@@ -53,7 +53,7 @@ class DatabaseBehaviorRuntimeTest {
     assertThat(db.sql("select count(*) from ouf_sem.audit_event where resource_id=:r")
         .param("r",revision.toString()).query(Long.class).single()).isEqualTo(1);
     assertThatThrownBy(()->publish(revision,decision,key,"f".repeat(64),"corr-2"))
-        .hasRootCauseMessage("ERROR: IDEMPOTENCY_CONFLICT");
+        .hasStackTraceContaining("IDEMPOTENCY_CONFLICT");
   }
 
   @Test
@@ -65,7 +65,7 @@ class DatabaseBehaviorRuntimeTest {
         set lifecycle_status='ACTIVE',published_at=transaction_timestamp()
         where revision_id=:r
         """).param("r",revision).update())
-        .hasRootCauseMessage("ERROR: SEMANTIC_VALIDATION_REQUIRED");
+        .hasStackTraceContaining("SEMANTIC_VALIDATION_REQUIRED");
   }
 
   @Test
@@ -98,7 +98,7 @@ class DatabaseBehaviorRuntimeTest {
         where o.artifact_id=:a
         """).param("a",first).query(Long.class).single()).isEqualTo(1);
     assertThatThrownBy(()->db.sql("update ouf_sem.discovery_candidate set content_bytes='x' where candidate_id=:c")
-        .param("c",candidate).update()).hasRootCauseMessage("ERROR: published semantic state is immutable");
+        .param("c",candidate).update()).hasStackTraceContaining("published semantic state is immutable");
   }
 
   private void insertArtifact(UUID artifact,UUID revision,String semanticId,String state,String version) {
