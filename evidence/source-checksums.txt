@@ -43,3 +43,4 @@ fb9184fb8f40af2070ace2c0e75393bacbb403543947cd3a9c6d1c1c9d79ba8b  pairwise/run-p
 4ef742505bbd9740eec214b564bac5fe1c42b9e72feaa7ab56099b0743a1b9e4  pairwise/README.md
 dd7bc6a023cbbd0e2ac05a594254cbc407c3f2f3cddbec460571134e902ca827  src/test/java/it/comune/trieste/ouf/semantic/Postgres17RuntimeTest.java
 964353617d797156ff91f66806cb33ff52f0d8e861ca8ad2ae60976bd0b794ac  src/test/java/it/comune/trieste/ouf/semantic/DatabaseBehaviorRuntimeTest.java
+90b32e28553d99a51a5d3275a9d31fc27a349e07f4787106e653116019690ca3  src/test/java/it/comune/trieste/ouf/semantic/DatabaseConcurrencyRuntimeTest.java
