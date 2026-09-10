@@ -38,7 +38,7 @@ DROP FUNCTION ouf_sem.publish_revision(uuid,text,character,text);
 CREATE FUNCTION ouf_sem.publish_revision(
  p_revision uuid,p_decision uuid,p_key text,p_request_hash char(64),p_actor text,p_correlation text)
 RETURNS uuid LANGUAGE plpgsql AS $$
-DECLARE v_art uuid; v_sem text; v_set uuid; v_existing char(64); v_inserted int; v_approved char(64); v_no bigint;
+DECLARE v_art uuid; v_sem text; v_set uuid; v_existing char(64); v_inserted int; v_approved char(64); v_no bigint; v_manifest_hash char(64);
 BEGIN
  INSERT INTO ouf_sem.publish_claim(idempotency_key,request_hash,created_at)
  VALUES(p_key,p_request_hash,transaction_timestamp()) ON CONFLICT DO NOTHING;
@@ -61,14 +61,21 @@ BEGIN
  THEN RAISE EXCEPTION USING ERRCODE='23503',MESSAGE='UNRESOLVED_DEPENDENCY'; END IF;
 
  v_set=gen_random_uuid(); v_no=nextval('ouf_sem.publication_no_seq');
- INSERT INTO ouf_sem.semantic_publication_set VALUES(v_set,v_no,p_request_hash,transaction_timestamp(),p_actor,'BUILDING');
+ -- The request hash identifies the revision payload and belongs to the claim.
+ -- The publication checksum identifies the complete ordered manifest.  A
+ -- provisional value is required while the BUILDING row has no members yet.
+ INSERT INTO ouf_sem.semantic_publication_set
+ VALUES(v_set,v_no,encode(public.digest(v_set::text::bytea,'sha256'),'hex'),transaction_timestamp(),p_actor,'BUILDING');
  INSERT INTO ouf_sem.semantic_publication_member(publication_set_id,semantic_id,revision_id)
  SELECT v_set,a.semantic_id,ar.revision_id FROM ouf_sem.artifact_active_revision ar JOIN ouf_sem.semantic_artifact a USING(artifact_id) WHERE ar.artifact_id<>v_art;
  INSERT INTO ouf_sem.semantic_publication_member VALUES(v_set,v_sem,p_revision);
  UPDATE ouf_sem.artifact_revision SET lifecycle_status='ACTIVE',published_at=transaction_timestamp() WHERE revision_id=p_revision;
  INSERT INTO ouf_sem.artifact_active_revision VALUES(v_art,p_revision,transaction_timestamp(),p_actor)
  ON CONFLICT(artifact_id) DO UPDATE SET revision_id=excluded.revision_id,activated_at=excluded.activated_at,activated_by_subject=excluded.activated_by_subject;
- UPDATE ouf_sem.semantic_publication_set SET status='PUBLISHED' WHERE publication_set_id=v_set;
+ SELECT encode(public.digest(string_agg(m.semantic_id||':'||m.revision_id::text,'|' ORDER BY m.semantic_id)::bytea,'sha256'),'hex')
+ INTO STRICT v_manifest_hash
+ FROM ouf_sem.semantic_publication_member m WHERE m.publication_set_id=v_set;
+ UPDATE ouf_sem.semantic_publication_set SET checksum=v_manifest_hash,status='PUBLISHED' WHERE publication_set_id=v_set;
  UPDATE ouf_sem.publish_claim SET publication_set_id=v_set WHERE idempotency_key=p_key;
  INSERT INTO ouf_sem.audit_event VALUES(gen_random_uuid(),'SEMANTIC_PUBLISHED',p_actor,'REVISION',p_revision::text,p_correlation,jsonb_build_object('publicationSetId',v_set),transaction_timestamp());
  RETURN v_set;
