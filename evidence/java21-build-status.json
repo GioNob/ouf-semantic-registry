@@ -1,17 +1,17 @@
 {
   "status": "PASS",
-  "verified_at": "2026-09-10T19:21:00Z",
+  "verified_at": "2026-09-10T20:19:00Z",
   "repository": "GioNob/ouf-semantic-registry",
-  "commit_sha": "fb36338716fa9c2f0933f6a58756b9dad0627f74",
-  "github_actions_run_id": 34519779096,
-  "github_actions_url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/34519779096",
+  "commit_sha": "fd75f833cbbc0ec9e5308a658f94eb5c6649d433",
+  "github_actions_run_id": 34525560227,
+  "github_actions_url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/34525560227",
   "toolchain": {
     "java": "Temurin 21",
     "database": "PostgreSQL 17.11",
     "build": "Maven clean verify"
   },
   "result": {
-    "tests": 26,
+    "tests": 30,
     "failures": 0,
     "errors": 0,
     "skipped": 0,

@@ -25,11 +25,11 @@
   "remote_execution": {
     "executed": true,
     "repository": "GioNob/ouf-semantic-registry",
-    "commit_sha": "fb36338716fa9c2f0933f6a58756b9dad0627f74",
-    "run_id": 34519779096,
-    "run_url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/34519779096",
+    "commit_sha": "fd75f833cbbc0ec9e5308a658f94eb5c6649d433",
+    "run_id": 34525560227,
+    "run_url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/34525560227",
     "conclusion": "success",
-    "tests": {"executed": 26, "passed": 26, "failed": 0, "skipped": 0},
+    "tests": {"executed": 30, "passed": 30, "failed": 0, "skipped": 0},
     "flyway": {"postgresql": "17.11", "migrations_applied": 6},
     "container_non_root_smoke": "PASS"
   }
