@@ -16,8 +16,8 @@ This is the full-module workstream, not the earlier pilot. Current checkpoint:
   implemented and DB-tested;
 - live provider connectivity remains environment-required until the Gateway
   owner supplies the concrete route bindings and response contract;
-- GitHub Actions run 34511366650 executed the complete Maven suite with Temurin
-  Java 21 and PostgreSQL 17.11: 23 tests passed, zero failures/errors/skips, all
+- GitHub Actions run 34519779096 executed the complete Maven suite with Temurin
+  Java 21 and PostgreSQL 17.11: 26 tests passed, zero failures/errors/skips, all
   six Flyway migrations applied, Spring Boot package built;
 - the production container image was built and its non-root runtime identity
   verified by the same run;
@@ -55,4 +55,4 @@ This is the full-module workstream, not the earlier pilot. Current checkpoint:
 - Corretto lo switch di lifecycle: al nuovo publish la revisione precedentemente ACTIVE diventa DEPRECATED senza mutarne il contenuto.
 - Suite concreta V1-V6 superata su PostgreSQL 16.14: 9 controlli; regressione V1-V5 nuovamente verde (10 controlli).
 - I test Jena di transcodifica e identity/type binding sono stati eseguiti con
-  Java 21 e risultano verdi nella run GitHub Actions 34511366650.
+  Java 21 e risultano verdi nella run GitHub Actions 34519779096.
