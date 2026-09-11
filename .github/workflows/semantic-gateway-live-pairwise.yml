@@ -1,0 +1,33 @@
+name: Semantic Gateway live pairwise
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'Dockerfile'
+      - 'pom.xml'
+      - 'pairwise/gateway-fixture/**'
+      - 'pairwise/fixtures/semantic-gateway-live-v1/**'
+      - 'pairwise/run-semantic-gateway-live.sh'
+      - '.github/workflows/semantic-gateway-live-pairwise.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  live-pairwise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute bounded live pairwise
+        run: timeout --signal=TERM --kill-after=30s 30m ./pairwise/run-semantic-gateway-live.sh
+      - name: Upload pairwise evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-gateway-live-evidence
+          path: pairwise/evidence/semantic-gateway-live-v1/
+          if-no-files-found: error

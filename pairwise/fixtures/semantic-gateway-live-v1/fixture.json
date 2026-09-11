@@ -1,0 +1,10 @@
+{
+  "fixture_set": "semantic-gateway-live-v1",
+  "catalog": "https://schema.gov.it/",
+  "sparql_endpoint": "https://schema.gov.it/sparql",
+  "artifact_type": "CLASS",
+  "search_intent": "Address",
+  "expected_semantic_id": "https://w3id.org/italia/onto/CLV/Address",
+  "expected_provider": "SCHEMA_GOV_IT",
+  "expected_media_type": "text/turtle"
+}

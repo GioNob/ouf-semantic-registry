@@ -33,8 +33,15 @@ public final class SchemaGovProxy {
     URI target;
     try { target=URI.create(rawUri); } catch(RuntimeException e) { throw new GatewayFailure(400,"GATEWAY_TARGET_INVALID"); }
     requireAllowed(target);
-    var request=HttpRequest.newBuilder(target).timeout(cfg.requestTimeout())
-        .header("Accept",String.join(",",RDF_TYPES)).header("X-Correlation-Id",correlationId).GET().build();
+    // Catalog identifiers are not guaranteed to be directly dereferenceable.
+    // Resolve their authoritative RDF description through schema.gov.it's SPARQL endpoint.
+    String sparql="CONSTRUCT { <"+target+"> ?p ?o . } WHERE { <"+target+"> ?p ?o . }";
+    byte[] form=("query="+URLEncoder.encode(sparql,StandardCharsets.UTF_8)
+        +"&format="+URLEncoder.encode("text/turtle",StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
+    var request=HttpRequest.newBuilder(cfg.sparqlUpstream()).timeout(cfg.requestTimeout())
+        .header("Content-Type","application/x-www-form-urlencoded; charset=UTF-8")
+        .header("Accept",String.join(",",RDF_TYPES)).header("X-Correlation-Id",correlationId)
+        .POST(HttpRequest.BodyPublishers.ofByteArray(form)).build();
     return exchange(request,RDF_TYPES);
   }
 
