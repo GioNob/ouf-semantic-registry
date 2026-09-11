@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "scope": "semantic-provider-gateway-fixture standalone",
+  "repository": "GioNob/ouf-semantic-registry",
+  "commit_sha": "3987e049988585ca45d829996dcbb43f6bfc0792",
+  "github_actions_run_id": 34575184318,
+  "github_actions_url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/34575184318",
+  "toolchain": "Temurin Java 21 and Maven",
+  "tests": {"executed": 5, "passed": 5, "failed": 0, "errors": 0, "skipped": 0},
+  "build_seconds": 11.907,
+  "container": {"build": "PASS", "non_root_user": "10002:10002"},
+  "routes": [
+    "POST /semantic-providers/schema-gov/sparql",
+    "GET /semantic-providers/schema-gov/fetch"
+  ],
+  "full_urban_api_gateway_claimed": false,
+  "pairwise_executed": false
+}
