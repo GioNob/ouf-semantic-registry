@@ -1,5 +1,6 @@
 {
   "fixture_set": "semantic-gateway-live-v1",
+  "live_external_service": true,
   "catalog": "https://schema.gov.it/",
   "sparql_endpoint": "https://schema.gov.it/sparql",
   "artifact_type": "CLASS",
