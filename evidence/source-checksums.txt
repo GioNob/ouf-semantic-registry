@@ -48,4 +48,4 @@ dd7bc6a023cbbd0e2ac05a594254cbc407c3f2f3cddbec460571134e902ca827  src/test/java/
 52aec08994ede0e5b26a7d8535726b1d7c17440799e13e8194099d6de061af1e  src/main/java/it/comune/trieste/ouf/semantic/application/ArtifactService.java
 4ef3333b8d5d405cbcf5b84419ba1805453245ed42ff55382be61d86d520e0e8  src/main/java/it/comune/trieste/ouf/semantic/api/GovernanceApi.java
 50a829a84cf88eccee7cc545694fc203140cf00f677861ac6ad6bfd9d0551819  src/main/java/it/comune/trieste/ouf/semantic/application/GovernanceService.java
-f435f232d12043a23fa1a2abf7c92f1096f4887205bf5afee25650ab26b62ca6  src/test/java/it/comune/trieste/ouf/semantic/HttpApiRuntimeTest.java
+934db59512b6d2a476708fa4debf4cff38e7c6a9de4b1781e9fb4add3ab83c74  src/test/java/it/comune/trieste/ouf/semantic/HttpApiRuntimeTest.java

@@ -25,11 +25,12 @@ class HttpApiRuntimeTest {
   @Test
   void artifactLifecycleRunsThroughHttpToPostgresql() throws Exception {
     String semanticId="ouf:http:"+UUID.randomUUID();
+    String localName="Place"+UUID.randomUUID().toString().replace("-","");
     JsonNode created=body(http.perform(post("/api/semantic/v1/artifacts")
         .contentType(MediaType.APPLICATION_JSON)
         .content(json.writeValueAsBytes(java.util.Map.of(
             "semanticId",semanticId,"artifactType","CLASS","namespace","ouf",
-            "localName","Place","ownerRef","owner","authorityRef","authority",
+            "localName",localName,"ownerRef","owner","authorityRef","authority",
             "semanticVersion","1.0.0","labels",java.util.Map.of("it","Luogo"),
             "definition",java.util.Map.of()))))
         .andExpect(status().isCreated())
