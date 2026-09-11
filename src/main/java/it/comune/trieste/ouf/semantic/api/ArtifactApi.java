@@ -20,7 +20,8 @@ public class ArtifactApi {
   public record CreateArtifact(@NotBlank String semanticId,
       @Pattern(regexp="CLASS|PROPERTY|RELATIONSHIP|VOCABULARY|CONCEPT|ONTOLOGY") String artifactType,
       @NotBlank String namespace, @NotBlank String localName, @NotBlank String ownerRef,
-      @NotBlank String authorityRef, Map<String,Object> labels, Map<String,Object> definition) {}
+      @NotBlank String authorityRef, @NotBlank String semanticVersion,
+      Map<String,Object> labels, Map<String,Object> definition) {}
   public record PatchRevision(Map<String,Object> labels, Map<String,Object> definition) {}
 
   @PostMapping("/artifacts")

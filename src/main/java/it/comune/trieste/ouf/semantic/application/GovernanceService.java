@@ -15,7 +15,7 @@ public class GovernanceService {
 
   @Transactional public Map<String,Object> challenge(UUID revision,String hash,Duration ttl,String actor,String type){
     human(type);UUID id=UUID.randomUUID();
-    int n=db.sql("update ouf_sem.artifact_revision set lifecycle_status='UNDER_REVIEW',content_hash=:h,row_version=row_version+1 where revision_id=:r and lifecycle_status='DRAFT'").param("h",hash).param("r",revision).update();
+    int n=db.sql("update ouf_sem.artifact_revision set lifecycle_status='UNDER_REVIEW',content_hash=:h where revision_id=:r and lifecycle_status='DRAFT'").param("h",hash).param("r",revision).update();
     if(n!=1)throw new Conflict("REVISION_NOT_DRAFT");
     db.sql("insert into ouf_sem.approval_challenge(challenge_id,revision_id,target_content_hash,status,expires_at,created_by_subject) values(:i,:r,:h,'OPEN',transaction_timestamp()+cast(:ttl as interval),:a)").param("i",id).param("r",revision).param("h",hash).param("ttl",ttl.toSeconds()+" seconds").param("a",actor).update();
     return Map.of("challengeId",id,"revisionId",revision,"targetContentHash",hash,"status","OPEN");
@@ -30,7 +30,8 @@ public class GovernanceService {
   }
   @Transactional public Map<String,Object> publish(UUID revision,UUID decision,String key,String hash,String actor,String type,String correlation){
     human(type);UUID set=db.sql("select ouf_sem.publish_revision(:r,:d,:k,:h,:a,:c)").param("r",revision).param("d",decision).param("k",key).param("h",hash).param("a",actor).param("c",correlation).query(UUID.class).single();
-    return Map.of("publicationSetId",set,"status","PUBLISHED","manifestHash",hash);
+    String manifest=db.sql("select checksum from ouf_sem.semantic_publication_set where publication_set_id=:s").param("s",set).query(String.class).single();
+    return Map.of("publicationSetId",set,"status","PUBLISHED","manifestHash",manifest);
   }
   public static class Forbidden extends RuntimeException{public Forbidden(String m){super(m);}}
   public static class Conflict extends RuntimeException{public Conflict(String m){super(m);}}

@@ -44,3 +44,8 @@ fb9184fb8f40af2070ace2c0e75393bacbb403543947cd3a9c6d1c1c9d79ba8b  pairwise/run-p
 dd7bc6a023cbbd0e2ac05a594254cbc407c3f2f3cddbec460571134e902ca827  src/test/java/it/comune/trieste/ouf/semantic/Postgres17RuntimeTest.java
 964353617d797156ff91f66806cb33ff52f0d8e861ca8ad2ae60976bd0b794ac  src/test/java/it/comune/trieste/ouf/semantic/DatabaseBehaviorRuntimeTest.java
 90b32e28553d99a51a5d3275a9d31fc27a349e07f4787106e653116019690ca3  src/test/java/it/comune/trieste/ouf/semantic/DatabaseConcurrencyRuntimeTest.java
+420b08ab67b2c9866f9cb49399167fc56a327678a3b07886de9ceeb4e2520794  src/main/java/it/comune/trieste/ouf/semantic/api/ArtifactApi.java
+52aec08994ede0e5b26a7d8535726b1d7c17440799e13e8194099d6de061af1e  src/main/java/it/comune/trieste/ouf/semantic/application/ArtifactService.java
+4ef3333b8d5d405cbcf5b84419ba1805453245ed42ff55382be61d86d520e0e8  src/main/java/it/comune/trieste/ouf/semantic/api/GovernanceApi.java
+50a829a84cf88eccee7cc545694fc203140cf00f677861ac6ad6bfd9d0551819  src/main/java/it/comune/trieste/ouf/semantic/application/GovernanceService.java
+f435f232d12043a23fa1a2abf7c92f1096f4887205bf5afee25650ab26b62ca6  src/test/java/it/comune/trieste/ouf/semantic/HttpApiRuntimeTest.java
