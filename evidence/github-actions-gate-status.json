@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-10",
+  "generated_at": "2026-09-11",
   "gate": "GitHub Actions Java 21 / Maven / PostgreSQL 17",
   "status": "PASS",
   "local_validation": {
@@ -25,11 +25,11 @@
   "remote_execution": {
     "executed": true,
     "repository": "GioNob/ouf-semantic-registry",
-    "commit_sha": "fd75f833cbbc0ec9e5308a658f94eb5c6649d433",
-    "run_id": 34525560227,
-    "run_url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/34525560227",
+    "commit_sha": "43cac2c1027fb77a53718f889367f44f2de52791",
+    "run_id": 34568505273,
+    "run_url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/34568505273",
     "conclusion": "success",
-    "tests": {"executed": 30, "passed": 30, "failed": 0, "skipped": 0},
+    "tests": {"executed": 32, "passed": 32, "failed": 0, "skipped": 0},
     "flyway": {"postgresql": "17.11", "migrations_applied": 6},
     "container_non_root_smoke": "PASS"
   }

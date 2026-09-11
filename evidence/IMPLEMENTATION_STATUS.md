@@ -16,14 +16,17 @@ This is the full-module workstream, not the earlier pilot. Current checkpoint:
   implemented and DB-tested;
 - live provider connectivity remains environment-required until the Gateway
   owner supplies the concrete route bindings and response contract;
-- GitHub Actions run 34525560227 executed the complete Maven suite with Temurin
-  Java 21 and PostgreSQL 17.11: 30 tests passed, zero failures/errors/skips, all
+- GitHub Actions run 34568505273 executed the complete Maven suite with Temurin
+  Java 21 and PostgreSQL 17.11: 32 tests passed, zero failures/errors/skips, all
   six Flyway migrations applied, Spring Boot package built;
 - the production container image was built and its non-root runtime identity
   verified by the same run;
 - deterministic concurrent-transaction tests cover SKIP LOCKED worker
   exclusivity, expired-lease recovery, publication-claim idempotency and draft
   optimistic CAS;
+- HTTP runtime tests cover create/read/ETag patch, stale-write conflict as
+  Problem Detail, validation, human approval, publication, Turtle export,
+  request validation and hostile RDF/XML rejection;
 - observability and full acceptance traceability: still to be completed;
 - production readiness: **not claimed**.
 # Incremento discovery schema.gov.it / OntoPiA
@@ -58,4 +61,4 @@ This is the full-module workstream, not the earlier pilot. Current checkpoint:
 - Corretto lo switch di lifecycle: al nuovo publish la revisione precedentemente ACTIVE diventa DEPRECATED senza mutarne il contenuto.
 - Suite concreta V1-V6 superata su PostgreSQL 16.14: 9 controlli; regressione V1-V5 nuovamente verde (10 controlli).
 - I test Jena di transcodifica e identity/type binding sono stati eseguiti con
-  Java 21 e risultano verdi nella run GitHub Actions 34525560227.
+  Java 21 e risultano verdi nella run GitHub Actions 34568505273.
