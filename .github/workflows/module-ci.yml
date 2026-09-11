@@ -69,6 +69,7 @@ jobs:
             target/*.jar
             target/ci-evidence.json
             evidence/source-checksums.txt
+            evidence/acceptance-traceability.json
 
   container-smoke:
     needs: java21-postgresql17
@@ -81,4 +82,3 @@ jobs:
         run: docker build --tag ouf-semantic-registry:${{ github.sha }} .
       - name: Inspect image as non-root
         run: test "$(docker image inspect ouf-semantic-registry:${{ github.sha }} --format '{{.Config.User}}')" = "10001:10001"
-

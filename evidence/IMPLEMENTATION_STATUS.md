@@ -27,7 +27,11 @@ This is the full-module workstream, not the earlier pilot. Current checkpoint:
 - HTTP runtime tests cover create/read/ETag patch, stale-write conflict as
   Problem Detail, validation, human approval, publication, Turtle export,
   request validation and hostile RDF/XML rejection;
-- observability and full acceptance traceability: still to be completed;
+- health/readiness probes, Prometheus metrics, bounded-cardinality HTTP timing
+  and validated correlation identifiers: implemented and runtime-tested;
+- single-module capability-to-test traceability: recorded in
+  `evidence/acceptance-traceability.json`; pairwise and production-environment
+  evidence remains explicitly outside the standalone claim;
 - production readiness: **not claimed**.
 # Incremento discovery schema.gov.it / OntoPiA
 
