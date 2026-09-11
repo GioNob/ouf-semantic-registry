@@ -1,0 +1,13 @@
+spring.application.name: semantic-provider-gateway-fixture
+server.port: ${PORT:8090}
+management:
+  endpoints.web.exposure.include: health,info
+  endpoint.health.probes.enabled: true
+fixture:
+  schema-gov:
+    sparql-upstream: ${SCHEMA_GOV_SPARQL_UPSTREAM:https://schema.gov.it/sparql}
+    allowed-hosts: ${SCHEMA_GOV_ALLOWED_HOSTS:schema.gov.it,w3id.org}
+    connect-timeout: 2s
+    request-timeout: 8s
+    max-request-bytes: 65536
+    max-response-bytes: 8388608
