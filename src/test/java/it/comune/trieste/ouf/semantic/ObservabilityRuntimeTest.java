@@ -28,7 +28,7 @@ class ObservabilityRuntimeTest {
         .andExpect(status().isOk())
         .andExpect(header().string("X-Correlation-Id", supplied));
 
-    http.perform(get("/api/semantic/v1/artifacts/{id}", UUID.randomUUID())
+    http.perform(get("/actuator/health/not-a-health-group")
             .header("X-Correlation-Id", "invalid id with spaces"))
         .andExpect(status().isNotFound())
         .andExpect(header().exists("X-Correlation-Id"))

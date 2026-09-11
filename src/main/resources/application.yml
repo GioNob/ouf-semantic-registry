@@ -17,6 +17,10 @@ management:
   observations:
     key-values:
       module: semantic-registry
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 server:
   port: ${PORT:8080}
 ouf:
