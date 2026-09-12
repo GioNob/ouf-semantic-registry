@@ -1,0 +1,57 @@
+openapi: 3.1.0
+info:
+  title: OUF Semantic Registry Trusted Human Surface Backend API
+  version: 1.0.0
+x-ouf-mcp-exposed: false
+paths:
+  /api/trusted-human/v1/semantic-approval-challenges/{id}:
+    get:
+      operationId: getSemanticApprovalCard
+      x-ouf-mcp-exposed: false
+      parameters: [$ref: '#/components/parameters/Id']
+      responses: {'200': {description: Immutable decision card}}
+  /api/trusted-human/v1/semantic-approval-challenges/{id}/decision:
+    post:
+      operationId: decideSemanticApproval
+      x-ouf-mcp-exposed: false
+      parameters: [$ref: '#/components/parameters/Id']
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: {type: string, enum: [APPROVED, REJECTED]}
+      responses: {'200': {description: Human decision recorded}}
+  /api/trusted-human/v1/semantic-approval-challenges/{id}/publish:
+    post:
+      operationId: publishApprovedSemanticRevision
+      x-ouf-mcp-exposed: false
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: {type: string}
+      responses: {'200': {description: Publication completed atomically}}
+  /api/trusted-human/v1/semantic-approval-challenges/migration-proposals/{id}:
+    get:
+      operationId: getSemanticMigrationCard
+      x-ouf-mcp-exposed: false
+      parameters: [$ref: '#/components/parameters/Id']
+      responses: {'200': {description: Migration proposal card}}
+  /api/trusted-human/v1/semantic-approval-challenges/migration-proposals/{id}/decision:
+    post:
+      operationId: decideSemanticMigration
+      x-ouf-mcp-exposed: false
+      parameters: [$ref: '#/components/parameters/Id']
+      responses: {'200': {description: Human migration decision recorded}}
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}

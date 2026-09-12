@@ -1,0 +1,49 @@
+openapi: 3.1.0
+info:
+  title: OUF Semantic Registry API
+  version: 1.0.0
+paths:
+  /api/semantic/v1/approval-challenges:
+    post:
+      operationId: createSemanticApprovalChallenge
+      summary: Submit a validated revision and return a trusted-human handoff reference
+      x-ouf-mcp-capability: ouf.semantic.approval.request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [revisionId, contentHash]
+              properties:
+                revisionId: {type: string, format: uuid}
+                contentHash: {type: string, pattern: '^[0-9a-f]{64}$'}
+      responses:
+        '201':
+          description: Challenge created; no approval has been granted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [challengeId, trustedApprovalRef, humanAuthorityRequired]
+                properties:
+                  challengeId: {type: string, format: uuid}
+                  trustedApprovalRef: {type: string}
+                  humanAuthorityRequired: {type: boolean, const: true}
+        '403': {$ref: '#/components/responses/Problem'}
+components:
+  responses:
+    Problem:
+      description: RFC 9457 problem detail
+      content:
+        application/problem+json:
+          schema: {$ref: '#/components/schemas/Problem'}
+  schemas:
+    Problem:
+      type: object
+      required: [status, detail, code, correlationId]
+      properties:
+        status: {type: integer}
+        detail: {type: string}
+        code: {type: string}
+        correlationId: {type: string}

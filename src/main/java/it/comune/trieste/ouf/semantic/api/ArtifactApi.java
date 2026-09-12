@@ -10,12 +10,14 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import it.comune.trieste.ouf.semantic.application.ArtifactService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
 
 @RestController
 @RequestMapping("/api/semantic/v1")
 public class ArtifactApi {
-  private final ArtifactService service;
-  public ArtifactApi(ArtifactService service) { this.service = service; }
+  private final ArtifactService service;private final TrustedActorResolver actors;
+  public ArtifactApi(ArtifactService service,TrustedActorResolver actors) { this.service = service;this.actors=actors; }
 
   public record CreateArtifact(@NotBlank String semanticId,
       @Pattern(regexp="CLASS|PROPERTY|RELATIONSHIP|VOCABULARY|CONCEPT|ONTOLOGY") String artifactType,
@@ -25,13 +27,14 @@ public class ArtifactApi {
   public record PatchRevision(Map<String,Object> labels, Map<String,Object> definition) {}
 
   @PostMapping("/artifacts")
-  ResponseEntity<Map<String,Object>> create(@Valid @RequestBody CreateArtifact command) {
-    var result=service.create(command);
+  ResponseEntity<Map<String,Object>> create(@Valid @RequestBody CreateArtifact command,HttpServletRequest request,@RequestHeader HttpHeaders headers) {
+    var actor=actors.actor(request);var result=service.create(command,actor.subject(),actor.type(),correlation(headers));
     return ResponseEntity.created(URI.create("/api/semantic/v1/artifacts/"+result.get("artifactId"))).eTag(result.get("etag").toString()).body(result);
   }
   @GetMapping("/artifacts/{id}") Map<String,Object> get(@PathVariable UUID id) { return service.get(id); }
   @GetMapping("/search") List<Map<String,Object>> search(@RequestParam String q,@RequestParam(defaultValue="ACTIVE") String status,@RequestParam(defaultValue="20") int limit) { return service.search(q,status,limit); }
-  @PatchMapping("/revisions/{id}") ResponseEntity<Map<String,Object>> patch(@PathVariable UUID id,@RequestHeader("If-Match") String etag,@Valid @RequestBody PatchRevision patch) {
-    var result=service.patch(id,etag,patch); return ResponseEntity.ok().eTag(result.get("etag").toString()).body(result);
+  @PatchMapping("/revisions/{id}") ResponseEntity<Map<String,Object>> patch(@PathVariable UUID id,@RequestHeader("If-Match") String etag,@Valid @RequestBody PatchRevision patch,HttpServletRequest request,@RequestHeader HttpHeaders headers) {
+    var actor=actors.actor(request);var result=service.patch(id,etag,patch,actor.subject(),actor.type(),correlation(headers)); return ResponseEntity.ok().eTag(result.get("etag").toString()).body(result);
   }
+  private static String correlation(HttpHeaders h){return java.util.Optional.ofNullable(h.getFirst("X-Correlation-Id")).filter(x->!x.isBlank()).orElseGet(()->UUID.randomUUID().toString());}
 }

@@ -2,8 +2,8 @@ spring:
   application.name: ouf-semantic-registry
   datasource:
     url: ${OUF_SEM_DB_URL:jdbc:postgresql://127.0.0.1:5432/ouf_semantic}
-    username: ${OUF_SEM_DB_USER:ouf_semantic}
-    password: ${OUF_SEM_DB_PASSWORD:change-me}
+    username: ${OUF_SEM_DB_USER}
+    password: ${OUF_SEM_DB_PASSWORD}
   flyway:
     enabled: true
     schemas: ouf_sem
