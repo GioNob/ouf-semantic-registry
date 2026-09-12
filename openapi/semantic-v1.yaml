@@ -3,6 +3,46 @@ info:
   title: OUF Semantic Registry API
   version: 1.0.0
 paths:
+  /api/semantic/v1/artifacts:
+    post: {operationId: createSemanticArtifact, responses: {'201': {description: Draft created}}}
+  /api/semantic/v1/artifacts/{id}:
+    get: {operationId: getSemanticArtifact, responses: {'200': {description: Artifact detail}}}
+  /api/semantic/v1/search:
+    get: {operationId: searchSemanticArtifacts, responses: {'200': {description: Search results}}}
+  /api/semantic/v1/revisions/{id}:
+    patch: {operationId: editSemanticDraft, responses: {'200': {description: Draft updated}}}
+  /api/semantic/v1/revisions/{id}:validate:
+    post: {operationId: validateSemanticRevision, responses: {'200': {description: Validation result}}}
+  /api/semantic/v1/validation-runs/{id}:
+    get: {operationId: getSemanticValidation, responses: {'200': {description: Validation evidence}}}
+  /api/semantic/v1/impact-reports:
+    post: {operationId: createSemanticImpactReport, responses: {'200': {description: Impact report}}}
+  /api/semantic/v1/impact-reports/{id}:
+    get: {operationId: getSemanticImpactReport, responses: {'200': {description: Impact report}}}
+  /api/semantic/v1/references:resolve:
+    get: {operationId: resolveSemanticReference, responses: {'200': {description: Exact resolution}}}
+  /api/semantic/v1/consumer-references:
+    put: {operationId: registerSemanticConsumerReference, responses: {'204': {description: Registered}}}
+  /api/semantic/v1/discovery:
+    post: {operationId: createSemanticDiscovery, responses: {'200': {description: Discovery queued}}}
+  /api/semantic/v1/discovery/{id}/candidates:
+    get: {operationId: listSemanticCandidates, responses: {'200': {description: Temporary candidates}}}
+  /api/semantic/v1/discovery/{requestId}/candidates/{candidateId}:adopt:
+    post: {operationId: adoptSemanticCandidate, responses: {'200': {description: Candidate adopted as draft}}}
+  /api/semantic/v1/discovery/providers:
+    get: {operationId: listSemanticProviders, responses: {'200': {description: Provider status}}}
+  /api/semantic/v1/imports:
+    post: {operationId: importSemanticArtifact, responses: {'200': {description: RDF imported}}}
+  /api/semantic/v1/publication-sets/{setId}/artifacts/{artifactId}:
+    get: {operationId: exportPublishedSemanticArtifact, responses: {'200': {description: Immutable RDF representation}}}
+  /api/semantic/v1/change-notices:
+    post: {operationId: createSemanticChangeNotice, responses: {'200': {description: Change notice}}}
+  /api/semantic/v1/change-notices/{id}:
+    get: {operationId: getSemanticChangeNotice, responses: {'200': {description: Change notice}}}
+  /api/semantic/v1/migration-proposals:
+    post: {operationId: createSemanticMigrationProposal, responses: {'200': {description: Proposal}}}
+  /api/semantic/v1/migration-proposals/{id}:
+    get: {operationId: getSemanticMigrationProposal, responses: {'200': {description: Proposal}}}
   /api/semantic/v1/approval-challenges:
     post:
       operationId: createSemanticApprovalChallenge

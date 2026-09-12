@@ -125,6 +125,11 @@ class HttpApiRuntimeTest {
         .with(actor("agent","OUF_AI_AGENT",Set.of("ouf.semantic.review"))))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.detail").value("HUMAN_IDENTITY_REQUIRED"));
+
+    http.perform(post("/api/trusted-human/v1/semantic-approval-challenges/revisions/{id}:deprecate",UUID.randomUUID())
+        .with(actor("human","OUF_HUMAN_USER",Set.of())))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.detail").value("SEM_CAPABILITY_REQUIRED:ouf.semantic.deprecate"));
   }
 
   private static RequestPostProcessor actor(String subject,String role,Set<String> capabilities) {

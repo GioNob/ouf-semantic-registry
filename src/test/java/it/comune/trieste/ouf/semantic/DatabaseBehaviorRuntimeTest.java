@@ -69,6 +69,20 @@ class DatabaseBehaviorRuntimeTest {
   }
 
   @Test
+  void governedLifecycleDeprecatesAndRetiresWithoutDeletingHistory() {
+    UUID artifact=UUID.randomUUID(),revision=UUID.randomUUID();
+    db.sql("insert into ouf_sem.semantic_artifact(artifact_id,semantic_id,artifact_type,namespace,local_name,owner_ref,authority_ref,origin_kind) values(:a,:s,'CLASS','test',:n,'owner','authority','OUF')")
+        .param("a",artifact).param("s","ouf:lifecycle:"+artifact).param("n",artifact.toString()).update();
+    db.sql("insert into ouf_sem.artifact_revision(revision_id,artifact_id,revision_no,lifecycle_status,semantic_version,label_json,description_json,definition_json,content_hash,created_by_subject,published_at) values(:r,:a,1,'ACTIVE','1.0.0','{}','{}','{}',:h,'tester',transaction_timestamp())")
+        .param("r",revision).param("a",artifact).param("h","a".repeat(64)).update();
+    db.sql("insert into ouf_sem.artifact_active_revision values(:a,:r,transaction_timestamp(),'tester')").param("a",artifact).param("r",revision).update();
+    assertThat(db.sql("select ouf_sem.govern_revision_lifecycle(:r,'DEPRECATED','human','authz:test','corr')").param("r",revision).query(String.class).single()).isEqualTo("DEPRECATED");
+    assertThat(db.sql("select ouf_sem.govern_revision_lifecycle(:r,'RETIRED','human','authz:test','corr')").param("r",revision).query(String.class).single()).isEqualTo("RETIRED");
+    assertThat(db.sql("select count(*) from ouf_sem.artifact_revision where revision_id=:r").param("r",revision).query(Long.class).single()).isOne();
+    assertThat(db.sql("select count(*) from ouf_sem.audit_event where resource_id=:r and event_type in ('SEMANTIC_DEPRECATED','SEMANTIC_RETIRED')").param("r",revision.toString()).query(Long.class).single()).isEqualTo(2);
+  }
+
+  @Test
   void candidateAdoptionIsIdempotentAndFreezesSourceBytes() {
     UUID request=UUID.randomUUID(),candidate=UUID.randomUUID();
     byte[] payload="@prefix ex: <https://example.test/> .".getBytes(StandardCharsets.UTF_8);

@@ -48,6 +48,18 @@ paths:
       x-ouf-mcp-exposed: false
       parameters: [$ref: '#/components/parameters/Id']
       responses: {'200': {description: Human migration decision recorded}}
+  /api/trusted-human/v1/semantic-approval-challenges/revisions/{id}:deprecate:
+    post:
+      operationId: deprecateSemanticRevision
+      x-ouf-mcp-exposed: false
+      parameters: [$ref: '#/components/parameters/Id']
+      responses: {'200': {description: Revision deprecated after impact gate}}
+  /api/trusted-human/v1/semantic-approval-challenges/artifacts/{id}:retire:
+    post:
+      operationId: retireSemanticArtifact
+      x-ouf-mcp-exposed: false
+      parameters: [$ref: '#/components/parameters/Id']
+      responses: {'200': {description: Artifact retired without history deletion}}
 components:
   parameters:
     Id:

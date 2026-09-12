@@ -1,0 +1,23 @@
+{
+  "repository": "GioNob/ouf-semantic-registry",
+  "commit": "7c76997489f2df8e213a2f2920f71efffd9b89cb",
+  "workflow": "Semantic Registry module CI",
+  "runId": 34668586429,
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "java21-postgresql17",
+      "conclusion": "success",
+      "verified": ["frozen source checksums", "Maven clean verify", "PostgreSQL 17 runtime tests", "package"]
+    },
+    {
+      "name": "container-smoke",
+      "conclusion": "success",
+      "verified": ["production image build", "non-root user 10001:10001"]
+    }
+  ],
+  "limitations": [
+    "Summary records observed CI status; raw GitHub Actions logs are not embedded.",
+    "Production Gateway/IAM and centralized log ingestion were not exercised."
+  ]
+}
