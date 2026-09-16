@@ -136,8 +136,9 @@ class HttpApiRuntimeTest {
     return request -> {
       request.setUserPrincipal(() -> subject);
       request.addUserRole(role);
+      request.setAttribute("ouf.actorType",switch(role){case "OUF_HUMAN_USER" -> "HUMAN";case "OUF_AI_AGENT" -> "AI_AGENT";default -> "SERVICE";});
       request.setAttribute("ouf.authorizedCapabilities",capabilities);
-      request.setAttribute("ouf.authorizationContextRef","authz:test:"+subject);
+      request.setAttribute("ouf.authorizationDecisionRef","authz:test:"+subject);
       return request;
     };
   }
