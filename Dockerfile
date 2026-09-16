@@ -2,6 +2,8 @@ FROM maven:3.9.11-eclipse-temurin-21 AS build
 WORKDIR /build
 ENV MAVEN_OPTS="-Dmaven.wagon.http.connectionTimeout=10000 -Dmaven.wagon.http.readTimeout=30000 -Djava.net.preferIPv4Stack=true"
 COPY pom.xml ./
+COPY vendor/authorization-sdk vendor/authorization-sdk
+RUN cd vendor/authorization-sdk && sha256sum -c SOURCE_SHA256SUMS && timeout --signal=TERM --kill-after=30s 10m mvn -B -ntp clean install
 RUN timeout --signal=TERM --kill-after=30s 10m mvn -B -ntp -DskipTests dependency:go-offline
 COPY src ./src
 COPY contracts ./contracts

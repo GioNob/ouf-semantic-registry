@@ -134,11 +134,7 @@ class HttpApiRuntimeTest {
 
   private static RequestPostProcessor actor(String subject,String role,Set<String> capabilities) {
     return request -> {
-      request.setUserPrincipal(() -> subject);
-      request.addUserRole(role);
-      request.setAttribute("ouf.actorType",switch(role){case "OUF_HUMAN_USER" -> "HUMAN";case "OUF_AI_AGENT" -> "AI_AGENT";default -> "SERVICE";});
-      request.setAttribute("ouf.authorizedCapabilities",capabilities);
-      request.setAttribute("ouf.authorizationDecisionRef","authz:test:"+subject);
+      it.comune.trieste.ouf.authorization.TestAuthorization.bind(request,subject,switch(role){case "OUF_HUMAN_USER" -> "HUMAN";case "OUF_AI_AGENT" -> "AI_AGENT";default -> "SERVICE";},capabilities);
       return request;
     };
   }

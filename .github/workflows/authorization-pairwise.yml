@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: GioNob/ouf-source-onboarding
-          ref: fb2dd51dfc204577a47c1e702f17531dd0709b3c
+          ref: 63f238fa78abe2e6834430af618366ce865977fd
           path: .pairwise/authorization
       - name: Verify shared Authorization SDK alignment
         run: |
@@ -30,8 +30,7 @@ jobs:
           assert all(x in decision for x in ['decisionRef','bundleId','bundleVersion'])
           resolver=Path('src/main/java/it/comune/trieste/ouf/semantic/api/TrustedActorResolver.java').read_text()
           ths=Path('src/main/java/it/comune/trieste/ouf/semantic/api/SemanticTrustedHumanApi.java').read_text()
-          for actor in ['HUMAN','SERVICE','AI_AGENT']:
-              assert f'"{actor}"' in resolver
+          assert "ServletAuthorization.resolve(request)" in resolver
           assert 'authorizationDecisionRef' in resolver
           assert '"HUMAN".equals(actor.type())' in ths
           assert 'HUMAN_USER".equals(actor.type())' not in ths

@@ -6,6 +6,8 @@
   <name>OUF Semantic Model Registry</name>
   <properties><java.version>21</java.version><jena.version>5.5.0</jena.version><testcontainers.version>1.21.3</testcontainers.version></properties>
   <dependencies>
+    <dependency><groupId>it.comune.trieste.ouf</groupId><artifactId>authorization-sdk</artifactId><version>1.0.0</version></dependency>
+    <dependency><groupId>it.comune.trieste.ouf</groupId><artifactId>authorization-sdk</artifactId><version>1.0.0</version><type>test-jar</type><classifier>tests</classifier><scope>test</scope></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-validation</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-jdbc</artifactId></dependency>
