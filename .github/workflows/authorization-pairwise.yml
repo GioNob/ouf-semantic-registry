@@ -1,0 +1,38 @@
+name: Authorization Semantic pairwise
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  authorization-semantic-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: GioNob/ouf-source-onboarding
+          ref: fb2dd51dfc204577a47c1e702f17531dd0709b3c
+          path: .pairwise/authorization
+      - name: Verify shared Authorization SDK alignment
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          sdk=json.loads(Path('.pairwise/authorization/contracts/authorization/authorization-sdk-v1.json').read_text())
+          assert sdk['properties']['principal']['properties']['actorType']['enum']==['HUMAN','SERVICE','AI_AGENT']
+          decision=sdk['x-ouf-decision']['required']
+          assert all(x in decision for x in ['decisionRef','bundleId','bundleVersion'])
+          resolver=Path('src/main/java/it/comune/trieste/ouf/semantic/api/TrustedActorResolver.java').read_text()
+          ths=Path('src/main/java/it/comune/trieste/ouf/semantic/api/SemanticTrustedHumanApi.java').read_text()
+          for actor in ['HUMAN','SERVICE','AI_AGENT']:
+              assert f'"{actor}"' in resolver
+          assert 'authorizationDecisionRef' in resolver
+          assert '"HUMAN".equals(actor.type())' in ths
+          assert 'HUMAN_USER".equals(actor.type())' not in ths
+          PY
