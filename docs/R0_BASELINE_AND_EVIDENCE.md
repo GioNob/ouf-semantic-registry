@@ -67,4 +67,24 @@ the complete Gateway APISIX dataplane.
   compatibility claim: older green peer pins must not be relabeled as all-main
   integration. R2/R6 must record the actual executed combination.
 
-The R0 closure record is appended only after CI evidence is available.
+## R0 verification record
+
+Executed Semantic commit `ce71b6d53265014f7f81c751c415b1eda9a363a3`:
+
+- [Live run 35145479786](https://github.com/GioNob/ouf-semantic-registry/actions/runs/35145479786): PASS, nine assertions; artifact 10467750046,
+  GitHub-reported SHA-256 `a3d45bf3ed7ec854815564b87508412a4f65e53de70968aa8e2c5b48ed4c30ef`.
+- [Module run 35145479760](https://github.com/GioNob/ouf-semantic-registry/actions/runs/35145479760): PASS, 44 tests with zero failures/errors/skips;
+  production packaging exclusion and non-root image checks also pass.
+- [Authorization run 35145479722](https://github.com/GioNob/ouf-semantic-registry/actions/runs/35145479722): PASS, static contract inspection only.
+- [UDP PR #22](https://github.com/GioNob/ouf-udp-object-resolution/pull/22) merged after
+  [35145601822](https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35145601822) passed all existing jobs.
+
+The common register records immutable commits, CI URLs and artifact metadata.
+Artifact digests above are reported by GitHub; no independent archive-content
+verification is claimed. CI artifacts have retention limits; preserve them in the
+release evidence store before expiry when used for acceptance.
+
+R0 closes the fixture regression and baseline bookkeeping. All 23 broader
+roadmap gap groups remain OPEN; in particular SEM-01 still requires the real
+Gateway/identity and consumer integration. This record does not claim future
+main CI results: the PR and main workflows remain the integration gates.

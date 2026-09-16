@@ -143,7 +143,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "API amministrativa versionata: authoring policy/grant e capability, lifecycle/revoca con audit, human-only ed ETag; negativi stale/actor verificati.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/src/main/java/it/comune/trieste/ouf/onboarding",
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/contracts/authorization/authorization-sdk-v1.json"
+      ]
     },
     {
       "id": "AUT-02",
@@ -173,7 +177,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "SDK Java versionato e Go conforme; loader/cache e adapter trusted nei servizi; Authorization↔UDP con mapping legacy esplicito e test comuni coarse allow/backend deny.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/src/main/java/it/comune/trieste/ouf/onboarding",
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/contracts/authorization/authorization-sdk-v1.json"
+      ]
     },
     {
       "id": "AUT-03",
@@ -203,7 +211,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Resource/DataAccessLabel, assurance, detail level e freshness governati; deny oltre max-staleness, integrità bundle, revoca e fixture allow/deny equivalenti Java/Go.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/src/main/java/it/comune/trieste/ouf/onboarding",
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/contracts/authorization/authorization-sdk-v1.json"
+      ]
     },
     {
       "id": "AUT-04",
@@ -215,17 +227,9 @@
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
       "status": "OPEN",
-      "phase": "R6",
+      "phase": "R1a",
       "dependencies": [
-        "R1a",
-        "R1b",
-        "R2a",
-        "R2b",
-        "R2c",
-        "R3",
-        "R4a",
-        "R4b",
-        "R5"
+        "R0"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
       "assessment": "AMBIENTE: selezionare/configurare scenario A/B/C, issuer/JWKS, audience, claim mapping, rotazione/revoca e identità workload (§109.5). Avviare questa dipendenza subito, senza bloccare lo sviluppo scenario-neutral.",
@@ -240,7 +244,12 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Scenario A/B/C e binding issuer/audience/JWKS/claim/workload approvati; prove reali di rotazione, revoca e identità entro R6.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/src/main/java/it/comune/trieste/ouf/onboarding",
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/contracts/authorization/authorization-sdk-v1.json"
+      ],
+      "planningNote": "Start platform binding now; representative acceptance closes in R6."
     },
     {
       "id": "ONB-01",
@@ -271,7 +280,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Worker avvia discovery sorgenti tramite Gateway, acquisisce schema/type/state e completa snapshot/callback Semantic con retry e recovery senza invocazioni Java manuali.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/docs/PET_TRACEABILITY.md",
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/docs/OPERATIONAL_AWARENESS_TRACEABILITY.md"
+      ]
     },
     {
       "id": "ONB-02",
@@ -301,7 +314,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Source ACTIVE genera prima ingestione file/PULL; exact references e ACK verificati, policy operativa consumata e riattivazione dopo drift dimostrata.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/docs/PET_TRACEABILITY.md",
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/docs/OPERATIONAL_AWARENESS_TRACEABILITY.md"
+      ]
     },
     {
       "id": "THS-01",
@@ -332,7 +349,10 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Browser THS comune con sessione/assurance/freshness, card e adapter backend owner, handoff, challenge stale e protected logs; E2E-014/016 eseguiti.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/docs/PET_TRACEABILITY.md"
+      ]
     },
     {
       "id": "ONB-03",
@@ -362,7 +382,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Catalogo configurazione e package operativo completi; Helm/network policy, upgrade N/N+1, workload PET e restore senza riattivare challenge scadute provati.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/docs/PET_TRACEABILITY.md",
+        "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/docs/OPERATIONAL_AWARENESS_TRACEABILITY.md"
+      ]
     },
     {
       "id": "ING-01",
@@ -392,7 +416,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Container avvia la source ACTIVE autonomamente con bundle esatto, preflight Semantic, raw lake, durable UDP ACK, watermark/replay e ritorno Onboarding; crash/lease recovery verificati.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RuntimePorts.java",
+        "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RunExecutionWorker.java"
+      ]
     },
     {
       "id": "ING-02",
@@ -424,7 +452,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "OA-ING-01…06: timeline, retry/dedup/misfire, attempt/nextRetryAt, retention ≥30 giorni e summary indipendente dalla pagina verificati con fault/recovery.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RuntimePorts.java",
+        "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RunExecutionWorker.java"
+      ]
     },
     {
       "id": "ING-03",
@@ -454,7 +486,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Fixture verticali per OGC API Features, GeoPackage, GeoJSON/JSON-FG, Shapefile ZIP oltre CSV/XLSX e REST/WFS; layer/CRS e limiti parser espliciti.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RuntimePorts.java",
+        "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RunExecutionWorker.java"
+      ]
     },
     {
       "id": "UDP-01",
@@ -490,7 +526,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Adapter ai bundle storici e loop resolution nel container; handoff→resolution→property/relation/spatial→serving provati nello stesso percorso con riferimenti pinned.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/docs/pet-traceability-v1.3.json",
+        "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/src/main/java/it/comune/trieste/ouf/udp/ResolutionWorker.java"
+      ]
     },
     {
       "id": "UDP-02",
@@ -527,7 +567,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Evidenza completa per i residui A42, A29/A35, A23, A15/E2E-10, A19, A21[v1.0], A06/A02 nel JSON UDP; nessuna riclassificazione per sola presenza del codice.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/docs/pet-traceability-v1.3.json",
+        "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/src/main/java/it/comune/trieste/ouf/udp/ResolutionWorker.java"
+      ]
     },
     {
       "id": "UDP-03",
@@ -571,7 +615,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "E2E-04/13/15 e A07/08/09/10/20 contro registry/Gateway reali: drift conserva storico, preflight, WFS/GIS, correlation source-serving e capacity gate.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/docs/pet-traceability-v1.3.json",
+        "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/src/main/java/it/comune/trieste/ouf/udp/ResolutionWorker.java"
+      ]
     },
     {
       "id": "SEM-01",
@@ -616,7 +664,38 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Fixture live autenticata verde in R0; poi Gateway reale e identità conformi, exact SemanticReference da Onboarding/Ingestion/UDP e ACTIVE-switch pinning/replay dimostrati.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/DiscoveryApi.java",
+        "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/TrustedActorResolver.java"
+      ],
+      "partialProgress": {
+        "scope": "R0 live fixture correction verified; real Gateway/identity and consumer integration still open",
+        "evidence": [
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "ce71b6d53265014f7f81c751c415b1eda9a363a3",
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35145479786",
+            "conclusion": "success",
+            "level": "PROCESS_INTEGRATION_WITH_TEST_IDENTITY_AND_GATEWAY_FIXTURE",
+            "test": "run-semantic-gateway-live.sh: 9 assertions; live provider, DRAFT and negative identity gates",
+            "artifactId": 10467750046,
+            "artifactDigest": "sha256:a3d45bf3ed7ec854815564b87508412a4f65e53de70968aa8e2c5b48ed4c30ef",
+            "digestSource": "GitHub Actions artifact metadata"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "ce71b6d53265014f7f81c751c415b1eda9a363a3",
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35145479760",
+            "conclusion": "success",
+            "level": "MODULE_RUNTIME_AND_CONTAINER_BUILD",
+            "test": "44 tests, 0 failures/errors/skips; production JAR excludes test identity adapter; non-root image",
+            "artifactId": 10467136804,
+            "artifactDigest": "sha256:91fdd0870351863f45b8219b4bec4e8d0a40e169547a5c950569c3d5d4ea53a7",
+            "digestSource": "GitHub Actions artifact metadata"
+          }
+        ]
+      }
     },
     {
       "id": "SEM-02",
@@ -661,7 +740,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Pause/cancel e risultati parziali, admission/fanout e limiti catalogati; startup/reference-integrity e restore reconciliation; check/recovery upstream secondo §§61/134/160.4.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/DiscoveryApi.java",
+        "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/TrustedActorResolver.java"
+      ]
     },
     {
       "id": "SEM-03",
@@ -706,7 +789,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Deliverable §§160.1/160.8–14/160.17, package Helm/GitOps e osservabilità, scansioni/SBOM/provenance, N/N+1, restore e workload 100k/1M con provider failure verificati.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/DiscoveryApi.java",
+        "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/TrustedActorResolver.java"
+      ]
     },
     {
       "id": "GW-01",
@@ -736,7 +823,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Compiler/publication/controller schedulati e deployati con APISIX/etcd reali; route/capability e business binding attraversati dal client al backend.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/docs/GATEWAY_OPERATIONAL_AWARENESS_PRODUCER_TRACEABILITY.md",
+        "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/.github/workflows/ci.yml"
+      ]
     },
     {
       "id": "GW-02",
@@ -768,7 +859,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Persistenza incidenti con HA/backup/retention dimostrati; fault APISIX/etcd/trust e recovery conservano identità incidente secondo §34 e T33.9–10.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/docs/GATEWAY_OPERATIONAL_AWARENESS_PRODUCER_TRACEABILITY.md",
+        "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/.github/workflows/ci.yml"
+      ]
     },
     {
       "id": "GW-03",
@@ -805,7 +900,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "T33.4–16, E2E-023/024: packet-level deny/SSRF/CNI, mTLS/JWKS, quorum/partition/member-loss/restore, N/N+1/drain/HPA/PDB/upload/realtime/capacity rappresentativi.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/docs/GATEWAY_OPERATIONAL_AWARENESS_PRODUCER_TRACEABILITY.md",
+        "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/.github/workflows/ci.yml"
+      ]
     },
     {
       "id": "MCP-01",
@@ -836,7 +935,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Tranche owner→Gateway→MCP complete con input/output/versione/classificazione per serving, onboarding/file/discovery/Semantic/proposal; nessun tool senza backend né protected operation esposta.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-mcp-server/tree/6980aac2e113ebbbe5f7b7329f58854d60dd6846/internal/manifest/capabilities.json",
+        "https://github.com/GioNob/ouf-mcp-server/tree/6980aac2e113ebbbe5f7b7329f58854d60dd6846/docs/MCP_OPERATIONAL_AWARENESS_AGGREGATION_TRACEABILITY.md"
+      ]
     },
     {
       "id": "MCP-02",
@@ -867,7 +970,11 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "OA-MCP-01…08/OA-CN: finestra/cursor/timeline/retry, denial/redaction/unavailable distinti, system.status dei moduli visibili e explain owner-aware.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-mcp-server/tree/6980aac2e113ebbbe5f7b7329f58854d60dd6846/internal/manifest/capabilities.json",
+        "https://github.com/GioNob/ouf-mcp-server/tree/6980aac2e113ebbbe5f7b7329f58854d60dd6846/docs/MCP_OPERATIONAL_AWARENESS_AGGREGATION_TRACEABILITY.md"
+      ]
     },
     {
       "id": "MCP-03",
@@ -897,18 +1004,63 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+      "exitCriterion": "Conformance versione MCP normativa e client SDK indipendente in CI; retention manifest snapshot coerente con invariant; package OCI/SBOM/provenance e HA/DR qualificati.",
+      "sourceReferences": [
+        "https://github.com/GioNob/ouf-mcp-server/tree/6980aac2e113ebbbe5f7b7329f58854d60dd6846/internal/manifest/capabilities.json",
+        "https://github.com/GioNob/ouf-mcp-server/tree/6980aac2e113ebbbe5f7b7329f58854d60dd6846/docs/MCP_OPERATIONAL_AWARENESS_AGGREGATION_TRACEABILITY.md"
+      ]
     }
   ],
   "r0": {
-    "status": "IN_PROGRESS",
+    "status": "CLOSED",
     "exitCriteria": [
       "Authenticated live fixture PASS including negative identity checks",
       "Semantic module CI PASS with test adapter absent from production jar",
       "Baseline references and UDP summary reconciled",
       "Versioned common register published"
     ],
-    "evidence": []
+    "evidence": [
+      {
+        "repository": "GioNob/ouf-semantic-registry",
+        "commit": "ce71b6d53265014f7f81c751c415b1eda9a363a3",
+        "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35145479786",
+        "conclusion": "success",
+        "level": "PROCESS_INTEGRATION_WITH_TEST_IDENTITY_AND_GATEWAY_FIXTURE",
+        "test": "run-semantic-gateway-live.sh: 9 assertions; live provider, DRAFT and negative identity gates",
+        "artifactId": 10467750046,
+        "artifactDigest": "sha256:a3d45bf3ed7ec854815564b87508412a4f65e53de70968aa8e2c5b48ed4c30ef",
+        "digestSource": "GitHub Actions artifact metadata"
+      },
+      {
+        "repository": "GioNob/ouf-semantic-registry",
+        "commit": "ce71b6d53265014f7f81c751c415b1eda9a363a3",
+        "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35145479760",
+        "conclusion": "success",
+        "level": "MODULE_RUNTIME_AND_CONTAINER_BUILD",
+        "test": "44 tests, 0 failures/errors/skips; production JAR excludes test identity adapter; non-root image",
+        "artifactId": 10467136804,
+        "artifactDigest": "sha256:91fdd0870351863f45b8219b4bec4e8d0a40e169547a5c950569c3d5d4ea53a7",
+        "digestSource": "GitHub Actions artifact metadata"
+      },
+      {
+        "repository": "GioNob/ouf-semantic-registry",
+        "commit": "ce71b6d53265014f7f81c751c415b1eda9a363a3",
+        "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35145479722",
+        "conclusion": "success",
+        "level": "STATIC_CONTRACT_INSPECTION",
+        "test": "Authorization Semantic SDK schema/resolver boundary inspection; not policy runtime proof"
+      },
+      {
+        "repository": "GioNob/ouf-udp-object-resolution",
+        "commit": "47f07ed4706a5f92b0b37d5eb81bcd4b5f326620",
+        "mergeCommit": "76ae6b5342a182b7e27bbaddc00f9c9c7c2794e9",
+        "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35145601822",
+        "conclusion": "success",
+        "level": "DOCUMENTATION_RECONCILIATION_WITH_EXISTING_MODULE_CI",
+        "test": "69-row traceability validation; existing runtime, DR, performance and supply-chain CI"
+      }
+    ],
+    "closureScope": "R0 regression and baseline bookkeeping only; all 23 broader gap groups remain OPEN. Evidence pins the executed code, not future main combinations."
   },
   "resolvedDecisions": [
     {
