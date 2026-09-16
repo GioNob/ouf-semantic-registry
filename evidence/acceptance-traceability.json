@@ -1,25 +1,60 @@
 {
   "schema_version": "1.0",
   "module": "OUF Semantic Model Registry",
-  "specification": "OUF Semantic Model Registry v1.4",
+  "specification": "OUF Semantic Model Registry v1.3",
   "scope": "single-module executable verification",
   "claims_pairwise_pass": false,
   "capabilities": [
-    {"capability":"artifact lifecycle and optimistic ETag","evidence":"HttpApiRuntimeTest, DatabaseConcurrencyRuntimeTest"},
-    {"capability":"validation gate and human approval","evidence":"HttpApiRuntimeTest, DatabaseBehaviorRuntimeTest"},
-    {"capability":"atomic idempotent publication","evidence":"DatabaseBehaviorRuntimeTest, DatabaseConcurrencyRuntimeTest"},
-    {"capability":"discovery lease and crash recovery","evidence":"DatabaseConcurrencyRuntimeTest"},
-    {"capability":"schema.gov.it gateway boundary","evidence":"SchemaGovProviderTest, BoundedGatewayClientTest, SchemaGovProviderIntegrationTest"},
-    {"capability":"candidate adoption and immutable source snapshot","evidence":"DatabaseBehaviorRuntimeTest"},
-    {"capability":"bounded local RDF parsing","evidence":"SafeRdfParserTest"},
-    {"capability":"RDF interchange and identity binding","evidence":"RdfInterchangeCodecTest, HttpApiRuntimeTest"},
-    {"capability":"frozen JSON contract inventory","evidence":"ContractInventoryTest"},
-    {"capability":"PostgreSQL 17 and Flyway schema","evidence":"Postgres17RuntimeTest"},
-    {"capability":"health, correlation and bounded-cardinality metrics","evidence":"ObservabilityRuntimeTest"}
+    {
+      "capability": "artifact lifecycle and optimistic ETag",
+      "evidence": "HttpApiRuntimeTest, DatabaseConcurrencyRuntimeTest"
+    },
+    {
+      "capability": "validation gate and human approval",
+      "evidence": "HttpApiRuntimeTest, DatabaseBehaviorRuntimeTest"
+    },
+    {
+      "capability": "atomic idempotent publication",
+      "evidence": "DatabaseBehaviorRuntimeTest, DatabaseConcurrencyRuntimeTest"
+    },
+    {
+      "capability": "discovery lease and crash recovery",
+      "evidence": "DatabaseConcurrencyRuntimeTest"
+    },
+    {
+      "capability": "schema.gov.it gateway boundary",
+      "evidence": "SchemaGovProviderTest, BoundedGatewayClientTest, SchemaGovProviderIntegrationTest"
+    },
+    {
+      "capability": "candidate adoption and immutable source snapshot",
+      "evidence": "DatabaseBehaviorRuntimeTest"
+    },
+    {
+      "capability": "bounded local RDF parsing",
+      "evidence": "SafeRdfParserTest"
+    },
+    {
+      "capability": "RDF interchange and identity binding",
+      "evidence": "RdfInterchangeCodecTest, HttpApiRuntimeTest"
+    },
+    {
+      "capability": "frozen JSON contract inventory",
+      "evidence": "ContractInventoryTest"
+    },
+    {
+      "capability": "PostgreSQL 17 and Flyway schema",
+      "evidence": "Postgres17RuntimeTest"
+    },
+    {
+      "capability": "health, correlation and bounded-cardinality metrics",
+      "evidence": "ObservabilityRuntimeTest"
+    }
   ],
   "environment_required": [
     "live Urban API Gateway routes for schema.gov.it",
     "pairwise execution with versioned peer images",
     "production IAM, network policy, SIEM and Kubernetes probes"
-  ]
+  ],
+  "reality_baseline": "1.7",
+  "cross_module_matrix": "1.7"
 }

@@ -49,7 +49,7 @@ for _ in $(seq 1 60); do
 done
 docker exec "$postgres_name" pg_isready -U ouf_semantic -d ouf_semantic >/dev/null
 
-docker build -t ouf-semantic-pairwise "$repo_dir" >/dev/null
+docker build -f "$repo_dir/pairwise/semantic-fixture/Dockerfile" -t ouf-semantic-pairwise "$repo_dir" >/dev/null
 docker build -t ouf-gateway-pairwise "$repo_dir/pairwise/gateway-fixture" >/dev/null
 
 docker run -d --name "$gateway_name" --network host \
@@ -59,27 +59,37 @@ docker run -d --name "$gateway_name" --network host \
   ouf-gateway-pairwise >/dev/null
 retry_http http://127.0.0.1:18090/actuator/health
 
+export OUF_PAIRWISE_TOKEN="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
 docker run -d --name "$semantic_name" --network host \
   -e PORT=18080 \
+  -e OUF_PAIRWISE_TOKEN \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://127.0.0.1:55432/ouf_semantic \
   -e SPRING_DATASOURCE_USERNAME=ouf_semantic \
   -e SPRING_DATASOURCE_PASSWORD=ouf_semantic \
   -e OUF_SCHEMA_GOV_ENABLED=true \
   -e OUF_SCHEMA_GOV_GATEWAY_BASE_URL=http://127.0.0.1:18090 \
   -e OUF_DISCOVERY_WORKER_ENABLED=true \
-  -e OUF_DISCOVERY_WORKER_DELAY_MS=200 \
+  -e OUF_DISCOVERY_WORKER_DELAY=200ms \
   ouf-semantic-pairwise >/dev/null
 retry_http http://127.0.0.1:18080/actuator/health
 
+# Negative cases must fail before any discovery/adoption side effect.
+status=$(curl --silent --show-error --max-time 10 -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -H 'X-OUF-Subject: forged-human' --data '{}' http://127.0.0.1:18080/api/semantic/v1/discovery-requests)
+test "$status" = 401
+status=$(curl --silent --show-error --max-time 10 -o /dev/null -w '%{http_code}' -X POST -H 'Authorization: Bearer invalid' -H 'Content-Type: application/json' --data '{}' http://127.0.0.1:18080/api/semantic/v1/discovery-requests)
+test "$status" = 401
+status=$(curl --silent --show-error --max-time 10 -o /dev/null -w '%{http_code}' -X POST -H "Authorization: Bearer $OUF_PAIRWISE_TOKEN" -H 'Content-Type: application/json' --data '{}' http://127.0.0.1:18080/api/trusted-human/v1/semantic-approval-challenges/00000000-0000-0000-0000-000000000000/decision)
+test "$status" = 403
+
 request_json=$(curl --fail --silent --show-error --max-time 10 \
-  -H 'Content-Type: application/json' -H 'X-OUF-Subject: pairwise-live-test' \
+  -H 'Content-Type: application/json' -H "Authorization: Bearer $OUF_PAIRWISE_TOKEN" \
   --data '{"requestedArtifactType":"CLASS","intent":"Address","preferredLanguages":["en","it"]}' \
   http://127.0.0.1:18080/api/semantic/v1/discovery-requests)
 request_id=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["requestId"])' <<<"$request_json")
 
 candidates='[]'
 for _ in $(seq 1 90); do
-  candidates=$(curl --fail --silent --show-error --max-time 5 \
+  candidates=$(curl --fail --silent --show-error --max-time 5 -H "Authorization: Bearer $OUF_PAIRWISE_TOKEN" \
     "http://127.0.0.1:18080/api/semantic/v1/discovery-requests/$request_id/candidates")
   python3 -c 'import json,sys; raise SystemExit(0 if json.load(sys.stdin) else 1)' <<<"$candidates" && break
   sleep 1
@@ -87,34 +97,39 @@ done
 candidate_id=$(python3 -c 'import json,sys; a=json.load(sys.stdin); x=next(v for v in a if v["canonical_uri"]=="https://w3id.org/italia/onto/CLV/Address" and v["provider_id"]=="SCHEMA_GOV_IT"); print(x["candidate_id"])' <<<"$candidates")
 
 adoption=$(curl --fail --silent --show-error --max-time 10 \
-  -H 'Content-Type: application/json' -H 'X-OUF-Subject: pairwise-live-test' \
+  -H 'Content-Type: application/json' -H "Authorization: Bearer $OUF_PAIRWISE_TOKEN" \
   --data '{"semanticId":"https://w3id.org/italia/onto/CLV/Address","namespace":"https://w3id.org/italia/onto/CLV/","localName":"Address","ownerRef":"schema.gov.it","authorityRef":"Catalogo Nazionale Dati"}' \
   "http://127.0.0.1:18080/api/semantic/v1/discovery-requests/$request_id/candidates/$candidate_id:adopt")
-artifact_id=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["artifactId"])' <<<"$adoption")
-artifact=$(curl --fail --silent --show-error --max-time 10 "http://127.0.0.1:18080/api/semantic/v1/artifacts/$artifact_id")
+artifact_id=$(python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["status"]=="DRAFT"; print(d["artifactId"])' <<<"$adoption")
+artifact=$(curl --fail --silent --show-error --max-time 10 -H "Authorization: Bearer $OUF_PAIRWISE_TOKEN" "http://127.0.0.1:18080/api/semantic/v1/artifacts/$artifact_id")
 python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["semantic_id"]=="https://w3id.org/italia/onto/CLV/Address"' <<<"$artifact"
 
 cat >"$evidence_dir/results.tap" <<'TAP'
 TAP version 13
-1..6
+1..9
 ok 1 - official schema.gov.it SPARQL endpoint reached live
 ok 2 - Gateway fixture healthy as separate process
 ok 3 - Semantic Registry healthy with PostgreSQL 17
 ok 4 - discovery traversed Semantic -> Gateway -> schema.gov.it SPARQL
 ok 5 - RDF CONSTRUCT traversed Gateway and candidate was persisted
-ok 6 - live candidate was adopted and read back
+ok 6 - live candidate was adopted as DRAFT and read back
+ok 7 - missing credentials and forged identity header rejected
+ok 8 - invalid credentials rejected
+ok 9 - service identity denied human approval
 TAP
 python3 - "$evidence_dir/summary.json" "$request_id" "$candidate_id" "$artifact_id" <<'PY'
 import json,sys,datetime
 out={
   'schemaVersion':'1.0', 'pairwiseId':'semantic-gateway-live-v1',
-  'status':'PASS', 'tests':{'catalogued':6,'executed':6,'passed':6,'failed':0,'skipped':0},
+  'status':'PASS', 'tests':{'catalogued':9,'executed':9,'passed':9,'failed':0,'skipped':0},
   'modules':['Semantic Model Registry','minimal Gateway fixture'],
   'runtime':{'java':'21','postgresql':'17','deployment':'separate containers'},
   'externalDependency':{'name':'schema.gov.it','mode':'LIVE','endpoint':'https://schema.gov.it/sparql'},
   'requestId':sys.argv[2], 'candidateId':sys.argv[3], 'artifactId':sys.argv[4],
   'productionReady':False,
-  'limitations':['minimal Gateway fixture, not the full Urban API Gateway','no Authorization/IAM','no Kubernetes or HA test'],
+  'identityMode':'TEST_ONLY_AUTHENTICATED_SERVICE',
+  'normativeBaseline':'Reality Baseline v1.7 / Semantic PET v1.3 / Matrix v1.7',
+  'limitations':['minimal Gateway fixture, not the full Urban API Gateway','test-only ephemeral service credential and fixed bounded policy; no production IAM/SSO','no Kubernetes or HA test'],
   'completedAt':datetime.datetime.now(datetime.timezone.utc).isoformat()
 }
 open(sys.argv[1],'w').write(json.dumps(out,indent=2,ensure_ascii=False)+'\n')
