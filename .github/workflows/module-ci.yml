@@ -48,8 +48,17 @@ jobs:
           cache: maven
       - name: Verify frozen source checksums
         run: sha256sum -c evidence/source-checksums.txt
+      - name: Validate cross-module evidence register
+        run: python3 scripts/validate-pet-register.py
       - name: Compile, test and package with bounded Maven execution
         run: timeout --signal=TERM --kill-after=30s 20m mvn -B -ntp clean verify
+      - name: Assert test identity adapter is absent from production artifact
+        run: |
+          jar tf target/semantic-registry-*.jar > target/production-jar-entries.txt
+          if grep -q "it/comune/trieste/ouf/pairwise/" target/production-jar-entries.txt; then
+            echo "Test identity adapter leaked into production artifact" >&2
+            exit 1
+          fi
       - name: Record runner evidence
         if: always()
         env:

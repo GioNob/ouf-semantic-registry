@@ -1,6 +1,7 @@
 name: Semantic Gateway live pairwise
 
 on:
+  pull_request:
   workflow_dispatch:
   push:
     branches: [main]
@@ -9,6 +10,7 @@ on:
       - 'Dockerfile'
       - 'pom.xml'
       - 'pairwise/gateway-fixture/**'
+      - 'pairwise/semantic-fixture/**'
       - 'pairwise/fixtures/semantic-gateway-live-v1/**'
       - 'pairwise/run-semantic-gateway-live.sh'
       - '.github/workflows/semantic-gateway-live-pairwise.yml'

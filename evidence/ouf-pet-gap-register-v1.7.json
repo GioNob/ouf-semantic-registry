@@ -1,0 +1,922 @@
+{
+  "schemaVersion": "1.0",
+  "normativeAuthority": {
+    "package": "OUF_Reality_Baseline_Package_v1_7.zip",
+    "packageSha256": "e63df67e8817eec38a9d4b3eb736b020f693b932f3360dc02f4555330f2201ce",
+    "blueprint": "0.3",
+    "matrix": "1.7",
+    "terminologyNotice": "1.1"
+  },
+  "scope": "23 roadmap gap groups; not a complete criterion-by-criterion PET acceptance catalog. Semantic hosts this coordination overlay without changing module ownership.",
+  "rules": [
+    "PET and Matrix govern implementation; green CI does not amend requirements.",
+    "A resolved decision is reopened only on new repository or CI evidence.",
+    "Static inspection, module tests, process integration and representative acceptance are distinct evidence levels.",
+    "Closure requires immutable commit plus successful CI and test/artifact reference covering the entire criterion."
+  ],
+  "auditSnapshot": [
+    {
+      "repo": "ouf-semantic-registry",
+      "sha": "353d2fc821035c5c3db1c2b142aeb9e3800ec0e3",
+      "runs": [
+        {
+          "name": "Authorization Semantic pairwise",
+          "id": 35142826747,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826747"
+        },
+        {
+          "name": "Semantic Registry module CI",
+          "id": 35142826809,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826809"
+        },
+        {
+          "name": "Semantic Gateway live pairwise",
+          "id": 35142826742,
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826742"
+        }
+      ]
+    },
+    {
+      "repo": "ouf-mcp-server",
+      "sha": "6980aac2e113ebbbe5f7b7329f58854d60dd6846",
+      "runs": [
+        {
+          "name": "MCP evidence and late recovery",
+          "id": 35122560464,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35122560464"
+        }
+      ]
+    },
+    {
+      "repo": "ouf-ingestion-runtime",
+      "sha": "e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2",
+      "runs": [
+        {
+          "name": "Ingestion Runtime module CI",
+          "id": 35129774169,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35129774169"
+        }
+      ]
+    },
+    {
+      "repo": "ouf-api-gateway",
+      "sha": "8a1757e5879f73ee60c2786a7f5e2b325741c940",
+      "runs": [
+        {
+          "name": "Gateway control-plane and MCP mediation",
+          "id": 35123350078,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-api-gateway/actions/runs/35123350078"
+        }
+      ]
+    },
+    {
+      "repo": "ouf-udp-object-resolution",
+      "sha": "a18e1c1d1f6add41bb11c975e5f2487f352d1bdb",
+      "runs": [
+        {
+          "name": "UDP Object Resolution module CI",
+          "id": 34886224933,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/34886224933"
+        },
+        {
+          "name": "UDP Object Resolution module CI",
+          "id": 34885645187,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/34885645187"
+        }
+      ]
+    },
+    {
+      "repo": "ouf-source-onboarding",
+      "sha": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
+      "runs": [
+        {
+          "name": "Source Onboarding module CI",
+          "id": 35121897270,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35121897270"
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "id": "AUT-01",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Authorization",
+      "petVersion": "1.5",
+      "normativeReferences": [
+        "§§4"
+      ],
+      "ownerRepository": "GioNob/ouf-source-onboarding",
+      "status": "OPEN",
+      "phase": "R1b",
+      "dependencies": [
+        "R1a"
+      ],
+      "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
+      "assessment": "CODICE: completare il piano amministrativo. Il controller Authorization esposto distribuisce il bundle ACTIVE; non costituisce il CRUD governato di policy/grant, registrazione capability, authoring con ETag e workflow amministrativo human-only richiesti da §§4.3, 109.1–109.4. I metodi Java di publish/activate non sostituiscono l'API amministrativa e i suoi controlli. Uscita: OpenAPI admin versionata, lifecycle e revoca con audit, stale ETag e actor negativi testati.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Source Onboarding module CI",
+          "id": 35121897270,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35121897270"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "AUT-02",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Authorization",
+      "petVersion": "1.5",
+      "normativeReferences": [
+        "§§109",
+        "§160"
+      ],
+      "ownerRepository": "GioNob/ouf-source-onboarding",
+      "status": "OPEN",
+      "phase": "R1a",
+      "dependencies": [
+        "R0"
+      ],
+      "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
+      "assessment": "CODICE/INTEGRAZIONE: shared SDK e enforcement nei servizi. Il contratto JSON esiste, ma la valutazione Java è nel package Onboarding e MCP ne ha un evaluator Go. Semantic e Ingestion consumano attributi trusted e capability; questo non dimostra lo SDK locale sui bundle previsto da Authorization §§109.1–109.3 e Semantic §160.7. Occorre artifact Java versionato, implementazione Go semanticamente conforme, loader/cache e security adapter nei servizi, con test comuni. Per UDP serve anche il pairwise Authorization e l'adattamento esplicito dei vocaboli legacy: `TrustedHumanContext` richiede ancora `HUMAN_USER`, mentre il contratto consumer recente usa `HUMAN/SERVICE/AI_AGENT`. Non rinominare alla cieca i dati storici.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Source Onboarding module CI",
+          "id": 35121897270,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35121897270"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "AUT-03",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Authorization",
+      "petVersion": "1.5",
+      "normativeReferences": [
+        "§§36",
+        "§109"
+      ],
+      "ownerRepository": "GioNob/ouf-source-onboarding",
+      "status": "OPEN",
+      "phase": "R1b",
+      "dependencies": [
+        "R1a"
+      ],
+      "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
+      "assessment": "CODICE: completare policy e freshness. Il motore attuale verifica tenant, capability, actor, scope, soggetto/service principal, organizzazione e validità temporale del grant. Non realizza da solo tutti i vincoli di risorsa, DataAccessLabel, assurance/step-up e permitted detail level/visibility OA previsti da §§36.10, 109.2 e 34.2. La cache MCP conserva il last-known-good in caso di errore ma non applica `max-staleness` al momento della decisione (§109.6); la validità dei grant è un controllo diverso. Uscita: policy di freschezza governata, fail-closed oltre soglia, hash/integrità bundle verificabili, medesimi fixture allow/deny tra linguaggi, coarse allow/backend deny e revoca dimostrati.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Source Onboarding module CI",
+          "id": 35121897270,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35121897270"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "AUT-04",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Authorization",
+      "petVersion": "1.5",
+      "normativeReferences": [
+        "§109"
+      ],
+      "ownerRepository": "GioNob/ouf-source-onboarding",
+      "status": "OPEN",
+      "phase": "R6",
+      "dependencies": [
+        "R1a",
+        "R1b",
+        "R2a",
+        "R2b",
+        "R2c",
+        "R3",
+        "R4a",
+        "R4b",
+        "R5"
+      ],
+      "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
+      "assessment": "AMBIENTE: selezionare/configurare scenario A/B/C, issuer/JWKS, audience, claim mapping, rotazione/revoca e identità workload (§109.5). Avviare questa dipendenza subito, senza bloccare lo sviluppo scenario-neutral.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Source Onboarding module CI",
+          "id": 35121897270,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35121897270"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "ONB-01",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Onboarding/THS",
+      "petVersion": "1.6",
+      "normativeReferences": [
+        "§§109",
+        "§109"
+      ],
+      "ownerRepository": "GioNob/ouf-source-onboarding",
+      "status": "OPEN",
+      "phase": "R4b",
+      "dependencies": [
+        "R2a",
+        "R2b"
+      ],
+      "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
+      "assessment": "CODICE/INTEGRAZIONE: completare discovery tecnica automatica attraverso Gateway. `DiscoveryService` gestisce start/claim/complete e snapshot, ma non è presente un worker di discovery sorgenti equivalente ai worker schedulati file-profile ed export. Collegare fetch schema/type/state, retry/recovery e callback Semantic, senza confondere registrazione di uno snapshot con acquisizione automatica. PET §§109.4–109.5, 109.9 e gate §109.17.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Source Onboarding module CI",
+          "id": 35121897270,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35121897270"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "ONB-02",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Onboarding/THS",
+      "petVersion": "1.6",
+      "normativeReferences": [
+        "§37 e §109"
+      ],
+      "ownerRepository": "GioNob/ouf-source-onboarding",
+      "status": "OPEN",
+      "phase": "R2a",
+      "dependencies": [
+        "R1a",
+        "R1b"
+      ],
+      "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
+      "assessment": "INTEGRAZIONE: ACTIVE bundle → proiezione Gateway → compatibilità Ingestion → prima ingestione file o PULL. Verificare exact references, acknowledgement e riattivazione dopo schema drift; la policy operativa va realmente consumata dall'Ingestion, non soltanto serializzata. PET §37 e §109.17; OUF-E2E-001/017/019/020.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Source Onboarding module CI",
+          "id": 35121897270,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35121897270"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "THS-01",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Onboarding/THS",
+      "petVersion": "1.6",
+      "normativeReferences": [
+        "§§101–106, 109"
+      ],
+      "ownerRepository": "GioNob/ouf-source-onboarding",
+      "status": "OPEN",
+      "phase": "R4a",
+      "dependencies": [
+        "R1a",
+        "R2a",
+        "R2b"
+      ],
+      "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
+      "assessment": "CODICE/INTEGRAZIONE: realizzare la superficie browser fiduciaria comune e i relativi adapter ai backend owner. Il repository dichiara il browser shell delegato; nessun frontend THS è stato trovato nei sei repository. Completare card cross-module, sessione umana, assurance/freshness, stale challenge e handoff di approvazione; collegare il log store condiviso oltre l'adapter audit Onboarding. Il frontend amministrativo generico resta opzionale, la THS prevista dal PET no. Riferimenti §§101–106, 109.1 e OUF-E2E-014/016.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Source Onboarding module CI",
+          "id": 35121897270,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35121897270"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "ONB-03",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Onboarding/THS",
+      "petVersion": "1.6",
+      "normativeReferences": [
+        "§§109"
+      ],
+      "ownerRepository": "GioNob/ouf-source-onboarding",
+      "status": "OPEN",
+      "phase": "R5",
+      "dependencies": [
+        "R4a",
+        "R4b"
+      ],
+      "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
+      "assessment": "CODICE/EVIDENZA/AMBIENTE: configuration catalog completo, packaging Helm/NetworkPolicy, upgrade N/N+1, capacity fixture e restore THS con challenge scadute non riattivate. Mancano nel repository gli artefatti operativi completi richiesti da §§109.10–109.16; non sono tutte semplici coordinate esterne. Profilo normativo: 1.000 source, 10.000 type, 500.000 field, concorrenza amministrativa/job dichiarata dal PET.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Source Onboarding module CI",
+          "id": 35121897270,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35121897270"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "ING-01",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Ingestion",
+      "petVersion": "1.3",
+      "normativeReferences": [
+        "§§21, 32–37, 80–89, 128 e 139"
+      ],
+      "ownerRepository": "GioNob/ouf-ingestion-runtime",
+      "status": "OPEN",
+      "phase": "R2a",
+      "dependencies": [
+        "R1a",
+        "R1b"
+      ],
+      "baselineCommit": "e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2",
+      "assessment": "CODICE/INTEGRAZIONE, blocco della catena: collegare gli adapter di produzione per bundle ACTIVE, Semantic preflight, Data Lake, durable handoff UDP, replay e ritorno Onboarding. `RunCoordinator`, `RunExecutionWorker`, `OutboxDispatcher` e `ReplayWorker` sono condizionati alla presenza di port; non risultano bean di produzione per l'intera composizione né un loop schedulato che invochi questi metodi. `@EnableScheduling` da solo non avvia l'ingestion. I test costruiscono percorsi eseguibili ma non dimostrano che il container confezionato li avvii. Uscita: una source ACTIVE viene acquisita senza chiamate manuali ai metodi Java, ACK e watermark rispettano i vincoli, restart e lease recovery provati. PET §§21, 32–37, 80–89, 128 e 139.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Ingestion Runtime module CI",
+          "id": 35129774169,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35129774169"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "ING-02",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Ingestion",
+      "petVersion": "1.3",
+      "normativeReferences": [
+        "§46",
+        "§6"
+      ],
+      "ownerRepository": "GioNob/ouf-ingestion-runtime",
+      "status": "OPEN",
+      "phase": "R3",
+      "dependencies": [
+        "R1a",
+        "R2a",
+        "R2b"
+      ],
+      "baselineCommit": "e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2",
+      "assessment": "CODICE/INTEGRAZIONE: chiudere il producer Operational Awareness. La proiezione corrente legge `runtime_issue` e traduce OPEN/altri stati in OPEN/RESOLVED. Non implementa l'intera timeline RETRY_WAIT/RECOVERING/RESOLVED, dedup correlato, misfire, attempt count/nextRetryAt e retention governata ≥30 giorni. Inoltre `summary` conta gli OPEN nella lista limitata: occorre impedire HEALTHY quando incidenti aperti sono fuori dalla pagina/finestra. Query e riepilogo devono avere semantiche distinte e complete. Riferimenti §46.1–46.5, OA-ING-01…06, Matrix §6.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Ingestion Runtime module CI",
+          "id": 35129774169,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35129774169"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "ING-03",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Ingestion",
+      "petVersion": "1.3",
+      "normativeReferences": [
+        "§143"
+      ],
+      "ownerRepository": "GioNob/ouf-ingestion-runtime",
+      "status": "OPEN",
+      "phase": "R4b",
+      "dependencies": [
+        "R2a",
+        "R2b"
+      ],
+      "baselineCommit": "e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2",
+      "assessment": "CODICE/EVIDENZA: coprire i profili GIS richiesti dal §143.2 oltre REST/WFS e managed CSV/XLSX: OGC API Features, GeoPackage, GeoJSON/JSON-FG e Shapefile ZIP, con layer/CRS e limiti di parser espliciti. Un adapter JSON generico non dimostra automaticamente conformità a questi formati. Procedere per fixture verticali, senza introdurre un nuovo runtime non richiesto.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Ingestion Runtime module CI",
+          "id": 35129774169,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35129774169"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "UDP-01",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "UDP",
+      "petVersion": "1.3",
+      "normativeReferences": [
+        "§§95–97, 109"
+      ],
+      "ownerRepository": "GioNob/ouf-udp-object-resolution",
+      "status": "OPEN",
+      "phase": "R2b",
+      "dependencies": [
+        "R2a"
+      ],
+      "baselineCommit": "a18e1c1d1f6add41bb11c975e5f2487f352d1bdb",
+      "assessment": "CODICE/INTEGRAZIONE: collegare configuration ports ai bundle storici esatti e avviare il resolution worker nel runtime. `ResolutionWorker` è condizionato a due port di configurazione, senza adapter bean/loop di produzione individuati. Dimostrare poi nel medesimo percorso resolution, proprietà, relazioni e spatial: test separati dei materializer non bastano. PET §§95–97, 109.6–109.7.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "UDP Object Resolution module CI",
+          "id": 34886224933,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/34886224933"
+        },
+        {
+          "name": "UDP Object Resolution module CI",
+          "id": 34885645187,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/34885645187"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "UDP-02",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "UDP",
+      "petVersion": "1.3",
+      "normativeReferences": [
+        "PET UDP v1.3; criteria and IDs cited in assessment"
+      ],
+      "ownerRepository": "GioNob/ouf-udp-object-resolution",
+      "status": "OPEN",
+      "phase": "R4b",
+      "dependencies": [
+        "R2a",
+        "R2b"
+      ],
+      "baselineCommit": "a18e1c1d1f6add41bb11c975e5f2487f352d1bdb",
+      "assessment": "CODICE/EVIDENZA: chiudere i residui espliciti del registro attuale: cleanup globale query_budget e prova bloat/lock (A42); progressive pruning e protezione ingestion/current read sotto carico agentico (A29/A35); history/asOf/lineage da cold storage (A23); limiti graph completi (A15/E2E-10); N/N+1 (A19); concorrenza materializzazione/merge (A21 v1.0); validTo e non-triplicazione (A06/A02).",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "UDP Object Resolution module CI",
+          "id": 34886224933,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/34886224933"
+        },
+        {
+          "name": "UDP Object Resolution module CI",
+          "id": 34885645187,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/34885645187"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "UDP-03",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "UDP",
+      "petVersion": "1.3",
+      "normativeReferences": [
+        "PET UDP v1.3; criteria and IDs cited in assessment"
+      ],
+      "ownerRepository": "GioNob/ouf-udp-object-resolution",
+      "status": "OPEN",
+      "phase": "R6",
+      "dependencies": [
+        "R1a",
+        "R1b",
+        "R2a",
+        "R2b",
+        "R2c",
+        "R3",
+        "R4a",
+        "R4b",
+        "R5"
+      ],
+      "baselineCommit": "a18e1c1d1f6add41bb11c975e5f2487f352d1bdb",
+      "assessment": "INTEGRAZIONE/EVIDENZA: breaking drift senza perdita dello storico, preflight contro registry reali, WFS conversazionale/GIS statico, source-to-serving correlation e capacity gate per nuove fonti (E2E-04/13/15, A07/08/09/10/20).",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "UDP Object Resolution module CI",
+          "id": 34886224933,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/34886224933"
+        },
+        {
+          "name": "UDP Object Resolution module CI",
+          "id": 34885645187,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/34885645187"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "SEM-01",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Semantic",
+      "petVersion": "1.3",
+      "normativeReferences": [
+        "§§133–136, 160"
+      ],
+      "ownerRepository": "GioNob/ouf-semantic-registry",
+      "status": "OPEN",
+      "phase": "R2c",
+      "dependencies": [
+        "R1a",
+        "R2a",
+        "R2b"
+      ],
+      "baselineCommit": "353d2fc821035c5c3db1c2b142aeb9e3800ec0e3",
+      "assessment": "INTEGRAZIONE: correggere il live pairwise e successivamente provarlo contro Gateway e identità conformi. Agganciare Onboarding/Ingestion/UDP agli exact SemanticReference; non basta il test Authorization basato su ispezione di schema e stringhe del resolver. PET §§133–136, 160.7, 160.15.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Authorization Semantic pairwise",
+          "id": 35142826747,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826747"
+        },
+        {
+          "name": "Semantic Registry module CI",
+          "id": 35142826809,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826809"
+        },
+        {
+          "name": "Semantic Gateway live pairwise",
+          "id": 35142826742,
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826742"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "SEM-02",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Semantic",
+      "petVersion": "1.3",
+      "normativeReferences": [
+        "§160",
+        "§§61/134, distinguendo notice/proposal già presenti dalle operazioni di check/recovery ancora da completare"
+      ],
+      "ownerRepository": "GioNob/ouf-semantic-registry",
+      "status": "OPEN",
+      "phase": "R4b",
+      "dependencies": [
+        "R2a",
+        "R2b"
+      ],
+      "baselineCommit": "353d2fc821035c5c3db1c2b142aeb9e3800ec0e3",
+      "assessment": "CODICE/EVIDENZA: chiudere pause/cancel e partial-result semantics dei job; admission per classe/per-provider, fan-out, parser/time/size e publication limits nel configuration catalog; startup/reference-integrity e restore reconciliation. L'API discovery attuale espone creazione, candidates, adoption e providers, senza coprire tutto §160.4. Verificare separatamente la completezza dell'upstream lifecycle §§61/134, distinguendo notice/proposal già presenti dalle operazioni di check/recovery ancora da completare.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Authorization Semantic pairwise",
+          "id": 35142826747,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826747"
+        },
+        {
+          "name": "Semantic Registry module CI",
+          "id": 35142826809,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826809"
+        },
+        {
+          "name": "Semantic Gateway live pairwise",
+          "id": 35142826742,
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826742"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "SEM-03",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Semantic",
+      "petVersion": "1.3",
+      "normativeReferences": [
+        "§§160",
+        "§160"
+      ],
+      "ownerRepository": "GioNob/ouf-semantic-registry",
+      "status": "OPEN",
+      "phase": "R5",
+      "dependencies": [
+        "R4a",
+        "R4b"
+      ],
+      "baselineCommit": "353d2fc821035c5c3db1c2b142aeb9e3800ec0e3",
+      "assessment": "CODICE/EVIDENZA/AMBIENTE: Helm/GitOps, dashboard/alert, runbook e configuration reference, capability/job schema e release package; upgrade N/N+1, security scans/SBOM/provenance, restore e profilo 100k artefatti/1M concept con isolamento provider failure. Sono deliverable obbligatori §§160.1, 160.8–160.14 e DoD §160.17 non coperti dalla sola build Maven/container attuale.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Authorization Semantic pairwise",
+          "id": 35142826747,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826747"
+        },
+        {
+          "name": "Semantic Registry module CI",
+          "id": 35142826809,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826809"
+        },
+        {
+          "name": "Semantic Gateway live pairwise",
+          "id": 35142826742,
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35142826742"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "GW-01",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Gateway",
+      "petVersion": "1.5",
+      "normativeReferences": [
+        "PET Gateway v1.5; criteria and IDs cited in assessment"
+      ],
+      "ownerRepository": "GioNob/ouf-api-gateway",
+      "status": "OPEN",
+      "phase": "R2a",
+      "dependencies": [
+        "R1a",
+        "R1b"
+      ],
+      "baselineCommit": "8a1757e5879f73ee60c2786a7f5e2b325741c940",
+      "assessment": "INTEGRAZIONE/CODICE: esercitare compiler/publication/controller con APISIX ed etcd reali, con entrypoint e scheduling/deployment operativo del control plane. Oggi la CI principale esegue Python/pytest e compile config; non avvia la topologia APISIX/etcd. Implementazioni dei port e manifest non sono prova del dataplane. Collegare anche i binding business mancanti man mano che si espande il catalogo.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Gateway control-plane and MCP mediation",
+          "id": 35123350078,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-api-gateway/actions/runs/35123350078"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "GW-02",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Gateway",
+      "petVersion": "1.5",
+      "normativeReferences": [
+        "§34 e T33",
+        "§6"
+      ],
+      "ownerRepository": "GioNob/ouf-api-gateway",
+      "status": "OPEN",
+      "phase": "R3",
+      "dependencies": [
+        "R1a",
+        "R2a",
+        "R2b"
+      ],
+      "baselineCommit": "8a1757e5879f73ee60c2786a7f5e2b325741c940",
+      "assessment": "CODICE/AMBIENTE: portare la persistenza incidenti dal riferimento SQLite a un backend di produzione coerente con HA, backup e retention, oppure produrre una soluzione governata che dimostri tali requisiti. Verificare fault reali APISIX/etcd/trust e recovery stesso incidente. Riferimenti PET §34 e T33.9–T33.10; Matrix §6.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Gateway control-plane and MCP mediation",
+          "id": 35123350078,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-api-gateway/actions/runs/35123350078"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "GW-03",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "Gateway",
+      "petVersion": "1.5",
+      "normativeReferences": [
+        "PET Gateway v1.5; criteria and IDs cited in assessment"
+      ],
+      "ownerRepository": "GioNob/ouf-api-gateway",
+      "status": "OPEN",
+      "phase": "R6",
+      "dependencies": [
+        "R1a",
+        "R1b",
+        "R2a",
+        "R2b",
+        "R2c",
+        "R3",
+        "R4a",
+        "R4b",
+        "R5"
+      ],
+      "baselineCommit": "8a1757e5879f73ee60c2786a7f5e2b325741c940",
+      "assessment": "AMBIENTE/EVIDENZA: prove packet-level default deny e bypass southbound, FQDN/DNS rebinding sul CNI scelto, mTLS/JWKS, etcd quorum/partition/member-loss/restore, rolling N/N+1, drain/HPA/PDB, upload/realtime e capacity. T33.4–T33.16 e OUF-E2E-023/024. Non introdurre un bypass per rendere verde un test.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "Gateway control-plane and MCP mediation",
+          "id": 35123350078,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-api-gateway/actions/runs/35123350078"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "MCP-01",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "MCP Go",
+      "petVersion": "1.4",
+      "normativeReferences": [
+        "§§91–96, 114, 122 e OUF-E2E-022"
+      ],
+      "ownerRepository": "GioNob/ouf-mcp-server",
+      "status": "OPEN",
+      "phase": "R4a",
+      "dependencies": [
+        "R1a",
+        "R2a",
+        "R2b"
+      ],
+      "baselineCommit": "6980aac2e113ebbbe5f7b7329f58854d60dd6846",
+      "assessment": "CODICE/INTEGRAZIONE: completare la proiezione del catalogo owner. Il manifest attuale registra sette tool, di cui sei OA e `urban.object.related_search`, più un descriptor human-only non esposto. Non copre ancora l'intero serving UDP, onboarding/file/discovery/semantic e proposal/handoff prescritti. Pubblicare per tranche complete owner→Gateway→MCP, con schemi input/output, versioni e classificazione; non annunciare tool senza backend. Protected Operations non diventa un tool. Riferimenti PET §§91–96, 114, 122 e OUF-E2E-022.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "MCP evidence and late recovery",
+          "id": 35122560464,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35122560464"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "MCP-02",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "MCP Go",
+      "petVersion": "1.4",
+      "normativeReferences": [
+        "§33"
+      ],
+      "ownerRepository": "GioNob/ouf-mcp-server",
+      "status": "OPEN",
+      "phase": "R3",
+      "dependencies": [
+        "R1a",
+        "R2a",
+        "R2b"
+      ],
+      "baselineCommit": "6980aac2e113ebbbe5f7b7329f58854d60dd6846",
+      "assessment": "CODICE/INTEGRAZIONE: completare OA con finestra since/until, cursor pagination, timeline, durata/attempt/retry, distinguendo denial, redaction e producer unavailable. `ouf.system.status` descrive oggi il solo stato MCP, mentre §33.2 richiede lo snapshot dei moduli visibili; `operations.summary` aggrega già tre producer. Chiarire e coprire il requisito senza cancellare l'owner API channel-neutral. `operations.explain` è ancora legato all'Ingestion: aggiungere dispatch owner-aware per gli incidenti degli altri producer previsti. Gate OA-MCP-01…08 e OA-CN.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "MCP evidence and late recovery",
+          "id": 35122560464,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35122560464"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    },
+    {
+      "id": "MCP-03",
+      "idNamespace": "roadmap-local-not-PET",
+      "pet": "MCP Go",
+      "petVersion": "1.4",
+      "normativeReferences": [
+        "PET MCP Go v1.4; criteria and IDs cited in assessment"
+      ],
+      "ownerRepository": "GioNob/ouf-mcp-server",
+      "status": "OPEN",
+      "phase": "R5",
+      "dependencies": [
+        "R4a",
+        "R4b"
+      ],
+      "baselineCommit": "6980aac2e113ebbbe5f7b7329f58854d60dd6846",
+      "assessment": "EVIDENZA/CODICE: aggiungere gate di conformance ufficiale della versione MCP normativa e interoperabilità con client SDK indipendente; non individuati nella CI corrente. Non basta la dipendenza dall'SDK ufficiale. Completare retention invariant-preserving dei manifest snapshot dove dovuta (esplicitamente pending nel registro), mantenendo le prove già ottenute per audit/attempt/evidence. Packaging OCI/SBOM/provenance e collaudo HA/DR restano parte della chiusura.",
+      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "baselineEvidence": [
+        {
+          "name": "MCP evidence and late recovery",
+          "id": 35122560464,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35122560464"
+        }
+      ],
+      "closureEvidence": [],
+      "exitCriterion": "Dimostrare tutti i residui descritti in assessment con test eseguibili collegati ai criteri PET citati; distinguere fixture da acceptance rappresentativa."
+    }
+  ],
+  "r0": {
+    "status": "IN_PROGRESS",
+    "exitCriteria": [
+      "Authenticated live fixture PASS including negative identity checks",
+      "Semantic module CI PASS with test adapter absent from production jar",
+      "Baseline references and UDP summary reconciled",
+      "Versioned common register published"
+    ],
+    "evidence": []
+  },
+  "resolvedDecisions": [
+    {
+      "id": "SEM-V9-DUPLICATE",
+      "status": "CLOSED",
+      "commit": "353d2fc821035c5c3db1c2b142aeb9e3800ec0e3",
+      "ciRun": 35142826809,
+      "note": "Duplicate migration removed; do not reopen without new evidence."
+    }
+  ]
+}
