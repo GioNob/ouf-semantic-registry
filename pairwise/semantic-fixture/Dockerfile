@@ -3,6 +3,8 @@ WORKDIR /build
 COPY pom.xml ./
 COPY src ./src
 COPY contracts ./contracts
+COPY vendor/authorization-sdk vendor/authorization-sdk
+RUN cd vendor/authorization-sdk && sha256sum -c SOURCE_SHA256SUMS && timeout --signal=TERM --kill-after=30s 10m mvn -B -ntp clean install
 RUN timeout --signal=TERM --kill-after=30s 15m mvn -B -ntp test-compile org.apache.maven.plugins:maven-dependency-plugin:3.8.1:copy-dependencies -DincludeScope=test -DoutputDirectory=target/dependencies
 FROM eclipse-temurin:21-jre
 RUN useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin ouf

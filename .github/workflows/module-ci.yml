@@ -51,7 +51,9 @@ jobs:
       - name: Validate cross-module evidence register
         run: python3 scripts/validate-pet-register.py
       - name: Compile, test and package with bounded Maven execution
-        run: timeout --signal=TERM --kill-after=30s 20m mvn -B -ntp clean verify
+        run: |
+          bash scripts/install-authorization-sdk.sh
+          timeout --signal=TERM --kill-after=30s 20m mvn -B -ntp clean verify
       - name: Assert test identity adapter is absent from production artifact
         run: |
           jar tf target/semantic-registry-*.jar > target/production-jar-entries.txt
@@ -66,6 +68,11 @@ jobs:
           CI_RUN_ID: ${{ github.run_id }}
           CI_COMMIT_SHA: ${{ github.sha }}
         run: node scripts/write-ci-evidence.mjs
+      - name: Verify runtime SDK packaging
+        run: |
+          jar tf target/semantic-registry-*.jar > target/sdk-packaging.txt
+          grep -q 'BOOT-INF/lib/authorization-sdk-1.0.0.jar' target/sdk-packaging.txt
+          if grep -q 'authorization-sdk-1.0.0-tests.jar' target/sdk-packaging.txt; then exit 1; fi
       - name: Upload test and build evidence
         if: always()
         uses: actions/upload-artifact@v4
