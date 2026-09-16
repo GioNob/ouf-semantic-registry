@@ -35,3 +35,34 @@ production IAM/SSO, or representative full-path acceptance. R1b retains those
 policy/control-plane residuals, and R2/R6 retain runtime/production integration.
 Existing domain guards still own resource state and data-label enforcement.
 No migration or historical audit row is rewritten.
+
+The R0 live fixture still validates its ephemeral credential before constructing
+the shared trusted SERVICE principal. Its fixed laboratory grant is now evaluated
+by the same SDK as the domain adapter; the fixture remains absent from the
+production JAR. Real Gateway/IAM integration remains SEM-01.
+
+## Executed evidence
+
+| Repository | Executed commit | Gate | CI |
+|---|---|---|---|
+| GioNob/ouf-source-onboarding | `4144a2518e88e9d61e95ab9c1b531a151d4b5ed7` | Source Onboarding module CI | [PASS](https://github.com/GioNob/ouf-source-onboarding/actions/runs/35148466075) |
+| GioNob/ouf-semantic-registry | `0dbd981a559fd736828057d886cb0604e62d298d` | Authorization Semantic pairwise | [PASS](https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148028028) |
+| GioNob/ouf-semantic-registry | `0dbd981a559fd736828057d886cb0604e62d298d` | Shared Authorization SDK pairwise | [PASS](https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148027893) |
+| GioNob/ouf-semantic-registry | `0dbd981a559fd736828057d886cb0604e62d298d` | Semantic Gateway live pairwise | [PASS](https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148027807) |
+| GioNob/ouf-semantic-registry | `0dbd981a559fd736828057d886cb0604e62d298d` | Semantic Registry module CI | [PASS](https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148027856) |
+| GioNob/ouf-ingestion-runtime | `b249e763bd0aa96f8d780f71120681a64493a3b3` | Shared Authorization SDK pairwise | [PASS](https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35148248565) |
+| GioNob/ouf-ingestion-runtime | `b249e763bd0aa96f8d780f71120681a64493a3b3` | Ingestion Runtime module CI | [PASS](https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35148248575) |
+| GioNob/ouf-udp-object-resolution | `8f20ad2bc74fdce78979a6f6db2f4cc893affb58` | Shared Authorization SDK pairwise | [PASS](https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35148048232) |
+| GioNob/ouf-udp-object-resolution | `8f20ad2bc74fdce78979a6f6db2f4cc893affb58` | UDP Object Resolution module CI | [PASS](https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35148048137) |
+| GioNob/ouf-mcp-server | `7f3e0956a3f6092563894513e7aef17c80735c9c` | Authorization Java Go conformance | [PASS](https://github.com/GioNob/ouf-mcp-server/actions/runs/35148370587) |
+| GioNob/ouf-mcp-server | `7f3e0956a3f6092563894513e7aef17c80735c9c` | MCP evidence and late recovery | [PASS](https://github.com/GioNob/ouf-mcp-server/actions/runs/35148370452) |
+
+UDP module run 35148048137 attempt 1 exceeded intake p95 (129.88 ms vs
+100 ms); identical-head push run 35148044787 passed. The failed performance
+job was repeated without code/threshold/sample changes, and attempt 2 passed.
+Preserve both outcomes; this is laboratory evidence, not production SLO sign-off.
+
+R1a closes the shared-artifact, consumer-boundary and common-fixture tranche.
+AUT-02 remains PARTIAL in the common register because complete policy/route
+coverage, governed distribution and real IAM acceptance are broader obligations.
+Evidence pins executed code; subsequent main workflows remain integration gates.

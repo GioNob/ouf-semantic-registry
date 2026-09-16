@@ -159,7 +159,7 @@
         "§160"
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
-      "status": "OPEN",
+      "status": "PARTIAL",
       "phase": "R1a",
       "dependencies": [
         "R0"
@@ -181,7 +181,147 @@
       "sourceReferences": [
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/src/main/java/it/comune/trieste/ouf/onboarding",
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/contracts/authorization/authorization-sdk-v1.json"
-      ]
+      ],
+      "partialProgress": {
+        "phase": "R1a",
+        "sdk": "it.comune.trieste.ouf:authorization-sdk:1.0.0",
+        "canonicalSourceCommit": "63f238fa78abe2e6834430af618366ce865977fd",
+        "implemented": [
+          "Shared Java evaluator and PrincipalContext/ResourceContext types; consumer artifact pin and byte-identical mirrors",
+          "Local hash/reference validation, atomic snapshot, per-request pinning and bounded freshness",
+          "Trusted servlet adapters in Onboarding, Semantic, Ingestion and UDP; explicit HUMAN/legacy domain boundaries",
+          "Executable SDK↔consumer tests including Authorization↔UDP",
+          "11 common decision vectors executed by Java and Go"
+        ],
+        "remaining": [
+          "Complete resource/DataAccessLabel/assurance/detail policy and endpoint coverage audit in R1b",
+          "Governed ACTIVE refresh/revocation distribution and authentication adapter bindings for real deployments",
+          "Representative Gateway/IAM full-path acceptance in R2/R6"
+        ],
+        "evidence": [
+          {
+            "repository": "GioNob/ouf-source-onboarding",
+            "commit": "4144a2518e88e9d61e95ab9c1b531a151d4b5ed7",
+            "mergeCommit": "95bb294738735dc4f495d2704a9cbb18869f4893",
+            "ciUrl": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35148466075",
+            "runId": 35148466075,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Source Onboarding module CI",
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "0dbd981a559fd736828057d886cb0604e62d298d",
+            "mergeCommit": null,
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148028028",
+            "runId": 35148028028,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Authorization Semantic pairwise",
+            "level": "STATIC_CONTRACT_INSPECTION"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "0dbd981a559fd736828057d886cb0604e62d298d",
+            "mergeCommit": null,
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148027893",
+            "runId": 35148027893,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Shared Authorization SDK pairwise",
+            "level": "JVM_SDK_CONSUMER_BOUNDARY"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "0dbd981a559fd736828057d886cb0604e62d298d",
+            "mergeCommit": null,
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148027807",
+            "runId": 35148027807,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Semantic Gateway live pairwise",
+            "level": "PROCESS_INTEGRATION_WITH_TEST_IDENTITY_AND_GATEWAY_FIXTURE"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "0dbd981a559fd736828057d886cb0604e62d298d",
+            "mergeCommit": null,
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148027856",
+            "runId": 35148027856,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Semantic Registry module CI",
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "b249e763bd0aa96f8d780f71120681a64493a3b3",
+            "mergeCommit": "5c221a8d6f4440e8002e1e3bd2607760533199f7",
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35148248565",
+            "runId": 35148248565,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Shared Authorization SDK pairwise",
+            "level": "JVM_SDK_CONSUMER_BOUNDARY"
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "b249e763bd0aa96f8d780f71120681a64493a3b3",
+            "mergeCommit": "5c221a8d6f4440e8002e1e3bd2607760533199f7",
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35148248575",
+            "runId": 35148248575,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Ingestion Runtime module CI",
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-udp-object-resolution",
+            "commit": "8f20ad2bc74fdce78979a6f6db2f4cc893affb58",
+            "mergeCommit": "e915706ad704523d5689b9980a4c784b42e6f374",
+            "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35148048232",
+            "runId": 35148048232,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Shared Authorization SDK pairwise",
+            "level": "JVM_SDK_CONSUMER_BOUNDARY"
+          },
+          {
+            "repository": "GioNob/ouf-udp-object-resolution",
+            "commit": "8f20ad2bc74fdce78979a6f6db2f4cc893affb58",
+            "mergeCommit": "e915706ad704523d5689b9980a4c784b42e6f374",
+            "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35148048137",
+            "runId": 35148048137,
+            "attempt": 2,
+            "conclusion": "success",
+            "test": "UDP Object Resolution module CI",
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-mcp-server",
+            "commit": "7f3e0956a3f6092563894513e7aef17c80735c9c",
+            "mergeCommit": "331838fe112af94d91b1bad30ea4f372f4c67b64",
+            "ciUrl": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35148370587",
+            "runId": 35148370587,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Authorization Java Go conformance",
+            "level": "SHARED_DECISION_VECTORS"
+          },
+          {
+            "repository": "GioNob/ouf-mcp-server",
+            "commit": "7f3e0956a3f6092563894513e7aef17c80735c9c",
+            "mergeCommit": "331838fe112af94d91b1bad30ea4f372f4c67b64",
+            "ciUrl": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35148370452",
+            "runId": 35148370452,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "MCP evidence and late recovery",
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          }
+        ]
+      }
     },
     {
       "id": "AUT-03",
@@ -215,7 +355,11 @@
       "sourceReferences": [
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/src/main/java/it/comune/trieste/ouf/onboarding",
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/contracts/authorization/authorization-sdk-v1.json"
-      ]
+      ],
+      "partialProgress": {
+        "phase": "R1a",
+        "scope": "Java loader rejects stale/missing/tampered/exact-reference-mismatched bundles and retains immutable valid snapshot only within configured freshness. Broader policy and Go cache freshness remain OPEN."
+      }
     },
     {
       "id": "AUT-04",
@@ -694,7 +838,8 @@
             "artifactDigest": "sha256:91fdd0870351863f45b8219b4bec4e8d0a40e169547a5c950569c3d5d4ea53a7",
             "digestSource": "GitHub Actions artifact metadata"
           }
-        ]
+        ],
+        "r1aNote": "R0 credential fixture now constructs the common trusted principal and evaluates its laboratory grant with shared SDK; real Gateway/IAM remains open."
       }
     },
     {
@@ -1070,5 +1215,137 @@
       "ciRun": 35142826809,
       "note": "Duplicate migration removed; do not reopen without new evidence."
     }
-  ]
+  ],
+  "r1a": {
+    "status": "CLOSED",
+    "scope": "Shared Java SDK artifact, existing trusted consumer adapters, Authorization↔UDP executable boundary and Java/Go common decision fixtures. No claim of full AUT-02 or platform acceptance.",
+    "evidence": [
+      {
+        "repository": "GioNob/ouf-source-onboarding",
+        "commit": "4144a2518e88e9d61e95ab9c1b531a151d4b5ed7",
+        "mergeCommit": "95bb294738735dc4f495d2704a9cbb18869f4893",
+        "ciUrl": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35148466075",
+        "runId": 35148466075,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Source Onboarding module CI",
+        "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+      },
+      {
+        "repository": "GioNob/ouf-semantic-registry",
+        "commit": "0dbd981a559fd736828057d886cb0604e62d298d",
+        "mergeCommit": null,
+        "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148028028",
+        "runId": 35148028028,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Authorization Semantic pairwise",
+        "level": "STATIC_CONTRACT_INSPECTION"
+      },
+      {
+        "repository": "GioNob/ouf-semantic-registry",
+        "commit": "0dbd981a559fd736828057d886cb0604e62d298d",
+        "mergeCommit": null,
+        "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148027893",
+        "runId": 35148027893,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Shared Authorization SDK pairwise",
+        "level": "JVM_SDK_CONSUMER_BOUNDARY"
+      },
+      {
+        "repository": "GioNob/ouf-semantic-registry",
+        "commit": "0dbd981a559fd736828057d886cb0604e62d298d",
+        "mergeCommit": null,
+        "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148027807",
+        "runId": 35148027807,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Semantic Gateway live pairwise",
+        "level": "PROCESS_INTEGRATION_WITH_TEST_IDENTITY_AND_GATEWAY_FIXTURE"
+      },
+      {
+        "repository": "GioNob/ouf-semantic-registry",
+        "commit": "0dbd981a559fd736828057d886cb0604e62d298d",
+        "mergeCommit": null,
+        "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35148027856",
+        "runId": 35148027856,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Semantic Registry module CI",
+        "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+      },
+      {
+        "repository": "GioNob/ouf-ingestion-runtime",
+        "commit": "b249e763bd0aa96f8d780f71120681a64493a3b3",
+        "mergeCommit": "5c221a8d6f4440e8002e1e3bd2607760533199f7",
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35148248565",
+        "runId": 35148248565,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Shared Authorization SDK pairwise",
+        "level": "JVM_SDK_CONSUMER_BOUNDARY"
+      },
+      {
+        "repository": "GioNob/ouf-ingestion-runtime",
+        "commit": "b249e763bd0aa96f8d780f71120681a64493a3b3",
+        "mergeCommit": "5c221a8d6f4440e8002e1e3bd2607760533199f7",
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35148248575",
+        "runId": 35148248575,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Ingestion Runtime module CI",
+        "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+      },
+      {
+        "repository": "GioNob/ouf-udp-object-resolution",
+        "commit": "8f20ad2bc74fdce78979a6f6db2f4cc893affb58",
+        "mergeCommit": "e915706ad704523d5689b9980a4c784b42e6f374",
+        "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35148048232",
+        "runId": 35148048232,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Shared Authorization SDK pairwise",
+        "level": "JVM_SDK_CONSUMER_BOUNDARY"
+      },
+      {
+        "repository": "GioNob/ouf-udp-object-resolution",
+        "commit": "8f20ad2bc74fdce78979a6f6db2f4cc893affb58",
+        "mergeCommit": "e915706ad704523d5689b9980a4c784b42e6f374",
+        "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35148048137",
+        "runId": 35148048137,
+        "attempt": 2,
+        "conclusion": "success",
+        "test": "UDP Object Resolution module CI",
+        "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+      },
+      {
+        "repository": "GioNob/ouf-mcp-server",
+        "commit": "7f3e0956a3f6092563894513e7aef17c80735c9c",
+        "mergeCommit": "331838fe112af94d91b1bad30ea4f372f4c67b64",
+        "ciUrl": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35148370587",
+        "runId": 35148370587,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Authorization Java Go conformance",
+        "level": "SHARED_DECISION_VECTORS"
+      },
+      {
+        "repository": "GioNob/ouf-mcp-server",
+        "commit": "7f3e0956a3f6092563894513e7aef17c80735c9c",
+        "mergeCommit": "331838fe112af94d91b1bad30ea4f372f4c67b64",
+        "ciUrl": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35148370452",
+        "runId": 35148370452,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "MCP evidence and late recovery",
+        "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+      }
+    ],
+    "limitations": [
+      "Local-file exact bundle loading is the configuration SPI, not automatic ACTIVE distribution",
+      "Real IAM/SSO and end-to-end route coverage are not certified by in-process fixtures",
+      "UDP performance first PR attempt exceeded intake p95:129.88ms vs100ms; identical-head push run passed; failed job rerun without threshold/sample changes; attempt 2 passed with original limits. This variability remains a laboratory limitation, not production capacity acceptance."
+    ]
+  }
 }
