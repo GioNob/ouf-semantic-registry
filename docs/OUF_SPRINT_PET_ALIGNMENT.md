@@ -25,3 +25,12 @@ Prima di ogni sprint:
 | MCP Server v1.4 | Nessuna decisione semantica nascosta nel canale; API owner con contratti stabili; nessuna nuova logica di business nel canale MCP |
 
 R2d resta vincolante per CRS e grigliati. R3 mantiene osservabilità e remediation complete; R4a il percorso cartografico umano; R4b gli ulteriori formati/casi GIS. I grigliati IGM reali e il collaudo territoriale non sono attestati da R2e.
+
+
+## Applicazione a R2f
+
+R2f è un incremento autorizzato dal committente prima di R3. Mantiene come fonti vincolanti i sette PET e L0 identificati sopra; l'analisi mirata dei requisiti multi-fonte e dei formati è in `R2F_MULTISOURCE_AND_MANAGED_FORMATS.md`. Questa nota non attesta una nuova lettura integrale dei sette documenti né un'accettazione operativa.
+
+Le CI dei singoli owner attestano soltanto il codice e gli scenari descritti. Il backend della scelta geometrica è verificato; sono ancora necessari il completamento del workflow umano dei conflitti, confronto cartografico autorizzato e collaudo dei nuovi formati fra owner; non possono essere chiusi dalla presenza di un lettore o da una CI R2e storica. Access usa il percorso INTERNAL_MANAGED: nessuna esecuzione di codice nel file e nessuna TBox pubblicata dal profiler.
+
+La prosecuzione del 17 settembre applica gli stessi sette PET/L0 a conflitti scalari, ruoli/validità geometrica, THS e proposte Access. Matrice comportamento/prova, limiti e gate umano sono in `R2F_COMPLETION_2026_09_17.md`; la vecchia verifica resta storicizzata.

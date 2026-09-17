@@ -151,6 +151,7 @@ Le tranche seguenti sono una proposta di sequenza, non nuove prescrizioni dei PE
 | R2c | Semantic↔Onboarding↔runtime | R1, R2 | Discovery/adoption/publication governate; cambio ACTIVE non cambia la run pinned; historical replay esatto |
 | R2d | Fondazioni geografiche e decisione CRS | R2c | CRS configurabile per Comune; trasformazioni effettive e ordine assi; grigliati verificati/versionati; scelta umana converti/rigetta registrata nel profilo |
 | R2e | GeoPackage → oggetti e relazioni | R2d | Telecamere e armadi acquisiti come oggetti con identità stabile; relazione per identificativo, navigabile nei due sensi; riferimenti mancanti/ambigui espliciti |
+| R2f | Identità multi-fonte, conflitti, Shapefile e Access | R2e | Implementazione e prove di sviluppo estese; accettazione operativa aperta. Stato e pin in R2F_COMPLETION_2026_09_17.md |
 | R3 | Operational Awareness completa, priorità prodotto | R1 e R2a/b | OUF-OA-001…006 e OUF-OA-CN-001…005: fault offline, retry/dedup/recovery, misfire, retention, partial/deny, medesimo owner via MCP/API |
 | R4a | Catalogo capability e THS comune | R1/R2; può procedere con R3 | Onboarding/file, serving e proposal esposti via Gateway/MCP; decisioni umane e protected logs confinati a THS browser |
 | R4b | Residui di dominio | R2; per moduli indipendenti | UDP PARTIAL chiusi; altri formati/casi GIS previsti oltre GeoPackage; Semantic job/limits/upstream lifecycle e Onboarding discovery automatica completi |
@@ -191,7 +192,7 @@ Regola operativa permanente per il seguito: **una decisione risolta non viene ri
 
 ## 7. Prossimo passo raccomandato
 
-R0 e R1a sono consegnati; R1b ha ora implementazione centrale e controlli owner nei percorsi descritti in `R1B_OWNER_ENFORCEMENT_EVIDENCE.md`. R2a ora consegna admission automatica file/PULL, bundle ACTIVE verificato, preflight esatto e schedule versionato. R2b ora dimostra il percorso CSV/REST fino alla lettura autorizzata e al lineage, con ACK e watermark verificati fra processi. R2d consegna ora le fondazioni CRS governate descritte in `R2D_GOVERNED_CRS_EVIDENCE.md`. R2e aggiunge ora GeoPackage, identità stabile per feature e relazioni telecamere↔armadi; evidenze in `R2E_GEOPACKAGE_RELATIONSHIPS_EVIDENCE.md`. Il prossimo incremento è **R3**, mantenendo separati i gate di ambiente e le superfici umane ancora mancanti. I controlli owner implementati devono essere mantenuti nel percorso; l'accettazione completa dei restanti domini/proiezioni e dell'identità reale rimane tracciata in AUT-03/AUT-04, senza riaprire decisioni già risolte.
+R0 e R1a sono consegnati; R1b ha ora implementazione centrale e controlli owner nei percorsi descritti in `R1B_OWNER_ENFORCEMENT_EVIDENCE.md`. R2a ora consegna admission automatica file/PULL, bundle ACTIVE verificato, preflight esatto e schedule versionato. R2b ora dimostra il percorso CSV/REST fino alla lettura autorizzata e al lineage, con ACK e watermark verificati fra processi. R2d consegna ora le fondazioni CRS governate descritte in `R2D_GOVERNED_CRS_EVIDENCE.md`. R2e aggiunge ora GeoPackage, identità stabile per feature e relazioni telecamere↔armadi; evidenze in `R2E_GEOPACKAGE_RELATIONSHIPS_EVIDENCE.md`. L’incremento corrente approvato è **R2f**; R3 segue la sua accettazione, mantenendo separati i gate di ambiente e le superfici umane ancora mancanti. I controlli owner implementati devono essere mantenuti nel percorso; l'accettazione completa dei restanti domini/proiezioni e dell'identità reale rimane tracciata in AUT-03/AUT-04, senza riaprire decisioni già risolte.
 
 
 ## Avanzamento R1b — 17 settembre 2026
@@ -212,7 +213,7 @@ Scenario CSV/REST implementato, verificato e mergiato: il lettore autorizzato tr
 
 **Limite del risultato:** Gateway HTTP, sorgenti, Semantic e identità/approvazione sono fixture dichiarate. APISIX, adapter di invocazione southbound e managed storage reali restano GW-01; IAM/THS, profili estesi e ambiente rappresentativo restano gate aperti. La superficie utilizzabile verificata è l’API; browser/MCP e presentazione integrata dello stato restano R4/R3. ONB-02, ING-01 e UDP-01 rimangono PARTIAL rispetto ai criteri PET completi.
 
-Per ogni incremento, accanto a commit e CI, dichiarare persona, obiettivo, superficie, risultato osservabile e verifica. Prossimo passo della sequenza: R3; questa regola umana resta vincolante anche nei blocchi infrastrutturali.
+Per ogni incremento, accanto a commit e CI, dichiarare persona, obiettivo, superficie, risultato osservabile e verifica. Passo corrente della sequenza: R2f, poi R3; questa regola umana resta vincolante anche nei blocchi infrastrutturali.
 
 
 ## R2c — pubblicazioni governate e riferimenti storici
@@ -234,7 +235,7 @@ Il cambio ACTIVE è verificato durante consegne non ancora confermate: snapshot 
 - R3 espone progressi, errori geometrici/CRS e collegamenti irrisolti. R4a fornisce anteprima cartografica, importazione guidata, schede e relazioni navigabili. La geocodifica conserva fonte/precisione e converte nel CRS comunale; punto del civico e perimetro effettivo del dehor devono restare distinguibili.
 - R4b conserva i restanti formati e casi GIS prescritti dai PET. La CI tecnica di R2e non equivale alla completa accettazione umana, che richiede R4a.
 
-R2c: **36 verifiche PASS** nello scenario tra quattro owner, incluso REPRODUCE UDP. Evidenze, SHA dei consumer e limiti in `R2C_GOVERNED_PUBLICATION_EVIDENCE.md` e nel registro JSON. R2d è implementato e verificato nel perimetro delle fondazioni CRS; R2e verifica ora GeoPackage e relazioni con 25 controlli fra quattro owner; R3 è il prossimo incremento; i gate generali elencati restano aperti.
+R2c: **36 verifiche PASS** nello scenario tra quattro owner, incluso REPRODUCE UDP. Evidenze, SHA dei consumer e limiti in `R2C_GOVERNED_PUBLICATION_EVIDENCE.md` e nel registro JSON. R2d è implementato e verificato nel perimetro delle fondazioni CRS; R2e verifica ora GeoPackage e relazioni con 25 controlli fra quattro owner; R2f è l’incremento corrente prima di R3; i gate generali elencati restano aperti.
 
 SEM-01 e UDP-03 passano a PARTIAL per le prove R2c; i residui sono esplicitati nel registro. Il live pairwise già ripristinato in R0 non viene riaperto.
 
@@ -253,6 +254,23 @@ R2e consegna profilazione dei layer, scelta esplicita di layer/chiavi, acquisizi
 
 La CI fra quattro owner, PostGIS e MinIO contiene **25 verifiche PASS**. Fixture Gateway/identità dichiarate, commit, run, limiti e stato dei merge sono riportati in [R2E_GEOPACKAGE_RELATIONSHIPS_EVIDENCE.md](R2E_GEOPACKAGE_RELATIONSHIPS_EVIDENCE.md) e nella sezione `r2e` del registro JSON. La geometria sorgente mappata richiede il permesso geometrico anche in current, history e search.
 
-Restano 2D simple features e limiti di parser espliciti; altri formati/casi sono R4b. Nessun grigliato IGM reale o collaudo territoriale è attestato. La UI cartografica resta R4a; prossimo incremento **R3 — Operational Awareness**.
+Restano 2D simple features e limiti di parser espliciti; Shapefile e Access sono anticipati in R2f, gli altri casi restano R4b. Nessun grigliato IGM reale o collaudo territoriale è attestato. La UI cartografica generale resta R4a; R2f include quella necessaria ai conflitti multi-fonte. Incremento corrente **R2f**, prima di R3 — Operational Awareness.
 
 Ogni sprint deve consultare tutti i sette PET e L0: [regola obbligatoria e manifest delle fonti](OUF_SPRINT_PET_ALIGNMENT.md).
+
+
+## R2f — estensione approvata, in corso
+
+Il committente ha anticipato Shapefile ZIP e richiesto Access per tabelle/dati, chiavi e relazioni come evidenza semantica. Il riconoscimento multi-fonte e la gestione dei conflitti valgono per tutte le classi di oggetto. R2f comprende la revisione umana necessaria a questi casi; non rinvia implicitamente tale requisito a R4a.
+
+Implementazione, requisiti PET, prove e limiti: [R2F_MULTISOURCE_AND_MANAGED_FORMATS.md](R2F_MULTISOURCE_AND_MANAGED_FORMATS.md). Le modifiche sono su branch di sviluppo: **non sono una release accettata né una chiusura dei gate umani/cross-module**. Il limite R2e relativo alla prevalenza geometrica per ordine di materializzazione è rettificato esplicitamente nelle evidenze.
+
+### Verifica di ripresa R2f
+
+Il [rapporto di verifica del 17 settembre](R2F_REVIEW_2026_09_17.md) collega i difetti corretti, la prova dei nuovi formati e i gate residui al perimetro già approvato. R2f resta l’incremento corrente; la CI dei lettori o della nuova prova verticale non chiude automaticamente revisione cartografica, gestione dei conflitti, ruoli/validità geometrica e integrazione delle proposte Access con Semantic/THS.
+
+### Completamento del percorso di revisione R2f
+
+Il [rapporto aggiornato](R2F_COMPLETION_2026_09_17.md) documenta decisioni scalari, coerenza e ruoli geometrici, validità/ordine delle osservazioni, code e confronto cartografico THS, collegamento dei suggerimenti Access ai gap e al riferimento semantico pubblicato. La prova fra quattro owner comprende equivalenza GeoPackage/Shapefile, comandi HTTP umani, CSRF/stale/retry e persistenza al riavvio. Browser e owner hanno prove separate con i propri limiti dichiarati.
+
+Resta il collaudo dell’operatore con IdP, sessione browser, HTTPS e APISIX nell’ambiente rappresentativo. R3 segue l’accettazione R2f; non si attestano né merge in main né accettazione operativa sulla sola base della CI.
