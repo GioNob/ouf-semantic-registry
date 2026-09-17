@@ -122,17 +122,19 @@
       "pet": "Authorization",
       "petVersion": "1.5",
       "normativeReferences": [
-        "§§4"
+        "\u00a7\u00a74.3",
+        "\u00a7\u00a7109.1\u2013109.4",
+        "\u00a7109.14"
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
-      "status": "OPEN",
+      "status": "CLOSED",
       "phase": "R1b",
       "dependencies": [
         "R1a"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "CODICE: completare il piano amministrativo. Il controller Authorization esposto distribuisce il bundle ACTIVE; non costituisce il CRUD governato di policy/grant, registrazione capability, authoring con ETag e workflow amministrativo human-only richiesti da §§4.3, 109.1–109.4. I metodi Java di publish/activate non sostituiscono l'API amministrativa e i suoi controlli. Uscita: OpenAPI admin versionata, lifecycle e revoca con audit, stale ETag e actor negativi testati.",
-      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "assessment": "Admin API versionata con guard HUMAN/capability/CSRF trusted, capability registration immutabile, draft policy/grant CRUD, ETag, publish/revoca e audit append-only. Sei test runtime coprono lifecycle, concorrenza, stale ETag/ACTIVE, actor/CSRF negativi, unknown condition e hash distribuito. Binding IAM/THS reale resta AUT-04.",
+      "evidenceLevel": "MODULE_RUNTIME_WITH_TEST_TRUSTED_IDENTITY",
       "baselineEvidence": [
         {
           "name": "Source Onboarding module CI",
@@ -142,7 +144,28 @@
           "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35121897270"
         }
       ],
-      "closureEvidence": [],
+      "closureEvidence": [
+        {
+          "repository": "GioNob/ouf-source-onboarding",
+          "commit": "8ac76d345df3b13b7b858ef1ba45ea22856e9d31",
+          "mergeCommit": "29c86b8372cef86912e752fed40176feb2d06461",
+          "pr": 10,
+          "runId": 35173364353,
+          "attempt": 1,
+          "conclusion": "success",
+          "test": "Source Onboarding module CI",
+          "ciUrl": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35173364353",
+          "artifacts": [
+            {
+              "id": 10477084316,
+              "name": "source-onboarding-evidence-35173364353",
+              "digest": "sha256:8e17d0abdd5189b07fb340c4cf10f38dc2c8a5fdd43f4d05690ff1005ceaedb1",
+              "sizeInBytes": 97856
+            }
+          ],
+          "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+        }
+      ],
       "exitCriterion": "API amministrativa versionata: authoring policy/grant e capability, lifecycle/revoca con audit, human-only ed ETag; negativi stale/actor verificati.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/src/main/java/it/comune/trieste/ouf/onboarding",
@@ -155,8 +178,8 @@
       "pet": "Authorization",
       "petVersion": "1.5",
       "normativeReferences": [
-        "§§109",
-        "§160"
+        "\u00a7\u00a7109",
+        "\u00a7160"
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
       "status": "PARTIAL",
@@ -165,7 +188,7 @@
         "R0"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "CODICE/INTEGRAZIONE: shared SDK e enforcement nei servizi. Il contratto JSON esiste, ma la valutazione Java è nel package Onboarding e MCP ne ha un evaluator Go. Semantic e Ingestion consumano attributi trusted e capability; questo non dimostra lo SDK locale sui bundle previsto da Authorization §§109.1–109.3 e Semantic §160.7. Occorre artifact Java versionato, implementazione Go semanticamente conforme, loader/cache e security adapter nei servizi, con test comuni. Per UDP serve anche il pairwise Authorization e l'adattamento esplicito dei vocaboli legacy: `TrustedHumanContext` richiede ancora `HUMAN_USER`, mentre il contratto consumer recente usa `HUMAN/SERVICE/AI_AGENT`. Non rinominare alla cieca i dati storici.",
+      "assessment": "CODICE/INTEGRAZIONE: shared SDK e enforcement nei servizi. Il contratto JSON esiste, ma la valutazione Java \u00e8 nel package Onboarding e MCP ne ha un evaluator Go. Semantic e Ingestion consumano attributi trusted e capability; questo non dimostra lo SDK locale sui bundle previsto da Authorization \u00a7\u00a7109.1\u2013109.3 e Semantic \u00a7160.7. Occorre artifact Java versionato, implementazione Go semanticamente conforme, loader/cache e security adapter nei servizi, con test comuni. Per UDP serve anche il pairwise Authorization e l'adattamento esplicito dei vocaboli legacy: `TrustedHumanContext` richiede ancora `HUMAN_USER`, mentre il contratto consumer recente usa `HUMAN/SERVICE/AI_AGENT`. Non rinominare alla cieca i dati storici.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -177,26 +200,27 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "SDK Java versionato e Go conforme; loader/cache e adapter trusted nei servizi; Authorization↔UDP con mapping legacy esplicito e test comuni coarse allow/backend deny.",
+      "exitCriterion": "SDK Java versionato e Go conforme; loader/cache e adapter trusted nei servizi; Authorization\u2194UDP con mapping legacy esplicito e test comuni coarse allow/backend deny.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/src/main/java/it/comune/trieste/ouf/onboarding",
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/contracts/authorization/authorization-sdk-v1.json"
       ],
       "partialProgress": {
         "phase": "R1a",
-        "sdk": "it.comune.trieste.ouf:authorization-sdk:1.0.0",
-        "canonicalSourceCommit": "63f238fa78abe2e6834430af618366ce865977fd",
+        "sdk": "it.comune.trieste.ouf:authorization-sdk:1.1.0",
+        "canonicalSourceCommit": "8ac76d345df3b13b7b858ef1ba45ea22856e9d31",
         "implemented": [
           "Shared Java evaluator and PrincipalContext/ResourceContext types; consumer artifact pin and byte-identical mirrors",
           "Local hash/reference validation, atomic snapshot, per-request pinning and bounded freshness",
           "Trusted servlet adapters in Onboarding, Semantic, Ingestion and UDP; explicit HUMAN/legacy domain boundaries",
-          "Executable SDK↔consumer tests including Authorization↔UDP",
-          "11 common decision vectors executed by Java and Go"
+          "Executable SDK\u2194consumer tests including Authorization\u2194UDP",
+          "11 common decision vectors executed by Java and Go",
+          "R1b: resource/role/assurance/DAL/detail policy, governed ACTIVE refresh, 28 common vectors and 33-controller endpoint inventory"
         ],
         "remaining": [
-          "Complete resource/DataAccessLabel/assurance/detail policy and endpoint coverage audit in R1b",
-          "Governed ACTIVE refresh/revocation distribution and authentication adapter bindings for real deployments",
-          "Representative Gateway/IAM full-path acceptance in R2/R6"
+          "AUT-02: operation capability coverage on remaining Semantic and other owner routes; see docs/R1B_ENDPOINT_COVERAGE_AUDIT.md",
+          "AUT-03: owner-derived fine-grained resource contexts and enforcement of detail/DAL decisions at every output boundary",
+          "AUT-04: real IAM/workload/THS authentication and CSRF bindings, directory claims, rotation/revocation acceptance"
         ],
         "evidence": [
           {
@@ -320,6 +344,244 @@
             "test": "MCP evidence and late recovery",
             "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
           }
+        ],
+        "r1bEvidence": [
+          {
+            "repository": "GioNob/ouf-source-onboarding",
+            "commit": "8ac76d345df3b13b7b858ef1ba45ea22856e9d31",
+            "mergeCommit": "29c86b8372cef86912e752fed40176feb2d06461",
+            "pr": 10,
+            "runId": 35173364353,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Source Onboarding module CI",
+            "ciUrl": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35173364353",
+            "artifacts": [
+              {
+                "id": 10477084316,
+                "name": "source-onboarding-evidence-35173364353",
+                "digest": "sha256:8e17d0abdd5189b07fb340c4cf10f38dc2c8a5fdd43f4d05690ff1005ceaedb1",
+                "sizeInBytes": 97856
+              }
+            ],
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+            "mergeCommit": null,
+            "pr": 6,
+            "runId": 35173376766,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Authorization Semantic pairwise",
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376766",
+            "artifacts": [],
+            "level": "STATIC_CONTRACT_INSPECTION"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+            "mergeCommit": null,
+            "pr": 6,
+            "runId": 35173376710,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Shared Authorization SDK pairwise",
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376710",
+            "artifacts": [
+              {
+                "id": 10477736686,
+                "name": "authorization-sdk-consumer-evidence",
+                "digest": "sha256:6a901603b960a4f9a3242b13dc61c1b0dbc6cc3e649dc8cf0322b91a3fa54b6e",
+                "sizeInBytes": 19392
+              }
+            ],
+            "level": "JVM_SDK_CONSUMER_BOUNDARY"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+            "mergeCommit": null,
+            "pr": 6,
+            "runId": 35173376721,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Semantic Gateway live pairwise",
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376721",
+            "artifacts": [
+              {
+                "id": 10478040566,
+                "name": "semantic-gateway-live-evidence",
+                "digest": "sha256:5df06ea31c382ff220c964f9df42defd221f0e9a011f905c143c640f433d67b1",
+                "sizeInBytes": 5476
+              }
+            ],
+            "level": "PROCESS_INTEGRATION_WITH_TEST_IDENTITY"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+            "mergeCommit": null,
+            "pr": 6,
+            "runId": 35173376779,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Semantic Registry module CI",
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376779",
+            "artifacts": [
+              {
+                "id": 10477658014,
+                "name": "semantic-registry-java21-postgresql17-35173376779",
+                "digest": "sha256:a69dcdd57ed65305bc2d0e25d3dcbbab3aad71339149bb6c00b8b21c441deb08",
+                "sizeInBytes": 41168427
+              }
+            ],
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "8195f571a0b35cb833b92ba8a2520fa4a8516ca7",
+            "mergeCommit": "cb73d95ff87b3d7061aefd9334cdafd14dc26afd",
+            "pr": 20,
+            "runId": 35173381231,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Shared Authorization SDK pairwise",
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35173381231",
+            "artifacts": [
+              {
+                "id": 10477731721,
+                "name": "authorization-sdk-consumer-evidence",
+                "digest": "sha256:d1bee1d60f5b2414e01cf58988b018b7c79c432c2a41888f03dc3f84119ccb7f",
+                "sizeInBytes": 15531
+              }
+            ],
+            "level": "JVM_SDK_CONSUMER_BOUNDARY"
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "8195f571a0b35cb833b92ba8a2520fa4a8516ca7",
+            "mergeCommit": "cb73d95ff87b3d7061aefd9334cdafd14dc26afd",
+            "pr": 20,
+            "runId": 35173381242,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Ingestion Runtime module CI",
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35173381242",
+            "artifacts": [
+              {
+                "id": 10477676779,
+                "name": "ingestion-dr-evidence-35173381242",
+                "digest": "sha256:3ba9a55b2da257eb29f890daf16b8183ce42f3f214f4471a740d9c7364c10b45",
+                "sizeInBytes": 5030
+              },
+              {
+                "id": 10477443411,
+                "name": "ingestion-release-evidence-35173381242",
+                "digest": "sha256:229639efbe9f0cd6a3b9a12f60ec10f489ea1fc2f6e9735dd6661bf818fcf2e1",
+                "sizeInBytes": 94760
+              },
+              {
+                "id": 10477149245,
+                "name": "ingestion-evidence-35173381242",
+                "digest": "sha256:89d1ff5571d1e0c147a0b071a3f5fb370459a7e830a5255f002ba818fb1eacca",
+                "sizeInBytes": 101566
+              }
+            ],
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-udp-object-resolution",
+            "commit": "2bb2dff206849d5d50d8ab44257953f9bd5232f6",
+            "mergeCommit": "7b6fc7f7ed40892037a615505741de3140ec8de1",
+            "pr": 24,
+            "runId": 35173382910,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Shared Authorization SDK pairwise",
+            "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35173382910",
+            "artifacts": [
+              {
+                "id": 10477288707,
+                "name": "authorization-sdk-consumer-evidence",
+                "digest": "sha256:821b75e1b29dbeb697833fbc177d5c0d3d1b0789f4d697614003bc6ac554b650",
+                "sizeInBytes": 14798
+              }
+            ],
+            "level": "JVM_SDK_CONSUMER_BOUNDARY"
+          },
+          {
+            "repository": "GioNob/ouf-udp-object-resolution",
+            "commit": "2bb2dff206849d5d50d8ab44257953f9bd5232f6",
+            "mergeCommit": "7b6fc7f7ed40892037a615505741de3140ec8de1",
+            "pr": 24,
+            "runId": 35173382909,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "UDP Object Resolution module CI",
+            "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35173382909",
+            "artifacts": [
+              {
+                "id": 10477886897,
+                "name": "udp-performance-evidence-35173382909",
+                "digest": "sha256:ab1f6e5d486a2cbb60630ea394da7186ecac11f33fbd4ae483ab7d7644be61f8",
+                "sizeInBytes": 1559
+              },
+              {
+                "id": 10477841311,
+                "name": "udp-evidence-35173382909",
+                "digest": "sha256:3410a35b9c2fcec60abe5288e565af4b6ec4c02aa265b317c7ac4e48618a5624",
+                "sizeInBytes": 106672
+              },
+              {
+                "id": 10477372302,
+                "name": "udp-supply-chain-deployment-evidence-35173382909",
+                "digest": "sha256:bc7517dd13b48d4f3c9a1ae311a934121f9bc09fe5e04a2f3f4ffad59e4afe9a",
+                "sizeInBytes": 74527
+              },
+              {
+                "id": 10477014855,
+                "name": "udp-dr-evidence-35173382909",
+                "digest": "sha256:cd57581c235e33183d096602b15912cc403a7d25917a3afe6358db94c7b6d5d8",
+                "sizeInBytes": 4303
+              }
+            ],
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-mcp-server",
+            "commit": "55e6a88dd6d6e5f30f00275c63ad09918864392d",
+            "mergeCommit": "acedf53ab59fb14f2b7dc9c5a387eef0cf5621ff",
+            "pr": 25,
+            "runId": 35173385863,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Authorization Java Go conformance",
+            "ciUrl": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35173385863",
+            "artifacts": [],
+            "level": "COMMON_JAVA_GO_POLICY_VECTORS"
+          },
+          {
+            "repository": "GioNob/ouf-mcp-server",
+            "commit": "55e6a88dd6d6e5f30f00275c63ad09918864392d",
+            "mergeCommit": "acedf53ab59fb14f2b7dc9c5a387eef0cf5621ff",
+            "pr": 25,
+            "runId": 35173385824,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "MCP evidence and late recovery",
+            "ciUrl": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35173385824",
+            "artifacts": [
+              {
+                "id": 10477686852,
+                "name": "mcp-release-evidence-35173385824",
+                "digest": "sha256:4c2f7d0791a744d4de99344b6e71da196fdf0b61e3c1fb5ed4429371f1db6520",
+                "sizeInBytes": 86738
+              }
+            ],
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          }
         ]
       }
     },
@@ -329,18 +591,18 @@
       "pet": "Authorization",
       "petVersion": "1.5",
       "normativeReferences": [
-        "§§36",
-        "§109"
+        "\u00a7\u00a736",
+        "\u00a7109"
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
-      "status": "OPEN",
+      "status": "PARTIAL",
       "phase": "R1b",
       "dependencies": [
         "R1a"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "CODICE: completare policy e freshness. Il motore attuale verifica tenant, capability, actor, scope, soggetto/service principal, organizzazione e validità temporale del grant. Non realizza da solo tutti i vincoli di risorsa, DataAccessLabel, assurance/step-up e permitted detail level/visibility OA previsti da §§36.10, 109.2 e 34.2. La cache MCP conserva il last-known-good in caso di errore ma non applica `max-staleness` al momento della decisione (§109.6); la validità dei grant è un controllo diverso. Uscita: policy di freschezza governata, fail-closed oltre soglia, hash/integrità bundle verificabili, medesimi fixture allow/deny tra linguaggi, coarse allow/backend deny e revoca dimostrati.",
-      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "assessment": "Motori Java/Go e cache implementati e verificati: ruolo esterno, scope risorsa, DAL, assurance ACR/AMR/authentication age, detail, DENY prevalente, freshness, hash, atomicit\u00e0 e revoca. Resta da integrare il contesto owner-derived e applicare le decisioni fine-grained a ogni proiezione dei dati nei servizi; il solo shared SDK verde non chiude questo criterio end-to-end.",
+      "evidenceLevel": "MODULE_RUNTIME_AND_CROSS_LANGUAGE_FIXTURES",
       "baselineEvidence": [
         {
           "name": "Source Onboarding module CI",
@@ -351,14 +613,260 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Resource/DataAccessLabel, assurance, detail level e freshness governati; deny oltre max-staleness, integrità bundle, revoca e fixture allow/deny equivalenti Java/Go.",
+      "exitCriterion": "Resource/DataAccessLabel, assurance, detail level e freshness governati; deny oltre max-staleness, integrit\u00e0 bundle, revoca e fixture allow/deny equivalenti Java/Go.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/src/main/java/it/comune/trieste/ouf/onboarding",
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/contracts/authorization/authorization-sdk-v1.json"
       ],
       "partialProgress": {
-        "phase": "R1a",
-        "scope": "Java loader rejects stale/missing/tampered/exact-reference-mismatched bundles and retains immutable valid snapshot only within configured freshness. Broader policy and Go cache freshness remain OPEN."
+        "phase": "R1b",
+        "implemented": [
+          "28 equivalent Java/Go allow-deny fixtures",
+          "Authenticated bounded background refresh; max-staleness fail-closed",
+          "Immutable deterministic bundle hash and atomic snapshot update",
+          "Versioned admin revocation with next-refresh denial and pinned snapshot behavior"
+        ],
+        "remaining": [
+          "AUT-03: owner-derived fine-grained resource contexts and enforcement of detail/DAL decisions at every output boundary"
+        ],
+        "evidence": [
+          {
+            "repository": "GioNob/ouf-source-onboarding",
+            "commit": "8ac76d345df3b13b7b858ef1ba45ea22856e9d31",
+            "mergeCommit": "29c86b8372cef86912e752fed40176feb2d06461",
+            "pr": 10,
+            "runId": 35173364353,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Source Onboarding module CI",
+            "ciUrl": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35173364353",
+            "artifacts": [
+              {
+                "id": 10477084316,
+                "name": "source-onboarding-evidence-35173364353",
+                "digest": "sha256:8e17d0abdd5189b07fb340c4cf10f38dc2c8a5fdd43f4d05690ff1005ceaedb1",
+                "sizeInBytes": 97856
+              }
+            ],
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+            "mergeCommit": null,
+            "pr": 6,
+            "runId": 35173376766,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Authorization Semantic pairwise",
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376766",
+            "artifacts": [],
+            "level": "STATIC_CONTRACT_INSPECTION"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+            "mergeCommit": null,
+            "pr": 6,
+            "runId": 35173376710,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Shared Authorization SDK pairwise",
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376710",
+            "artifacts": [
+              {
+                "id": 10477736686,
+                "name": "authorization-sdk-consumer-evidence",
+                "digest": "sha256:6a901603b960a4f9a3242b13dc61c1b0dbc6cc3e649dc8cf0322b91a3fa54b6e",
+                "sizeInBytes": 19392
+              }
+            ],
+            "level": "JVM_SDK_CONSUMER_BOUNDARY"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+            "mergeCommit": null,
+            "pr": 6,
+            "runId": 35173376721,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Semantic Gateway live pairwise",
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376721",
+            "artifacts": [
+              {
+                "id": 10478040566,
+                "name": "semantic-gateway-live-evidence",
+                "digest": "sha256:5df06ea31c382ff220c964f9df42defd221f0e9a011f905c143c640f433d67b1",
+                "sizeInBytes": 5476
+              }
+            ],
+            "level": "PROCESS_INTEGRATION_WITH_TEST_IDENTITY"
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+            "mergeCommit": null,
+            "pr": 6,
+            "runId": 35173376779,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Semantic Registry module CI",
+            "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376779",
+            "artifacts": [
+              {
+                "id": 10477658014,
+                "name": "semantic-registry-java21-postgresql17-35173376779",
+                "digest": "sha256:a69dcdd57ed65305bc2d0e25d3dcbbab3aad71339149bb6c00b8b21c441deb08",
+                "sizeInBytes": 41168427
+              }
+            ],
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "8195f571a0b35cb833b92ba8a2520fa4a8516ca7",
+            "mergeCommit": "cb73d95ff87b3d7061aefd9334cdafd14dc26afd",
+            "pr": 20,
+            "runId": 35173381231,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Shared Authorization SDK pairwise",
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35173381231",
+            "artifacts": [
+              {
+                "id": 10477731721,
+                "name": "authorization-sdk-consumer-evidence",
+                "digest": "sha256:d1bee1d60f5b2414e01cf58988b018b7c79c432c2a41888f03dc3f84119ccb7f",
+                "sizeInBytes": 15531
+              }
+            ],
+            "level": "JVM_SDK_CONSUMER_BOUNDARY"
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "8195f571a0b35cb833b92ba8a2520fa4a8516ca7",
+            "mergeCommit": "cb73d95ff87b3d7061aefd9334cdafd14dc26afd",
+            "pr": 20,
+            "runId": 35173381242,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Ingestion Runtime module CI",
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35173381242",
+            "artifacts": [
+              {
+                "id": 10477676779,
+                "name": "ingestion-dr-evidence-35173381242",
+                "digest": "sha256:3ba9a55b2da257eb29f890daf16b8183ce42f3f214f4471a740d9c7364c10b45",
+                "sizeInBytes": 5030
+              },
+              {
+                "id": 10477443411,
+                "name": "ingestion-release-evidence-35173381242",
+                "digest": "sha256:229639efbe9f0cd6a3b9a12f60ec10f489ea1fc2f6e9735dd6661bf818fcf2e1",
+                "sizeInBytes": 94760
+              },
+              {
+                "id": 10477149245,
+                "name": "ingestion-evidence-35173381242",
+                "digest": "sha256:89d1ff5571d1e0c147a0b071a3f5fb370459a7e830a5255f002ba818fb1eacca",
+                "sizeInBytes": 101566
+              }
+            ],
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-udp-object-resolution",
+            "commit": "2bb2dff206849d5d50d8ab44257953f9bd5232f6",
+            "mergeCommit": "7b6fc7f7ed40892037a615505741de3140ec8de1",
+            "pr": 24,
+            "runId": 35173382910,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Shared Authorization SDK pairwise",
+            "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35173382910",
+            "artifacts": [
+              {
+                "id": 10477288707,
+                "name": "authorization-sdk-consumer-evidence",
+                "digest": "sha256:821b75e1b29dbeb697833fbc177d5c0d3d1b0789f4d697614003bc6ac554b650",
+                "sizeInBytes": 14798
+              }
+            ],
+            "level": "JVM_SDK_CONSUMER_BOUNDARY"
+          },
+          {
+            "repository": "GioNob/ouf-udp-object-resolution",
+            "commit": "2bb2dff206849d5d50d8ab44257953f9bd5232f6",
+            "mergeCommit": "7b6fc7f7ed40892037a615505741de3140ec8de1",
+            "pr": 24,
+            "runId": 35173382909,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "UDP Object Resolution module CI",
+            "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35173382909",
+            "artifacts": [
+              {
+                "id": 10477886897,
+                "name": "udp-performance-evidence-35173382909",
+                "digest": "sha256:ab1f6e5d486a2cbb60630ea394da7186ecac11f33fbd4ae483ab7d7644be61f8",
+                "sizeInBytes": 1559
+              },
+              {
+                "id": 10477841311,
+                "name": "udp-evidence-35173382909",
+                "digest": "sha256:3410a35b9c2fcec60abe5288e565af4b6ec4c02aa265b317c7ac4e48618a5624",
+                "sizeInBytes": 106672
+              },
+              {
+                "id": 10477372302,
+                "name": "udp-supply-chain-deployment-evidence-35173382909",
+                "digest": "sha256:bc7517dd13b48d4f3c9a1ae311a934121f9bc09fe5e04a2f3f4ffad59e4afe9a",
+                "sizeInBytes": 74527
+              },
+              {
+                "id": 10477014855,
+                "name": "udp-dr-evidence-35173382909",
+                "digest": "sha256:cd57581c235e33183d096602b15912cc403a7d25917a3afe6358db94c7b6d5d8",
+                "sizeInBytes": 4303
+              }
+            ],
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          },
+          {
+            "repository": "GioNob/ouf-mcp-server",
+            "commit": "55e6a88dd6d6e5f30f00275c63ad09918864392d",
+            "mergeCommit": "acedf53ab59fb14f2b7dc9c5a387eef0cf5621ff",
+            "pr": 25,
+            "runId": 35173385863,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "Authorization Java Go conformance",
+            "ciUrl": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35173385863",
+            "artifacts": [],
+            "level": "COMMON_JAVA_GO_POLICY_VECTORS"
+          },
+          {
+            "repository": "GioNob/ouf-mcp-server",
+            "commit": "55e6a88dd6d6e5f30f00275c63ad09918864392d",
+            "mergeCommit": "acedf53ab59fb14f2b7dc9c5a387eef0cf5621ff",
+            "pr": 25,
+            "runId": 35173385824,
+            "attempt": 1,
+            "conclusion": "success",
+            "test": "MCP evidence and late recovery",
+            "ciUrl": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35173385824",
+            "artifacts": [
+              {
+                "id": 10477686852,
+                "name": "mcp-release-evidence-35173385824",
+                "digest": "sha256:4c2f7d0791a744d4de99344b6e71da196fdf0b61e3c1fb5ed4429371f1db6520",
+                "sizeInBytes": 86738
+              }
+            ],
+            "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+          }
+        ]
       }
     },
     {
@@ -367,7 +875,7 @@
       "pet": "Authorization",
       "petVersion": "1.5",
       "normativeReferences": [
-        "§109"
+        "\u00a7109"
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
       "status": "OPEN",
@@ -376,7 +884,7 @@
         "R0"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "AMBIENTE: selezionare/configurare scenario A/B/C, issuer/JWKS, audience, claim mapping, rotazione/revoca e identità workload (§109.5). Avviare questa dipendenza subito, senza bloccare lo sviluppo scenario-neutral.",
+      "assessment": "AMBIENTE: selezionare/configurare scenario A/B/C, issuer/JWKS, audience, claim mapping, rotazione/revoca e identit\u00e0 workload (\u00a7109.5). Avviare questa dipendenza subito, senza bloccare lo sviluppo scenario-neutral.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -388,7 +896,7 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Scenario A/B/C e binding issuer/audience/JWKS/claim/workload approvati; prove reali di rotazione, revoca e identità entro R6.",
+      "exitCriterion": "Scenario A/B/C e binding issuer/audience/JWKS/claim/workload approvati; prove reali di rotazione, revoca e identit\u00e0 entro R6.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/src/main/java/it/comune/trieste/ouf/onboarding",
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/contracts/authorization/authorization-sdk-v1.json"
@@ -401,8 +909,8 @@
       "pet": "Onboarding/THS",
       "petVersion": "1.6",
       "normativeReferences": [
-        "§§109",
-        "§109"
+        "\u00a7\u00a7109",
+        "\u00a7109"
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
       "status": "OPEN",
@@ -412,7 +920,7 @@
         "R2b"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "CODICE/INTEGRAZIONE: completare discovery tecnica automatica attraverso Gateway. `DiscoveryService` gestisce start/claim/complete e snapshot, ma non è presente un worker di discovery sorgenti equivalente ai worker schedulati file-profile ed export. Collegare fetch schema/type/state, retry/recovery e callback Semantic, senza confondere registrazione di uno snapshot con acquisizione automatica. PET §§109.4–109.5, 109.9 e gate §109.17.",
+      "assessment": "CODICE/INTEGRAZIONE: completare discovery tecnica automatica attraverso Gateway. `DiscoveryService` gestisce start/claim/complete e snapshot, ma non \u00e8 presente un worker di discovery sorgenti equivalente ai worker schedulati file-profile ed export. Collegare fetch schema/type/state, retry/recovery e callback Semantic, senza confondere registrazione di uno snapshot con acquisizione automatica. PET \u00a7\u00a7109.4\u2013109.5, 109.9 e gate \u00a7109.17.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -436,7 +944,7 @@
       "pet": "Onboarding/THS",
       "petVersion": "1.6",
       "normativeReferences": [
-        "§37 e §109"
+        "\u00a737 e \u00a7109"
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
       "status": "OPEN",
@@ -446,7 +954,7 @@
         "R1b"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "INTEGRAZIONE: ACTIVE bundle → proiezione Gateway → compatibilità Ingestion → prima ingestione file o PULL. Verificare exact references, acknowledgement e riattivazione dopo schema drift; la policy operativa va realmente consumata dall'Ingestion, non soltanto serializzata. PET §37 e §109.17; OUF-E2E-001/017/019/020.",
+      "assessment": "INTEGRAZIONE: ACTIVE bundle \u2192 proiezione Gateway \u2192 compatibilit\u00e0 Ingestion \u2192 prima ingestione file o PULL. Verificare exact references, acknowledgement e riattivazione dopo schema drift; la policy operativa va realmente consumata dall'Ingestion, non soltanto serializzata. PET \u00a737 e \u00a7109.17; OUF-E2E-001/017/019/020.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -470,7 +978,7 @@
       "pet": "Onboarding/THS",
       "petVersion": "1.6",
       "normativeReferences": [
-        "§§101–106, 109"
+        "\u00a7\u00a7101\u2013106, 109"
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
       "status": "OPEN",
@@ -481,7 +989,7 @@
         "R2b"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "CODICE/INTEGRAZIONE: realizzare la superficie browser fiduciaria comune e i relativi adapter ai backend owner. Il repository dichiara il browser shell delegato; nessun frontend THS è stato trovato nei sei repository. Completare card cross-module, sessione umana, assurance/freshness, stale challenge e handoff di approvazione; collegare il log store condiviso oltre l'adapter audit Onboarding. Il frontend amministrativo generico resta opzionale, la THS prevista dal PET no. Riferimenti §§101–106, 109.1 e OUF-E2E-014/016.",
+      "assessment": "CODICE/INTEGRAZIONE: realizzare la superficie browser fiduciaria comune e i relativi adapter ai backend owner. Il repository dichiara il browser shell delegato; nessun frontend THS \u00e8 stato trovato nei sei repository. Completare card cross-module, sessione umana, assurance/freshness, stale challenge e handoff di approvazione; collegare il log store condiviso oltre l'adapter audit Onboarding. Il frontend amministrativo generico resta opzionale, la THS prevista dal PET no. Riferimenti \u00a7\u00a7101\u2013106, 109.1 e OUF-E2E-014/016.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -504,7 +1012,7 @@
       "pet": "Onboarding/THS",
       "petVersion": "1.6",
       "normativeReferences": [
-        "§§109"
+        "\u00a7\u00a7109"
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
       "status": "OPEN",
@@ -514,7 +1022,7 @@
         "R4b"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "CODICE/EVIDENZA/AMBIENTE: configuration catalog completo, packaging Helm/NetworkPolicy, upgrade N/N+1, capacity fixture e restore THS con challenge scadute non riattivate. Mancano nel repository gli artefatti operativi completi richiesti da §§109.10–109.16; non sono tutte semplici coordinate esterne. Profilo normativo: 1.000 source, 10.000 type, 500.000 field, concorrenza amministrativa/job dichiarata dal PET.",
+      "assessment": "CODICE/EVIDENZA/AMBIENTE: configuration catalog completo, packaging Helm/NetworkPolicy, upgrade N/N+1, capacity fixture e restore THS con challenge scadute non riattivate. Mancano nel repository gli artefatti operativi completi richiesti da \u00a7\u00a7109.10\u2013109.16; non sono tutte semplici coordinate esterne. Profilo normativo: 1.000 source, 10.000 type, 500.000 field, concorrenza amministrativa/job dichiarata dal PET.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -538,7 +1046,7 @@
       "pet": "Ingestion",
       "petVersion": "1.3",
       "normativeReferences": [
-        "§§21, 32–37, 80–89, 128 e 139"
+        "\u00a7\u00a721, 32\u201337, 80\u201389, 128 e 139"
       ],
       "ownerRepository": "GioNob/ouf-ingestion-runtime",
       "status": "OPEN",
@@ -548,7 +1056,7 @@
         "R1b"
       ],
       "baselineCommit": "e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2",
-      "assessment": "CODICE/INTEGRAZIONE, blocco della catena: collegare gli adapter di produzione per bundle ACTIVE, Semantic preflight, Data Lake, durable handoff UDP, replay e ritorno Onboarding. `RunCoordinator`, `RunExecutionWorker`, `OutboxDispatcher` e `ReplayWorker` sono condizionati alla presenza di port; non risultano bean di produzione per l'intera composizione né un loop schedulato che invochi questi metodi. `@EnableScheduling` da solo non avvia l'ingestion. I test costruiscono percorsi eseguibili ma non dimostrano che il container confezionato li avvii. Uscita: una source ACTIVE viene acquisita senza chiamate manuali ai metodi Java, ACK e watermark rispettano i vincoli, restart e lease recovery provati. PET §§21, 32–37, 80–89, 128 e 139.",
+      "assessment": "CODICE/INTEGRAZIONE, blocco della catena: collegare gli adapter di produzione per bundle ACTIVE, Semantic preflight, Data Lake, durable handoff UDP, replay e ritorno Onboarding. `RunCoordinator`, `RunExecutionWorker`, `OutboxDispatcher` e `ReplayWorker` sono condizionati alla presenza di port; non risultano bean di produzione per l'intera composizione n\u00e9 un loop schedulato che invochi questi metodi. `@EnableScheduling` da solo non avvia l'ingestion. I test costruiscono percorsi eseguibili ma non dimostrano che il container confezionato li avvii. Uscita: una source ACTIVE viene acquisita senza chiamate manuali ai metodi Java, ACK e watermark rispettano i vincoli, restart e lease recovery provati. PET \u00a7\u00a721, 32\u201337, 80\u201389, 128 e 139.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -572,8 +1080,8 @@
       "pet": "Ingestion",
       "petVersion": "1.3",
       "normativeReferences": [
-        "§46",
-        "§6"
+        "\u00a746",
+        "\u00a76"
       ],
       "ownerRepository": "GioNob/ouf-ingestion-runtime",
       "status": "OPEN",
@@ -584,7 +1092,7 @@
         "R2b"
       ],
       "baselineCommit": "e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2",
-      "assessment": "CODICE/INTEGRAZIONE: chiudere il producer Operational Awareness. La proiezione corrente legge `runtime_issue` e traduce OPEN/altri stati in OPEN/RESOLVED. Non implementa l'intera timeline RETRY_WAIT/RECOVERING/RESOLVED, dedup correlato, misfire, attempt count/nextRetryAt e retention governata ≥30 giorni. Inoltre `summary` conta gli OPEN nella lista limitata: occorre impedire HEALTHY quando incidenti aperti sono fuori dalla pagina/finestra. Query e riepilogo devono avere semantiche distinte e complete. Riferimenti §46.1–46.5, OA-ING-01…06, Matrix §6.",
+      "assessment": "CODICE/INTEGRAZIONE: chiudere il producer Operational Awareness. La proiezione corrente legge `runtime_issue` e traduce OPEN/altri stati in OPEN/RESOLVED. Non implementa l'intera timeline RETRY_WAIT/RECOVERING/RESOLVED, dedup correlato, misfire, attempt count/nextRetryAt e retention governata \u226530 giorni. Inoltre `summary` conta gli OPEN nella lista limitata: occorre impedire HEALTHY quando incidenti aperti sono fuori dalla pagina/finestra. Query e riepilogo devono avere semantiche distinte e complete. Riferimenti \u00a746.1\u201346.5, OA-ING-01\u202606, Matrix \u00a76.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -596,7 +1104,7 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "OA-ING-01…06: timeline, retry/dedup/misfire, attempt/nextRetryAt, retention ≥30 giorni e summary indipendente dalla pagina verificati con fault/recovery.",
+      "exitCriterion": "OA-ING-01\u202606: timeline, retry/dedup/misfire, attempt/nextRetryAt, retention \u226530 giorni e summary indipendente dalla pagina verificati con fault/recovery.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RuntimePorts.java",
         "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RunExecutionWorker.java"
@@ -608,7 +1116,7 @@
       "pet": "Ingestion",
       "petVersion": "1.3",
       "normativeReferences": [
-        "§143"
+        "\u00a7143"
       ],
       "ownerRepository": "GioNob/ouf-ingestion-runtime",
       "status": "OPEN",
@@ -618,7 +1126,7 @@
         "R2b"
       ],
       "baselineCommit": "e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2",
-      "assessment": "CODICE/EVIDENZA: coprire i profili GIS richiesti dal §143.2 oltre REST/WFS e managed CSV/XLSX: OGC API Features, GeoPackage, GeoJSON/JSON-FG e Shapefile ZIP, con layer/CRS e limiti di parser espliciti. Un adapter JSON generico non dimostra automaticamente conformità a questi formati. Procedere per fixture verticali, senza introdurre un nuovo runtime non richiesto.",
+      "assessment": "CODICE/EVIDENZA: coprire i profili GIS richiesti dal \u00a7143.2 oltre REST/WFS e managed CSV/XLSX: OGC API Features, GeoPackage, GeoJSON/JSON-FG e Shapefile ZIP, con layer/CRS e limiti di parser espliciti. Un adapter JSON generico non dimostra automaticamente conformit\u00e0 a questi formati. Procedere per fixture verticali, senza introdurre un nuovo runtime non richiesto.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -642,7 +1150,7 @@
       "pet": "UDP",
       "petVersion": "1.3",
       "normativeReferences": [
-        "§§95–97, 109"
+        "\u00a7\u00a795\u201397, 109"
       ],
       "ownerRepository": "GioNob/ouf-udp-object-resolution",
       "status": "OPEN",
@@ -651,7 +1159,7 @@
         "R2a"
       ],
       "baselineCommit": "a18e1c1d1f6add41bb11c975e5f2487f352d1bdb",
-      "assessment": "CODICE/INTEGRAZIONE: collegare configuration ports ai bundle storici esatti e avviare il resolution worker nel runtime. `ResolutionWorker` è condizionato a due port di configurazione, senza adapter bean/loop di produzione individuati. Dimostrare poi nel medesimo percorso resolution, proprietà, relazioni e spatial: test separati dei materializer non bastano. PET §§95–97, 109.6–109.7.",
+      "assessment": "CODICE/INTEGRAZIONE: collegare configuration ports ai bundle storici esatti e avviare il resolution worker nel runtime. `ResolutionWorker` \u00e8 condizionato a due port di configurazione, senza adapter bean/loop di produzione individuati. Dimostrare poi nel medesimo percorso resolution, propriet\u00e0, relazioni e spatial: test separati dei materializer non bastano. PET \u00a7\u00a795\u201397, 109.6\u2013109.7.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -670,7 +1178,7 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Adapter ai bundle storici e loop resolution nel container; handoff→resolution→property/relation/spatial→serving provati nello stesso percorso con riferimenti pinned.",
+      "exitCriterion": "Adapter ai bundle storici e loop resolution nel container; handoff\u2192resolution\u2192property/relation/spatial\u2192serving provati nello stesso percorso con riferimenti pinned.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/docs/pet-traceability-v1.3.json",
         "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/src/main/java/it/comune/trieste/ouf/udp/ResolutionWorker.java"
@@ -771,7 +1279,7 @@
       "pet": "Semantic",
       "petVersion": "1.3",
       "normativeReferences": [
-        "§§133–136, 160"
+        "\u00a7\u00a7133\u2013136, 160"
       ],
       "ownerRepository": "GioNob/ouf-semantic-registry",
       "status": "OPEN",
@@ -782,7 +1290,7 @@
         "R2b"
       ],
       "baselineCommit": "353d2fc821035c5c3db1c2b142aeb9e3800ec0e3",
-      "assessment": "INTEGRAZIONE: correggere il live pairwise e successivamente provarlo contro Gateway e identità conformi. Agganciare Onboarding/Ingestion/UDP agli exact SemanticReference; non basta il test Authorization basato su ispezione di schema e stringhe del resolver. PET §§133–136, 160.7, 160.15.",
+      "assessment": "INTEGRAZIONE: correggere il live pairwise e successivamente provarlo contro Gateway e identit\u00e0 conformi. Agganciare Onboarding/Ingestion/UDP agli exact SemanticReference; non basta il test Authorization basato su ispezione di schema e stringhe del resolver. PET \u00a7\u00a7133\u2013136, 160.7, 160.15.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -808,7 +1316,7 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Fixture live autenticata verde in R0; poi Gateway reale e identità conformi, exact SemanticReference da Onboarding/Ingestion/UDP e ACTIVE-switch pinning/replay dimostrati.",
+      "exitCriterion": "Fixture live autenticata verde in R0; poi Gateway reale e identit\u00e0 conformi, exact SemanticReference da Onboarding/Ingestion/UDP e ACTIVE-switch pinning/replay dimostrati.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/DiscoveryApi.java",
         "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/TrustedActorResolver.java"
@@ -848,8 +1356,8 @@
       "pet": "Semantic",
       "petVersion": "1.3",
       "normativeReferences": [
-        "§160",
-        "§§61/134, distinguendo notice/proposal già presenti dalle operazioni di check/recovery ancora da completare"
+        "\u00a7160",
+        "\u00a7\u00a761/134, distinguendo notice/proposal gi\u00e0 presenti dalle operazioni di check/recovery ancora da completare"
       ],
       "ownerRepository": "GioNob/ouf-semantic-registry",
       "status": "OPEN",
@@ -859,7 +1367,7 @@
         "R2b"
       ],
       "baselineCommit": "353d2fc821035c5c3db1c2b142aeb9e3800ec0e3",
-      "assessment": "CODICE/EVIDENZA: chiudere pause/cancel e partial-result semantics dei job; admission per classe/per-provider, fan-out, parser/time/size e publication limits nel configuration catalog; startup/reference-integrity e restore reconciliation. L'API discovery attuale espone creazione, candidates, adoption e providers, senza coprire tutto §160.4. Verificare separatamente la completezza dell'upstream lifecycle §§61/134, distinguendo notice/proposal già presenti dalle operazioni di check/recovery ancora da completare.",
+      "assessment": "CODICE/EVIDENZA: chiudere pause/cancel e partial-result semantics dei job; admission per classe/per-provider, fan-out, parser/time/size e publication limits nel configuration catalog; startup/reference-integrity e restore reconciliation. L'API discovery attuale espone creazione, candidates, adoption e providers, senza coprire tutto \u00a7160.4. Verificare separatamente la completezza dell'upstream lifecycle \u00a7\u00a761/134, distinguendo notice/proposal gi\u00e0 presenti dalle operazioni di check/recovery ancora da completare.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -885,7 +1393,7 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Pause/cancel e risultati parziali, admission/fanout e limiti catalogati; startup/reference-integrity e restore reconciliation; check/recovery upstream secondo §§61/134/160.4.",
+      "exitCriterion": "Pause/cancel e risultati parziali, admission/fanout e limiti catalogati; startup/reference-integrity e restore reconciliation; check/recovery upstream secondo \u00a7\u00a761/134/160.4.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/DiscoveryApi.java",
         "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/TrustedActorResolver.java"
@@ -897,8 +1405,8 @@
       "pet": "Semantic",
       "petVersion": "1.3",
       "normativeReferences": [
-        "§§160",
-        "§160"
+        "\u00a7\u00a7160",
+        "\u00a7160"
       ],
       "ownerRepository": "GioNob/ouf-semantic-registry",
       "status": "OPEN",
@@ -908,7 +1416,7 @@
         "R4b"
       ],
       "baselineCommit": "353d2fc821035c5c3db1c2b142aeb9e3800ec0e3",
-      "assessment": "CODICE/EVIDENZA/AMBIENTE: Helm/GitOps, dashboard/alert, runbook e configuration reference, capability/job schema e release package; upgrade N/N+1, security scans/SBOM/provenance, restore e profilo 100k artefatti/1M concept con isolamento provider failure. Sono deliverable obbligatori §§160.1, 160.8–160.14 e DoD §160.17 non coperti dalla sola build Maven/container attuale.",
+      "assessment": "CODICE/EVIDENZA/AMBIENTE: Helm/GitOps, dashboard/alert, runbook e configuration reference, capability/job schema e release package; upgrade N/N+1, security scans/SBOM/provenance, restore e profilo 100k artefatti/1M concept con isolamento provider failure. Sono deliverable obbligatori \u00a7\u00a7160.1, 160.8\u2013160.14 e DoD \u00a7160.17 non coperti dalla sola build Maven/container attuale.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -934,7 +1442,7 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Deliverable §§160.1/160.8–14/160.17, package Helm/GitOps e osservabilità, scansioni/SBOM/provenance, N/N+1, restore e workload 100k/1M con provider failure verificati.",
+      "exitCriterion": "Deliverable \u00a7\u00a7160.1/160.8\u201314/160.17, package Helm/GitOps e osservabilit\u00e0, scansioni/SBOM/provenance, N/N+1, restore e workload 100k/1M con provider failure verificati.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/DiscoveryApi.java",
         "https://github.com/GioNob/ouf-semantic-registry/tree/353d2fc821035c5c3db1c2b142aeb9e3800ec0e3/src/main/java/it/comune/trieste/ouf/semantic/api/TrustedActorResolver.java"
@@ -980,8 +1488,8 @@
       "pet": "Gateway",
       "petVersion": "1.5",
       "normativeReferences": [
-        "§34 e T33",
-        "§6"
+        "\u00a734 e T33",
+        "\u00a76"
       ],
       "ownerRepository": "GioNob/ouf-api-gateway",
       "status": "OPEN",
@@ -992,7 +1500,7 @@
         "R2b"
       ],
       "baselineCommit": "8a1757e5879f73ee60c2786a7f5e2b325741c940",
-      "assessment": "CODICE/AMBIENTE: portare la persistenza incidenti dal riferimento SQLite a un backend di produzione coerente con HA, backup e retention, oppure produrre una soluzione governata che dimostri tali requisiti. Verificare fault reali APISIX/etcd/trust e recovery stesso incidente. Riferimenti PET §34 e T33.9–T33.10; Matrix §6.",
+      "assessment": "CODICE/AMBIENTE: portare la persistenza incidenti dal riferimento SQLite a un backend di produzione coerente con HA, backup e retention, oppure produrre una soluzione governata che dimostri tali requisiti. Verificare fault reali APISIX/etcd/trust e recovery stesso incidente. Riferimenti PET \u00a734 e T33.9\u2013T33.10; Matrix \u00a76.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -1004,7 +1512,7 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Persistenza incidenti con HA/backup/retention dimostrati; fault APISIX/etcd/trust e recovery conservano identità incidente secondo §34 e T33.9–10.",
+      "exitCriterion": "Persistenza incidenti con HA/backup/retention dimostrati; fault APISIX/etcd/trust e recovery conservano identit\u00e0 incidente secondo \u00a734 e T33.9\u201310.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/docs/GATEWAY_OPERATIONAL_AWARENESS_PRODUCER_TRACEABILITY.md",
         "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/.github/workflows/ci.yml"
@@ -1033,7 +1541,7 @@
         "R5"
       ],
       "baselineCommit": "8a1757e5879f73ee60c2786a7f5e2b325741c940",
-      "assessment": "AMBIENTE/EVIDENZA: prove packet-level default deny e bypass southbound, FQDN/DNS rebinding sul CNI scelto, mTLS/JWKS, etcd quorum/partition/member-loss/restore, rolling N/N+1, drain/HPA/PDB, upload/realtime e capacity. T33.4–T33.16 e OUF-E2E-023/024. Non introdurre un bypass per rendere verde un test.",
+      "assessment": "AMBIENTE/EVIDENZA: prove packet-level default deny e bypass southbound, FQDN/DNS rebinding sul CNI scelto, mTLS/JWKS, etcd quorum/partition/member-loss/restore, rolling N/N+1, drain/HPA/PDB, upload/realtime e capacity. T33.4\u2013T33.16 e OUF-E2E-023/024. Non introdurre un bypass per rendere verde un test.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -1045,7 +1553,7 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "T33.4–16, E2E-023/024: packet-level deny/SSRF/CNI, mTLS/JWKS, quorum/partition/member-loss/restore, N/N+1/drain/HPA/PDB/upload/realtime/capacity rappresentativi.",
+      "exitCriterion": "T33.4\u201316, E2E-023/024: packet-level deny/SSRF/CNI, mTLS/JWKS, quorum/partition/member-loss/restore, N/N+1/drain/HPA/PDB/upload/realtime/capacity rappresentativi.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/docs/GATEWAY_OPERATIONAL_AWARENESS_PRODUCER_TRACEABILITY.md",
         "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/.github/workflows/ci.yml"
@@ -1057,7 +1565,7 @@
       "pet": "MCP Go",
       "petVersion": "1.4",
       "normativeReferences": [
-        "§§91–96, 114, 122 e OUF-E2E-022"
+        "\u00a7\u00a791\u201396, 114, 122 e OUF-E2E-022"
       ],
       "ownerRepository": "GioNob/ouf-mcp-server",
       "status": "OPEN",
@@ -1068,7 +1576,7 @@
         "R2b"
       ],
       "baselineCommit": "6980aac2e113ebbbe5f7b7329f58854d60dd6846",
-      "assessment": "CODICE/INTEGRAZIONE: completare la proiezione del catalogo owner. Il manifest attuale registra sette tool, di cui sei OA e `urban.object.related_search`, più un descriptor human-only non esposto. Non copre ancora l'intero serving UDP, onboarding/file/discovery/semantic e proposal/handoff prescritti. Pubblicare per tranche complete owner→Gateway→MCP, con schemi input/output, versioni e classificazione; non annunciare tool senza backend. Protected Operations non diventa un tool. Riferimenti PET §§91–96, 114, 122 e OUF-E2E-022.",
+      "assessment": "CODICE/INTEGRAZIONE: completare la proiezione del catalogo owner. Il manifest attuale registra sette tool, di cui sei OA e `urban.object.related_search`, pi\u00f9 un descriptor human-only non esposto. Non copre ancora l'intero serving UDP, onboarding/file/discovery/semantic e proposal/handoff prescritti. Pubblicare per tranche complete owner\u2192Gateway\u2192MCP, con schemi input/output, versioni e classificazione; non annunciare tool senza backend. Protected Operations non diventa un tool. Riferimenti PET \u00a7\u00a791\u201396, 114, 122 e OUF-E2E-022.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -1080,7 +1588,7 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "Tranche owner→Gateway→MCP complete con input/output/versione/classificazione per serving, onboarding/file/discovery/Semantic/proposal; nessun tool senza backend né protected operation esposta.",
+      "exitCriterion": "Tranche owner\u2192Gateway\u2192MCP complete con input/output/versione/classificazione per serving, onboarding/file/discovery/Semantic/proposal; nessun tool senza backend n\u00e9 protected operation esposta.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-mcp-server/tree/6980aac2e113ebbbe5f7b7329f58854d60dd6846/internal/manifest/capabilities.json",
         "https://github.com/GioNob/ouf-mcp-server/tree/6980aac2e113ebbbe5f7b7329f58854d60dd6846/docs/MCP_OPERATIONAL_AWARENESS_AGGREGATION_TRACEABILITY.md"
@@ -1092,7 +1600,7 @@
       "pet": "MCP Go",
       "petVersion": "1.4",
       "normativeReferences": [
-        "§33"
+        "\u00a733"
       ],
       "ownerRepository": "GioNob/ouf-mcp-server",
       "status": "OPEN",
@@ -1103,7 +1611,7 @@
         "R2b"
       ],
       "baselineCommit": "6980aac2e113ebbbe5f7b7329f58854d60dd6846",
-      "assessment": "CODICE/INTEGRAZIONE: completare OA con finestra since/until, cursor pagination, timeline, durata/attempt/retry, distinguendo denial, redaction e producer unavailable. `ouf.system.status` descrive oggi il solo stato MCP, mentre §33.2 richiede lo snapshot dei moduli visibili; `operations.summary` aggrega già tre producer. Chiarire e coprire il requisito senza cancellare l'owner API channel-neutral. `operations.explain` è ancora legato all'Ingestion: aggiungere dispatch owner-aware per gli incidenti degli altri producer previsti. Gate OA-MCP-01…08 e OA-CN.",
+      "assessment": "CODICE/INTEGRAZIONE: completare OA con finestra since/until, cursor pagination, timeline, durata/attempt/retry, distinguendo denial, redaction e producer unavailable. `ouf.system.status` descrive oggi il solo stato MCP, mentre \u00a733.2 richiede lo snapshot dei moduli visibili; `operations.summary` aggrega gi\u00e0 tre producer. Chiarire e coprire il requisito senza cancellare l'owner API channel-neutral. `operations.explain` \u00e8 ancora legato all'Ingestion: aggiungere dispatch owner-aware per gli incidenti degli altri producer previsti. Gate OA-MCP-01\u202608 e OA-CN.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -1115,7 +1623,7 @@
         }
       ],
       "closureEvidence": [],
-      "exitCriterion": "OA-MCP-01…08/OA-CN: finestra/cursor/timeline/retry, denial/redaction/unavailable distinti, system.status dei moduli visibili e explain owner-aware.",
+      "exitCriterion": "OA-MCP-01\u202608/OA-CN: finestra/cursor/timeline/retry, denial/redaction/unavailable distinti, system.status dei moduli visibili e explain owner-aware.",
       "sourceReferences": [
         "https://github.com/GioNob/ouf-mcp-server/tree/6980aac2e113ebbbe5f7b7329f58854d60dd6846/internal/manifest/capabilities.json",
         "https://github.com/GioNob/ouf-mcp-server/tree/6980aac2e113ebbbe5f7b7329f58854d60dd6846/docs/MCP_OPERATIONAL_AWARENESS_AGGREGATION_TRACEABILITY.md"
@@ -1137,7 +1645,7 @@
         "R4b"
       ],
       "baselineCommit": "6980aac2e113ebbbe5f7b7329f58854d60dd6846",
-      "assessment": "EVIDENZA/CODICE: aggiungere gate di conformance ufficiale della versione MCP normativa e interoperabilità con client SDK indipendente; non individuati nella CI corrente. Non basta la dipendenza dall'SDK ufficiale. Completare retention invariant-preserving dei manifest snapshot dove dovuta (esplicitamente pending nel registro), mantenendo le prove già ottenute per audit/attempt/evidence. Packaging OCI/SBOM/provenance e collaudo HA/DR restano parte della chiusura.",
+      "assessment": "EVIDENZA/CODICE: aggiungere gate di conformance ufficiale della versione MCP normativa e interoperabilit\u00e0 con client SDK indipendente; non individuati nella CI corrente. Non basta la dipendenza dall'SDK ufficiale. Completare retention invariant-preserving dei manifest snapshot dove dovuta (esplicitamente pending nel registro), mantenendo le prove gi\u00e0 ottenute per audit/attempt/evidence. Packaging OCI/SBOM/provenance e collaudo HA/DR restano parte della chiusura.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -1218,7 +1726,7 @@
   ],
   "r1a": {
     "status": "CLOSED",
-    "scope": "Shared Java SDK artifact, existing trusted consumer adapters, Authorization↔UDP executable boundary and Java/Go common decision fixtures. No claim of full AUT-02 or platform acceptance.",
+    "scope": "Shared Java SDK artifact, existing trusted consumer adapters, Authorization\u2194UDP executable boundary and Java/Go common decision fixtures. No claim of full AUT-02 or platform acceptance.",
     "evidence": [
       {
         "repository": "GioNob/ouf-source-onboarding",
@@ -1347,5 +1855,272 @@
       "Real IAM/SSO and end-to-end route coverage are not certified by in-process fixtures",
       "UDP performance first PR attempt exceeded intake p95:129.88ms vs100ms; identical-head push run passed; failed job rerun without threshold/sample changes; attempt 2 passed with original limits. This variability remains a laboratory limitation, not production capacity acceptance."
     ]
+  },
+  "r1b": {
+    "status": "IMPLEMENTED_WITH_INTEGRATION_GAPS",
+    "scope": "Central administrative lifecycle, constrained policy model, authenticated bounded refresh, Java/Go parity, and endpoint coverage audit. Does not certify complete owner endpoint/data projection or production IAM acceptance.",
+    "sdk": "it.comune.trieste.ouf:authorization-sdk:1.1.0",
+    "canonicalSourceCommit": "8ac76d345df3b13b7b858ef1ba45ea22856e9d31",
+    "commonDecisionVectors": 28,
+    "controllerInventory": "evidence/r1b-endpoint-inventory.json",
+    "evidence": [
+      {
+        "repository": "GioNob/ouf-source-onboarding",
+        "commit": "8ac76d345df3b13b7b858ef1ba45ea22856e9d31",
+        "mergeCommit": "29c86b8372cef86912e752fed40176feb2d06461",
+        "pr": 10,
+        "runId": 35173364353,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Source Onboarding module CI",
+        "ciUrl": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35173364353",
+        "artifacts": [
+          {
+            "id": 10477084316,
+            "name": "source-onboarding-evidence-35173364353",
+            "digest": "sha256:8e17d0abdd5189b07fb340c4cf10f38dc2c8a5fdd43f4d05690ff1005ceaedb1",
+            "sizeInBytes": 97856
+          }
+        ],
+        "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+      },
+      {
+        "repository": "GioNob/ouf-semantic-registry",
+        "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+        "mergeCommit": null,
+        "pr": 6,
+        "runId": 35173376766,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Authorization Semantic pairwise",
+        "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376766",
+        "artifacts": [],
+        "level": "STATIC_CONTRACT_INSPECTION"
+      },
+      {
+        "repository": "GioNob/ouf-semantic-registry",
+        "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+        "mergeCommit": null,
+        "pr": 6,
+        "runId": 35173376710,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Shared Authorization SDK pairwise",
+        "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376710",
+        "artifacts": [
+          {
+            "id": 10477736686,
+            "name": "authorization-sdk-consumer-evidence",
+            "digest": "sha256:6a901603b960a4f9a3242b13dc61c1b0dbc6cc3e649dc8cf0322b91a3fa54b6e",
+            "sizeInBytes": 19392
+          }
+        ],
+        "level": "JVM_SDK_CONSUMER_BOUNDARY"
+      },
+      {
+        "repository": "GioNob/ouf-semantic-registry",
+        "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+        "mergeCommit": null,
+        "pr": 6,
+        "runId": 35173376721,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Semantic Gateway live pairwise",
+        "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376721",
+        "artifacts": [
+          {
+            "id": 10478040566,
+            "name": "semantic-gateway-live-evidence",
+            "digest": "sha256:5df06ea31c382ff220c964f9df42defd221f0e9a011f905c143c640f433d67b1",
+            "sizeInBytes": 5476
+          }
+        ],
+        "level": "PROCESS_INTEGRATION_WITH_TEST_IDENTITY"
+      },
+      {
+        "repository": "GioNob/ouf-semantic-registry",
+        "commit": "1af9b96f63e4582e8568e9914631c2a1d65c39a7",
+        "mergeCommit": null,
+        "pr": 6,
+        "runId": 35173376779,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Semantic Registry module CI",
+        "ciUrl": "https://github.com/GioNob/ouf-semantic-registry/actions/runs/35173376779",
+        "artifacts": [
+          {
+            "id": 10477658014,
+            "name": "semantic-registry-java21-postgresql17-35173376779",
+            "digest": "sha256:a69dcdd57ed65305bc2d0e25d3dcbbab3aad71339149bb6c00b8b21c441deb08",
+            "sizeInBytes": 41168427
+          }
+        ],
+        "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+      },
+      {
+        "repository": "GioNob/ouf-ingestion-runtime",
+        "commit": "8195f571a0b35cb833b92ba8a2520fa4a8516ca7",
+        "mergeCommit": "cb73d95ff87b3d7061aefd9334cdafd14dc26afd",
+        "pr": 20,
+        "runId": 35173381231,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Shared Authorization SDK pairwise",
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35173381231",
+        "artifacts": [
+          {
+            "id": 10477731721,
+            "name": "authorization-sdk-consumer-evidence",
+            "digest": "sha256:d1bee1d60f5b2414e01cf58988b018b7c79c432c2a41888f03dc3f84119ccb7f",
+            "sizeInBytes": 15531
+          }
+        ],
+        "level": "JVM_SDK_CONSUMER_BOUNDARY"
+      },
+      {
+        "repository": "GioNob/ouf-ingestion-runtime",
+        "commit": "8195f571a0b35cb833b92ba8a2520fa4a8516ca7",
+        "mergeCommit": "cb73d95ff87b3d7061aefd9334cdafd14dc26afd",
+        "pr": 20,
+        "runId": 35173381242,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Ingestion Runtime module CI",
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35173381242",
+        "artifacts": [
+          {
+            "id": 10477676779,
+            "name": "ingestion-dr-evidence-35173381242",
+            "digest": "sha256:3ba9a55b2da257eb29f890daf16b8183ce42f3f214f4471a740d9c7364c10b45",
+            "sizeInBytes": 5030
+          },
+          {
+            "id": 10477443411,
+            "name": "ingestion-release-evidence-35173381242",
+            "digest": "sha256:229639efbe9f0cd6a3b9a12f60ec10f489ea1fc2f6e9735dd6661bf818fcf2e1",
+            "sizeInBytes": 94760
+          },
+          {
+            "id": 10477149245,
+            "name": "ingestion-evidence-35173381242",
+            "digest": "sha256:89d1ff5571d1e0c147a0b071a3f5fb370459a7e830a5255f002ba818fb1eacca",
+            "sizeInBytes": 101566
+          }
+        ],
+        "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+      },
+      {
+        "repository": "GioNob/ouf-udp-object-resolution",
+        "commit": "2bb2dff206849d5d50d8ab44257953f9bd5232f6",
+        "mergeCommit": "7b6fc7f7ed40892037a615505741de3140ec8de1",
+        "pr": 24,
+        "runId": 35173382910,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Shared Authorization SDK pairwise",
+        "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35173382910",
+        "artifacts": [
+          {
+            "id": 10477288707,
+            "name": "authorization-sdk-consumer-evidence",
+            "digest": "sha256:821b75e1b29dbeb697833fbc177d5c0d3d1b0789f4d697614003bc6ac554b650",
+            "sizeInBytes": 14798
+          }
+        ],
+        "level": "JVM_SDK_CONSUMER_BOUNDARY"
+      },
+      {
+        "repository": "GioNob/ouf-udp-object-resolution",
+        "commit": "2bb2dff206849d5d50d8ab44257953f9bd5232f6",
+        "mergeCommit": "7b6fc7f7ed40892037a615505741de3140ec8de1",
+        "pr": 24,
+        "runId": 35173382909,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "UDP Object Resolution module CI",
+        "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35173382909",
+        "artifacts": [
+          {
+            "id": 10477886897,
+            "name": "udp-performance-evidence-35173382909",
+            "digest": "sha256:ab1f6e5d486a2cbb60630ea394da7186ecac11f33fbd4ae483ab7d7644be61f8",
+            "sizeInBytes": 1559
+          },
+          {
+            "id": 10477841311,
+            "name": "udp-evidence-35173382909",
+            "digest": "sha256:3410a35b9c2fcec60abe5288e565af4b6ec4c02aa265b317c7ac4e48618a5624",
+            "sizeInBytes": 106672
+          },
+          {
+            "id": 10477372302,
+            "name": "udp-supply-chain-deployment-evidence-35173382909",
+            "digest": "sha256:bc7517dd13b48d4f3c9a1ae311a934121f9bc09fe5e04a2f3f4ffad59e4afe9a",
+            "sizeInBytes": 74527
+          },
+          {
+            "id": 10477014855,
+            "name": "udp-dr-evidence-35173382909",
+            "digest": "sha256:cd57581c235e33183d096602b15912cc403a7d25917a3afe6358db94c7b6d5d8",
+            "sizeInBytes": 4303
+          }
+        ],
+        "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+      },
+      {
+        "repository": "GioNob/ouf-mcp-server",
+        "commit": "55e6a88dd6d6e5f30f00275c63ad09918864392d",
+        "mergeCommit": "acedf53ab59fb14f2b7dc9c5a387eef0cf5621ff",
+        "pr": 25,
+        "runId": 35173385863,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "Authorization Java Go conformance",
+        "ciUrl": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35173385863",
+        "artifacts": [],
+        "level": "COMMON_JAVA_GO_POLICY_VECTORS"
+      },
+      {
+        "repository": "GioNob/ouf-mcp-server",
+        "commit": "55e6a88dd6d6e5f30f00275c63ad09918864392d",
+        "mergeCommit": "acedf53ab59fb14f2b7dc9c5a387eef0cf5621ff",
+        "pr": 25,
+        "runId": 35173385824,
+        "attempt": 1,
+        "conclusion": "success",
+        "test": "MCP evidence and late recovery",
+        "ciUrl": "https://github.com/GioNob/ouf-mcp-server/actions/runs/35173385824",
+        "artifacts": [
+          {
+            "id": 10477686852,
+            "name": "mcp-release-evidence-35173385824",
+            "digest": "sha256:4c2f7d0791a744d4de99344b6e71da196fdf0b61e3c1fb5ed4429371f1db6520",
+            "sizeInBytes": 86738
+          }
+        ],
+        "level": "MODULE_RUNTIME_AND_RELEASE_GATES"
+      }
+    ],
+    "remaining": [
+      "AUT-02: operation capability coverage on remaining Semantic and other owner routes; see docs/R1B_ENDPOINT_COVERAGE_AUDIT.md",
+      "AUT-03: owner-derived fine-grained resource contexts and enforcement of detail/DAL decisions at every output boundary",
+      "AUT-04: real IAM/workload/THS authentication and CSRF bindings, directory claims, rotation/revocation acceptance"
+    ],
+    "observedValidationIssues": [
+      {
+        "repository": "GioNob/ouf-mcp-server",
+        "runId": 35173383194,
+        "firstAttempt": "Budget Reserve p95=67.440528ms, target <25ms. Same-head PR run passed; unchanged retry attempt 2 passed. No threshold, sample or application change.",
+        "finalAttempt": 2,
+        "finalConclusion": "success"
+      },
+      {
+        "repository": "GioNob/ouf-source-onboarding",
+        "runId": 35173316108,
+        "commit": "6afad89a7f2141d91d91631066ed3a032e2bc4f1",
+        "finding": "ProtectedLogRuntimeTest export lease returned no value in one PR execution; same-head push and both final-head runs passed. Historical failed run retained."
+      }
+    ],
+    "artifactQualification": "Artifact IDs, sizes and digests are GitHub metadata; archive contents were not independently downloaded and hashed."
   }
 }

@@ -192,3 +192,8 @@ Regola operativa permanente per il seguito: **una decisione risolta non viene ri
 Iniziare da **R0**, chiudendo il 403 della fixture Semantic live e stabilendo il registro comune. Proseguire con **R1a Authorization↔UDP e wiring dello SDK**, senza considerare i pairwise già verdi come prova di enforcement completo. Quindi realizzare R2a/b come prima verticale di piattaforma: source approvata → run automatica → durable ACK → Urban Object → lettura autorizzata. R3 porta questa stessa verticale fino alla visibilità dei fault nel chatbot dopo una disconnessione.
 
 Questo ordine conserva il lavoro fatto e concentra i prossimi incrementi sulle dipendenze che oggi impediscono di dimostrare la piattaforma completa.
+
+
+## Avanzamento R1b — 17 settembre 2026
+
+Implementazione centrale Authorization e cache consegnata; evidenze in `R1B_AUTHORIZATION_EVIDENCE.md`. AUT-01 chiuso per l'API amministrativa verificata in laboratorio. AUT-02 e AUT-03 restano parziali per enforcement e proiezioni owner-specific, con audit esplicito in `R1B_ENDPOINT_COVERAGE_AUDIT.md`. AUT-04 resta il gate IAM/THS reale. Lo stato `IMPLEMENTED_WITH_INTEGRATION_GAPS` non equivale ad accettazione completa del PET o a chiusura di tutti i requisiti della fase.
