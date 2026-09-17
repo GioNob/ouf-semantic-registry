@@ -1,6 +1,6 @@
 # R2f — Identità multi-fonte, conflitti e formati gestiti
 
-Stato: **IN CORSO — non accettato, non equivalente alla chiusura dei requisiti PET**.
+Stato: **implementazione del percorso R2f completata; 43 controlli integrati PASS, CI finale verde e accettazione operativa aperta**. Il rapporto aggiornato è `R2F_COMPLETION_2026_09_17.md`; non equivale alla chiusura integrale dei PET.
 
 Il committente ha approvato il completamento della risoluzione di identità e dei conflitti per **qualunque classe di oggetto**, il supporto Shapefile ZIP e l'importazione Access di tabelle e dati. Chiavi e relazioni Access costituiscono evidenza per proposte semantiche, mai pubblicazioni automatiche. I dehor sono un caso di collaudo, non una specializzazione del motore.
 
@@ -50,10 +50,10 @@ R2e certifica GeoPackage e relazioni dichiarate per chiave. Non certifica ATTRIB
 | Area | Stato |
 |---|---|
 | Score pesato e integrazione nella risoluzione UDP | Score puro e integrazione PostgreSQL/PostGIS verificati in CI; validazione prima dell’approvazione e replay della decisione umana aggiunti |
-| Authority geometrica, ruoli e workflow umano | Backend di scelta tra due geometrie, audit e ripresa verificati; ruoli, proprietà non geometriche e interfaccia cartografica ancora aperti |
-| Shapefile ZIP | Lettore, profiler, adapter e controlli di integrità implementati; fixture punti/poligoni con buchi; nuovo percorso fra quattro owner verificato (rapporto del 17 settembre); equivalenza generale GeoPackage/Shapefile ancora aperta |
-| Access, chiavi e relazioni | Lettore/profiler/adapter, chiavi composite e metadata/suggerimenti semantici implementati; pubblicazione semantica governata integrata ancora aperta |
-| Tracciabilità e collaudo integrato | Nuova prova Access/Shapefile: 27 PASS; accettazione umana completa aperta |
+| Authority geometrica, ruoli e workflow umano | Scelte geometriche/scalari, audit, ruoli, validità e THS implementati; prove owner e browser, più HTTP fra owner; collaudo IAM/APISIX reale aperto |
+| Shapefile ZIP | Lettore, profiler, adapter e controlli di integrità implementati; fixture punti/poligoni con buchi; nuovo percorso fra quattro owner verificato (rapporto del 17 settembre); equivalenza GeoPackage/Shapefile aggiunta allo scenario integrato; nessuna attestazione universale dei formati |
+| Access, chiavi e relazioni | Lettore/profiler/adapter, chiavi composite e metadata/suggerimenti semantici implementati; gap idempotenti collegati alle evidenze e selezione di un riferimento Registry pubblicato aggiunti allo scenario integrato |
+| Tracciabilità e collaudo integrato | Prova estesa con equivalenza dei formati e decisioni HTTP umane; pin/esiti nel rapporto di completamento; accettazione operativa aperta |
 
 Nessun grigliato IGM reale, collaudo territoriale o accettazione operativa è attestato da questo documento.
 
@@ -64,10 +64,10 @@ Nessun grigliato IGM reale, collaudo territoriale o accettazione operativa è at
 - Le metriche spaziali usano la geometria trasformata secondo R2d. I candidati senza geometria possono concorrere sugli attributi quando non è richiesto un filtro geografico. Il confronto testuale usa NFKC, case folding e distanza di modifica; gli attributi di blocking richiedono invece uguaglianza JSON, da configurare su valori normalizzati.
 - Il percorso pubblicato conserva la geometria corrente davanti a contributi discordanti di pari autorità e mette il job in revisione. Il confronto è topologico nel CRS di serving, non una tolleranza territoriale configurabile. La via legacy di materializzazione diretta non è certificata come corretta per il caso multi-fonte.
 - L’approvazione di un match riprende la lavorazione attraverso il binding umano e conserva la decisione automatica append-only. La policy di authority viene rivalutata sui contributi storici, senza riscriverne il rank originale.
-- Sono ancora aperti: decisioni sui conflitti di proprietà non geometriche, ruoli/validità geometrica, controllo degli aggiornamenti fuori ordine della stessa fonte e la superficie cartografica con IAM reale. Il backend per scegliere la geometria è ora implementato e verificato nel caso di due contributi di pari autorità; questo non equivale al collaudo umano completo.
-- Access conserva `metadata.semanticHints` e `sourceSchemaEvidence` nella bozza: classi/proprietà da cercare, chiavi dichiarate e coppie di colonne delle relazioni, senza inventare IRI o direzioni ontologiche. Il workflow di selezione/pubblicazione del Semantic Registry resta da collegare e collaudare.
+- Il rapporto di completamento documenta ora decisioni scalari, ruoli/validità, controllo temporale geometrico e superficie cartografica. Rimane aperto il collaudo umano con IAM/APISIX reali; i test di sviluppo non lo sostituiscono.
+- Access conserva `metadata.semanticHints` e `sourceSchemaEvidence` nella bozza: classi/proprietà da cercare, chiavi dichiarate e coppie di colonne delle relazioni, senza inventare IRI o direzioni ontologiche. Il collegamento al workflow dei gap e il riuso di un riferimento pubblicato sono implementati e collaudati con attori espliciti; nessuna FK pubblica automaticamente semantica.
 - I nuovi lettori sono identici tra Onboarding e Ingestion. Limiti e formati effettivamente collaudati sono descritti in `docs/R2F_MANAGED_FORMATS.md` nei due repository.
-- Le vecchie pairwise non attestano Access/Shapefile. La nuova workflow R2f ora verifica 27 controlli su pubblicazioni nuove con quattro owner: evidenze e pin in `R2F_REVIEW_2026_09_17.md`. I gate umani, le proposte Semantic e gli altri casi di equivalenza rimangono aperti.
+- Le vecchie pairwise non attestano Access/Shapefile. La nuova workflow R2f ora verifica 27 controlli su pubblicazioni nuove con quattro owner: evidenze e pin in `R2F_REVIEW_2026_09_17.md`. La successiva prova estesa e i suoi limiti sono in `R2F_COMPLETION_2026_09_17.md`. Il gate dell’ambiente umano reale rimane aperto.
 
 
 ## Decisione umana sulla geometria
@@ -78,7 +78,7 @@ La decisione append-only seleziona una delle due revisioni, registra actor/autho
 
 `SpatialMaterializerRuntimeTest.humanGeometryChoiceResumesJobAndSurvivesReimportWithoutBecomingAGlobalRule` verifica entrambe le scelte, ripresa del job, coerenza canonica/geometrica, reimport, immutabilità, actor automatico negato, label insufficienti negate e nuova geometria nuovamente in revisione. Si tratta di un test owner PostgreSQL/PostGIS, non di un collaudo browser con identità esterna.
 
-Gateway aggiunge due binding nel namespace limitato dell’owner; il comando è dichiarato umano e non è pubblicato come tool MCP. Il profilo iniziale ammette soltanto OPEN/ANONYMOUS (PET Gateway); la nuova API UDP applica il limite anche a utenti con privilegi più ampi. Le prove owner su RESTRICTED non certificano l’esposizione di tali dati tramite il Gateway. Pubblicazione APISIX, IAM e browser THS restano da collaudare.
+Gateway aggiunge due binding nel namespace limitato dell’owner; il comando è dichiarato umano e non è pubblicato come tool MCP. Il profilo iniziale ammette soltanto OPEN/ANONYMOUS (PET Gateway); la nuova API UDP applica il limite anche a utenti con privilegi più ampi. Le prove owner su RESTRICTED non certificano l’esposizione di tali dati tramite il Gateway. Il browser THS ha ora una suite Chromium; pubblicazione APISIX e sessione IAM reale restano da collaudare.
 
 ## PR di sviluppo
 
@@ -94,4 +94,4 @@ Le PR restano in bozza; `main` non è stato modificato da R2f.
 
 La verifica su roadmap, L0 e PET è registrata in [R2F_REVIEW_2026_09_17.md](R2F_REVIEW_2026_09_17.md). Corregge due difetti del percorso reale: creazione di nuovi oggetti in presenza di score basso ed evidenze incomplete; controllo di una colonna geometrica assente nell’onboarding Access. Aggiunge la workflow fra quattro owner dedicata a Shapefile/Access, score, relazioni, reimport e autorizzazioni. Lo stato finale e i pin sono nel rapporto.
 
-R2f rimane draft finché sono aperti i criteri umani, semantici e geometrici sopra elencati. Nessun avanzamento automatico a R3.
+La verifica successiva chiude le lacune di implementazione descritte nel rapporto di completamento. R2f rimane draft per il collaudo dell’operatore con IAM/APISIX reali. Nessun avanzamento automatico a R3.

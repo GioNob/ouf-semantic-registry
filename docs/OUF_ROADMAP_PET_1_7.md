@@ -151,7 +151,7 @@ Le tranche seguenti sono una proposta di sequenza, non nuove prescrizioni dei PE
 | R2c | Semantic↔Onboarding↔runtime | R1, R2 | Discovery/adoption/publication governate; cambio ACTIVE non cambia la run pinned; historical replay esatto |
 | R2d | Fondazioni geografiche e decisione CRS | R2c | CRS configurabile per Comune; trasformazioni effettive e ordine assi; grigliati verificati/versionati; scelta umana converti/rigetta registrata nel profilo |
 | R2e | GeoPackage → oggetti e relazioni | R2d | Telecamere e armadi acquisiti come oggetti con identità stabile; relazione per identificativo, navigabile nei due sensi; riferimenti mancanti/ambigui espliciti |
-| R2f | Identità multi-fonte, conflitti, Shapefile e Access | R2e | Incremento approvato, IN CORSO: score composito, decisioni umane, formati e dati relazionali; criteri in R2F_MULTISOURCE_AND_MANAGED_FORMATS.md |
+| R2f | Identità multi-fonte, conflitti, Shapefile e Access | R2e | Implementazione e prove di sviluppo estese; accettazione operativa aperta. Stato e pin in R2F_COMPLETION_2026_09_17.md |
 | R3 | Operational Awareness completa, priorità prodotto | R1 e R2a/b | OUF-OA-001…006 e OUF-OA-CN-001…005: fault offline, retry/dedup/recovery, misfire, retention, partial/deny, medesimo owner via MCP/API |
 | R4a | Catalogo capability e THS comune | R1/R2; può procedere con R3 | Onboarding/file, serving e proposal esposti via Gateway/MCP; decisioni umane e protected logs confinati a THS browser |
 | R4b | Residui di dominio | R2; per moduli indipendenti | UDP PARTIAL chiusi; altri formati/casi GIS previsti oltre GeoPackage; Semantic job/limits/upstream lifecycle e Onboarding discovery automatica completi |
@@ -268,3 +268,9 @@ Implementazione, requisiti PET, prove e limiti: [R2F_MULTISOURCE_AND_MANAGED_FOR
 ### Verifica di ripresa R2f
 
 Il [rapporto di verifica del 17 settembre](R2F_REVIEW_2026_09_17.md) collega i difetti corretti, la prova dei nuovi formati e i gate residui al perimetro già approvato. R2f resta l’incremento corrente; la CI dei lettori o della nuova prova verticale non chiude automaticamente revisione cartografica, gestione dei conflitti, ruoli/validità geometrica e integrazione delle proposte Access con Semantic/THS.
+
+### Completamento del percorso di revisione R2f
+
+Il [rapporto aggiornato](R2F_COMPLETION_2026_09_17.md) documenta decisioni scalari, coerenza e ruoli geometrici, validità/ordine delle osservazioni, code e confronto cartografico THS, collegamento dei suggerimenti Access ai gap e al riferimento semantico pubblicato. La prova fra quattro owner comprende equivalenza GeoPackage/Shapefile, comandi HTTP umani, CSRF/stale/retry e persistenza al riavvio. Browser e owner hanno prove separate con i propri limiti dichiarati.
+
+Resta il collaudo dell’operatore con IdP, sessione browser, HTTPS e APISIX nell’ambiente rappresentativo. R3 segue l’accettazione R2f; non si attestano né merge in main né accettazione operativa sulla sola base della CI.
