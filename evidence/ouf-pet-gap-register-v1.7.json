@@ -1674,15 +1674,15 @@
         "§37 e §109"
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
-      "status": "OPEN",
+      "status": "PARTIAL",
       "phase": "R2a",
       "dependencies": [
         "R1a",
         "R1b"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "INTEGRAZIONE: ACTIVE bundle → proiezione Gateway → compatibilità Ingestion → prima ingestione file o PULL. Verificare exact references, acknowledgement e riattivazione dopo schema drift; la policy operativa va realmente consumata dall'Ingestion, non soltanto serializzata. PET §37 e §109.17; OUF-E2E-001/017/019/020.",
-      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "assessment": "R2a implementa feed ACTIVE protetto, client Gateway autenticato, checksum e snapshot immutabile, preflight Semantic esatto, loop automatico di admission MANAGED_ONCE/PULL, cadence/retry versionati e lease recovery. Il test tra Onboarding reale e JAR Ingestion avvia le run senza chiamare i worker e non duplica al restart. Acquisizione completa, raw Lake, ACK UDP, watermark/replay e ritorno Onboarding restano R2b/c; IAM/Gateway/Semantic reali restano accettazione separata.",
+      "evidenceLevel": "TWO_REAL_JVM_PROCESSES_WITH_GATEWAY_SEMANTIC_IDENTITY_FIXTURES",
       "baselineEvidence": [
         {
           "name": "Source Onboarding module CI",
@@ -1697,7 +1697,119 @@
       "sourceReferences": [
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/docs/PET_TRACEABILITY.md",
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/docs/OPERATIONAL_AWARENESS_TRACEABILITY.md"
-      ]
+      ],
+      "partialProgress": {
+        "phase": "R2a",
+        "implemented": [
+          "Bounded SERVICE publication feed and ACTIVE recheck",
+          "Automatic file/PULL run admission and exact immutable snapshot",
+          "Exact Semantic id/version/revision/publication-set preflight",
+          "Published PULL cadence and retry budgets; managed once",
+          "Lease-generation fencing, same-slot crash recovery and restart without duplicate runs"
+        ],
+        "evidence": [
+          {
+            "artifacts": [
+              {
+                "digest": "sha256:e9adb82a495039ad7ea8ae2c50f0f442d9d1a16865ee8f64be0eae49ce3948f7",
+                "id": 10482890898,
+                "name": "source-onboarding-evidence-35186801591",
+                "sizeInBytes": 109674
+              }
+            ],
+            "attempt": 1,
+            "ciUrl": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35186801591",
+            "commit": "232a605faa57c3df7eb5ad5d45c8d5f6ec81fe43",
+            "conclusion": "success",
+            "mergeCommit": "015bc698cf2704f6f35fa31e904a317f60d19c8e",
+            "pr": 12,
+            "repository": "GioNob/ouf-source-onboarding",
+            "runId": 35186801591,
+            "test": "Source Onboarding module CI"
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "66bdf41c181a74d88744e4adebe8abd2b988f658",
+            "mergeCommit": "6880273244af4d50c3ab1f1af4937c5fee060378",
+            "pr": 23,
+            "runId": 35186875453,
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35186875453",
+            "test": "Ingestion Runtime module CI",
+            "conclusion": "success",
+            "attempt": 1,
+            "artifacts": [
+              {
+                "id": 10482806544,
+                "name": "ingestion-dr-evidence-35186875453",
+                "digest": "sha256:0a1f2384008763d50c1e0eeeea1ae272b22ac1d2827b632daaca00babef315fb",
+                "sizeInBytes": 5066
+              },
+              {
+                "id": 10482771839,
+                "name": "ingestion-release-evidence-35186875453",
+                "digest": "sha256:fa7edf16be44b4cd2d221c8fe77470e6b0becc10b5e659c95caa1ac905f01bce",
+                "sizeInBytes": 94818
+              },
+              {
+                "id": 10482582725,
+                "name": "ingestion-evidence-35186875453",
+                "digest": "sha256:d54d8d6768b00c865130f680aa5409b1fec57c99f6c6f1ba109dfbcff56623f5",
+                "sizeInBytes": 131782
+              }
+            ]
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "66bdf41c181a74d88744e4adebe8abd2b988f658",
+            "mergeCommit": "6880273244af4d50c3ab1f1af4937c5fee060378",
+            "pr": 23,
+            "runId": 35186875475,
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35186875475",
+            "test": "Shared Authorization SDK pairwise",
+            "conclusion": "success",
+            "attempt": 1,
+            "artifacts": [
+              {
+                "id": 10482473046,
+                "name": "authorization-sdk-consumer-evidence",
+                "digest": "sha256:ee61af9dcec507267a820921d3a001ffd1639b554b8309a38262bce26e886c36",
+                "sizeInBytes": 18621
+              }
+            ]
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "66bdf41c181a74d88744e4adebe8abd2b988f658",
+            "mergeCommit": "6880273244af4d50c3ab1f1af4937c5fee060378",
+            "pr": 23,
+            "runId": 35186875463,
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35186875463",
+            "test": "R2a Onboarding automatic activation",
+            "conclusion": "success",
+            "attempt": 1,
+            "artifacts": [
+              {
+                "id": 10482717077,
+                "name": "r2a-activation-summary-35186875463",
+                "digest": "sha256:06c89909c5ed815c63582f9be5e8040f0ad7b12e36e7fe787e3e3842fc5eb1fb",
+                "sizeInBytes": 578
+              },
+              {
+                "id": 10482353483,
+                "name": "r2a-automatic-activation-35186875463",
+                "digest": "sha256:252f039daea50214607056b16dc9a274a5da69a19bb914599dd0b0e314370ef8",
+                "sizeInBytes": 6715
+              }
+            ]
+          }
+        ],
+        "remaining": [
+          "R2b: production source acquisition and Data Lake/UDP durable ACK with committed watermark",
+          "R2b/c: replay, historical resolution and Onboarding drift/review feedback",
+          "R3: full operational misfire/recovery/retention projections",
+          "AUT-04/R6: real identity, Gateway and representative environment acceptance"
+        ]
+      }
     },
     {
       "id": "THS-01",
@@ -1776,15 +1888,15 @@
         "§§21, 32–37, 80–89, 128 e 139"
       ],
       "ownerRepository": "GioNob/ouf-ingestion-runtime",
-      "status": "OPEN",
+      "status": "PARTIAL",
       "phase": "R2a",
       "dependencies": [
         "R1a",
         "R1b"
       ],
       "baselineCommit": "e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2",
-      "assessment": "CODICE/INTEGRAZIONE, blocco della catena: collegare gli adapter di produzione per bundle ACTIVE, Semantic preflight, Data Lake, durable handoff UDP, replay e ritorno Onboarding. `RunCoordinator`, `RunExecutionWorker`, `OutboxDispatcher` e `ReplayWorker` sono condizionati alla presenza di port; non risultano bean di produzione per l'intera composizione né un loop schedulato che invochi questi metodi. `@EnableScheduling` da solo non avvia l'ingestion. I test costruiscono percorsi eseguibili ma non dimostrano che il container confezionato li avvii. Uscita: una source ACTIVE viene acquisita senza chiamate manuali ai metodi Java, ACK e watermark rispettano i vincoli, restart e lease recovery provati. PET §§21, 32–37, 80–89, 128 e 139.",
-      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "assessment": "R2a implementa feed ACTIVE protetto, client Gateway autenticato, checksum e snapshot immutabile, preflight Semantic esatto, loop automatico di admission MANAGED_ONCE/PULL, cadence/retry versionati e lease recovery. Il test tra Onboarding reale e JAR Ingestion avvia le run senza chiamare i worker e non duplica al restart. Acquisizione completa, raw Lake, ACK UDP, watermark/replay e ritorno Onboarding restano R2b/c; IAM/Gateway/Semantic reali restano accettazione separata.",
+      "evidenceLevel": "TWO_REAL_JVM_PROCESSES_WITH_GATEWAY_SEMANTIC_IDENTITY_FIXTURES",
       "baselineEvidence": [
         {
           "name": "Ingestion Runtime module CI",
@@ -1799,7 +1911,119 @@
       "sourceReferences": [
         "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RuntimePorts.java",
         "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RunExecutionWorker.java"
-      ]
+      ],
+      "partialProgress": {
+        "phase": "R2a",
+        "implemented": [
+          "Bounded SERVICE publication feed and ACTIVE recheck",
+          "Automatic file/PULL run admission and exact immutable snapshot",
+          "Exact Semantic id/version/revision/publication-set preflight",
+          "Published PULL cadence and retry budgets; managed once",
+          "Lease-generation fencing, same-slot crash recovery and restart without duplicate runs"
+        ],
+        "evidence": [
+          {
+            "artifacts": [
+              {
+                "digest": "sha256:e9adb82a495039ad7ea8ae2c50f0f442d9d1a16865ee8f64be0eae49ce3948f7",
+                "id": 10482890898,
+                "name": "source-onboarding-evidence-35186801591",
+                "sizeInBytes": 109674
+              }
+            ],
+            "attempt": 1,
+            "ciUrl": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35186801591",
+            "commit": "232a605faa57c3df7eb5ad5d45c8d5f6ec81fe43",
+            "conclusion": "success",
+            "mergeCommit": "015bc698cf2704f6f35fa31e904a317f60d19c8e",
+            "pr": 12,
+            "repository": "GioNob/ouf-source-onboarding",
+            "runId": 35186801591,
+            "test": "Source Onboarding module CI"
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "66bdf41c181a74d88744e4adebe8abd2b988f658",
+            "mergeCommit": "6880273244af4d50c3ab1f1af4937c5fee060378",
+            "pr": 23,
+            "runId": 35186875453,
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35186875453",
+            "test": "Ingestion Runtime module CI",
+            "conclusion": "success",
+            "attempt": 1,
+            "artifacts": [
+              {
+                "id": 10482806544,
+                "name": "ingestion-dr-evidence-35186875453",
+                "digest": "sha256:0a1f2384008763d50c1e0eeeea1ae272b22ac1d2827b632daaca00babef315fb",
+                "sizeInBytes": 5066
+              },
+              {
+                "id": 10482771839,
+                "name": "ingestion-release-evidence-35186875453",
+                "digest": "sha256:fa7edf16be44b4cd2d221c8fe77470e6b0becc10b5e659c95caa1ac905f01bce",
+                "sizeInBytes": 94818
+              },
+              {
+                "id": 10482582725,
+                "name": "ingestion-evidence-35186875453",
+                "digest": "sha256:d54d8d6768b00c865130f680aa5409b1fec57c99f6c6f1ba109dfbcff56623f5",
+                "sizeInBytes": 131782
+              }
+            ]
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "66bdf41c181a74d88744e4adebe8abd2b988f658",
+            "mergeCommit": "6880273244af4d50c3ab1f1af4937c5fee060378",
+            "pr": 23,
+            "runId": 35186875475,
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35186875475",
+            "test": "Shared Authorization SDK pairwise",
+            "conclusion": "success",
+            "attempt": 1,
+            "artifacts": [
+              {
+                "id": 10482473046,
+                "name": "authorization-sdk-consumer-evidence",
+                "digest": "sha256:ee61af9dcec507267a820921d3a001ffd1639b554b8309a38262bce26e886c36",
+                "sizeInBytes": 18621
+              }
+            ]
+          },
+          {
+            "repository": "GioNob/ouf-ingestion-runtime",
+            "commit": "66bdf41c181a74d88744e4adebe8abd2b988f658",
+            "mergeCommit": "6880273244af4d50c3ab1f1af4937c5fee060378",
+            "pr": 23,
+            "runId": 35186875463,
+            "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35186875463",
+            "test": "R2a Onboarding automatic activation",
+            "conclusion": "success",
+            "attempt": 1,
+            "artifacts": [
+              {
+                "id": 10482717077,
+                "name": "r2a-activation-summary-35186875463",
+                "digest": "sha256:06c89909c5ed815c63582f9be5e8040f0ad7b12e36e7fe787e3e3842fc5eb1fb",
+                "sizeInBytes": 578
+              },
+              {
+                "id": 10482353483,
+                "name": "r2a-automatic-activation-35186875463",
+                "digest": "sha256:252f039daea50214607056b16dc9a274a5da69a19bb914599dd0b0e314370ef8",
+                "sizeInBytes": 6715
+              }
+            ]
+          }
+        ],
+        "remaining": [
+          "R2b: production source acquisition and Data Lake/UDP durable ACK with committed watermark",
+          "R2b/c: replay, historical resolution and Onboarding drift/review feedback",
+          "R3: full operational misfire/recovery/retention projections",
+          "AUT-04/R6: real identity, Gateway and representative environment acceptance"
+        ]
+      }
     },
     {
       "id": "ING-02",
@@ -3111,5 +3335,127 @@
     ],
     "nextVertical": "R2a: approved ACTIVE Onboarding bundle starts file/PULL Ingestion automatically; carry resource-policy negative tests into the live path.",
     "artifactQualification": "IDs/sizes/digests are GitHub metadata; archive bytes not independently downloaded/hashed."
+  },
+  "r2a": {
+    "status": "IMPLEMENTED_AND_VERIFIED_FOR_AUTOMATIC_ADMISSION",
+    "scope": "ACTIVE publication produces first managed-file/PULL run automatically, with exact preflight and versioned schedule. RUNNING means admitted, not ingestion completed.",
+    "normativeReferences": [
+      "Onboarding 1.6 §37/§109.17",
+      "Ingestion 1.3 §5/§21/§§32–37",
+      "Roadmap R2a"
+    ],
+    "publisherFixtureCommit": "6d9879f4734c21795d52d86ae8843b188b5623ff",
+    "evidence": [
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:e9adb82a495039ad7ea8ae2c50f0f442d9d1a16865ee8f64be0eae49ce3948f7",
+            "id": 10482890898,
+            "name": "source-onboarding-evidence-35186801591",
+            "sizeInBytes": 109674
+          }
+        ],
+        "attempt": 1,
+        "ciUrl": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35186801591",
+        "commit": "232a605faa57c3df7eb5ad5d45c8d5f6ec81fe43",
+        "conclusion": "success",
+        "mergeCommit": "015bc698cf2704f6f35fa31e904a317f60d19c8e",
+        "pr": 12,
+        "repository": "GioNob/ouf-source-onboarding",
+        "runId": 35186801591,
+        "test": "Source Onboarding module CI"
+      },
+      {
+        "repository": "GioNob/ouf-ingestion-runtime",
+        "commit": "66bdf41c181a74d88744e4adebe8abd2b988f658",
+        "mergeCommit": "6880273244af4d50c3ab1f1af4937c5fee060378",
+        "pr": 23,
+        "runId": 35186875453,
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35186875453",
+        "test": "Ingestion Runtime module CI",
+        "conclusion": "success",
+        "attempt": 1,
+        "artifacts": [
+          {
+            "id": 10482806544,
+            "name": "ingestion-dr-evidence-35186875453",
+            "digest": "sha256:0a1f2384008763d50c1e0eeeea1ae272b22ac1d2827b632daaca00babef315fb",
+            "sizeInBytes": 5066
+          },
+          {
+            "id": 10482771839,
+            "name": "ingestion-release-evidence-35186875453",
+            "digest": "sha256:fa7edf16be44b4cd2d221c8fe77470e6b0becc10b5e659c95caa1ac905f01bce",
+            "sizeInBytes": 94818
+          },
+          {
+            "id": 10482582725,
+            "name": "ingestion-evidence-35186875453",
+            "digest": "sha256:d54d8d6768b00c865130f680aa5409b1fec57c99f6c6f1ba109dfbcff56623f5",
+            "sizeInBytes": 131782
+          }
+        ]
+      },
+      {
+        "repository": "GioNob/ouf-ingestion-runtime",
+        "commit": "66bdf41c181a74d88744e4adebe8abd2b988f658",
+        "mergeCommit": "6880273244af4d50c3ab1f1af4937c5fee060378",
+        "pr": 23,
+        "runId": 35186875475,
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35186875475",
+        "test": "Shared Authorization SDK pairwise",
+        "conclusion": "success",
+        "attempt": 1,
+        "artifacts": [
+          {
+            "id": 10482473046,
+            "name": "authorization-sdk-consumer-evidence",
+            "digest": "sha256:ee61af9dcec507267a820921d3a001ffd1639b554b8309a38262bce26e886c36",
+            "sizeInBytes": 18621
+          }
+        ]
+      },
+      {
+        "repository": "GioNob/ouf-ingestion-runtime",
+        "commit": "66bdf41c181a74d88744e4adebe8abd2b988f658",
+        "mergeCommit": "6880273244af4d50c3ab1f1af4937c5fee060378",
+        "pr": 23,
+        "runId": 35186875463,
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35186875463",
+        "test": "R2a Onboarding automatic activation",
+        "conclusion": "success",
+        "attempt": 1,
+        "artifacts": [
+          {
+            "id": 10482717077,
+            "name": "r2a-activation-summary-35186875463",
+            "digest": "sha256:06c89909c5ed815c63582f9be5e8040f0ad7b12e36e7fe787e3e3842fc5eb1fb",
+            "sizeInBytes": 578
+          },
+          {
+            "id": 10482353483,
+            "name": "r2a-automatic-activation-35186875463",
+            "digest": "sha256:252f039daea50214607056b16dc9a274a5da69a19bb914599dd0b0e314370ef8",
+            "sizeInBytes": 6715
+          }
+        ]
+      }
+    ],
+    "processChecks": [
+      "anonymous gateway denied",
+      "automatic CSV and PULL preflight",
+      "managed once consumed",
+      "versioned PULL cadence/timezone",
+      "published checksum and managed asset/profile pinned",
+      "restart without duplicate runs",
+      "exact reference preflight through Gateway seam"
+    ],
+    "limitations": [
+      "Gateway and Semantic responses, publisher workload identity, HUMAN approval actor and compatibility attestation are laboratory fixtures",
+      "The real production Ingestion JAR and real Onboarding service/database are exercised, but no source-acquisition, Data Lake or UDP ACK completion is claimed",
+      "Misfire incident projection and retention execution remain R3",
+      "Artifact IDs/digests are GitHub metadata; archive bytes were not independently downloaded/hashed"
+    ],
+    "nextStep": "R2b: source adapters → Data Lake → UDP durable ACK → committed watermark → authorized serving"
   }
 }

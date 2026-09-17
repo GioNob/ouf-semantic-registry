@@ -364,6 +364,28 @@
     },
     {
       "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/RuntimePublicationApi.java",
+      "mappings": [
+        {
+          "line": 15,
+          "declaration": "@RequestMapping(\"/api/onboarding/v1/runtime/publications\")"
+        },
+        {
+          "line": 19,
+          "declaration": "@GetMapping public Map<String,Object> page(@RequestParam(defaultValue=\"\") String after,@RequestParam(defaultValue=\"20\") int limit,HttpServletRequest request){"
+        },
+        {
+          "line": 25,
+          "declaration": "@GetMapping(\"/{sourceId}/active\") public Map<String,Object> active(@PathVariable String sourceId,HttpServletRequest request){"
+        }
+      ],
+      "authorizationMarkers": [
+        "authorize"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-source-onboarding",
       "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/SchemaSurveillanceApi.java",
       "mappings": [
         {
