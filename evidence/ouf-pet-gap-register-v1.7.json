@@ -2106,7 +2106,12 @@
       "sourceReferences": [
         "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RuntimePorts.java",
         "https://github.com/GioNob/ouf-ingestion-runtime/tree/e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2/src/main/java/it/comune/trieste/ouf/ingestion/RunExecutionWorker.java"
-      ]
+      ],
+      "r2dDependency": {
+        "implementedFoundation": "Governed municipal CRS in UDP and Onboarding",
+        "formatCoverageUnchanged": true,
+        "nextStep": "R2e GeoPackage"
+      }
     },
     {
       "id": "UDP-01",
@@ -2123,7 +2128,7 @@
         "R2a"
       ],
       "baselineCommit": "a18e1c1d1f6add41bb11c975e5f2487f352d1bdb",
-      "assessment": "R2b collega risoluzione della pubblicazione esatta, confronto riferimenti e identità Semantic, profili approvati e loop automatico di resolution/materialization canonica. Test reale UDP/PostGIS/MinIO dimostra current serving autorizzato, lineage, label e restart nel percorso CSV/REST. La catena completa relationship/spatial, tutti i riferimenti storici e l’ambiente reale restano da dimostrare; gruppo PARTIAL.",
+      "assessment": "R2b collega risoluzione della pubblicazione esatta, confronto riferimenti e identità Semantic, profili approvati e loop automatico di resolution/materialization canonica. Test reale UDP/PostGIS/MinIO dimostra current serving autorizzato, lineage, label e restart nel percorso CSV/REST. La catena completa relationship/spatial, tutti i riferimenti storici e l’ambiente reale restano da dimostrare; gruppo PARTIAL. R2d aggiunge CRS configurabile, trasformazioni effettive e il collegamento della materializzazione geometrica al loop pubblicato, verificati con PostGIS e fixture dichiarate dei profili. La catena GIS completa fra owner e le relazioni restano R2e; PARTIAL.",
       "evidenceLevel": "THREE_REAL_JVM_PROCESSES_POSTGRES_MINIO_WITH_DECLARED_GATEWAY_SOURCE_SEMANTIC_IDENTITY_FIXTURES",
       "baselineEvidence": [
         {
@@ -2151,6 +2156,10 @@
         "evidenceReference": "r2b.evidence",
         "humanAcceptanceReference": "r2b.humanAcceptance",
         "remainingReference": "r2b.limits",
+        "closureClaim": false
+      },
+      "r2dProgress": {
+        "evidenceReference": "r2d.evidence",
         "closureClaim": false
       }
     },
@@ -3973,10 +3982,145 @@
     }
   },
   "gisRoadmap": {
-    "R2d": "Configurable municipal CRS, governed convert/reject choice, versioned transformation grids and control points",
+    "R2d": "Implemented and verified CRS foundations; IGM/local resource licensing and territorial control-point deployment gate remains open",
     "R2e": "GeoPackage feature objects, stable identity, cameras/cabinets reciprocal navigation and unresolved links",
     "R3": "GIS progress and actionable anomalies",
     "R4a": "Map preview, guided import, object cards and precise geocoding presentation",
     "decisionAppliesTo": "Versioned source profile, including dynamic layers; changed transformation conditions require a new human decision"
+  },
+  "r2d": {
+    "status": "IMPLEMENTED_AND_VERIFIED_GOVERNED_CRS_FOUNDATIONS",
+    "scope": "Governed municipal CRS foundations; explicit transforms, source/axis provenance, verified synthetic grid execution and human source-profile decision",
+    "normativeReferences": [
+      "UDP 1.3 §29.1",
+      "Onboarding 1.6 ONB-A11",
+      "Ingestion 1.3 §68 and ING-A09 (partial)"
+    ],
+    "pullRequests": {
+      "UDP": 28,
+      "Onboarding": 15
+    },
+    "humanAcceptance": {
+      "role": "municipal source approver and authorized object reader",
+      "goal": "choose convert/reject and verify the resulting geometry and provenance",
+      "surface": "Onboarding trusted approval owner card and UDP owner serving; persisted quarantine issues",
+      "observableResult": "frozen CRS decision; canonicalGeometry, geometryCrs and geometryProvenance; restricted fields omitted; rejected records create no empty Urban Object"
+    },
+    "verified": [
+      "Municipal CRS configuration, including 6708 and 32631 test cases",
+      "Explicit XY/YX handling and original geometry retention",
+      "Pinned source and serving operations with area and independent control points",
+      "Grid inventory byte checks, startup refusal, read-only mounts and network disabled",
+      "Actual synthetic NTv2 displacement executed in PostGIS",
+      "Runtime rejects missing/changed grid resources and optional fallback",
+      "Human approval card, non-human confirmation denied, frozen version and publication",
+      "Published execution loop quarantines before object identity and materializes accepted geometry",
+      "Serving geometry and CRS/provenance share owner authorization and DataAccessLabel"
+    ],
+    "limits": [
+      "No IGM/local grid availability, licensing or territorial accuracy attested",
+      "Synthetic grid proves mechanism only; RDN2008/WGS84 serving equivalence in one fixture has explicitly unknown accuracy",
+      "2D only; no vertical/epoch/geocoding coverage",
+      "One configured municipality per current tenant deployment; no automatic historic reprojection on CRS changes",
+      "Profile resolution and reference gate are fixtures in the new loop test; GeoPackage cross-owner acquisition is R2e",
+      "Complete operational remediation R3; guided map/import UI R4a; real Gateway/IAM/THS acceptance still open"
+    ],
+    "evidence": [
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:11d45f3a8cdbb15b9ce6ec9c20fd4795a099303956697a63147586c69dac6a21",
+            "id": 10486716649,
+            "name": "r2d-crs-evidence-35197306772"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "4996b345a17536bb1205684f7742e0f735301dae",
+        "repository": "ouf-udp-object-resolution",
+        "runId": 35197306772,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35197306772"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:41e91cc3ea58754512f5852dd10de22ca10085f7c74ba8fa02ed534ba77628ce",
+            "id": 10486186780,
+            "name": "authorization-sdk-consumer-evidence"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "4996b345a17536bb1205684f7742e0f735301dae",
+        "repository": "ouf-udp-object-resolution",
+        "runId": 35197306808,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35197306808"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:148f967c064e7077d9f23d55c12089db94e11df2679cccd5af3756b61a13b8d5",
+            "id": 10486636446,
+            "name": "source-onboarding-evidence-35197042345"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "823ecc90c2186225f4e88452891af1d14e6613e7",
+        "repository": "ouf-source-onboarding",
+        "runId": 35197042345,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35197042345"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:cdac46d1c117e94e37f713b86cd8a1a318c4937693d938525cb2d2678a8431fc",
+            "id": 10487100352,
+            "name": "udp-evidence-35197306649"
+          },
+          {
+            "digest": "sha256:88fa1cef3e53b554c11ae1b8935de20c1ada9c9b97bd23d8b51cb93bc7e51013",
+            "id": 10486920964,
+            "name": "udp-dr-evidence-35197306649"
+          },
+          {
+            "digest": "sha256:4d593cea8a0fc21fc48f0297eb47efd723935f587437e0f7fcbe30f28b177d3e",
+            "id": 10486676863,
+            "name": "udp-performance-evidence-35197306649"
+          },
+          {
+            "digest": "sha256:61241a4d04ac3843caf00ea8670d3cd61198e5c8b20d0afb0c4d54b1592cb101",
+            "id": 10486371633,
+            "name": "udp-supply-chain-deployment-evidence-35197306649"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "4996b345a17536bb1205684f7742e0f735301dae",
+        "repository": "ouf-udp-object-resolution",
+        "runId": 35197306649,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35197306649"
+      }
+    ],
+    "nextStep": "R2e: GeoPackage feature objects, stable identity and cameras/cabinets relationships",
+    "commits": {
+      "udp": {
+        "headSha": "4996b345a17536bb1205684f7742e0f735301dae",
+        "mergeSha": "ca3039da36313691c93d6333be4760bc4a760430"
+      },
+      "onboarding": {
+        "headSha": "823ecc90c2186225f4e88452891af1d14e6613e7",
+        "mergeSha": "584692a4fe3c07ff2d5acc6191e931c66799bbc6"
+      }
+    },
+    "initialCiFailure": {
+      "runId": 35196615835,
+      "reason": "Fixed host PostgreSQL port 55432 was already occupied",
+      "resolution": "Recovery script now uses Docker-assigned PostgreSQL ports; final module CI passed"
+    }
   }
 }
