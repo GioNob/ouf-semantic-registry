@@ -2083,14 +2083,14 @@
         "§143"
       ],
       "ownerRepository": "GioNob/ouf-ingestion-runtime",
-      "status": "OPEN",
+      "status": "PARTIAL",
       "phase": "R4b",
       "dependencies": [
         "R2a",
         "R2b"
       ],
       "baselineCommit": "e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2",
-      "assessment": "CODICE/EVIDENZA: coprire i profili GIS richiesti dal §143.2 oltre REST/WFS e managed CSV/XLSX: OGC API Features, GeoPackage, GeoJSON/JSON-FG e Shapefile ZIP, con layer/CRS e limiti di parser espliciti. Un adapter JSON generico non dimostra automaticamente conformità a questi formati. Procedere per fixture verticali, senza introdurre un nuovo runtime non richiesto.",
+      "assessment": "CODICE/EVIDENZA: coprire i profili GIS richiesti dal §143.2 oltre REST/WFS e managed CSV/XLSX: OGC API Features, GeoPackage, GeoJSON/JSON-FG e Shapefile ZIP, con layer/CRS e limiti di parser espliciti. Un adapter JSON generico non dimostra automaticamente conformità a questi formati. Procedere per fixture verticali, senza introdurre un nuovo runtime non richiesto. R2e verifica ora GeoPackage 2D fra quattro owner con layer/CRS e limiti espliciti; OGC API Features, GeoJSON/JSON-FG, Shapefile ZIP e gli altri casi rimangono R4b.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -2111,6 +2111,11 @@
         "implementedFoundation": "Governed municipal CRS in UDP and Onboarding",
         "formatCoverageUnchanged": true,
         "nextStep": "R2e GeoPackage"
+      },
+      "r2eProgress": {
+        "evidenceReference": "r2e.evidence",
+        "scenarioChecks": 25,
+        "closureClaim": false
       }
     },
     {
@@ -2128,7 +2133,7 @@
         "R2a"
       ],
       "baselineCommit": "a18e1c1d1f6add41bb11c975e5f2487f352d1bdb",
-      "assessment": "R2b collega risoluzione della pubblicazione esatta, confronto riferimenti e identità Semantic, profili approvati e loop automatico di resolution/materialization canonica. Test reale UDP/PostGIS/MinIO dimostra current serving autorizzato, lineage, label e restart nel percorso CSV/REST. La catena completa relationship/spatial, tutti i riferimenti storici e l’ambiente reale restano da dimostrare; gruppo PARTIAL. R2d aggiunge CRS configurabile, trasformazioni effettive e il collegamento della materializzazione geometrica al loop pubblicato, verificati con PostGIS e fixture dichiarate dei profili. La catena GIS completa fra owner e le relazioni restano R2e; PARTIAL.",
+      "assessment": "R2b collega risoluzione della pubblicazione esatta, confronto riferimenti e identità Semantic, profili approvati e loop automatico di resolution/materialization canonica. Test reale UDP/PostGIS/MinIO dimostra current serving autorizzato, lineage, label e restart nel percorso CSV/REST. La catena completa relationship/spatial, tutti i riferimenti storici e l’ambiente reale restano da dimostrare; gruppo PARTIAL. R2d aggiunge CRS configurabile, trasformazioni effettive e il collegamento della materializzazione geometrica al loop pubblicato, verificati con PostGIS e fixture dichiarate dei profili. La catena GIS completa fra owner e le relazioni restano R2e; PARTIAL. R2e aggiunge la catena GeoPackage fra quattro owner, geometria originale/canonica, relazioni per identificativo e riconciliazione dei target tardivi. Prove di navigazione reciproca, reload, storico e autorizzazioni; ambiente reale e copertura generale restano PARTIAL.",
       "evidenceLevel": "THREE_REAL_JVM_PROCESSES_POSTGRES_MINIO_WITH_DECLARED_GATEWAY_SOURCE_SEMANTIC_IDENTITY_FIXTURES",
       "baselineEvidence": [
         {
@@ -2160,6 +2165,11 @@
       },
       "r2dProgress": {
         "evidenceReference": "r2d.evidence",
+        "closureClaim": false
+      },
+      "r2eProgress": {
+        "evidenceReference": "r2e.evidence",
+        "humanAcceptanceReference": "r2e.humanAcceptance",
         "closureClaim": false
       }
     },
@@ -3983,7 +3993,7 @@
   },
   "gisRoadmap": {
     "R2d": "Implemented and verified CRS foundations; IGM/local resource licensing and territorial control-point deployment gate remains open",
-    "R2e": "GeoPackage feature objects, stable identity, cameras/cabinets reciprocal navigation and unresolved links",
+    "R2e": "Implemented and verified GeoPackage feature identity and reciprocal camera/cabinet navigation; late targets reconcile under original profile; ambiguity remains in review",
     "R3": "GIS progress and actionable anomalies",
     "R4a": "Map preview, guided import, object cards and precise geocoding presentation",
     "decisionAppliesTo": "Versioned source profile, including dynamic layers; changed transformation conditions require a new human decision"
@@ -4122,5 +4132,324 @@
       "reason": "Fixed host PostgreSQL port 55432 was already occupied",
       "resolution": "Recovery script now uses Docker-assigned PostgreSQL ports; final module CI passed"
     }
+  },
+  "r2e": {
+    "status": "IMPLEMENTED_AND_VERIFIED_GEOPACKAGE_FEATURES_AND_GOVERNED_RELATIONSHIPS",
+    "normativeReferences": [
+      "Reality Baseline Package v1.7: all seven PETs and L0 fully read",
+      "Onboarding v1.6 ONB-A11",
+      "Ingestion v1.3 §68, §143.2 and ING-A09 (partial)",
+      "UDP v1.3 §29.1 and §§95–97, 109",
+      "Roadmap agreed R2e GIS requirements"
+    ],
+    "pullRequests": {
+      "Onboarding": 16,
+      "Ingestion": 26,
+      "UDP": 29
+    },
+    "commits": {
+      "onboarding": {
+        "headSha": "808b717ed4bddeb7e6b22ec42dfb32095464ed2c",
+        "mergeSha": "5ebb9bc9a8fc9d4dbb9b9dd23dd3bacdeb47e85a"
+      },
+      "ingestion": {
+        "headSha": "64a7895471826f3e76de4a8cd5c0cb38827381e8",
+        "mergeSha": "a8ba969a5a0e20e9c53977d2875094ce82802f9d"
+      },
+      "udp": {
+        "headSha": "933443ca5484cd4ca9b08d67227860938148ea1b",
+        "mergeSha": "6285b733c49b89cb6d3382abe8dc469f8a0e8b1b"
+      }
+    },
+    "humanAcceptance": {
+      "role": "municipal source approver and authorized camera/cabinet reader",
+      "goal": "approve a GeoPackage layer and stable feature keys, verify objects and navigate camera/cabinet relations after reload",
+      "surface": "Onboarding owner profile/approval, UDP current/history/relationships/lineage APIs, persisted issues",
+      "observableResult": "two camera features retain object IDs across reload; late cabinet link resolves; both directions navigate the same edge; changed reference retires the old edge; geometry and source geometry remain authorized"
+    },
+    "scenario": {
+      "calls": {
+        "duplicateAck": 0,
+        "handoff": 5,
+        "nondurableResponse": 0,
+        "semantic": 9
+      },
+      "checks": [
+        "discovery_candidate_persisted",
+        "adoption_idempotent_and_draft",
+        "explicit_version_validated",
+        "service_cannot_approve",
+        "human_approved_publication",
+        "publication_idempotent",
+        "exact_reference_resolved",
+        "real_registry_reference_active",
+        "one_object_per_camera_feature",
+        "camera_identity_exists",
+        "unresolved_reference_is_quarantined",
+        "late_cabinet_reconciled",
+        "human_sees_governed_relation",
+        "cabinet_navigates_back_to_camera",
+        "original_and_canonical_geometry_available",
+        "reload_does_not_duplicate_feature_objects",
+        "changed_reference_retires_old_edge",
+        "updated_geometry_visible",
+        "old_geometry_has_history",
+        "original_profile_still_resolves",
+        "lineage_pins_original_contracts",
+        "workload_write_does_not_grant_serving",
+        "anonymous_serving_denied",
+        "restart_preserves_history",
+        "raw_feature_references_verified"
+      ],
+      "level": "FOUR_REAL_OWNER_JVM_PROCESSES_POSTGRES_MINIO_WITH_DECLARED_GATEWAY_IDENTITY_FIXTURES",
+      "limitations": [
+        "2D simple features only; 10 MiB files and 10000 features per layer",
+        "No territorial IGM certification; R2d limits unchanged",
+        "Browser, production IAM and Gateway deployment remain separate acceptance gates"
+      ],
+      "publisherCommit": "808b717ed4bddeb7e6b22ec42dfb32095464ed2c",
+      "runtimeCommit": "6aa2124445403ab75b932225ef96695d00896508",
+      "semanticCommit": "cfef6777ff14c218182c06682c6663840437d3d2",
+      "status": "PASS",
+      "udpCommit": "933443ca5484cd4ca9b08d67227860938148ea1b",
+      "runtimeHeadCommit": "64a7895471826f3e76de4a8cd5c0cb38827381e8",
+      "runtimeCheckoutKind": "GitHub pull_request synthetic merge commit",
+      "runId": 35208061013
+    },
+    "evidence": [
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:eae457f0ed991844890137b10c4af56cd74c74140c9a3612b340fe6ea059c80a",
+            "id": 10490124543,
+            "name": "source-onboarding-evidence-35207262543"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "808b717ed4bddeb7e6b22ec42dfb32095464ed2c",
+        "name": "Source Onboarding module CI",
+        "repository": "ouf-source-onboarding",
+        "runId": 35207262543,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35207262543"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:d1ff6d0e30885d4abd922f3345a09b156a223c0641f9612ed66ce84b30ea7355",
+            "id": 10490981600,
+            "name": "authorization-sdk-consumer-evidence"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "64a7895471826f3e76de4a8cd5c0cb38827381e8",
+        "name": "Shared Authorization SDK pairwise",
+        "repository": "ouf-ingestion-runtime",
+        "runId": 35208061119,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35208061119"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:983502a9c35dd4fb1508184f1ea9a884f60fe66209e1bb791a36d05a9392ed61",
+            "id": 10491176480,
+            "name": "r2c-publication-evidence-35208061289"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "64a7895471826f3e76de4a8cd5c0cb38827381e8",
+        "name": "R2c governed publication to historical serving",
+        "repository": "ouf-ingestion-runtime",
+        "runId": 35208061289,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35208061289"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:0a749ade0fa144dea9c6697e2b492126a4233148c4a91df481f03dd24f0c6526",
+            "id": 10490602562,
+            "name": "r2b-serving-evidence-35208061216"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "64a7895471826f3e76de4a8cd5c0cb38827381e8",
+        "name": "R2b source to authorized serving",
+        "repository": "ouf-ingestion-runtime",
+        "runId": 35208061216,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35208061216"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:ea6cfaab4bcecf5a1726f2ceb2e5a82b950b496e36e63e32bd5a0ec621eec42c",
+            "id": 10491465355,
+            "name": "r2a-activation-summary-35208061012"
+          },
+          {
+            "digest": "sha256:8468239736677e231b823ee2908383c10605b988b4665b402e7af155c8cd881f",
+            "id": 10490354907,
+            "name": "r2a-automatic-activation-35208061012"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "64a7895471826f3e76de4a8cd5c0cb38827381e8",
+        "name": "R2a Onboarding automatic activation",
+        "repository": "ouf-ingestion-runtime",
+        "runId": 35208061012,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35208061012"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:68cbfc3e3e71aea2c9b918b810b858eaff1d89979f47a3f2adf4ecbcca960048",
+            "id": 10491465412,
+            "name": "ingestion-release-evidence-35208061084"
+          },
+          {
+            "digest": "sha256:a03eef6520c6d588bd1813c80976240ae973d8e3cb0757efa6d44112fe1798ac",
+            "id": 10491101646,
+            "name": "ingestion-evidence-35208061084"
+          },
+          {
+            "digest": "sha256:32299033d283415b7095ee17c184ba1b6a457ae7381dec936315e806403d765c",
+            "id": 10490781890,
+            "name": "ingestion-dr-evidence-35208061084"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "64a7895471826f3e76de4a8cd5c0cb38827381e8",
+        "name": "Ingestion Runtime module CI",
+        "repository": "ouf-ingestion-runtime",
+        "runId": 35208061084,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35208061084"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:38f895d11634af1ccc1a1660da281173b7e5299d89f31b5cd453e679d4edd076",
+            "id": 10490592510,
+            "name": "r2e-geopackage-evidence-35208061013"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "64a7895471826f3e76de4a8cd5c0cb38827381e8",
+        "name": "R2e GeoPackage features and governed camera-cabinet relations",
+        "repository": "ouf-ingestion-runtime",
+        "runId": 35208061013,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35208061013"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:859a1aa549cd3c4f6cf55865415b9d143acb82318f34d133ca2ceefeed5dc2dd",
+            "id": 10490389635,
+            "name": "authorization-sdk-consumer-evidence"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "933443ca5484cd4ca9b08d67227860938148ea1b",
+        "name": "Shared Authorization SDK pairwise",
+        "repository": "ouf-udp-object-resolution",
+        "runId": 35207985143,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35207985143"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:1e9f564847a911a37eacecd258eed46da930ccf98488f95aeb617cc56212de21",
+            "id": 10491035722,
+            "name": "r2d-crs-evidence-35207985156"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "933443ca5484cd4ca9b08d67227860938148ea1b",
+        "name": "R2d governed CRS and grid execution",
+        "repository": "ouf-udp-object-resolution",
+        "runId": 35207985156,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35207985156"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:d02d3774244e365f456e9a5376a7f56b2bbfb790af7326cc7ca81a92feade43d",
+            "id": 10491196099,
+            "name": "udp-performance-evidence-35207985182"
+          },
+          {
+            "digest": "sha256:ab8520fa8ad12cb9936e1c7005b42efe070397689b8e9459bb3b7f61eed6236d",
+            "id": 10490966044,
+            "name": "udp-supply-chain-deployment-evidence-35207985182"
+          },
+          {
+            "digest": "sha256:d4812626c9d7971d875939d47bfb8101ec737d50ab6b34e0a858dbf78479261b",
+            "id": 10490419520,
+            "name": "udp-dr-evidence-35207985182"
+          },
+          {
+            "digest": "sha256:701bf65037dba4c00032280f47e04b18f1592c083ed9052ae8e9cf9736e8dd68",
+            "id": 10490404713,
+            "name": "udp-evidence-35207985182"
+          }
+        ],
+        "conclusion": "success",
+        "event": "pull_request",
+        "headSha": "933443ca5484cd4ca9b08d67227860938148ea1b",
+        "name": "UDP Object Resolution module CI",
+        "repository": "ouf-udp-object-resolution",
+        "runId": 35207985182,
+        "status": "completed",
+        "url": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35207985182"
+      }
+    ],
+    "limits": [
+      "2D simple features; 10 MiB asset, 64 layers, 256 columns, 10000 features per layer, 1 MiB geometry, bounded parser depth/coordinates and VM execution",
+      "Key stability in source remains an explicit approved configuration decision",
+      "10 reconciliation tasks per tick; backlog affects latency; ambiguities require review and complete remediation is R3/R4a",
+      "Original managed asset reference/checksum retained; RAW ingestion persistence is per feature",
+      "No real IGM/local grid availability, licensing or territorial certification; R2d limits unchanged",
+      "Gateway/identity fixtures declared; browser, real IAM/Gateway/THS and representative acceptance remain open"
+    ],
+    "generalPetClosureClaim": false,
+    "nextStep": "R3: Operational Awareness, with R4a guided map UI and R4b remaining formats unchanged",
+    "intermediateFailures": [
+      {
+        "runId": 35205248433,
+        "reason": "Reconciliation scheduler ran in tests with runtime execution disabled",
+        "resolution": "Separate scheduled loop enabled only with runtime execution"
+      },
+      {
+        "runId": 35205865422,
+        "reason": "Managed asset media type constraint still CSV/XLSX only",
+        "resolution": "Migration and registration/onboarding regression test"
+      },
+      {
+        "runId": 35206296803,
+        "reason": "Scenario expected a nonexistent originalGeometry top-level field",
+        "resolution": "Check source geometry in the approved mapped property and canonical geometry through its existing contract"
+      },
+      {
+        "runId": 35207263612,
+        "reason": "New binding test omitted mandatory bitemporalProperties fixture field",
+        "resolution": "Complete the fixture; production profile contract unchanged"
+      }
+    ],
+    "artifactDigestMeaning": "GitHub artifact metadata; archives were not downloaded to recompute hashes"
   }
 }

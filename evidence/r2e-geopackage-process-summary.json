@@ -1,0 +1,49 @@
+{
+  "calls": {
+    "duplicateAck": 0,
+    "handoff": 5,
+    "nondurableResponse": 0,
+    "semantic": 9
+  },
+  "checks": [
+    "discovery_candidate_persisted",
+    "adoption_idempotent_and_draft",
+    "explicit_version_validated",
+    "service_cannot_approve",
+    "human_approved_publication",
+    "publication_idempotent",
+    "exact_reference_resolved",
+    "real_registry_reference_active",
+    "one_object_per_camera_feature",
+    "camera_identity_exists",
+    "unresolved_reference_is_quarantined",
+    "late_cabinet_reconciled",
+    "human_sees_governed_relation",
+    "cabinet_navigates_back_to_camera",
+    "original_and_canonical_geometry_available",
+    "reload_does_not_duplicate_feature_objects",
+    "changed_reference_retires_old_edge",
+    "updated_geometry_visible",
+    "old_geometry_has_history",
+    "original_profile_still_resolves",
+    "lineage_pins_original_contracts",
+    "workload_write_does_not_grant_serving",
+    "anonymous_serving_denied",
+    "restart_preserves_history",
+    "raw_feature_references_verified"
+  ],
+  "level": "FOUR_REAL_OWNER_JVM_PROCESSES_POSTGRES_MINIO_WITH_DECLARED_GATEWAY_IDENTITY_FIXTURES",
+  "limitations": [
+    "2D simple features only; 10 MiB files and 10000 features per layer",
+    "No territorial IGM certification; R2d limits unchanged",
+    "Browser, production IAM and Gateway deployment remain separate acceptance gates"
+  ],
+  "publisherCommit": "808b717ed4bddeb7e6b22ec42dfb32095464ed2c",
+  "runtimeCommit": "6aa2124445403ab75b932225ef96695d00896508",
+  "semanticCommit": "cfef6777ff14c218182c06682c6663840437d3d2",
+  "status": "PASS",
+  "udpCommit": "933443ca5484cd4ca9b08d67227860938148ea1b",
+  "runtimeHeadCommit": "64a7895471826f3e76de4a8cd5c0cb38827381e8",
+  "runtimeCheckoutKind": "GitHub pull_request synthetic merge commit",
+  "runId": 35208061013
+}
