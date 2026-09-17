@@ -10,7 +10,22 @@ paths:
   /api/semantic/v1/search:
     get: {operationId: searchSemanticArtifacts, responses: {'200': {description: Search results}}}
   /api/semantic/v1/revisions/{id}:
-    patch: {operationId: editSemanticDraft, responses: {'200': {description: Draft updated}}}
+    patch:
+      operationId: editSemanticDraft
+      description: Edit a DRAFT under If-Match; adopted candidates can explicitly set their semantic version before validation and publication.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                labels: {type: object}
+                definition: {type: object}
+                semanticVersion: {type: string, example: '1.0.0'}
+      responses:
+        '200': {description: Draft updated}
+        '409': {description: Revision is not DRAFT or optimistic version is stale}
   /api/semantic/v1/revisions/{id}:validate:
     post: {operationId: validateSemanticRevision, responses: {'200': {description: Validation result}}}
   /api/semantic/v1/validation-runs/{id}:
