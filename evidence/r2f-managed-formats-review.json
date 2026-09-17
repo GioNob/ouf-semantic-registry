@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "checks": [
+    "discovery_candidate_persisted",
+    "adoption_idempotent_and_draft",
+    "explicit_version_validated",
+    "service_cannot_approve",
+    "human_approved_publication",
+    "publication_idempotent",
+    "exact_reference_resolved",
+    "real_registry_reference_active",
+    "shapefile_has_authorized_geometry",
+    "shapefile_preserves_leading_zero_key",
+    "access_declared_relationship_is_proposal",
+    "access_composite_foreign_key_preserved",
+    "access_composite_primary_key_preserved",
+    "different_native_ids_reuse_same_urban_object",
+    "weighted_typo_match_keeps_evidence",
+    "identity_score_does_not_override_property_authority",
+    "tabular_contribution_preserves_existing_geometry",
+    "asset_navigates_to_both_access_children",
+    "access_child_navigates_to_asset",
+    "mdb_to_accdb_reordered_rows_keep_identities",
+    "reimport_does_not_duplicate_active_relations",
+    "three_canonical_objects_from_six_observations",
+    "original_access_profile_still_resolves",
+    "lineage_pins_original_contracts",
+    "workload_serving_denied",
+    "anonymous_serving_denied",
+    "raw_file_records_are_verified"
+  ],
+  "calls": {
+    "handoff": 6,
+    "nondurableResponse": 0,
+    "duplicateAck": 0,
+    "semantic": 11
+  },
+  "publisherCommit": "c908da8aabcdda0679c5894557cc6db62ac0e402",
+  "udpCommit": "ea295745a1828cc2f7a2a70f27785b6162c4a4f4",
+  "runtimeCommit": "64ae019f3543f232319d1e7ba78724b5471cb560",
+  "semanticCommit": "980d87c36f5efad4aa1e26edb460efa2423c59b3",
+  "level": "FOUR_REAL_OWNER_JVM_PROCESSES_POSTGRES_MINIO_WITH_DECLARED_GATEWAY_IDENTITY_FIXTURES",
+  "limitations": [
+    "Source data and human approvals use declared test fixtures",
+    "Semantic relationship selection is explicit in the fixture; automatic suggestion-to-Registry workflow is not certified",
+    "Geometry/property conflict UI, geometry roles/validity, production IAM and APISIX remain open"
+  ],
+  "branchHead": "08009c1a6749ec1cff7f74bb9b04e107c0678190",
+  "workflowRun": 35227098879,
+  "workflowUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35227098879"
+}

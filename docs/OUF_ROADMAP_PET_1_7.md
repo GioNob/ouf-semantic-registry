@@ -264,3 +264,7 @@ Ogni sprint deve consultare tutti i sette PET e L0: [regola obbligatoria e manif
 Il committente ha anticipato Shapefile ZIP e richiesto Access per tabelle/dati, chiavi e relazioni come evidenza semantica. Il riconoscimento multi-fonte e la gestione dei conflitti valgono per tutte le classi di oggetto. R2f comprende la revisione umana necessaria a questi casi; non rinvia implicitamente tale requisito a R4a.
 
 Implementazione, requisiti PET, prove e limiti: [R2F_MULTISOURCE_AND_MANAGED_FORMATS.md](R2F_MULTISOURCE_AND_MANAGED_FORMATS.md). Le modifiche sono su branch di sviluppo: **non sono una release accettata né una chiusura dei gate umani/cross-module**. Il limite R2e relativo alla prevalenza geometrica per ordine di materializzazione è rettificato esplicitamente nelle evidenze.
+
+### Verifica di ripresa R2f
+
+Il [rapporto di verifica del 17 settembre](R2F_REVIEW_2026_09_17.md) collega i difetti corretti, la prova dei nuovi formati e i gate residui al perimetro già approvato. R2f resta l’incremento corrente; la CI dei lettori o della nuova prova verticale non chiude automaticamente revisione cartografica, gestione dei conflitti, ruoli/validità geometrica e integrazione delle proposte Access con Semantic/THS.

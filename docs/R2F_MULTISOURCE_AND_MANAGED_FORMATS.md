@@ -51,9 +51,9 @@ R2e certifica GeoPackage e relazioni dichiarate per chiave. Non certifica ATTRIB
 |---|---|
 | Score pesato e integrazione nella risoluzione UDP | Score puro e integrazione PostgreSQL/PostGIS verificati in CI; validazione prima dell’approvazione e replay della decisione umana aggiunti |
 | Authority geometrica, ruoli e workflow umano | Backend di scelta tra due geometrie, audit e ripresa verificati; ruoli, proprietà non geometriche e interfaccia cartografica ancora aperti |
-| Shapefile ZIP | Lettore, profiler, adapter e controlli di integrità implementati; fixture punti/poligoni con buchi; percorso completo fra owner aperto |
+| Shapefile ZIP | Lettore, profiler, adapter e controlli di integrità implementati; fixture punti/poligoni con buchi; nuovo percorso fra quattro owner verificato (rapporto del 17 settembre); equivalenza generale GeoPackage/Shapefile ancora aperta |
 | Access, chiavi e relazioni | Lettore/profiler/adapter, chiavi composite e metadata/suggerimenti semantici implementati; pubblicazione semantica governata integrata ancora aperta |
-| Tracciabilità e collaudo integrato | Aperto |
+| Tracciabilità e collaudo integrato | Nuova prova Access/Shapefile: 27 PASS; accettazione umana completa aperta |
 
 Nessun grigliato IGM reale, collaudo territoriale o accettazione operativa è attestato da questo documento.
 
@@ -67,7 +67,7 @@ Nessun grigliato IGM reale, collaudo territoriale o accettazione operativa è at
 - Sono ancora aperti: decisioni sui conflitti di proprietà non geometriche, ruoli/validità geometrica, controllo degli aggiornamenti fuori ordine della stessa fonte e la superficie cartografica con IAM reale. Il backend per scegliere la geometria è ora implementato e verificato nel caso di due contributi di pari autorità; questo non equivale al collaudo umano completo.
 - Access conserva `metadata.semanticHints` e `sourceSchemaEvidence` nella bozza: classi/proprietà da cercare, chiavi dichiarate e coppie di colonne delle relazioni, senza inventare IRI o direzioni ontologiche. Il workflow di selezione/pubblicazione del Semantic Registry resta da collegare e collaudare.
 - I nuovi lettori sono identici tra Onboarding e Ingestion. Limiti e formati effettivamente collaudati sono descritti in `docs/R2F_MANAGED_FORMATS.md` nei due repository.
-- Nessuna nuova prova source-to-serving Access/Shapefile è attestata dalle vecchie pairwise: esse fissano i commit e i profili dello scenario storico. Prima del merge occorre una prova che usi le nuove pubblicazioni e tutti gli owner interessati.
+- Le vecchie pairwise non attestano Access/Shapefile. La nuova workflow R2f ora verifica 27 controlli su pubblicazioni nuove con quattro owner: evidenze e pin in `R2F_REVIEW_2026_09_17.md`. I gate umani, le proposte Semantic e gli altri casi di equivalenza rimangono aperti.
 
 
 ## Decisione umana sulla geometria
@@ -89,3 +89,9 @@ Gateway aggiunge due binding nel namespace limitato dell’owner; il comando è 
 - [Registry #14](https://github.com/GioNob/ouf-semantic-registry/pull/14): roadmap e tracciabilità PET.
 
 Le PR restano in bozza; `main` non è stato modificato da R2f.
+
+## Verifica di ripresa del 17 settembre 2026
+
+La verifica su roadmap, L0 e PET è registrata in [R2F_REVIEW_2026_09_17.md](R2F_REVIEW_2026_09_17.md). Corregge due difetti del percorso reale: creazione di nuovi oggetti in presenza di score basso ed evidenze incomplete; controllo di una colonna geometrica assente nell’onboarding Access. Aggiunge la workflow fra quattro owner dedicata a Shapefile/Access, score, relazioni, reimport e autorizzazioni. Lo stato finale e i pin sono nel rapporto.
+
+R2f rimane draft finché sono aperti i criteri umani, semantici e geometrici sopra elencati. Nessun avanzamento automatico a R3.
