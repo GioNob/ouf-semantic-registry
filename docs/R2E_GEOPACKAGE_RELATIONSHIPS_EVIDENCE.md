@@ -42,7 +42,7 @@ Sono stati corretti e conservati come evidenza diagnostica i failure intermedi: 
 - Lo scenario R2e usa EPSG:4326 senza trasformazione territoriale. I test 6708, assi, trasformazioni e grigliato sintetico restano quelli R2d. **Nessun grigliato IGM reale è stato reperito, licenziato o collaudato territorialmente in questo incremento.**
 - IAM, Gateway/THS operativi e acceptance cross-module rappresentativa restano i gate già tracciati. Nessun gruppo PET generale è chiuso dalla sola CI R2e.
 
-Prossimo incremento della roadmap: **R3 — Operational Awareness**, mantenendo i gate R4a/R4b e di ambiente.
+Sequenza aggiornata dal committente: **R2f — identità multi-fonte, conflitti, Shapefile e Access**, poi R3 — Operational Awareness. Vedere `R2F_MULTISOURCE_AND_MANAGED_FORMATS.md`.
 
 ## Commit e CI finali
 
@@ -66,3 +66,8 @@ Prossimo incremento della roadmap: **R3 — Operational Awareness**, mantenendo 
 | [ouf-udp-object-resolution / UDP Object Resolution module CI / 35207985182](https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35207985182) | PASS |
 
 Il processo della CI pull_request usa il merge commit sintetico GitHub: `6aa2124445403ab75b932225ef96695d00896508`; la head Ingestion è `64a7895471826f3e76de4a8cd5c0cb38827381e8`. Il registro mantiene entrambi. I digest degli artifact sono metadata GitHub, non checksum ricalcolati scaricando gli archivi.
+
+
+## Rettifica di perimetro per R2f
+
+La baseline R2e non collauda il riconoscimento composito di oggetti tra fonti né la scelta umana fra geometrie discordanti. Il vecchio aggiornamento di `urban_geometry_current` seguiva la materializzazione più recente: in assenza di policy esplicita questo non soddisfa UDP PET §15.1. R2f interviene su tale scostamento; i PASS storici riportati sopra restano validi per lo scenario effettivamente verificato e non attestano tale requisito.
