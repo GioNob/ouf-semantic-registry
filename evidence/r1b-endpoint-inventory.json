@@ -1,0 +1,1109 @@
+{
+  "scope": "Java REST controller route declarations. Markers are navigation aids, not proof that each route invokes authorization. Domain guards and deployment filters require separate evidence.",
+  "controllers": [
+    {
+      "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/AuthorizationAdminApi.java",
+      "mappings": [
+        {
+          "line": 13,
+          "declaration": "@RequestMapping(\"/api/trusted-human/v1/authorization\")"
+        },
+        {
+          "line": 25,
+          "declaration": "@PostMapping(\"/capabilities\") @ResponseStatus(HttpStatus.CREATED) void register(@RequestBody com.fasterxml.jackson.databind.JsonNode input,HttpServletRequest r){var a=actor(r,true);var body=service.parse(input,Registration.class);service.register(body.ownerRef(),body.descriptor(),a);}"
+        },
+        {
+          "line": 26,
+          "declaration": "@GetMapping(\"/capabilities\") Object capabilities(@RequestParam(defaultValue=\"100\") int limit,HttpServletRequest r){actor(r,false);return service.capabilities(limit);}"
+        },
+        {
+          "line": 27,
+          "declaration": "@PostMapping(\"/policies\") ResponseEntity<?> create(@RequestBody com.fasterxml.jackson.databind.JsonNode p,HttpServletRequest r){var a=actor(r,true);return response(service.create(service.parse(p,PolicyBundle.class),a));}"
+        },
+        {
+          "line": 28,
+          "declaration": "@GetMapping(\"/policies/{id}\") ResponseEntity<?> get(@PathVariable UUID id,HttpServletRequest r){actor(r,false);return response(service.get(id));}"
+        },
+        {
+          "line": 29,
+          "declaration": "@PutMapping(\"/policies/{id}\") ResponseEntity<?> replace(@PathVariable UUID id,@RequestHeader(value=\"If-Match\",required=false) String etag,@RequestBody com.fasterxml.jackson.databind.JsonNode p,HttpServletRequest r){var a=actor(r,true);return response(service.replace(id,revision(etag),service.parse(p,PolicyBundle.class),a));}"
+        },
+        {
+          "line": 30,
+          "declaration": "@DeleteMapping(\"/policies/{id}\") ResponseEntity<?> abandon(@PathVariable UUID id,@RequestHeader(value=\"If-Match\",required=false) String etag,HttpServletRequest r){var a=actor(r,true);return response(service.abandon(id,revision(etag),a));}"
+        },
+        {
+          "line": 31,
+          "declaration": "@PutMapping(\"/policies/{id}/grants/{grantId}\") ResponseEntity<?> grant(@PathVariable UUID id,@PathVariable String grantId,@RequestHeader(value=\"If-Match\",required=false) String etag,@RequestBody com.fasterxml.jackson.databind.JsonNode grant,HttpServletRequest r){var a=actor(r,true);return response(service.grant(id,revision(etag),grantId,service.parse(grant,Grant.class),a));}"
+        },
+        {
+          "line": 32,
+          "declaration": "@DeleteMapping(\"/policies/{id}/grants/{grantId}\") ResponseEntity<?> revoke(@PathVariable UUID id,@PathVariable String grantId,@RequestHeader(value=\"If-Match\",required=false) String etag,HttpServletRequest r){var a=actor(r,true);return response(service.grant(id,revision(etag),grantId,null,a));}"
+        },
+        {
+          "line": 33,
+          "declaration": "@PostMapping(\"/policies/{id}:publish\") ResponseEntity<?> publish(@PathVariable UUID id,@RequestHeader(value=\"If-Match\",required=false) String etag,HttpServletRequest r){var a=actor(r,true);return response(service.publish(id,revision(etag),a));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "ServletAuthorization",
+        "AuthorizationAdminService"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/AuthorizationBundleApi.java",
+      "mappings": [
+        {
+          "line": 14,
+          "declaration": "@RequestMapping(\"/api/internal/v1/authorization/policy-bundle\")"
+        },
+        {
+          "line": 24,
+          "declaration": "@GetMapping(\"/active\")"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver",
+        "authorize"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/DiscoveryApi.java",
+      "mappings": [
+        {
+          "line": 11,
+          "declaration": "@RestController @RequestMapping(\"/api/onboarding/v1/sources/{sourceId}\")"
+        },
+        {
+          "line": 17,
+          "declaration": "@PutMapping(\"/bindings/{bindingId}\") ResponseEntity<Map<String,Object>> binding(@PathVariable String sourceId,@PathVariable String bindingId,@Valid @RequestBody BindingRequest request,@RequestHeader(value=HttpHeaders.IF_MATCH,required=false) String match){var out=service.configureBinding(sourceId,bindingId,request.protocol(),request.routeRef(),request.credentialRef(),request.configuration()==null?Map.of():request.configuration(),lock(match));return ResponseEntity.ok().eTag(\"W/\\\"binding:\"+out.get(\"lock_version\")+\"\\\"\").body(out);}"
+        },
+        {
+          "line": 18,
+          "declaration": "@GetMapping(\"/bindings/{bindingId}\") Map<String,Object> binding(@PathVariable String sourceId,@PathVariable String bindingId){return service.binding(sourceId,bindingId);}"
+        },
+        {
+          "line": 19,
+          "declaration": "@PostMapping(\"/discovery-runs\") ResponseEntity<Map<String,Object>> start(@PathVariable String sourceId,@Valid @RequestBody DiscoveryRequest request,@RequestHeader(\"Idempotency-Key\") String idempotencyKey){var out=service.start(sourceId,request.bindingId(),idempotencyKey,request.options());return ResponseEntity.created(URI.create(\"/api/onboarding/v1/sources/\"+sourceId+\"/discovery-runs/\"+out.get(\"discovery_run_id\"))).body(out);}"
+        },
+        {
+          "line": 20,
+          "declaration": "@GetMapping(\"/discovery-runs/{runId}\") Map<String,Object> run(@PathVariable String sourceId,@PathVariable UUID runId){Map<String,Object> out=service.run(runId);if(!sourceId.equals(out.get(\"source_id\")))throw new IllegalArgumentException(\"sourceId/runId mismatch\");return out;}"
+        },
+        {
+          "line": 21,
+          "declaration": "@GetMapping(\"/types\") List<Map<String,Object>> types(@PathVariable String sourceId){return service.types(sourceId);}"
+        },
+        {
+          "line": 22,
+          "declaration": "@GetMapping(\"/types/{typeCode}/fields\") List<Map<String,Object>> fields(@PathVariable String sourceId,@PathVariable String typeCode){return service.fields(sourceId,typeCode);}"
+        },
+        {
+          "line": 23,
+          "declaration": "@GetMapping(\"/types/{typeCode}/states\") List<Map<String,Object>> states(@PathVariable String sourceId,@PathVariable String typeCode){return service.states(sourceId,typeCode);}"
+        }
+      ],
+      "authorizationMarkers": [],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/ManagedFileApi.java",
+      "mappings": [
+        {
+          "line": 13,
+          "declaration": "@RestController @RequestMapping(\"/api/onboarding/v1/managed-files\")"
+        },
+        {
+          "line": 19,
+          "declaration": "@PostMapping ResponseEntity<Map<String,Object>> register(@Valid @RequestBody RegisterRequest request,HttpServletRequest servletRequest){var actor=actors.actor(servletRequest);var out=service.register(request.sourceId(),request.stagingRef(),request.contentHash(),request.mediaType(),request.sizeBytes(),actor.subject(),request.retentionRef());return ResponseEntity.created(URI.create(\"/api/onboarding/v1/managed-files/\"+out.get(\"asset_id\"))).body(out);}"
+        },
+        {
+          "line": 20,
+          "declaration": "@GetMapping(\"/{assetId}\") Map<String,Object> asset(@PathVariable UUID assetId){return service.asset(assetId);}"
+        },
+        {
+          "line": 21,
+          "declaration": "@PostMapping(\"/{assetId}/profile\") ResponseEntity<Map<String,Object>> requestProfile(@PathVariable UUID assetId,@RequestHeader(\"Idempotency-Key\") String idempotencyKey,HttpServletRequest servletRequest){actors.actor(servletRequest);var out=service.requestProfile(assetId,idempotencyKey);return ResponseEntity.accepted().location(URI.create(\"/api/onboarding/v1/managed-files/\"+assetId+\"/profile-jobs/\"+out.get(\"job_id\"))).body(out);}"
+        },
+        {
+          "line": 22,
+          "declaration": "@GetMapping(\"/{assetId}/profile-jobs/{jobId}\") Map<String,Object> profileJob(@PathVariable UUID assetId,@PathVariable UUID jobId){return service.profileJob(assetId,jobId);}"
+        },
+        {
+          "line": 23,
+          "declaration": "@GetMapping(\"/{assetId}/profiles/{profileId}\") Map<String,Object> profile(@PathVariable UUID assetId,@PathVariable UUID profileId){return service.fileProfile(assetId,profileId);}"
+        },
+        {
+          "line": 24,
+          "declaration": "@GetMapping(\"/{assetId}/profiles/{profileId}/preview\") Map<String,Object> preview(@PathVariable UUID assetId,@PathVariable UUID profileId){return service.preview(assetId,profileId);}"
+        },
+        {
+          "line": 25,
+          "declaration": "@PostMapping(\"/{assetId}/create-onboarding\") ResponseEntity<Map<String,Object>> onboard(@PathVariable UUID assetId,@RequestParam UUID profileId,@Valid @RequestBody OnboardRequest request,@RequestHeader HttpHeaders headers,HttpServletRequest servletRequest){List<ManagedFileService.FieldDecision> fields=request.fields()==null?List.of():request.fields().stream().map(f->new ManagedFileService.FieldDecision(f.fieldName(),f.extractionDecision(),f.dataAccessLabel(),f.targetPropertyIri(),f.transform(),f.vocabularyId(),f.vocabularyVersion(),f.valueMapRef())).toList();var out=service.onboard(assetId,profileId,request.sourceId(),request.name(),request.owner(),request.targetClassIri(),request.semanticRefs(),request.sourceObjectKeyFields(),fields,actors.actor(servletRequest),Optional.ofNullable(headers.getFirst(\"X-Correlation-ID\")).orElseGet(()->UUID.randomUUID().toString()));return ResponseEntity.status(HttpStatus.CREATED).body(out);}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/ManagedFileQuarantineTrustedHumanApi.java",
+      "mappings": [
+        {
+          "line": 9,
+          "declaration": "@RestController @RequestMapping(\"/api/trusted-human/v1/managed-file-quarantine\")"
+        },
+        {
+          "line": 13,
+          "declaration": "@GetMapping Map<String,Object> list(@RequestParam(defaultValue=\"OPEN\") String state,HttpServletRequest request){var a=actors.actor(request);require(a,\"ouf.onboarding.quarantine.read\");return Map.of(\"items\",files.quarantines(state));}"
+        },
+        {
+          "line": 14,
+          "declaration": "@GetMapping(\"/{id}\") Map<String,Object> get(@PathVariable UUID id,HttpServletRequest request){var a=actors.actor(request);require(a,\"ouf.onboarding.quarantine.read\");return files.quarantine(id);}"
+        },
+        {
+          "line": 15,
+          "declaration": "@PostMapping(\"/{id}/release\") Map<String,Object> release(@PathVariable UUID id,HttpServletRequest request,@RequestHeader HttpHeaders h){return files.resolveQuarantine(id,\"RELEASED\",actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
+        },
+        {
+          "line": 16,
+          "declaration": "@PostMapping(\"/{id}/reject\") Map<String,Object> reject(@PathVariable UUID id,HttpServletRequest request,@RequestHeader HttpHeaders h){return files.resolveQuarantine(id,\"REJECTED\",actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/MappingApi.java",
+      "mappings": [
+        {
+          "line": 10,
+          "declaration": "@RestController @RequestMapping(\"/api/onboarding/v1/sources/{sourceId}/types/{typeCode}/mapping\")"
+        },
+        {
+          "line": 16,
+          "declaration": "@PostMapping ResponseEntity<Map<String,Object>> initialize(@PathVariable String sourceId,@PathVariable String typeCode){return ResponseEntity.status(HttpStatus.CREATED).body(service.initialize(sourceId,typeCode));}"
+        },
+        {
+          "line": 17,
+          "declaration": "@GetMapping Map<String,Object> workspace(@PathVariable String sourceId,@PathVariable String typeCode){return service.workspace(sourceId,typeCode);}"
+        },
+        {
+          "line": 18,
+          "declaration": "@PutMapping(\"/type\") ResponseEntity<Map<String,Object>> type(@PathVariable String sourceId,@PathVariable String typeCode,@RequestBody TypeMappingRequest request,@RequestHeader(HttpHeaders.IF_MATCH) String match){var out=service.configureType(sourceId,typeCode,request.targetClassIri(),request.semanticRefs()==null?List.of():request.semanticRefs(),request.eligibleStates()==null?List.of():request.eligibleStates(),lock(match));return ResponseEntity.ok().eTag(etag(out.get(\"lock_version\"))).body(out);}"
+        },
+        {
+          "line": 19,
+          "declaration": "@PutMapping(\"/fields/{fieldName}\") ResponseEntity<Map<String,Object>> field(@PathVariable String sourceId,@PathVariable String typeCode,@PathVariable String fieldName,@RequestBody FieldMappingRequest body,@RequestHeader(HttpHeaders.IF_MATCH) String match,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){var out=service.configureField(sourceId,typeCode,fieldName,body.extractionDecision(),body.dataAccessLabel(),body.targetPropertyIri(),body.transform(),body.vocabularyId(),body.vocabularyVersion(),body.valueMapRef(),lock(match),actors.actor(request),correlation);return ResponseEntity.ok().eTag(etag(out.get(\"lock_version\"))).body(out);}"
+        },
+        {
+          "line": 20,
+          "declaration": "@PostMapping(\"/relationships\") ResponseEntity<Map<String,Object>> relationship(@PathVariable String sourceId,@PathVariable String typeCode,@RequestBody RelationshipRequest request){return ResponseEntity.status(HttpStatus.CREATED).body(service.addRelationship(sourceId,typeCode,request.sourceField(),request.relationIri(),request.targetClassIri(),request.resolutionStrategy(),request.onNoMatch(),request.onMultipleMatches(),request.provenancePolicy()));}"
+        },
+        {
+          "line": 21,
+          "declaration": "@GetMapping(\"/relationships\") List<Map<String,Object>> relationships(@PathVariable String sourceId,@PathVariable String typeCode){return service.relationships(sourceId,typeCode);}"
+        },
+        {
+          "line": 22,
+          "declaration": "@PostMapping(\"/build-draft\") ResponseEntity<Map<String,Object>> build(@PathVariable String sourceId,@PathVariable String typeCode,@RequestHeader HttpHeaders headers,HttpServletRequest request){return ResponseEntity.status(HttpStatus.CREATED).body(service.buildDraft(sourceId,typeCode,actors.actor(request),Optional.ofNullable(headers.getFirst(\"X-Correlation-ID\")).orElse(UUID.randomUUID().toString())));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/OnboardingApi.java",
+      "mappings": [
+        {
+          "line": 13,
+          "declaration": "@RestController @RequestMapping(\"/api/onboarding/v1\")"
+        },
+        {
+          "line": 21,
+          "declaration": "@PostMapping(\"/sources\") ResponseEntity<Map<String,Object>> createSource(@Valid @RequestBody SourceRequest r,@RequestHeader HttpHeaders h,HttpServletRequest request){var out=service.createSource(r.sourceId(),r.name(),r.sourceKind(),r.acquisitionMode(),r.owner(),r.metadata(),actors.actor(request),correlation(h));return ResponseEntity.created(URI.create(\"/api/onboarding/v1/sources/\"+r.sourceId())).eTag(etag(\"source\",out.get(\"lock_version\"))).body(out);}"
+        },
+        {
+          "line": 22,
+          "declaration": "@GetMapping(\"/sources\") List<Map<String,Object>> sources(@RequestParam(required=false) String after,@RequestParam(defaultValue=\"50\") @Min(1) @Max(200) int limit){return service.sources(after,limit);}"
+        },
+        {
+          "line": 23,
+          "declaration": "@GetMapping(\"/sources/{sourceId}\") ResponseEntity<Map<String,Object>> source(@PathVariable String sourceId){var out=service.source(sourceId);return ResponseEntity.ok().eTag(etag(\"source\",out.get(\"lock_version\"))).body(out);}"
+        },
+        {
+          "line": 24,
+          "declaration": "@PatchMapping(\"/sources/{sourceId}\") ResponseEntity<Map<String,Object>> source(@PathVariable String sourceId,@RequestBody SourcePatch r,@RequestHeader(HttpHeaders.IF_MATCH) String match,@RequestHeader HttpHeaders h,HttpServletRequest request){var out=service.updateSource(sourceId,sourceLock(match),r.name(),r.owner(),r.status(),r.metadata(),actors.actor(request),correlation(h));return ResponseEntity.ok().eTag(etag(\"source\",out.get(\"lock_version\"))).body(out);}"
+        },
+        {
+          "line": 25,
+          "declaration": "@PostMapping(\"/sources/{sourceId}/onboarding-versions\") ResponseEntity<Map<String,Object>> createVersion(@PathVariable String sourceId,@RequestBody VersionRequest r,@RequestHeader HttpHeaders h,HttpServletRequest request){var out=service.createVersion(sourceId,r.configuration()==null?Map.of():r.configuration(),actors.actor(request),correlation(h));return ResponseEntity.created(URI.create(\"/api/onboarding/v1/sources/\"+sourceId+\"/onboarding-versions/\"+out.get(\"onboarding_version_id\"))).eTag(etag(\"ov\",out.get(\"lock_version\"))).body(out);}"
+        },
+        {
+          "line": 26,
+          "declaration": "@GetMapping(\"/sources/{sourceId}/onboarding-versions/{versionId}\") ResponseEntity<Map<String,Object>> version(@PathVariable String sourceId,@PathVariable UUID versionId){var out=service.version(sourceId,versionId);return ResponseEntity.ok().eTag(etag(\"ov\",out.get(\"lock_version\"))).body(out);}"
+        },
+        {
+          "line": 27,
+          "declaration": "@PostMapping(\"/sources/{sourceId}/onboarding-versions/{versionId}/clone\") ResponseEntity<Map<String,Object>> clone(@PathVariable String sourceId,@PathVariable UUID versionId,@RequestHeader HttpHeaders h,HttpServletRequest request){var out=service.cloneVersion(sourceId,versionId,actors.actor(request),correlation(h));return ResponseEntity.created(URI.create(\"/api/onboarding/v1/sources/\"+sourceId+\"/onboarding-versions/\"+out.get(\"onboarding_version_id\"))).eTag(etag(\"ov\",out.get(\"lock_version\"))).body(out);}"
+        },
+        {
+          "line": 28,
+          "declaration": "@GetMapping(\"/sources/{sourceId}/onboarding-versions/{versionId}/diff\") Map<String,Object> diff(@PathVariable String sourceId,@PathVariable UUID versionId){return service.diff(sourceId,versionId);}"
+        },
+        {
+          "line": 29,
+          "declaration": "@PostMapping(\"/sources/{sourceId}/onboarding-versions/{versionId}/extraction-profile/build\") Map<String,Object> buildExtraction(@PathVariable String sourceId,@PathVariable UUID versionId){return service.buildExtractionProfile(sourceId,versionId);}"
+        },
+        {
+          "line": 30,
+          "declaration": "@PutMapping(\"/sources/{sourceId}/onboarding-versions/{versionId}\") ResponseEntity<Map<String,Object>> patch(@PathVariable String sourceId,@PathVariable UUID versionId,@RequestBody VersionRequest r,@RequestHeader(HttpHeaders.IF_MATCH) String match,@RequestHeader HttpHeaders h,HttpServletRequest request){var out=service.patchVersion(sourceId,versionId,lock(match),r.configuration(),actors.actor(request),correlation(h));return ResponseEntity.ok().eTag(etag(\"ov\",out.get(\"lock_version\"))).body(out);}"
+        },
+        {
+          "line": 31,
+          "declaration": "@PostMapping(\"/sources/{sourceId}/onboarding-versions/{versionId}/validate\") Map<String,Object> validate(@PathVariable String sourceId,@PathVariable UUID versionId,@RequestHeader HttpHeaders h,HttpServletRequest request){return service.validate(sourceId,versionId,actors.actor(request),correlation(h));}"
+        },
+        {
+          "line": 32,
+          "declaration": "@PostMapping(\"/sources/{sourceId}/onboarding-versions/{versionId}/submit\") ResponseEntity<Map<String,Object>> submit(@PathVariable String sourceId,@PathVariable UUID versionId,@RequestHeader(HttpHeaders.IF_MATCH) String match,@RequestHeader HttpHeaders h,HttpServletRequest request){var out=service.submit(sourceId,versionId,lock(match),actors.actor(request),correlation(h));return ResponseEntity.ok().eTag(etag(\"ov\",out.get(\"lock_version\"))).body(out);}"
+        },
+        {
+          "line": 33,
+          "declaration": "@PostMapping(\"/sources/{sourceId}/onboarding-versions/{versionId}/approval-challenges\") ResponseEntity<Map<String,Object>> challenge(@PathVariable String sourceId,@PathVariable UUID versionId,@RequestHeader HttpHeaders h,HttpServletRequest request){return ResponseEntity.status(HttpStatus.CREATED).body(service.createChallenge(sourceId,versionId,actors.actor(request),correlation(h)));}"
+        },
+        {
+          "line": 34,
+          "declaration": "@PostMapping(\"/sources/{sourceId}/onboarding-versions/{versionId}/approval-challenges/{challengeId}/confirm\") ResponseEntity<Map<String,Object>> confirm(@PathVariable String sourceId,@PathVariable UUID versionId,@PathVariable UUID challengeId,@RequestHeader HttpHeaders h,HttpServletRequest request){var out=service.confirm(sourceId,versionId,challengeId,actors.actor(request),correlation(h),actors.authenticationContextRef(request));return ResponseEntity.ok().eTag(etag(\"ov\",out.get(\"lock_version\"))).body(out);}"
+        },
+        {
+          "line": 35,
+          "declaration": "@PostMapping(\"/sources/{sourceId}/onboarding-versions/{versionId}/activate\") Map<String,Object> activate(@PathVariable String sourceId,@PathVariable UUID versionId,@RequestHeader HttpHeaders h,HttpServletRequest request){return service.activate(sourceId,versionId,actors.actor(request),correlation(h));}"
+        },
+        {
+          "line": 36,
+          "declaration": "@PostMapping(\"/sources/{sourceId}/onboarding-versions/{versionId}/compatibility/ingestion-runtime\") ResponseEntity<Map<String,Object>> attestCompatibility(@PathVariable String sourceId,@PathVariable UUID versionId,@Valid @RequestBody CompatibilityRequest body,@RequestHeader HttpHeaders h,HttpServletRequest request){return ResponseEntity.status(HttpStatus.CREATED).body(service.attestIngestionCompatibility(sourceId,versionId,body.compatible(),body.detail(),actors.actor(request),correlation(h)));}"
+        },
+        {
+          "line": 37,
+          "declaration": "@GetMapping(\"/runtime/sources/{sourceId}/active-bundle\") Map<String,Object> active(@PathVariable String sourceId){return service.activeBundle(sourceId);}"
+        },
+        {
+          "line": 38,
+          "declaration": "@GetMapping(\"/runtime/sources/{sourceId}/bundle-history\") List<Map<String,Object>> history(@PathVariable String sourceId){return service.bundleHistory(sourceId);}"
+        },
+        {
+          "line": 39,
+          "declaration": "@GetMapping(\"/runtime/sources/{sourceId}/bundles/{versionId}\") Map<String,Object> historical(@PathVariable String sourceId,@PathVariable UUID versionId){return service.historicalBundle(sourceId,versionId);}"
+        },
+        {
+          "line": 40,
+          "declaration": "@GetMapping(\"/runtime/sources/{sourceId}/publications/{publicationId}/gateway-projections\") List<Map<String,Object>> projections(@PathVariable String sourceId,@PathVariable UUID publicationId){return projections.projections(sourceId,publicationId);}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/ProtectedLogApi.java",
+      "mappings": [
+        {
+          "line": 12,
+          "declaration": "@RestController @RequestMapping(\"/api/trusted-human/v1\")"
+        },
+        {
+          "line": 20,
+          "declaration": "@PostMapping(\"/logs/search\") Map<String,Object> search(@Valid @RequestBody SearchRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.search(search(r),actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
+        },
+        {
+          "line": 21,
+          "declaration": "@GetMapping(\"/logs/{logRef}\") Map<String,Object> read(@PathVariable String logRef,@RequestParam @NotBlank String purpose,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.read(logRef,purpose,actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
+        },
+        {
+          "line": 22,
+          "declaration": "@PostMapping(\"/logs/aggregate\") Map<String,Object> aggregate(@Valid @RequestBody AggregateRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){var q=new ProtectedLogService.Search(r.from(),r.to(),r.service(),r.severity(),r.correlationId(),r.eventType(),r.limit(),null,r.purpose());return logs.aggregate(q,r.dimension(),actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
+        },
+        {
+          "line": 23,
+          "declaration": "@PostMapping(\"/logs/correlate\") Map<String,Object> correlate(@Valid @RequestBody CorrelateRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.correlate(new ProtectedLogService.Correlation(r.key(),r.value(),r.from(),r.to(),r.limit(),r.purpose()),actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
+        },
+        {
+          "line": 24,
+          "declaration": "@PostMapping(\"/log-exports\") ResponseEntity<Map<String,Object>> export(@Valid @RequestBody SearchRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){return ResponseEntity.accepted().body(logs.createExport(search(r),actors.actor(request),actors.authenticationContextRef(request),correlation(h)));}"
+        },
+        {
+          "line": 25,
+          "declaration": "@GetMapping(\"/log-exports/{exportId}\") Map<String,Object> exportStatus(@PathVariable UUID exportId,@RequestParam @NotBlank String purpose,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.export(exportId,purpose,actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
+        },
+        {
+          "line": 26,
+          "declaration": "@PostMapping(\"/log-exports/{exportId}/download\") ResponseEntity<byte[]> download(@PathVariable UUID exportId,@Valid @RequestBody PurposeRequest body,HttpServletRequest request,@RequestHeader HttpHeaders h){byte[] data=logs.download(exportId,body.purpose(),actors.actor(request),actors.authenticationContextRef(request),correlation(h));return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).header(HttpHeaders.CONTENT_DISPOSITION,\"attachment; filename=protected-log-export-\"+exportId+\".json\").cacheControl(CacheControl.noStore()).body(data);}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/SchemaSurveillanceApi.java",
+      "mappings": [
+        {
+          "line": 11,
+          "declaration": "@RestController @RequestMapping(\"/api/onboarding/v1/sources/{sourceId}/schema-surveillance\")"
+        },
+        {
+          "line": 16,
+          "declaration": "@PostMapping ResponseEntity<Map<String,Object>> report(@PathVariable String sourceId,@Valid @RequestBody ReportRequest body,HttpServletRequest request){actors.actor(request);return ResponseEntity.status(HttpStatus.CREATED).body(service.report(sourceId,body.observedSchemaRef(),body.previousFingerprint(),body.observedFingerprint(),body.classification(),body.detail()));}"
+        },
+        {
+          "line": 17,
+          "declaration": "@GetMapping List<Map<String,Object>> issues(@PathVariable String sourceId,HttpServletRequest request){actors.actor(request);return service.issues(sourceId);}"
+        },
+        {
+          "line": 18,
+          "declaration": "@PostMapping(\"/{issueId}/resolve\") Map<String,Object> resolve(@PathVariable String sourceId,@PathVariable UUID issueId,HttpServletRequest request){var actor=actors.actor(request);if(!\"HUMAN_USER\".equals(actor.type()))throw new it.comune.trieste.ouf.onboarding.domain.DomainFailure(HttpStatus.FORBIDDEN,\"ONB_HUMAN_RESOLUTION_REQUIRED\",\"Schema issue resolution requires HUMAN_USER\");return service.resolve(sourceId,issueId);}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/SemanticGapApi.java",
+      "mappings": [
+        {
+          "line": 11,
+          "declaration": "@RestController @RequestMapping(\"/api/onboarding/v1/sources/{sourceId}/onboarding-versions/{versionId}/semantic-gaps\")"
+        },
+        {
+          "line": 19,
+          "declaration": "@PostMapping ResponseEntity<Map<String,Object>> create(@PathVariable String sourceId,@PathVariable UUID versionId,@Valid @RequestBody CreateRequest r){return ResponseEntity.status(HttpStatus.CREATED).body(gaps.create(sourceId,versionId,r.typeCode(),r.fieldPath(),r.description()));}"
+        },
+        {
+          "line": 20,
+          "declaration": "@GetMapping List<Map<String,Object>> list(@PathVariable String sourceId,@PathVariable UUID versionId){return gaps.list(sourceId,versionId);}"
+        },
+        {
+          "line": 21,
+          "declaration": "@PostMapping(\"/{gapId}/search\") ResponseEntity<Map<String,Object>> search(@PathVariable String sourceId,@PathVariable UUID versionId,@PathVariable UUID gapId,@Valid @RequestBody SearchRequest r){return ResponseEntity.accepted().body(gaps.requestSearch(sourceId,versionId,gapId,r.discoveryRequestRef()));}"
+        },
+        {
+          "line": 22,
+          "declaration": "@PostMapping(\"/{gapId}/candidates\") Map<String,Object> candidates(@PathVariable String sourceId,@PathVariable UUID versionId,@PathVariable UUID gapId,@Valid @RequestBody CandidateRequest r,HttpServletRequest request){return gaps.recordCandidates(sourceId,versionId,gapId,r.candidates(),actors.actor(request));}"
+        },
+        {
+          "line": 23,
+          "declaration": "@PostMapping(\"/{gapId}/select-candidate\") Map<String,Object> select(@PathVariable String sourceId,@PathVariable UUID versionId,@PathVariable UUID gapId,@Valid @RequestBody SelectionRequest r){return gaps.select(sourceId,versionId,gapId,r.candidateId());}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-source-onboarding",
+      "source": "src/main/java/it/comune/trieste/ouf/onboarding/api/TrustedHumanApi.java",
+      "mappings": [
+        {
+          "line": 9,
+          "declaration": "@RestController @RequestMapping(\"/api/trusted-human/v1/approval-challenges\")"
+        },
+        {
+          "line": 13,
+          "declaration": "@GetMapping(\"/{challengeId}\") Map<String,Object> card(@PathVariable UUID challengeId,HttpServletRequest request){requireHuman(request);return onboarding.approvalCard(challengeId);}"
+        },
+        {
+          "line": 14,
+          "declaration": "@PostMapping(\"/{challengeId}/confirm\") Map<String,Object> confirm(@PathVariable UUID challengeId,HttpServletRequest request,@RequestHeader HttpHeaders headers){var actor=requireHuman(request);Map<String,Object> card=onboarding.approvalCard(challengeId);return onboarding.confirm(String.valueOf(card.get(\"source_id\")),(UUID)card.get(\"onboarding_version_id\"),challengeId,actor,correlation(headers),actors.authenticationContextRef(request));}"
+        },
+        {
+          "line": 15,
+          "declaration": "@PostMapping(\"/{challengeId}/reject\") Map<String,Object> reject(@PathVariable UUID challengeId,HttpServletRequest request,@RequestHeader HttpHeaders headers){var actor=requireHuman(request);Map<String,Object> card=onboarding.approvalCard(challengeId);return onboarding.reject(String.valueOf(card.get(\"source_id\")),(UUID)card.get(\"onboarding_version_id\"),challengeId,actor,correlation(headers),actors.authenticationContextRef(request));}"
+        },
+        {
+          "line": 16,
+          "declaration": "@PostMapping(\"/{challengeId}/activate\") Map<String,Object> activate(@PathVariable UUID challengeId,HttpServletRequest request,@RequestHeader HttpHeaders headers){var actor=requireHuman(request);Map<String,Object> card=onboarding.approvalCard(challengeId);return onboarding.activate(String.valueOf(card.get(\"source_id\")),(UUID)card.get(\"onboarding_version_id\"),actor,correlation(headers));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-semantic-registry",
+      "source": "src/main/java/it/comune/trieste/ouf/semantic/api/ArtifactApi.java",
+      "mappings": [
+        {
+          "line": 17,
+          "declaration": "@RequestMapping(\"/api/semantic/v1\")"
+        },
+        {
+          "line": 29,
+          "declaration": "@PostMapping(\"/artifacts\")"
+        },
+        {
+          "line": 34,
+          "declaration": "@GetMapping(\"/artifacts/{id}\") Map<String,Object> get(@PathVariable UUID id) { return service.get(id); }"
+        },
+        {
+          "line": 35,
+          "declaration": "@GetMapping(\"/search\") List<Map<String,Object>> search(@RequestParam String q,@RequestParam(defaultValue=\"ACTIVE\") String status,@RequestParam(defaultValue=\"20\") int limit) { return service.search(q,status,limit); }"
+        },
+        {
+          "line": 36,
+          "declaration": "@PatchMapping(\"/revisions/{id}\") ResponseEntity<Map<String,Object>> patch(@PathVariable UUID id,@RequestHeader(\"If-Match\") String etag,@Valid @RequestBody PatchRevision patch,HttpServletRequest request,@RequestHeader HttpHeaders headers) {"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-semantic-registry",
+      "source": "src/main/java/it/comune/trieste/ouf/semantic/api/ChangeGovernanceApi.java",
+      "mappings": [
+        {
+          "line": 8,
+          "declaration": "@RestController @RequestMapping(\"/api/semantic/v1\")"
+        },
+        {
+          "line": 14,
+          "declaration": "@PostMapping(\"/change-notices\") Map<String,Object> notice(@RequestBody NoticeRequest r,HttpServletRequest request){return service.notice(r.changeId(),r.decision(),actors.actor(request).subject());}"
+        },
+        {
+          "line": 15,
+          "declaration": "@GetMapping(\"/change-notices/{id}\") Map<String,Object> notice(@PathVariable UUID id){return service.getNotice(id);}"
+        },
+        {
+          "line": 16,
+          "declaration": "@PostMapping(\"/migration-proposals\") Map<String,Object> propose(@RequestBody ProposalRequest r,HttpServletRequest request){return service.propose(r.changeId(),r.replacementRefs(),r.rationale(),actors.actor(request).subject());}"
+        },
+        {
+          "line": 17,
+          "declaration": "@GetMapping(\"/migration-proposals/{id}\") Map<String,Object> proposal(@PathVariable UUID id){return service.proposal(id);}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-semantic-registry",
+      "source": "src/main/java/it/comune/trieste/ouf/semantic/api/DiscoveryApi.java",
+      "mappings": [
+        {
+          "line": 9,
+          "declaration": "@RestController @RequestMapping(\"/api/semantic/v1/discovery-requests\")"
+        },
+        {
+          "line": 14,
+          "declaration": "@PostMapping Map<String,Object> create(@RequestBody Request r,HttpServletRequest request){UUID id=service.request(r.requestedArtifactType(),r.intent(),r.preferredLanguages()==null?List.of():r.preferredLanguages(),actors.actor(request).subject());return Map.of(\"requestId\",id,\"state\",\"PENDING\");}"
+        },
+        {
+          "line": 15,
+          "declaration": "@GetMapping(\"/{id}/candidates\") List<Map<String,Object>> candidates(@PathVariable UUID id){return service.candidates(id);}"
+        },
+        {
+          "line": 16,
+          "declaration": "@PostMapping(\"/{requestId}/candidates/{candidateId}:adopt\") Map<String,Object> adopt(@PathVariable UUID requestId,@PathVariable UUID candidateId,@RequestBody Adoption r,HttpServletRequest request){UUID artifact=service.adopt(candidateId,r.semanticId(),r.namespace(),r.localName(),r.ownerRef(),r.authorityRef(),actors.actor(request).subject());return Map.of(\"artifactId\",artifact,\"status\",\"DRAFT\");}"
+        },
+        {
+          "line": 17,
+          "declaration": "@GetMapping(\"/providers\") Map<String,Object> providers(){return Map.of(\"providers\",List.of(schemaGov.status()));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-semantic-registry",
+      "source": "src/main/java/it/comune/trieste/ouf/semantic/api/GovernanceApi.java",
+      "mappings": [
+        {
+          "line": 12,
+          "declaration": "@RestController @RequestMapping(\"/api/semantic/v1\")"
+        },
+        {
+          "line": 17,
+          "declaration": "@PostMapping(\"/approval-challenges\") ResponseEntity<Map<String,Object>> challenge(@Valid @RequestBody ChallengeRequest r,HttpServletRequest request,@RequestHeader HttpHeaders headers){var actor=actors.actor(request);Map<String,Object> out=service.challenge(r.revisionId(),r.contentHash(),Duration.ofMinutes(15),actor.subject(),actor.type(),correlation(headers));return ResponseEntity.status(HttpStatus.CREATED).body(out);}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-semantic-registry",
+      "source": "src/main/java/it/comune/trieste/ouf/semantic/api/InterchangeApi.java",
+      "mappings": [
+        {
+          "line": 9,
+          "declaration": "@RestController @RequestMapping(\"/api/semantic/v1\")"
+        },
+        {
+          "line": 12,
+          "declaration": "@PostMapping(value=\"/imports\",consumes={\"text/turtle\",\"application/ld+json\",\"application/rdf+xml\",\"application/n-triples\"})"
+        },
+        {
+          "line": 14,
+          "declaration": "@GetMapping(\"/publication-sets/{setId}/artifacts/{artifactId}\") ResponseEntity<byte[]> export(@PathVariable UUID setId,@PathVariable UUID artifactId,@RequestHeader(value=HttpHeaders.ACCEPT,defaultValue=\"application/ld+json\") String accept){String selected=select(accept);var out=service.export(setId,artifactId,selected);return ResponseEntity.ok().contentType(MediaType.parseMediaType(out.mediaType())).body(out.body());}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-semantic-registry",
+      "source": "src/main/java/it/comune/trieste/ouf/semantic/api/SemanticTrustedHumanApi.java",
+      "mappings": [
+        {
+          "line": 11,
+          "declaration": "@RestController @RequestMapping(\"/api/trusted-human/v1/semantic-approval-challenges\")"
+        },
+        {
+          "line": 18,
+          "declaration": "@GetMapping(\"/{id}\") Map<String,Object> card(@PathVariable UUID id,HttpServletRequest request){var actor=human(request);actors.require(actor,\"ouf.semantic.review\");return governance.card(id);}"
+        },
+        {
+          "line": 19,
+          "declaration": "@PostMapping(\"/{id}/decision\") Map<String,Object> decide(@PathVariable UUID id,@Valid @RequestBody DecisionRequest body,HttpServletRequest request,@RequestHeader HttpHeaders headers){var actor=human(request);actors.require(actor,\"APPROVED\".equals(body.decision())?\"ouf.semantic.approve\":\"ouf.semantic.reject\");return governance.decide(id,body.decision(),actor.subject(),actor.type(),actors.authorizationDecisionRef(request),correlation(headers));}"
+        },
+        {
+          "line": 20,
+          "declaration": "@PostMapping(\"/{id}/publish\") Map<String,Object> publish(@PathVariable UUID id,@Valid @RequestBody PublishRequest body,@RequestHeader(\"Idempotency-Key\") String key,HttpServletRequest request,@RequestHeader HttpHeaders headers){var actor=human(request);actors.require(actor,\"ouf.semantic.publish\");Map<String,Object> card=governance.card(id);return governance.publish((UUID)card.get(\"revision_id\"),body.approvalDecisionId(),key,body.contentHash(),actor.subject(),actor.type(),correlation(headers));}"
+        },
+        {
+          "line": 21,
+          "declaration": "@PostMapping(\"/revisions/{id}:deprecate\") Map<String,Object> deprecate(@PathVariable UUID id,HttpServletRequest request,@RequestHeader HttpHeaders headers){var actor=human(request);actors.require(actor,\"ouf.semantic.deprecate\");return governance.lifecycle(id,\"DEPRECATED\",actor.subject(),actor.type(),actors.authorizationDecisionRef(request),correlation(headers));}"
+        },
+        {
+          "line": 22,
+          "declaration": "@PostMapping(\"/artifacts/{id}:retire\") Map<String,Object> retire(@PathVariable UUID id,HttpServletRequest request,@RequestHeader HttpHeaders headers){var actor=human(request);actors.require(actor,\"ouf.semantic.deprecate\");return governance.lifecycle(governance.retiredRevision(id),\"RETIRED\",actor.subject(),actor.type(),actors.authorizationDecisionRef(request),correlation(headers));}"
+        },
+        {
+          "line": 23,
+          "declaration": "@GetMapping(\"/migration-proposals/{id}\") Map<String,Object> migrationCard(@PathVariable UUID id,HttpServletRequest request){var actor=human(request);actors.require(actor,\"ouf.semantic.review\");return changes.proposal(id);}"
+        },
+        {
+          "line": 24,
+          "declaration": "@PostMapping(\"/migration-proposals/{id}/decision\") Map<String,Object> migrationDecision(@PathVariable UUID id,@Valid @RequestBody MigrationDecisionRequest body,HttpServletRequest request){var actor=human(request);actors.require(actor,\"ouf.semantic.migration.decide\");return changes.decide(id,body.decision(),actor.subject(),actor.type(),actors.authorizationDecisionRef(request));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-semantic-registry",
+      "source": "src/main/java/it/comune/trieste/ouf/semantic/api/ValidationApi.java",
+      "mappings": [
+        {
+          "line": 9,
+          "declaration": "@RestController @RequestMapping(\"/api/semantic/v1\")"
+        },
+        {
+          "line": 14,
+          "declaration": "@PostMapping(\"/revisions/{id}:validate\") Map<String,Object> validate(@PathVariable UUID id,HttpServletRequest request){return service.validate(id,actors.actor(request).subject());}"
+        },
+        {
+          "line": 15,
+          "declaration": "@GetMapping(\"/validation-runs/{id}\") Map<String,Object> validation(@PathVariable UUID id){return service.validation(id);}"
+        },
+        {
+          "line": 16,
+          "declaration": "@PostMapping(\"/impact-reports\") Map<String,Object> impact(@RequestBody ImpactRequest r,HttpServletRequest request){return service.impact(r.fromRevisionId(),r.toRevisionId(),actors.actor(request).subject());}"
+        },
+        {
+          "line": 17,
+          "declaration": "@GetMapping(\"/impact-reports/{id}\") Map<String,Object> impact(@PathVariable UUID id){return service.impact(id);}"
+        },
+        {
+          "line": 18,
+          "declaration": "@GetMapping(\"/references:resolve\") Map<String,Object> resolve(@RequestParam String semanticId,@RequestParam UUID revisionId,@RequestParam UUID publicationSetId){return service.resolve(semanticId,revisionId,publicationSetId);}"
+        },
+        {
+          "line": 19,
+          "declaration": "@PutMapping(\"/consumer-references\") ResponseEntity<Void> consumer(@RequestBody ConsumerReference r,HttpServletRequest request){var actor=actors.actor(request);actors.require(actor,\"ouf.semantic.consumer-reference.write\");service.registerConsumer(r.consumerType(),r.consumerId(),r.semanticId(),r.revisionId(),r.publicationSetId());return ResponseEntity.noContent().build();}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedActorResolver"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-ingestion-runtime",
+      "source": "src/main/java/it/comune/trieste/ouf/ingestion/HistoricalContractApi.java",
+      "mappings": [
+        {
+          "line": 3,
+          "declaration": "@RestController @RequestMapping(\"/api/internal/v1/ingestion\") public class HistoricalContractApi {private final HistoricalContractService history;private final TrustedAuthorizationContext authorization;public HistoricalContractApi(HistoricalContractService history,TrustedAuthorizationContext authorization){this.history=history;this.authorization=authorization;}public record ContractRequest(String contractRef){}public record HoldRequest(String contractRef,String action,String reason){}@GetMapping(\"/contracts/runs/{runId}\")Map<String,Object> contracts(@PathVariable UUID runId,HttpServletRequest request){return history.runContracts(runId,authorization.require(request,\"ingestion.contract.read\",false));}@GetMapping(\"/runs/{runId}/lineage\")Map<String,Object> lineage(@PathVariable UUID runId,@RequestParam(defaultValue=\"100\")int limit,HttpServletRequest request){return Map.of(\"items\",history.lineage(runId,authorization.require(request,\"ingestion.lineage.read\",false),limit));}@PostMapping(\"/contracts/deletion-check\")Map<String,Object> deletionCheck(@RequestBody ContractRequest body,HttpServletRequest request){return history.deletionCheck(body.contractRef(),authorization.require(request,\"ingestion.contract.delete-check\",false));}@PostMapping(\"/contracts/assert-removable\")void assertRemovable(@RequestBody ContractRequest body,HttpServletRequest request){history.assertRemovable(body.contractRef(),authorization.require(request,\"ingestion.contract.delete\",false));}@PostMapping(\"/contracts/legal-hold\")void legalHold(@RequestBody HoldRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){history.legalHold(body.contractRef(),body.action(),body.reason(),authorization.require(request,\"ingestion.contract.legal-hold\",true),correlation==null||correlation.isBlank()?UUID.randomUUID().toString():correlation);}}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedAuthorizationContext"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-ingestion-runtime",
+      "source": "src/main/java/it/comune/trieste/ouf/ingestion/OperationalAwarenessApi.java",
+      "mappings": [
+        {
+          "line": 9,
+          "declaration": "@RequestMapping(\"/api/internal/v1/ingestion/operations\")"
+        },
+        {
+          "line": 22,
+          "declaration": "@PostMapping(\"/status\")"
+        },
+        {
+          "line": 25,
+          "declaration": "@PostMapping(\"/history\")"
+        },
+        {
+          "line": 28,
+          "declaration": "@PostMapping(\"/incidents\")"
+        },
+        {
+          "line": 31,
+          "declaration": "@PostMapping(\"/incidents/explain\")"
+        },
+        {
+          "line": 37,
+          "declaration": "@PostMapping(\"/summary\")"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedAuthorizationContext"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-ingestion-runtime",
+      "source": "src/main/java/it/comune/trieste/ouf/ingestion/ProtectedLogTrustedHumanApi.java",
+      "mappings": [
+        {
+          "line": 10,
+          "declaration": "@RestController @RequestMapping(\"/api/trusted-human/v1/ingestion/logs\")"
+        },
+        {
+          "line": 16,
+          "declaration": "@PostMapping(\"/search\") Map<String,Object> search(@RequestBody Query q,@RequestHeader HttpHeaders headers,HttpServletRequest request){String c=correlation(headers);try{return logs.search(toSearch(q),authorization.require(request,\"ingestion.log.read\",true),c);}catch(ResponseStatusException denied){logs.denied(request,\"SEARCH\",q.purpose(),c);throw denied;}}"
+        },
+        {
+          "line": 17,
+          "declaration": "@PostMapping(\"/aggregate\") Map<String,Object> aggregate(@RequestBody Aggregate q,@RequestHeader HttpHeaders headers,HttpServletRequest request){String c=correlation(headers);try{return Map.of(\"items\",logs.aggregate(toSearch(q.query()),q.dimension(),authorization.require(request,\"ingestion.log.aggregate\",true),c));}catch(ResponseStatusException denied){logs.denied(request,\"AGGREGATE\",q.query()==null?null:q.query().purpose(),c);throw denied;}}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedAuthorizationContext"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-ingestion-runtime",
+      "source": "src/main/java/it/comune/trieste/ouf/ingestion/QuarantineTrustedHumanApi.java",
+      "mappings": [
+        {
+          "line": 8,
+          "declaration": "@RestController @RequestMapping(\"/api/trusted-human/v1/ingestion/quarantine\")"
+        },
+        {
+          "line": 13,
+          "declaration": "@GetMapping Map<String,Object> search(@RequestParam(defaultValue=\"OPEN\") String state,@RequestParam(defaultValue=\"50\") int limit,HttpServletRequest request){return Map.of(\"items\",service.search(state,limit,authorization.require(request,\"ingestion.quarantine.read\",true)));}"
+        },
+        {
+          "line": 14,
+          "declaration": "@GetMapping(\"/{id}\") Map<String,Object> get(@PathVariable UUID id,HttpServletRequest request){return service.get(id,authorization.require(request,\"ingestion.quarantine.read\",true));}"
+        },
+        {
+          "line": 15,
+          "declaration": "@GetMapping(\"/{id}/preview\") Map<String,Object> preview(@PathVariable UUID id,HttpServletRequest request){return service.preview(id,authorization.require(request,\"ouf.ingestion.quarantine.inspect\",false));}"
+        },
+        {
+          "line": 16,
+          "declaration": "@PostMapping(\"/{id}/replay\") ResponseEntity<Map<String,Object>> replay(@PathVariable UUID id,@RequestBody ReplayRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false) String correlation,HttpServletRequest request){var actor=authorization.require(request,\"ingestion.quarantine.replay\",true);String c=correlation(correlation);UUID replay=service.prepareAndReplay(id,body.mode(),body.targetBundleRef(),actor,c);return ResponseEntity.accepted().body(Map.of(\"replayId\",replay,\"status\",\"QUEUED\",\"correlationId\",c));}"
+        },
+        {
+          "line": 17,
+          "declaration": "@PostMapping(\"/{id}/retry\") ResponseEntity<Void> retry(@PathVariable UUID id,@RequestBody RetryRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){service.markRetryReady(id,body.expectedVersion(),authorization.require(request,\"ouf.ingestion.quarantine.retry\",true),correlation(correlation));return ResponseEntity.noContent().build();}"
+        },
+        {
+          "line": 18,
+          "declaration": "@PostMapping(\"/{id}/reprocess\") ResponseEntity<Map<String,Object>> reprocess(@PathVariable UUID id,@RequestBody ReplayRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){String c=correlation(correlation);UUID replay=service.requestReplay(id,body.mode(),body.targetBundleRef(),authorization.require(request,\"ouf.ingestion.quarantine.reprocess\",true),c);return ResponseEntity.accepted().body(Map.of(\"replayId\",replay,\"status\",\"QUEUED\",\"correlationId\",c));}"
+        },
+        {
+          "line": 19,
+          "declaration": "@PostMapping(\"/{id}/dismiss\") ResponseEntity<Void> dismiss(@PathVariable UUID id,@RequestBody CloseRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){service.close(id,\"DISMISSED\",body.reason(),null,body.expectedVersion(),authorization.require(request,\"ouf.ingestion.issue.dismiss\",true),correlation(correlation));return ResponseEntity.noContent().build();}"
+        },
+        {
+          "line": 20,
+          "declaration": "@PostMapping(\"/{id}/supersede\") ResponseEntity<Void> supersede(@PathVariable UUID id,@RequestBody CloseRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){service.close(id,\"SUPERSEDED\",body.reason(),body.supersededBy(),body.expectedVersion(),authorization.require(request,\"ouf.ingestion.issue.dismiss\",true),correlation(correlation));return ResponseEntity.noContent().build();}"
+        },
+        {
+          "line": 21,
+          "declaration": "@GetMapping(\"/replays/{replayId}\") Map<String,Object> replayStatus(@PathVariable UUID replayId,HttpServletRequest request){authorization.require(request,\"ingestion.replay.read\",true);return replays.view(replayId);}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedAuthorizationContext"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-ingestion-runtime",
+      "source": "src/main/java/it/comune/trieste/ouf/ingestion/RunLifecycleTrustedHumanApi.java",
+      "mappings": [
+        {
+          "line": 8,
+          "declaration": "@RestController @ConditionalOnBean(RunLifecycleService.class) @RequestMapping(\"/api/trusted-human/v1/ingestion/runs\")"
+        },
+        {
+          "line": 13,
+          "declaration": "@GetMapping(\"/{id}\") Map<String,Object> get(@PathVariable UUID id,HttpServletRequest request){return service.view(id,authorization.require(request,\"ingestion.run.read\",true));}"
+        },
+        {
+          "line": 14,
+          "declaration": "@PostMapping(\"/{id}/pause\") Map<String,Object> pause(@PathVariable UUID id,@RequestBody ControlRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){return service.pause(id,body.expectedVersion(),authorization.require(request,\"ingestion.run.pause\",true),correlation(correlation));}"
+        },
+        {
+          "line": 15,
+          "declaration": "@PostMapping(\"/{id}/resume\") Map<String,Object> resume(@PathVariable UUID id,@RequestBody ControlRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){return service.resume(id,body.expectedVersion(),authorization.require(request,\"ingestion.run.resume\",true),correlation(correlation));}"
+        },
+        {
+          "line": 16,
+          "declaration": "@PostMapping(\"/{id}/abort\") Map<String,Object> abort(@PathVariable UUID id,@RequestBody ControlRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){return service.abort(id,body.expectedVersion(),authorization.require(request,\"ingestion.run.abort\",true),correlation(correlation));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedAuthorizationContext"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-ingestion-runtime",
+      "source": "src/main/java/it/comune/trieste/ouf/ingestion/RuntimeIssueTrustedHumanApi.java",
+      "mappings": [
+        {
+          "line": 8,
+          "declaration": "@RestController @RequestMapping(\"/api/trusted-human/v1/ingestion/issues\")"
+        },
+        {
+          "line": 13,
+          "declaration": "@GetMapping Map<String,Object> search(@RequestParam(required=false)String state,@RequestParam(required=false)String severity,@RequestParam(required=false)String sourceId,@RequestParam(required=false)UUID runId,@RequestParam(defaultValue=\"50\")int limit,HttpServletRequest request){return Map.of(\"items\",issues.search(state,severity,sourceId,runId,limit,authorization.require(request,\"ouf.ingestion.issue.search\",false)));}"
+        },
+        {
+          "line": 14,
+          "declaration": "@GetMapping(\"/{id}\") Map<String,Object> get(@PathVariable UUID id,HttpServletRequest request){return issues.get(id,authorization.require(request,\"ouf.ingestion.issue.read\",false));}"
+        },
+        {
+          "line": 15,
+          "declaration": "@GetMapping(\"/{id}/explain\") Map<String,Object> explain(@PathVariable UUID id,HttpServletRequest request){return issues.explain(id,authorization.require(request,\"ouf.ingestion.issue.explain\",false));}"
+        },
+        {
+          "line": 16,
+          "declaration": "@GetMapping(\"/schema-observations\") Map<String,Object> observations(@RequestParam(required=false)String sourceId,@RequestParam(required=false)String outcome,@RequestParam(defaultValue=\"50\")int limit,HttpServletRequest request){return Map.of(\"items\",issues.observations(sourceId,outcome,limit,authorization.require(request,\"ouf.ingestion.issue.search\",false)));}"
+        },
+        {
+          "line": 17,
+          "declaration": "@PostMapping(\"/{id}/resolve\") ResponseEntity<Void> resolve(@PathVariable UUID id,@RequestBody CloseRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){issues.close(id,\"RESOLVED\",body.reason(),body.expectedVersion(),authorization.require(request,\"ouf.ingestion.issue.resolve\",true),correlation(correlation));return ResponseEntity.noContent().build();}"
+        },
+        {
+          "line": 18,
+          "declaration": "@PostMapping(\"/{id}/dismiss\") ResponseEntity<Void> dismiss(@PathVariable UUID id,@RequestBody CloseRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){issues.close(id,\"DISMISSED\",body.reason(),body.expectedVersion(),authorization.require(request,\"ouf.ingestion.issue.dismiss\",true),correlation(correlation));return ResponseEntity.noContent().build();}"
+        },
+        {
+          "line": 19,
+          "declaration": "@PostMapping(\"/{id}/onboarding-review\") ResponseEntity<Map<String,Object>> review(@PathVariable UUID id,@RequestBody ReviewRequest body,@RequestHeader(value=\"X-Correlation-ID\",required=false)String correlation,HttpServletRequest request){String c=correlation(correlation);UUID requestId=issues.requestOnboardingReview(id,body.expectedVersion(),authorization.require(request,\"ouf.ingestion.onboarding-review.request\",false),c);return ResponseEntity.accepted().body(Map.of(\"requestId\",requestId,\"status\",\"QUEUED\",\"correlationId\",c));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "TrustedAuthorizationContext"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-udp-object-resolution",
+      "source": "src/main/java/it/comune/trieste/ouf/udp/GraphApi.java",
+      "mappings": [
+        {
+          "line": 7,
+          "declaration": "@RestController @RequestMapping(\"/api/udp/v1/graph\")"
+        },
+        {
+          "line": 10,
+          "declaration": "@PostMapping(\"/neighbors\") GraphQueryService.GraphResult neighbors(@RequestBody NeighborsRequest body,HttpServletRequest request){return service.neighbors(body.startObjectId(),body.relationTypes(),body.maxNodes(),body.maxEdges(),ServingApi.context(request));}"
+        },
+        {
+          "line": 11,
+          "declaration": "@PostMapping(\"/traverse\") GraphQueryService.GraphResult traverse(@RequestBody TraverseRequest body,HttpServletRequest request){return service.traverse(body.startObjectId(),body.relationTypes(),body.maxDepth(),body.maxNodes(),body.maxEdges(),body.purpose(),ServingApi.context(request));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "context("
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-udp-object-resolution",
+      "source": "src/main/java/it/comune/trieste/ouf/udp/HandoffApi.java",
+      "mappings": [
+        {
+          "line": 8,
+          "declaration": "@RestController @RequestMapping(\"/api/internal/v1/handoffs\")"
+        },
+        {
+          "line": 11,
+          "declaration": "@PostMapping ResponseEntity<HandoffIntakeService.Receipt> accept(@RequestBody Map<String,Object> payload){var receipt=service.accept(payload);return ResponseEntity.created(URI.create(\"/api/internal/v1/handoffs/\"+payload.get(\"handoffId\"))).body(receipt);}"
+        },
+        {
+          "line": 12,
+          "declaration": "@GetMapping(\"/{handoffId}\") Map<String,Object> get(@PathVariable String handoffId){return service.handoff(handoffId);}"
+        }
+      ],
+      "authorizationMarkers": [],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-udp-object-resolution",
+      "source": "src/main/java/it/comune/trieste/ouf/udp/LakeShadowRebuildApi.java",
+      "mappings": [
+        {
+          "line": 7,
+          "declaration": "@RestController @RequestMapping(\"/api/udp/v1/governance/lake/shadow-rebuilds\")"
+        },
+        {
+          "line": 10,
+          "declaration": "@PostMapping LakeShadowRebuildService.Plan plan(@RequestBody PlanRequest body,HttpServletRequest request){return service.plan(body.tier(),TrustedHumanApi.trusted(request));}"
+        },
+        {
+          "line": 11,
+          "declaration": "@GetMapping(\"/{id}\") LakeShadowRebuildService.Plan get(@PathVariable UUID id,HttpServletRequest request){var actor=TrustedHumanApi.trusted(request);actor.require(\"lake.shadow.read\");return service.get(id,actor.tenantId());}"
+        },
+        {
+          "line": 12,
+          "declaration": "@PostMapping(\"/{id}/cutover\") LakeShadowRebuildService.Plan cutover(@PathVariable UUID id,@RequestBody CutoverRequest body,HttpServletRequest request){return service.cutover(id,body.expectedVersion(),body.reason(),TrustedHumanApi.trusted(request));}"
+        },
+        {
+          "line": 13,
+          "declaration": "@PostMapping(\"/{id}/rollback\") LakeShadowRebuildService.Plan rollback(@PathVariable UUID id,@RequestBody CutoverRequest body,HttpServletRequest request){return service.rollback(id,body.expectedVersion(),body.reason(),TrustedHumanApi.trusted(request));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "trusted("
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-udp-object-resolution",
+      "source": "src/main/java/it/comune/trieste/ouf/udp/LakeTrustedHumanApi.java",
+      "mappings": [
+        {
+          "line": 7,
+          "declaration": "@RestController @RequestMapping(\"/api/udp/v1/governance/lake\")"
+        },
+        {
+          "line": 10,
+          "declaration": "@PostMapping(\"/objects/{id}/deletion\") LakeCatalogRepository.LakeObject authorizeDeletion(@PathVariable UUID id,@RequestBody DeletionRequest body,HttpServletRequest request){return lifecycle.authorizeDeletion(id,body.expectedVersion(),body.reason(),TrustedHumanApi.trusted(request));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "trusted(",
+        "authorize"
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-udp-object-resolution",
+      "source": "src/main/java/it/comune/trieste/ouf/udp/RelatedSearchApi.java",
+      "mappings": [
+        {
+          "line": 7,
+          "declaration": "@RequestMapping(\"/api/udp/v1/objects\")"
+        },
+        {
+          "line": 13,
+          "declaration": "@PostMapping(\"/related-search\")"
+        }
+      ],
+      "authorizationMarkers": [
+        "context("
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-udp-object-resolution",
+      "source": "src/main/java/it/comune/trieste/ouf/udp/ReplayTrustedHumanApi.java",
+      "mappings": [
+        {
+          "line": 7,
+          "declaration": "@RestController @RequestMapping(\"/api/udp/v1/governance/replays\")"
+        },
+        {
+          "line": 10,
+          "declaration": "@PostMapping HistoricalReplayService.Plan plan(@RequestBody PlanRequest body,HttpServletRequest request){return service.plan(body.sourceHandoffId(),body.reason(),TrustedHumanApi.trusted(request));}"
+        },
+        {
+          "line": 11,
+          "declaration": "@PostMapping(\"/{id}/resume\") HistoricalReplayService.Plan resume(@PathVariable UUID id,@RequestBody VersionRequest body,HttpServletRequest request){return service.resume(id,body.expectedVersion(),TrustedHumanApi.trusted(request));}"
+        },
+        {
+          "line": 12,
+          "declaration": "@PostMapping(\"/{id}/execute\") HistoricalReplayService.Plan execute(@PathVariable UUID id,@RequestBody VersionRequest body,HttpServletRequest request){return service.execute(id,body.expectedVersion(),TrustedHumanApi.trusted(request));}"
+        },
+        {
+          "line": 13,
+          "declaration": "@PostMapping(\"/{id}/abort\") HistoricalReplayService.Plan abort(@PathVariable UUID id,@RequestBody AbortRequest body,HttpServletRequest request){return service.abort(id,body.expectedVersion(),body.reason(),TrustedHumanApi.trusted(request));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "trusted("
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-udp-object-resolution",
+      "source": "src/main/java/it/comune/trieste/ouf/udp/ServingApi.java",
+      "mappings": [
+        {
+          "line": 10,
+          "declaration": "@RestController @RequestMapping(\"/api/udp/v1\")"
+        },
+        {
+          "line": 14,
+          "declaration": "@GetMapping(\"/objects/{id}\") Map<String,Object> current(@PathVariable UUID id,HttpServletRequest r){return service.current(id,context(r));}"
+        },
+        {
+          "line": 15,
+          "declaration": "@GetMapping(\"/objects/{id}/history\") GovernedServingService.Page<Map<String,Object>> history(@PathVariable UUID id,@RequestParam(defaultValue=\"50\") int pageSize,@RequestParam(required=false) String cursor,@RequestParam(required=false) OffsetDateTime asOf,HttpServletRequest r){return service.history(id,pageSize,cursor,asOf,context(r));}"
+        },
+        {
+          "line": 16,
+          "declaration": "@GetMapping(\"/objects\") GovernedServingService.Page<Map<String,Object>> search(@RequestParam String type,@RequestParam(defaultValue=\"50\") int pageSize,@RequestParam(required=false) String cursor,HttpServletRequest r){return service.search(type,pageSize,cursor,context(r));}"
+        },
+        {
+          "line": 17,
+          "declaration": "@GetMapping(\"/objects/{id}/relationships\") GovernedServingService.Page<Map<String,Object>> relationships(@PathVariable UUID id,@RequestParam(defaultValue=\"50\") int pageSize,@RequestParam(required=false) String cursor,HttpServletRequest r){return service.relationships(id,pageSize,cursor,context(r));}"
+        },
+        {
+          "line": 18,
+          "declaration": "@GetMapping(\"/objects/{id}/lineage\") List<Map<String,Object>> lineage(@PathVariable UUID id,HttpServletRequest r){return service.lineage(id,null,context(r));}"
+        },
+        {
+          "line": 19,
+          "declaration": "@GetMapping(\"/objects/{id}/properties/{property}/lineage\") List<Map<String,Object>> propertyLineage(@PathVariable UUID id,@PathVariable String property,HttpServletRequest r){return service.lineage(id,property,context(r));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "ServletAuthorization",
+        "ServingAuthorizationContext",
+        "context("
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-udp-object-resolution",
+      "source": "src/main/java/it/comune/trieste/ouf/udp/SpatialApi.java",
+      "mappings": [
+        {
+          "line": 7,
+          "declaration": "@RestController @RequestMapping(\"/api/udp/v1/spatial\")"
+        },
+        {
+          "line": 10,
+          "declaration": "@PostMapping(\"/nearby\") SpatialQueryService.Result nearby(@RequestBody NearbyRequest b,HttpServletRequest r){return service.nearby(b.anchorObjectId(),b.targetType(),b.maxDistanceMeters(),b.maxResults(),ServingApi.context(r));}"
+        },
+        {
+          "line": 11,
+          "declaration": "@PostMapping(\"/intersects\") SpatialQueryService.Result intersects(@RequestBody EnvelopeRequest b,HttpServletRequest r){return service.envelope(\"INTERSECTS\",b.minLon(),b.minLat(),b.maxLon(),b.maxLat(),b.crs(),b.targetType(),b.maxResults(),ServingApi.context(r));}"
+        },
+        {
+          "line": 12,
+          "declaration": "@PostMapping(\"/within\") SpatialQueryService.Result within(@RequestBody EnvelopeRequest b,HttpServletRequest r){return service.envelope(\"WITHIN\",b.minLon(),b.minLat(),b.maxLon(),b.maxLat(),b.crs(),b.targetType(),b.maxResults(),ServingApi.context(r));}"
+        },
+        {
+          "line": 13,
+          "declaration": "@PostMapping(\"/intersection-search\") SpatialQueryService.Result intersectionSearch(@RequestBody IntersectionRequest b,HttpServletRequest r){return service.intersectionSearch(b.anchorObjectId(),b.targetType(),b.maxResults(),ServingApi.context(r));}"
+        }
+      ],
+      "authorizationMarkers": [
+        "context("
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    },
+    {
+      "repository": "GioNob/ouf-udp-object-resolution",
+      "source": "src/main/java/it/comune/trieste/ouf/udp/TrustedHumanApi.java",
+      "mappings": [
+        {
+          "line": 9,
+          "declaration": "@RestController @RequestMapping(\"/api/udp/v1/governance\")"
+        },
+        {
+          "line": 14,
+          "declaration": "@PostMapping(\"/merge/plans\") IdentityGovernanceService.Plan planMerge(@RequestBody MergePlanRequest body,HttpServletRequest request){return service.planMerge(body.survivorObjectId(),body.mergedObjectId(),trusted(request));}"
+        },
+        {
+          "line": 15,
+          "declaration": "@PostMapping(\"/merge/plans/{id}/execute\") IdentityGovernanceService.Plan executeMerge(@PathVariable UUID id,@RequestBody ExecuteRequest body,@RequestHeader(\"Idempotency-Key\") String key,HttpServletRequest request){return service.executeMerge(id,body.expectedVersion(),body.reason(),key,trusted(request));}"
+        },
+        {
+          "line": 16,
+          "declaration": "@PostMapping(\"/split/plans\") IdentityGovernanceService.Plan planSplit(@RequestBody SplitPlanRequest body,HttpServletRequest request){return service.planSplit(body.originalObjectId(),body.successorObjectIds(),body.bindingAllocations(),trusted(request));}"
+        },
+        {
+          "line": 17,
+          "declaration": "@PostMapping(\"/split/plans/{id}/execute\") IdentityGovernanceService.Plan executeSplit(@PathVariable UUID id,@RequestBody ExecuteRequest body,@RequestHeader(\"Idempotency-Key\") String key,HttpServletRequest request){return service.executeSplit(id,body.expectedVersion(),body.reason(),key,trusted(request));}"
+        },
+        {
+          "line": 18,
+          "declaration": "@PostMapping(\"/resolution/issues/{id}/decisions\") void decideIssue(@PathVariable UUID id,@RequestBody IssueDecisionRequest body,HttpServletRequest request){service.decideResolutionIssue(id,body.expectedVersion(),body.action(),body.reason(),body.targetUrbanObjectId(),trusted(request));}"
+        },
+        {
+          "line": 19,
+          "declaration": "@GetMapping(\"/objects/{id}/identity\") Map<String,Object> identity(@PathVariable UUID id,HttpServletRequest request){TrustedHumanContext actor=trusted(request);actor.require(\"urban.object.read\");return service.resolveIdentity(id);}"
+        },
+        {
+          "line": 20,
+          "declaration": "@GetMapping(\"/plans/{id}\") IdentityGovernanceService.Plan plan(@PathVariable UUID id,HttpServletRequest request){TrustedHumanContext actor=trusted(request);actor.require(\"resolution.issue.read\");return service.getPlan(id);}"
+        }
+      ],
+      "authorizationMarkers": [
+        "ServletAuthorization",
+        "trusted("
+      ],
+      "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
+    }
+  ]
+}
