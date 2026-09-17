@@ -26,14 +26,14 @@ public class ArtifactApi {
       Map<String,Object> labels, Map<String,Object> definition) {}
   public record PatchRevision(Map<String,Object> labels, Map<String,Object> definition) {}
 
-  @PostMapping("/artifacts")
+  @SemanticCapability("ouf.semantic.propose") @PostMapping("/artifacts")
   ResponseEntity<Map<String,Object>> create(@Valid @RequestBody CreateArtifact command,HttpServletRequest request,@RequestHeader HttpHeaders headers) {
     var actor=actors.actor(request);var result=service.create(command,actor.subject(),actor.type(),correlation(headers));
     return ResponseEntity.created(URI.create("/api/semantic/v1/artifacts/"+result.get("artifactId"))).eTag(result.get("etag").toString()).body(result);
   }
-  @GetMapping("/artifacts/{id}") Map<String,Object> get(@PathVariable UUID id) { return service.get(id); }
-  @GetMapping("/search") List<Map<String,Object>> search(@RequestParam String q,@RequestParam(defaultValue="ACTIVE") String status,@RequestParam(defaultValue="20") int limit) { return service.search(q,status,limit); }
-  @PatchMapping("/revisions/{id}") ResponseEntity<Map<String,Object>> patch(@PathVariable UUID id,@RequestHeader("If-Match") String etag,@Valid @RequestBody PatchRevision patch,HttpServletRequest request,@RequestHeader HttpHeaders headers) {
+  @SemanticCapability("ouf.semantic.read") @GetMapping("/artifacts/{id}") Map<String,Object> get(@PathVariable UUID id) { return service.get(id); }
+  @SemanticCapability("ouf.semantic.read") @GetMapping("/search") List<Map<String,Object>> search(@RequestParam String q,@RequestParam(defaultValue="ACTIVE") String status,@RequestParam(defaultValue="20") int limit) { return service.search(q,status,limit); }
+  @SemanticCapability("ouf.semantic.propose") @PatchMapping("/revisions/{id}") ResponseEntity<Map<String,Object>> patch(@PathVariable UUID id,@RequestHeader("If-Match") String etag,@Valid @RequestBody PatchRevision patch,HttpServletRequest request,@RequestHeader HttpHeaders headers) {
     var actor=actors.actor(request);var result=service.patch(id,etag,patch,actor.subject(),actor.type(),correlation(headers)); return ResponseEntity.ok().eTag(result.get("etag").toString()).body(result);
   }
   private static String correlation(HttpHeaders h){return java.util.Optional.ofNullable(h.getFirst("X-Correlation-Id")).filter(x->!x.isBlank()).orElseGet(()->UUID.randomUUID().toString());}

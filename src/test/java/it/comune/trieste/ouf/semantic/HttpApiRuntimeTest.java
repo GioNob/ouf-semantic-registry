@@ -29,7 +29,7 @@ class HttpApiRuntimeTest {
     String semanticId="ouf:http:"+UUID.randomUUID();
     String localName="Place"+UUID.randomUUID().toString().replace("-","");
     JsonNode created=body(http.perform(post("/api/semantic/v1/artifacts")
-        .with(actor("author","OUF_SERVICE",Set.of()))
+        .with(actor("author","OUF_SERVICE",Set.of("ouf.semantic.propose")))
         .contentType(MediaType.APPLICATION_JSON)
         .content(json.writeValueAsBytes(java.util.Map.of(
             "semanticId",semanticId,"artifactType","CLASS","namespace","ouf",
@@ -42,29 +42,29 @@ class HttpApiRuntimeTest {
     UUID artifact=UUID.fromString(created.get("artifactId").asText());
     UUID revision=UUID.fromString(created.get("revisionId").asText());
 
-    http.perform(get("/api/semantic/v1/artifacts/{id}",artifact))
+    http.perform(get("/api/semantic/v1/artifacts/{id}",artifact).with(actor("reader","OUF_SERVICE",Set.of("ouf.semantic.read"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.semantic_id").value(semanticId));
 
     http.perform(patch("/api/semantic/v1/revisions/{id}",revision)
-        .with(actor("author","OUF_SERVICE",Set.of()))
+        .with(actor("author","OUF_SERVICE",Set.of("ouf.semantic.propose")))
         .header("If-Match","\"0\"").contentType(MediaType.APPLICATION_JSON)
         .content("{\"labels\":{\"it\":\"Luogo aggiornato\"},\"definition\":{}}"))
         .andExpect(status().isOk()).andExpect(header().string("ETag","\"1\""));
     http.perform(patch("/api/semantic/v1/revisions/{id}",revision)
-        .with(actor("author","OUF_SERVICE",Set.of()))
+        .with(actor("author","OUF_SERVICE",Set.of("ouf.semantic.propose")))
         .header("If-Match","\"0\"").contentType(MediaType.APPLICATION_JSON)
         .content("{\"labels\":{\"it\":\"stale\"},\"definition\":{}}"))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail").value("VERSION_CONFLICT"));
 
     JsonNode validation=body(http.perform(post("/api/semantic/v1/revisions/{id}:validate",revision)
-        .with(actor("validator","OUF_SERVICE",Set.of()))).andExpect(status().isOk())
+        .with(actor("validator","OUF_SERVICE",Set.of("ouf.semantic.propose")))).andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("PASS")).andReturn());
     String hash=validation.get("validated_content_hash").asText();
 
     JsonNode challenge=body(http.perform(post("/api/semantic/v1/approval-challenges")
-        .with(actor("agent","OUF_AI_AGENT",Set.of()))
+        .with(actor("agent","OUF_AI_AGENT",Set.of("ouf.semantic.approval.request")))
         .contentType(MediaType.APPLICATION_JSON)
         .content(json.writeValueAsBytes(java.util.Map.of("revisionId",revision,"contentHash",hash))))
         .andExpect(status().isCreated()).andExpect(jsonPath("$.status").value("OPEN")).andReturn());
@@ -87,7 +87,7 @@ class HttpApiRuntimeTest {
     org.assertj.core.api.Assertions.assertThat(published.get("manifestHash").asText())
         .hasSize(64).isNotEqualTo(hash);
 
-    http.perform(get("/api/semantic/v1/publication-sets/{set}/artifacts/{artifact}",publication,artifact)
+    http.perform(get("/api/semantic/v1/publication-sets/{set}/artifacts/{artifact}",publication,artifact).with(actor("reader","OUF_SERVICE",Set.of("ouf.semantic.read")))
         .header("Accept","text/turtle"))
         .andExpect(status().isOk()).andExpect(content().contentType("text/turtle"))
         .andExpect(content().string(org.hamcrest.Matchers.containsString(semanticId)));
@@ -96,7 +96,7 @@ class HttpApiRuntimeTest {
   @Test
   void invalidDtoAndUnsafeRdfReturnBoundedClientErrors() throws Exception {
     http.perform(post("/api/semantic/v1/artifacts")
-        .with(actor("tester","OUF_SERVICE",Set.of()))
+        .with(actor("tester","OUF_SERVICE",Set.of("ouf.semantic.propose")))
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"semanticId\":\"x\",\"artifactType\":\"INVALID\"}"))
         .andExpect(status().isBadRequest());
@@ -106,7 +106,7 @@ class HttpApiRuntimeTest {
         .queryParam("namespace","ouf").queryParam("localName","Unsafe")
         .queryParam("ownerRef","owner").queryParam("authorityRef","authority")
         .queryParam("semanticVersion","1.0.0")
-        .with(actor("tester","OUF_SERVICE",Set.of()))
+        .with(actor("tester","OUF_SERVICE",Set.of("ouf.semantic.propose")))
         .contentType("application/rdf+xml")
         .content("<!DOCTYPE rdf:RDF [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]>"))
         .andExpect(status().isUnprocessableEntity())
@@ -130,6 +130,18 @@ class HttpApiRuntimeTest {
         .with(actor("human","OUF_HUMAN_USER",Set.of())))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.detail").value("SEM_CAPABILITY_REQUIRED:ouf.semantic.deprecate"));
+  }
+
+  @Test void allPreviouslyUnprotectedReadsRequireLocalReadGrant()throws Exception{
+    for(String path:java.util.List.of("/artifacts/"+UUID.randomUUID(),"/search?q=test","/discovery-requests/providers","/discovery-requests/"+UUID.randomUUID()+"/candidates","/validation-runs/"+UUID.randomUUID(),"/impact-reports/"+UUID.randomUUID(),"/change-notices/"+UUID.randomUUID(),"/migration-proposals/"+UUID.randomUUID())){
+      http.perform(get("/api/semantic/v1"+path)).andExpect(status().isForbidden());
+      http.perform(get("/api/semantic/v1"+path).with(actor("reader","OUF_SERVICE",Set.of("ouf.semantic.propose")))).andExpect(status().isForbidden());
+    }
+  }
+  @Test void authenticatedCoarseAllowCannotCreateOrValidate()throws Exception{
+    http.perform(post("/api/semantic/v1/artifacts").with(actor("writer","OUF_SERVICE",Set.of("ouf.semantic.read"))).requestAttr("ouf.authorizedCapabilities",Set.of("ouf.semantic.propose")).contentType(MediaType.APPLICATION_JSON).content("{}"))
+      .andExpect(status().isForbidden());
+    http.perform(post("/api/semantic/v1/revisions/"+UUID.randomUUID()+":validate").with(actor("writer","OUF_SERVICE",Set.of()))).andExpect(status().isForbidden());
   }
 
   private static RequestPostProcessor actor(String subject,String role,Set<String> capabilities) {
