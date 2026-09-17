@@ -35,6 +35,12 @@ public class ArtifactService {
     try{expected=Long.parseLong(etag.replace("\"",""));}
     catch(RuntimeException e){throw new IllegalArgumentException("ETAG_INVALID",e);}
     try{
+      if(p.semanticVersion()!=null){
+        if(!p.semanticVersion().matches("[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?(?:\\+[A-Za-z0-9.-]+)?"))throw new IllegalArgumentException("SEMANTIC_VERSION_INVALID");
+        int changed=db.sql("update ouf_sem.artifact_revision set semantic_version=:version where revision_id=:id and lifecycle_status='DRAFT' and row_version=:expected")
+          .param("version",p.semanticVersion()).param("id",id).param("expected",expected).update();
+        if(changed!=1)throw new Conflict("VERSION_CONFLICT");
+      }
       Long v=db.sql("select ouf_sem.edit_draft(:id,:v,cast(:l as jsonb),cast(:d as jsonb))").param("id",id).param("v",expected).param("l",j(p.labels())).param("d",j(p.definition())).query(Long.class).single();
       audit("SEMANTIC_DRAFT_EDITED",actor,actorType,"REVISION",id.toString(),correlation,Map.of("rowVersion",v));return Map.of("revisionId",id,"etag","\""+v+"\"");
     }catch(DataAccessException e){

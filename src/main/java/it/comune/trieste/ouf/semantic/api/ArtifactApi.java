@@ -24,7 +24,9 @@ public class ArtifactApi {
       @NotBlank String namespace, @NotBlank String localName, @NotBlank String ownerRef,
       @NotBlank String authorityRef, @NotBlank String semanticVersion,
       Map<String,Object> labels, Map<String,Object> definition) {}
-  public record PatchRevision(Map<String,Object> labels, Map<String,Object> definition) {}
+  public record PatchRevision(Map<String,Object> labels, Map<String,Object> definition, String semanticVersion) {
+    public PatchRevision(Map<String,Object> labels,Map<String,Object> definition){this(labels,definition,null);}
+  }
 
   @SemanticCapability("ouf.semantic.propose") @PostMapping("/artifacts")
   ResponseEntity<Map<String,Object>> create(@Valid @RequestBody CreateArtifact command,HttpServletRequest request,@RequestHeader HttpHeaders headers) {
