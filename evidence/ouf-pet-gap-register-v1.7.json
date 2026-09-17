@@ -12,7 +12,8 @@
     "PET and Matrix govern implementation; green CI does not amend requirements.",
     "A resolved decision is reopened only on new repository or CI evidence.",
     "Static inspection, module tests, process integration and representative acceptance are distinct evidence levels.",
-    "Closure requires immutable commit plus successful CI and test/artifact reference covering the entire criterion."
+    "Closure requires immutable commit plus successful CI and test/artifact reference covering the entire criterion.",
+    "Every increment identifies the human role, goal, usable surface, observable outcome and verification; missing UI/MCP/status surfaces remain explicit gaps."
   ],
   "auditSnapshot": [
     {
@@ -1675,14 +1676,14 @@
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
       "status": "PARTIAL",
-      "phase": "R2a",
+      "phase": "R2b",
       "dependencies": [
         "R1a",
         "R1b"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "R2a implementa feed ACTIVE protetto, client Gateway autenticato, checksum e snapshot immutabile, preflight Semantic esatto, loop automatico di admission MANAGED_ONCE/PULL, cadence/retry versionati e lease recovery. Il test tra Onboarding reale e JAR Ingestion avvia le run senza chiamare i worker e non duplica al restart. Acquisizione completa, raw Lake, ACK UDP, watermark/replay e ritorno Onboarding restano R2b/c; IAM/Gateway/Semantic reali restano accettazione separata.",
-      "evidenceLevel": "TWO_REAL_JVM_PROCESSES_WITH_GATEWAY_SEMANTIC_IDENTITY_FIXTURES",
+      "assessment": "R2b dimostra in laboratorio la catena ACTIVE file/PULL → acquisizione automatica → raw Lake → durable UDP ACK → watermark → oggetti leggibili e lineage autorizzati. Onboarding espone la pubblicazione storica esatta e la fixture usa il lifecycle governato reale. Restano feedback/recovery dopo drift, scenari storici estesi e binding reali Gateway/Semantic/IAM/THS; il gruppo rimane PARTIAL.",
+      "evidenceLevel": "THREE_REAL_JVM_PROCESSES_POSTGRES_MINIO_WITH_DECLARED_GATEWAY_SOURCE_SEMANTIC_IDENTITY_FIXTURES",
       "baselineEvidence": [
         {
           "name": "Source Onboarding module CI",
@@ -1809,6 +1810,12 @@
           "R3: full operational misfire/recovery/retention projections",
           "AUT-04/R6: real identity, Gateway and representative environment acceptance"
         ]
+      },
+      "r2bProgress": {
+        "evidenceReference": "r2b.evidence",
+        "humanAcceptanceReference": "r2b.humanAcceptance",
+        "remainingReference": "r2b.limits",
+        "closureClaim": false
       }
     },
     {
@@ -1889,14 +1896,14 @@
       ],
       "ownerRepository": "GioNob/ouf-ingestion-runtime",
       "status": "PARTIAL",
-      "phase": "R2a",
+      "phase": "R2b",
       "dependencies": [
         "R1a",
         "R1b"
       ],
       "baselineCommit": "e732d3b17b6a75c35a2b52eedc2d0c586d2d2cf2",
-      "assessment": "R2a implementa feed ACTIVE protetto, client Gateway autenticato, checksum e snapshot immutabile, preflight Semantic esatto, loop automatico di admission MANAGED_ONCE/PULL, cadence/retry versionati e lease recovery. Il test tra Onboarding reale e JAR Ingestion avvia le run senza chiamare i worker e non duplica al restart. Acquisizione completa, raw Lake, ACK UDP, watermark/replay e ritorno Onboarding restano R2b/c; IAM/Gateway/Semantic reali restano accettazione separata.",
-      "evidenceLevel": "TWO_REAL_JVM_PROCESSES_WITH_GATEWAY_SEMANTIC_IDENTITY_FIXTURES",
+      "assessment": "R2b collega i client Gateway autenticati per managed/source/Lake/handoff, gli adapter e i loop automatici del JAR. La prova CSV/REST fra processi verifica raw, ACK e watermark, kill/restart, idempotenza, valori leggibili e omissione di dati riservati. Restano replay/ritorno Onboarding, adapter/binding Gateway e source reali e accettazione estesa; PARTIAL non è conformità completa PET.",
+      "evidenceLevel": "THREE_REAL_JVM_PROCESSES_POSTGRES_MINIO_WITH_DECLARED_GATEWAY_SOURCE_SEMANTIC_IDENTITY_FIXTURES",
       "baselineEvidence": [
         {
           "name": "Ingestion Runtime module CI",
@@ -2023,6 +2030,12 @@
           "R3: full operational misfire/recovery/retention projections",
           "AUT-04/R6: real identity, Gateway and representative environment acceptance"
         ]
+      },
+      "r2bProgress": {
+        "evidenceReference": "r2b.evidence",
+        "humanAcceptanceReference": "r2b.humanAcceptance",
+        "remainingReference": "r2b.limits",
+        "closureClaim": false
       }
     },
     {
@@ -2104,14 +2117,14 @@
         "§§95–97, 109"
       ],
       "ownerRepository": "GioNob/ouf-udp-object-resolution",
-      "status": "OPEN",
+      "status": "PARTIAL",
       "phase": "R2b",
       "dependencies": [
         "R2a"
       ],
       "baselineCommit": "a18e1c1d1f6add41bb11c975e5f2487f352d1bdb",
-      "assessment": "CODICE/INTEGRAZIONE: collegare configuration ports ai bundle storici esatti e avviare il resolution worker nel runtime. `ResolutionWorker` è condizionato a due port di configurazione, senza adapter bean/loop di produzione individuati. Dimostrare poi nel medesimo percorso resolution, proprietà, relazioni e spatial: test separati dei materializer non bastano. PET §§95–97, 109.6–109.7.",
-      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "assessment": "R2b collega risoluzione della pubblicazione esatta, confronto riferimenti e identità Semantic, profili approvati e loop automatico di resolution/materialization canonica. Test reale UDP/PostGIS/MinIO dimostra current serving autorizzato, lineage, label e restart nel percorso CSV/REST. La catena completa relationship/spatial, tutti i riferimenti storici e l’ambiente reale restano da dimostrare; gruppo PARTIAL.",
+      "evidenceLevel": "THREE_REAL_JVM_PROCESSES_POSTGRES_MINIO_WITH_DECLARED_GATEWAY_SOURCE_SEMANTIC_IDENTITY_FIXTURES",
       "baselineEvidence": [
         {
           "name": "UDP Object Resolution module CI",
@@ -2133,7 +2146,13 @@
       "sourceReferences": [
         "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/docs/pet-traceability-v1.3.json",
         "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/src/main/java/it/comune/trieste/ouf/udp/ResolutionWorker.java"
-      ]
+      ],
+      "r2bProgress": {
+        "evidenceReference": "r2b.evidence",
+        "humanAcceptanceReference": "r2b.humanAcceptance",
+        "remainingReference": "r2b.limits",
+        "closureClaim": false
+      }
     },
     {
       "id": "UDP-02",
@@ -2431,7 +2450,13 @@
       "sourceReferences": [
         "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/docs/GATEWAY_OPERATIONAL_AWARENESS_PRODUCER_TRACEABILITY.md",
         "https://github.com/GioNob/ouf-api-gateway/tree/8a1757e5879f73ee60c2786a7f5e2b325741c940/.github/workflows/ci.yml"
-      ]
+      ],
+      "r2bProgress": {
+        "implemented": "Owner route contracts and bounded namespace URI preservation; final control-plane CI successful",
+        "remaining": "Real APISIX/etcd deployment and governed source invocation/managed-storage bindings remain unverified",
+        "evidenceReference": "r2b.evidence",
+        "closureClaim": false
+      }
     },
     {
       "id": "GW-02",
@@ -3457,5 +3482,224 @@
       "Artifact IDs/digests are GitHub metadata; archive bytes were not independently downloaded/hashed"
     ],
     "nextStep": "R2b: source adapters → Data Lake → UDP durable ACK → committed watermark → authorized serving"
+  },
+  "r2b": {
+    "status": "IMPLEMENTED_AND_VERIFIED_FOR_CSV_REST_AUTHORIZED_SERVING",
+    "scope": "CSV and REST JSON automatic acquisition through real Lake/UDP persistence to authorized values and provenance; distinct from full deployment acceptance",
+    "humanAcceptance": {
+      "role": "authorized reader after governed source approval",
+      "goal": "find the acquired objects and verify their provenance",
+      "surface": "UDP owner HTTP APIs, not yet integrated browser/MCP journey",
+      "observableResult": "Alpha and Beta visible; restricted secret omitted; lineage retrievable",
+      "evidenceArtifact": "human-scenario.json"
+    },
+    "normativeReferences": [
+      "Ingestion 1.3 §§21,45.2,128,139",
+      "UDP 1.3 §§95–97,109.6–109.7",
+      "Roadmap R2b"
+    ],
+    "evidence": [
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:9eb0b5d00b584ede97fe628268adb2a67411f6b5396b13297d467ed25468dc81",
+            "id": 10483432126,
+            "name": "source-onboarding-evidence-35189953913",
+            "sizeInBytes": 109687
+          }
+        ],
+        "attempt": 1,
+        "ciUrl": "https://github.com/GioNob/ouf-source-onboarding/actions/runs/35189953913",
+        "commit": "ea2cc48d42a3df8412ec124e997c2b4b3bf55a1d",
+        "conclusion": "success",
+        "pr": 13,
+        "repository": "GioNob/ouf-source-onboarding",
+        "runId": 35189953913,
+        "test": "Source Onboarding module CI",
+        "mergeCommit": "9a94246071958d34391e28c8e38158023052d311"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:c4ab8dba8939d55f75ad0864017f549f9f7b7df9f859d01ae84f05e05044fca5",
+            "id": 10483423206,
+            "name": "authorization-sdk-consumer-evidence",
+            "sizeInBytes": 18621
+          }
+        ],
+        "attempt": 1,
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35189931223",
+        "commit": "eb07024a51c90eadc672e4845413f7d9b58a7556",
+        "conclusion": "success",
+        "pr": 24,
+        "repository": "GioNob/ouf-ingestion-runtime",
+        "runId": 35189931223,
+        "test": "Shared Authorization SDK pairwise",
+        "mergeCommit": "249166c9be5469c4212c61d620476dfebe52f60a"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:b0645e1b5b0c12f405ae5e3c00e25f9e724d281eb763b58156e7b0abf9749273",
+            "id": 10483866434,
+            "name": "r2a-automatic-activation-35189931236",
+            "sizeInBytes": 6721
+          },
+          {
+            "digest": "sha256:8ac3c61e488a5b7b8d24b70b63d9f609a9a3d040553d8b66b9f049016b976fa4",
+            "id": 10482932907,
+            "name": "r2a-activation-summary-35189931236",
+            "sizeInBytes": 577
+          }
+        ],
+        "attempt": 1,
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35189931236",
+        "commit": "eb07024a51c90eadc672e4845413f7d9b58a7556",
+        "conclusion": "success",
+        "pr": 24,
+        "repository": "GioNob/ouf-ingestion-runtime",
+        "runId": 35189931236,
+        "test": "R2a Onboarding automatic activation",
+        "mergeCommit": "249166c9be5469c4212c61d620476dfebe52f60a"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:f4a0b4ebca727361d2c7b3699ccb3b6a0b9240317d4b428b1a48bdaaa408918b",
+            "id": 10483791688,
+            "name": "ingestion-evidence-35189931363",
+            "sizeInBytes": 140980
+          },
+          {
+            "digest": "sha256:2e18d1009f39fc6412361f9a61b6942bd7643fce84fb607e341c654cb8eda4e0",
+            "id": 10483551944,
+            "name": "ingestion-dr-evidence-35189931363",
+            "sizeInBytes": 5041
+          },
+          {
+            "digest": "sha256:9bd8e2f7f51a2707b4475803197e8640543f997047f4960dc5e0efc1a47abb85",
+            "id": 10483047675,
+            "name": "ingestion-release-evidence-35189931363",
+            "sizeInBytes": 94825
+          }
+        ],
+        "attempt": 1,
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35189931363",
+        "commit": "eb07024a51c90eadc672e4845413f7d9b58a7556",
+        "conclusion": "success",
+        "pr": 24,
+        "repository": "GioNob/ouf-ingestion-runtime",
+        "runId": 35189931363,
+        "test": "Ingestion Runtime module CI",
+        "mergeCommit": "249166c9be5469c4212c61d620476dfebe52f60a"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:987f753df826f0d645ebf479339b6e5d69f32a9e297349a5e28a5a35e1b5a2f6",
+            "id": 10483172460,
+            "name": "r2b-serving-evidence-35189931361",
+            "sizeInBytes": 11996
+          }
+        ],
+        "attempt": 1,
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35189931361",
+        "commit": "eb07024a51c90eadc672e4845413f7d9b58a7556",
+        "conclusion": "success",
+        "pr": 24,
+        "repository": "GioNob/ouf-ingestion-runtime",
+        "runId": 35189931361,
+        "test": "R2b source to authorized serving",
+        "mergeCommit": "249166c9be5469c4212c61d620476dfebe52f60a"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:64f118bff41a38b448e1db51595e457b36288b4a5d668c6b9b295ca161e0000a",
+            "id": 10483067531,
+            "name": "authorization-sdk-consumer-evidence",
+            "sizeInBytes": 17902
+          }
+        ],
+        "attempt": 1,
+        "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35189957634",
+        "commit": "2e0ea6fe298635e0a6ef2ba76d0a1aa429273a7f",
+        "conclusion": "success",
+        "pr": 26,
+        "repository": "GioNob/ouf-udp-object-resolution",
+        "runId": 35189957634,
+        "test": "Shared Authorization SDK pairwise",
+        "mergeCommit": "6944db56317b43073299a93f1603c065d03e50e3"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:d24b09ff4c9ad110b84448b44f554fb9a93d8ebab564997441071dc438203ab4",
+            "id": 10484120244,
+            "name": "udp-performance-evidence-35189957622",
+            "sizeInBytes": 1576
+          },
+          {
+            "digest": "sha256:804f7a13c1588769a3b9fad40d5d4d1237b6ad3b71952ec0a2b6619d2e52aa7d",
+            "id": 10483308605,
+            "name": "udp-evidence-35189957622",
+            "sizeInBytes": 111210
+          },
+          {
+            "digest": "sha256:bdecf50906b485b78862b1b3372e51e6c5c509d3c93f69b75e249d01d6f8d8e8",
+            "id": 10483062643,
+            "name": "udp-dr-evidence-35189957622",
+            "sizeInBytes": 4317
+          },
+          {
+            "digest": "sha256:89fdc1bbae52aca8b68ebc606c55a469bde4a1f58c805aaa74a40468f8bdc060",
+            "id": 10482924740,
+            "name": "udp-supply-chain-deployment-evidence-35189957622",
+            "sizeInBytes": 74543
+          }
+        ],
+        "attempt": 1,
+        "ciUrl": "https://github.com/GioNob/ouf-udp-object-resolution/actions/runs/35189957622",
+        "commit": "2e0ea6fe298635e0a6ef2ba76d0a1aa429273a7f",
+        "conclusion": "success",
+        "pr": 26,
+        "repository": "GioNob/ouf-udp-object-resolution",
+        "runId": 35189957622,
+        "test": "UDP Object Resolution module CI",
+        "mergeCommit": "6944db56317b43073299a93f1603c065d03e50e3"
+      },
+      {
+        "artifacts": [
+          {
+            "digest": "sha256:9484140fefdbb0fa79b7127ba1c085c9ca2d23566d832bb22e98c9ad2dcec133",
+            "id": 10483093780,
+            "name": "gateway-operational-awareness-evidence-35189955689",
+            "sizeInBytes": 65383
+          }
+        ],
+        "attempt": 1,
+        "ciUrl": "https://github.com/GioNob/ouf-api-gateway/actions/runs/35189955689",
+        "commit": "3ffee5ec3b105ab6e6352d2a7c4c1dac3d8f2018",
+        "conclusion": "success",
+        "pr": 27,
+        "repository": "GioNob/ouf-api-gateway",
+        "runId": 35189955689,
+        "test": "Gateway control-plane and MCP mediation",
+        "mergeCommit": "8fa1dc383333de4eab704924cc4acf249f4a56d8"
+      }
+    ],
+    "limits": [
+      "Gateway HTTP, managed/PULL source, Semantic and identity are declared laboratory seams",
+      "APISIX/etcd and governed southbound invocation adapter remain GW-01",
+      "Real IAM/THS and representative bindings remain AUT-04/R6",
+      "Browser/MCP journeys and integrated progress/error status remain R4/R3",
+      "CSV/REST property-serving scenario does not certify all GIS/relationship/spatial/replay criteria"
+    ],
+    "publisherFixtureCommit": "ea2cc48d42a3df8412ec124e997c2b4b3bf55a1d",
+    "udpFixtureCommit": "2e0ea6fe298635e0a6ef2ba76d0a1aa429273a7f",
+    "processExecutionCommit": "a1619d414e7075c93ada1a51847c720d82f8343f",
+    "processExecutionCommitKind": "GitHub synthetic PR merge commit; branch and actual merge commits recorded per evidence entry",
+    "processChecks": 16,
+    "nextStep": "R2c semantic/source historical governance, replay and feedback, with human scenarios retained; GW-01/AUT-04/R3/R4/R6 remain explicit dependencies and acceptance gaps"
   }
 }
