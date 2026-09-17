@@ -189,11 +189,13 @@ Regola operativa permanente per il seguito: **una decisione risolta non viene ri
 
 ## 7. Prossimo passo raccomandato
 
-Iniziare da **R0**, chiudendo il 403 della fixture Semantic live e stabilendo il registro comune. Proseguire con **R1a Authorization↔UDP e wiring dello SDK**, senza considerare i pairwise già verdi come prova di enforcement completo. Quindi realizzare R2a/b come prima verticale di piattaforma: source approvata → run automatica → durable ACK → Urban Object → lettura autorizzata. R3 porta questa stessa verticale fino alla visibilità dei fault nel chatbot dopo una disconnessione.
-
-Questo ordine conserva il lavoro fatto e concentra i prossimi incrementi sulle dipendenze che oggi impediscono di dimostrare la piattaforma completa.
+R0 e R1a sono consegnati; R1b ha ora implementazione centrale e controlli owner nei percorsi descritti in `R1B_OWNER_ENFORCEMENT_EVIDENCE.md`. Il prossimo incremento verticale è **R2a: Onboarding→Ingestion reale**, con bundle ACTIVE, preflight esatto e avvio automatico file/PULL. I controlli owner implementati devono essere mantenuti nel percorso; l'accettazione completa dei restanti domini/proiezioni e dell'identità reale rimane tracciata in AUT-03/AUT-04, senza riaprire decisioni già risolte.
 
 
 ## Avanzamento R1b — 17 settembre 2026
 
 Implementazione centrale Authorization e cache consegnata; evidenze in `R1B_AUTHORIZATION_EVIDENCE.md`. AUT-01 chiuso per l'API amministrativa verificata in laboratorio. AUT-02 e AUT-03 restano parziali per enforcement e proiezioni owner-specific, con audit esplicito in `R1B_ENDPOINT_COVERAGE_AUDIT.md`. AUT-04 resta il gate IAM/THS reale. Lo stato `IMPLEMENTED_WITH_INTEGRATION_GAPS` non equivale ad accettazione completa del PET o a chiusura di tutti i requisiti della fase.
+
+## Follow-up R1b: enforcement owner — 17 settembre 2026
+
+Corretti tutti i percorsi Semantic mediante matrice capability fail-closed, le proiezioni UDP incluse query graph/related/spatial, la Operational Awareness Ingestion e i protected log Onboarding/Ingestion. Evidenze immutabili e PR: `R1B_OWNER_ENFORCEMENT_EVIDENCE.md`. AUT-02 soddisfa il criterio SDK/adapter/conformità e backend deny; AUT-03 conserva l'accettazione completa delle proiezioni owner nei restanti domini e canali. AUT-04 resta il gate IAM/THS reale. I test di modulo non chiudono R2/R6.

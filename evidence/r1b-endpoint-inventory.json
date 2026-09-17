@@ -328,35 +328,36 @@
           "declaration": "@RestController @RequestMapping(\"/api/trusted-human/v1\")"
         },
         {
-          "line": 20,
-          "declaration": "@PostMapping(\"/logs/search\") Map<String,Object> search(@Valid @RequestBody SearchRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.search(search(r),actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
-        },
-        {
           "line": 21,
-          "declaration": "@GetMapping(\"/logs/{logRef}\") Map<String,Object> read(@PathVariable String logRef,@RequestParam @NotBlank String purpose,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.read(logRef,purpose,actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
+          "declaration": "@PostMapping(\"/logs/search\") Map<String,Object> search(@Valid @RequestBody SearchRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.search(search(r),protectedActor(request,\"ouf.ths.log.read\",null),String.valueOf(request.getAttribute(\"ouf.protectedLogDecision\")),correlation(h));}"
         },
         {
           "line": 22,
-          "declaration": "@PostMapping(\"/logs/aggregate\") Map<String,Object> aggregate(@Valid @RequestBody AggregateRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){var q=new ProtectedLogService.Search(r.from(),r.to(),r.service(),r.severity(),r.correlationId(),r.eventType(),r.limit(),null,r.purpose());return logs.aggregate(q,r.dimension(),actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
+          "declaration": "@GetMapping(\"/logs/{logRef}\") Map<String,Object> read(@PathVariable String logRef,@RequestParam @NotBlank String purpose,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.read(logRef,purpose,protectedActor(request,\"ouf.ths.log.read.detail\",logRef),String.valueOf(request.getAttribute(\"ouf.protectedLogDecision\")),correlation(h));}"
         },
         {
           "line": 23,
-          "declaration": "@PostMapping(\"/logs/correlate\") Map<String,Object> correlate(@Valid @RequestBody CorrelateRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.correlate(new ProtectedLogService.Correlation(r.key(),r.value(),r.from(),r.to(),r.limit(),r.purpose()),actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
+          "declaration": "@PostMapping(\"/logs/aggregate\") Map<String,Object> aggregate(@Valid @RequestBody AggregateRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){var q=new ProtectedLogService.Search(r.from(),r.to(),r.service(),r.severity(),r.correlationId(),r.eventType(),r.limit(),null,r.purpose());return logs.aggregate(q,r.dimension(),protectedActor(request,\"ouf.ths.log.aggregate\",null),String.valueOf(request.getAttribute(\"ouf.protectedLogDecision\")),correlation(h));}"
         },
         {
           "line": 24,
-          "declaration": "@PostMapping(\"/log-exports\") ResponseEntity<Map<String,Object>> export(@Valid @RequestBody SearchRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){return ResponseEntity.accepted().body(logs.createExport(search(r),actors.actor(request),actors.authenticationContextRef(request),correlation(h)));}"
+          "declaration": "@PostMapping(\"/logs/correlate\") Map<String,Object> correlate(@Valid @RequestBody CorrelateRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.correlate(new ProtectedLogService.Correlation(r.key(),r.value(),r.from(),r.to(),r.limit(),r.purpose()),protectedActor(request,\"ouf.ths.log.correlate\",null),String.valueOf(request.getAttribute(\"ouf.protectedLogDecision\")),correlation(h));}"
         },
         {
           "line": 25,
-          "declaration": "@GetMapping(\"/log-exports/{exportId}\") Map<String,Object> exportStatus(@PathVariable UUID exportId,@RequestParam @NotBlank String purpose,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.export(exportId,purpose,actors.actor(request),actors.authenticationContextRef(request),correlation(h));}"
+          "declaration": "@PostMapping(\"/log-exports\") ResponseEntity<Map<String,Object>> export(@Valid @RequestBody SearchRequest r,HttpServletRequest request,@RequestHeader HttpHeaders h){return ResponseEntity.accepted().body(logs.createExport(search(r),protectedActor(request,\"ouf.ths.log.export\",null),String.valueOf(request.getAttribute(\"ouf.protectedLogDecision\")),correlation(h)));}"
         },
         {
           "line": 26,
-          "declaration": "@PostMapping(\"/log-exports/{exportId}/download\") ResponseEntity<byte[]> download(@PathVariable UUID exportId,@Valid @RequestBody PurposeRequest body,HttpServletRequest request,@RequestHeader HttpHeaders h){byte[] data=logs.download(exportId,body.purpose(),actors.actor(request),actors.authenticationContextRef(request),correlation(h));return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).header(HttpHeaders.CONTENT_DISPOSITION,\"attachment; filename=protected-log-export-\"+exportId+\".json\").cacheControl(CacheControl.noStore()).body(data);}"
+          "declaration": "@GetMapping(\"/log-exports/{exportId}\") Map<String,Object> exportStatus(@PathVariable UUID exportId,@RequestParam @NotBlank String purpose,HttpServletRequest request,@RequestHeader HttpHeaders h){return logs.export(exportId,purpose,protectedActor(request,\"ouf.ths.log.export.read\",exportId.toString()),String.valueOf(request.getAttribute(\"ouf.protectedLogDecision\")),correlation(h));}"
+        },
+        {
+          "line": 27,
+          "declaration": "@PostMapping(\"/log-exports/{exportId}/download\") ResponseEntity<byte[]> download(@PathVariable UUID exportId,@Valid @RequestBody PurposeRequest body,HttpServletRequest request,@RequestHeader HttpHeaders h){byte[] data=logs.download(exportId,body.purpose(),protectedActor(request,\"ouf.ths.log.download\",exportId.toString()),String.valueOf(request.getAttribute(\"ouf.protectedLogDecision\")),correlation(h));return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).header(HttpHeaders.CONTENT_DISPOSITION,\"attachment; filename=protected-log-export-\"+exportId+\".json\").cacheControl(CacheControl.noStore()).body(data);}"
         }
       ],
       "authorizationMarkers": [
+        "ServletAuthorization",
         "TrustedActorResolver"
       ],
       "evidenceLevel": "STATIC_CONTROLLER_INVENTORY_NOT_ROUTE_ACCEPTANCE"
@@ -461,19 +462,19 @@
         },
         {
           "line": 29,
-          "declaration": "@PostMapping(\"/artifacts\")"
+          "declaration": "@SemanticCapability(\"ouf.semantic.propose\") @PostMapping(\"/artifacts\")"
         },
         {
           "line": 34,
-          "declaration": "@GetMapping(\"/artifacts/{id}\") Map<String,Object> get(@PathVariable UUID id) { return service.get(id); }"
+          "declaration": "@SemanticCapability(\"ouf.semantic.read\") @GetMapping(\"/artifacts/{id}\") Map<String,Object> get(@PathVariable UUID id,HttpServletRequest request) {var result=service.get(id);if(!\"ACTIVE\".equals(result.get(\"status\")))requireDraftRead(request);return result;}"
         },
         {
           "line": 35,
-          "declaration": "@GetMapping(\"/search\") List<Map<String,Object>> search(@RequestParam String q,@RequestParam(defaultValue=\"ACTIVE\") String status,@RequestParam(defaultValue=\"20\") int limit) { return service.search(q,status,limit); }"
+          "declaration": "@SemanticCapability(\"ouf.semantic.search\") @GetMapping(\"/search\") List<Map<String,Object>> search(@RequestParam String q,@RequestParam(defaultValue=\"ACTIVE\") String status,@RequestParam(defaultValue=\"20\") int limit,HttpServletRequest request) {if(!\"ACTIVE\".equals(status))requireDraftRead(request);return service.search(q,status,limit);}"
         },
         {
           "line": 36,
-          "declaration": "@PatchMapping(\"/revisions/{id}\") ResponseEntity<Map<String,Object>> patch(@PathVariable UUID id,@RequestHeader(\"If-Match\") String etag,@Valid @RequestBody PatchRevision patch,HttpServletRequest request,@RequestHeader HttpHeaders headers) {"
+          "declaration": "@SemanticCapability(\"ouf.semantic.propose\") @PatchMapping(\"/revisions/{id}\") ResponseEntity<Map<String,Object>> patch(@PathVariable UUID id,@RequestHeader(\"If-Match\") String etag,@Valid @RequestBody PatchRevision patch,HttpServletRequest request,@RequestHeader HttpHeaders headers) {"
         }
       ],
       "authorizationMarkers": [
@@ -491,19 +492,19 @@
         },
         {
           "line": 14,
-          "declaration": "@PostMapping(\"/change-notices\") Map<String,Object> notice(@RequestBody NoticeRequest r,HttpServletRequest request){return service.notice(r.changeId(),r.decision(),actors.actor(request).subject());}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.propose\") @PostMapping(\"/change-notices\") Map<String,Object> notice(@RequestBody NoticeRequest r,HttpServletRequest request){return service.notice(r.changeId(),r.decision(),actors.actor(request).subject());}"
         },
         {
           "line": 15,
-          "declaration": "@GetMapping(\"/change-notices/{id}\") Map<String,Object> notice(@PathVariable UUID id){return service.getNotice(id);}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.read\") @GetMapping(\"/change-notices/{id}\") Map<String,Object> notice(@PathVariable UUID id){return service.getNotice(id);}"
         },
         {
           "line": 16,
-          "declaration": "@PostMapping(\"/migration-proposals\") Map<String,Object> propose(@RequestBody ProposalRequest r,HttpServletRequest request){return service.propose(r.changeId(),r.replacementRefs(),r.rationale(),actors.actor(request).subject());}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.propose\") @PostMapping(\"/migration-proposals\") Map<String,Object> propose(@RequestBody ProposalRequest r,HttpServletRequest request){return service.propose(r.changeId(),r.replacementRefs(),r.rationale(),actors.actor(request).subject());}"
         },
         {
           "line": 17,
-          "declaration": "@GetMapping(\"/migration-proposals/{id}\") Map<String,Object> proposal(@PathVariable UUID id){return service.proposal(id);}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.read\") @GetMapping(\"/migration-proposals/{id}\") Map<String,Object> proposal(@PathVariable UUID id){return service.proposal(id);}"
         }
       ],
       "authorizationMarkers": [
@@ -521,19 +522,19 @@
         },
         {
           "line": 14,
-          "declaration": "@PostMapping Map<String,Object> create(@RequestBody Request r,HttpServletRequest request){UUID id=service.request(r.requestedArtifactType(),r.intent(),r.preferredLanguages()==null?List.of():r.preferredLanguages(),actors.actor(request).subject());return Map.of(\"requestId\",id,\"state\",\"PENDING\");}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.discovery\") @PostMapping Map<String,Object> create(@RequestBody Request r,HttpServletRequest request){UUID id=service.request(r.requestedArtifactType(),r.intent(),r.preferredLanguages()==null?List.of():r.preferredLanguages(),actors.actor(request).subject());return Map.of(\"requestId\",id,\"state\",\"PENDING\");}"
         },
         {
           "line": 15,
-          "declaration": "@GetMapping(\"/{id}/candidates\") List<Map<String,Object>> candidates(@PathVariable UUID id){return service.candidates(id);}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.discovery\") @GetMapping(\"/{id}/candidates\") List<Map<String,Object>> candidates(@PathVariable UUID id){return service.candidates(id);}"
         },
         {
           "line": 16,
-          "declaration": "@PostMapping(\"/{requestId}/candidates/{candidateId}:adopt\") Map<String,Object> adopt(@PathVariable UUID requestId,@PathVariable UUID candidateId,@RequestBody Adoption r,HttpServletRequest request){UUID artifact=service.adopt(candidateId,r.semanticId(),r.namespace(),r.localName(),r.ownerRef(),r.authorityRef(),actors.actor(request).subject());return Map.of(\"artifactId\",artifact,\"status\",\"DRAFT\");}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.propose\") @PostMapping(\"/{requestId}/candidates/{candidateId}:adopt\") Map<String,Object> adopt(@PathVariable UUID requestId,@PathVariable UUID candidateId,@RequestBody Adoption r,HttpServletRequest request){UUID artifact=service.adopt(candidateId,r.semanticId(),r.namespace(),r.localName(),r.ownerRef(),r.authorityRef(),actors.actor(request).subject());return Map.of(\"artifactId\",artifact,\"status\",\"DRAFT\");}"
         },
         {
           "line": 17,
-          "declaration": "@GetMapping(\"/providers\") Map<String,Object> providers(){return Map.of(\"providers\",List.of(schemaGov.status()));}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.discovery\") @GetMapping(\"/providers\") Map<String,Object> providers(){return Map.of(\"providers\",List.of(schemaGov.status()));}"
         }
       ],
       "authorizationMarkers": [
@@ -551,7 +552,7 @@
         },
         {
           "line": 17,
-          "declaration": "@PostMapping(\"/approval-challenges\") ResponseEntity<Map<String,Object>> challenge(@Valid @RequestBody ChallengeRequest r,HttpServletRequest request,@RequestHeader HttpHeaders headers){var actor=actors.actor(request);Map<String,Object> out=service.challenge(r.revisionId(),r.contentHash(),Duration.ofMinutes(15),actor.subject(),actor.type(),correlation(headers));return ResponseEntity.status(HttpStatus.CREATED).body(out);}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.approval.request\") @PostMapping(\"/approval-challenges\") ResponseEntity<Map<String,Object>> challenge(@Valid @RequestBody ChallengeRequest r,HttpServletRequest request,@RequestHeader HttpHeaders headers){var actor=actors.actor(request);Map<String,Object> out=service.challenge(r.revisionId(),r.contentHash(),Duration.ofMinutes(15),actor.subject(),actor.type(),correlation(headers));return ResponseEntity.status(HttpStatus.CREATED).body(out);}"
         }
       ],
       "authorizationMarkers": [
@@ -569,11 +570,11 @@
         },
         {
           "line": 12,
-          "declaration": "@PostMapping(value=\"/imports\",consumes={\"text/turtle\",\"application/ld+json\",\"application/rdf+xml\",\"application/n-triples\"})"
+          "declaration": "@SemanticCapability(\"ouf.semantic.propose\") @PostMapping(value=\"/imports\",consumes={\"text/turtle\",\"application/ld+json\",\"application/rdf+xml\",\"application/n-triples\"})"
         },
         {
           "line": 14,
-          "declaration": "@GetMapping(\"/publication-sets/{setId}/artifacts/{artifactId}\") ResponseEntity<byte[]> export(@PathVariable UUID setId,@PathVariable UUID artifactId,@RequestHeader(value=HttpHeaders.ACCEPT,defaultValue=\"application/ld+json\") String accept){String selected=select(accept);var out=service.export(setId,artifactId,selected);return ResponseEntity.ok().contentType(MediaType.parseMediaType(out.mediaType())).body(out.body());}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.read\") @GetMapping(\"/publication-sets/{setId}/artifacts/{artifactId}\") ResponseEntity<byte[]> export(@PathVariable UUID setId,@PathVariable UUID artifactId,@RequestHeader(value=HttpHeaders.ACCEPT,defaultValue=\"application/ld+json\") String accept){String selected=select(accept);var out=service.export(setId,artifactId,selected);return ResponseEntity.ok().contentType(MediaType.parseMediaType(out.mediaType())).body(out.body());}"
         }
       ],
       "authorizationMarkers": [
@@ -633,27 +634,27 @@
         },
         {
           "line": 14,
-          "declaration": "@PostMapping(\"/revisions/{id}:validate\") Map<String,Object> validate(@PathVariable UUID id,HttpServletRequest request){return service.validate(id,actors.actor(request).subject());}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.review.prepare\") @PostMapping(\"/revisions/{id}:validate\") Map<String,Object> validate(@PathVariable UUID id,HttpServletRequest request){return service.validate(id,actors.actor(request).subject());}"
         },
         {
           "line": 15,
-          "declaration": "@GetMapping(\"/validation-runs/{id}\") Map<String,Object> validation(@PathVariable UUID id){return service.validation(id);}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.read\") @GetMapping(\"/validation-runs/{id}\") Map<String,Object> validation(@PathVariable UUID id){return service.validation(id);}"
         },
         {
           "line": 16,
-          "declaration": "@PostMapping(\"/impact-reports\") Map<String,Object> impact(@RequestBody ImpactRequest r,HttpServletRequest request){return service.impact(r.fromRevisionId(),r.toRevisionId(),actors.actor(request).subject());}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.review.prepare\") @PostMapping(\"/impact-reports\") Map<String,Object> impact(@RequestBody ImpactRequest r,HttpServletRequest request){return service.impact(r.fromRevisionId(),r.toRevisionId(),actors.actor(request).subject());}"
         },
         {
           "line": 17,
-          "declaration": "@GetMapping(\"/impact-reports/{id}\") Map<String,Object> impact(@PathVariable UUID id){return service.impact(id);}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.read\") @GetMapping(\"/impact-reports/{id}\") Map<String,Object> impact(@PathVariable UUID id){return service.impact(id);}"
         },
         {
           "line": 18,
-          "declaration": "@GetMapping(\"/references:resolve\") Map<String,Object> resolve(@RequestParam String semanticId,@RequestParam UUID revisionId,@RequestParam UUID publicationSetId){return service.resolve(semanticId,revisionId,publicationSetId);}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.read\") @GetMapping(\"/references:resolve\") Map<String,Object> resolve(@RequestParam String semanticId,@RequestParam UUID revisionId,@RequestParam UUID publicationSetId){return service.resolve(semanticId,revisionId,publicationSetId);}"
         },
         {
           "line": 19,
-          "declaration": "@PutMapping(\"/consumer-references\") ResponseEntity<Void> consumer(@RequestBody ConsumerReference r,HttpServletRequest request){var actor=actors.actor(request);actors.require(actor,\"ouf.semantic.consumer-reference.write\");service.registerConsumer(r.consumerType(),r.consumerId(),r.semanticId(),r.revisionId(),r.publicationSetId());return ResponseEntity.noContent().build();}"
+          "declaration": "@SemanticCapability(\"ouf.semantic.consumer-reference.write\") @PutMapping(\"/consumer-references\") ResponseEntity<Void> consumer(@RequestBody ConsumerReference r,HttpServletRequest request){var actor=actors.actor(request);actors.require(actor,\"ouf.semantic.consumer-reference.write\");service.registerConsumer(r.consumerType(),r.consumerId(),r.semanticId(),r.revisionId(),r.publicationSetId());return ResponseEntity.noContent().build();}"
         }
       ],
       "authorizationMarkers": [
@@ -700,7 +701,7 @@
           "declaration": "@PostMapping(\"/incidents/explain\")"
         },
         {
-          "line": 37,
+          "line": 39,
           "declaration": "@PostMapping(\"/summary\")"
         }
       ],
@@ -719,11 +720,11 @@
         },
         {
           "line": 16,
-          "declaration": "@PostMapping(\"/search\") Map<String,Object> search(@RequestBody Query q,@RequestHeader HttpHeaders headers,HttpServletRequest request){String c=correlation(headers);try{return logs.search(toSearch(q),authorization.require(request,\"ingestion.log.read\",true),c);}catch(ResponseStatusException denied){logs.denied(request,\"SEARCH\",q.purpose(),c);throw denied;}}"
+          "declaration": "@PostMapping(\"/search\") Map<String,Object> search(@RequestBody Query q,@RequestHeader HttpHeaders headers,HttpServletRequest request){String c=correlation(headers);try{return logs.search(toSearch(q),protectedActor(request,\"ingestion.log.read\"),c);}catch(ResponseStatusException denied){logs.denied(request,\"SEARCH\",q.purpose(),c);throw denied;}}"
         },
         {
           "line": 17,
-          "declaration": "@PostMapping(\"/aggregate\") Map<String,Object> aggregate(@RequestBody Aggregate q,@RequestHeader HttpHeaders headers,HttpServletRequest request){String c=correlation(headers);try{return Map.of(\"items\",logs.aggregate(toSearch(q.query()),q.dimension(),authorization.require(request,\"ingestion.log.aggregate\",true),c));}catch(ResponseStatusException denied){logs.denied(request,\"AGGREGATE\",q.query()==null?null:q.query().purpose(),c);throw denied;}}"
+          "declaration": "@PostMapping(\"/aggregate\") Map<String,Object> aggregate(@RequestBody Aggregate q,@RequestHeader HttpHeaders headers,HttpServletRequest request){String c=correlation(headers);try{return Map.of(\"items\",logs.aggregate(toSearch(q.query()),q.dimension(),protectedActor(request,\"ingestion.log.aggregate\"),c));}catch(ResponseStatusException denied){logs.denied(request,\"AGGREGATE\",q.query()==null?null:q.query().purpose(),c);throw denied;}}"
         }
       ],
       "authorizationMarkers": [
@@ -1026,7 +1027,6 @@
         }
       ],
       "authorizationMarkers": [
-        "ServletAuthorization",
         "ServingAuthorizationContext",
         "context("
       ],
