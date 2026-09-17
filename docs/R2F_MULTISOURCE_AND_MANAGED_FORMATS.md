@@ -78,7 +78,7 @@ La decisione append-only seleziona una delle due revisioni, registra actor/autho
 
 `SpatialMaterializerRuntimeTest.humanGeometryChoiceResumesJobAndSurvivesReimportWithoutBecomingAGlobalRule` verifica entrambe le scelte, ripresa del job, coerenza canonica/geometrica, reimport, immutabilità, actor automatico negato, label insufficienti negate e nuova geometria nuovamente in revisione. Si tratta di un test owner PostgreSQL/PostGIS, non di un collaudo browser con identità esterna.
 
-Gateway aggiunge due binding nel namespace limitato dell’owner; il comando è dichiarato umano e non è pubblicato come tool MCP. Pubblicazione APISIX, IAM e browser THS restano da collaudare.
+Gateway aggiunge due binding nel namespace limitato dell’owner; il comando è dichiarato umano e non è pubblicato come tool MCP. Il profilo iniziale ammette soltanto OPEN/ANONYMOUS (PET Gateway); la nuova API UDP applica il limite anche a utenti con privilegi più ampi. Le prove owner su RESTRICTED non certificano l’esposizione di tali dati tramite il Gateway. Pubblicazione APISIX, IAM e browser THS restano da collaudare.
 
 ## PR di sviluppo
 
