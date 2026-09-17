@@ -43,6 +43,9 @@ class HttpApiRuntimeTest {
     UUID revision=UUID.fromString(created.get("revisionId").asText());
 
     http.perform(get("/api/semantic/v1/artifacts/{id}",artifact).with(actor("reader","OUF_SERVICE",Set.of("ouf.semantic.read"))))
+        .andExpect(status().isForbidden()).andExpect(jsonPath("$.detail").value("SEM_DRAFT_READ_REQUIRED"));
+
+    http.perform(get("/api/semantic/v1/artifacts/{id}",artifact).with(actor("reader","OUF_SERVICE",Set.of("ouf.semantic.read","ouf.semantic.propose"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.semantic_id").value(semanticId));
 
@@ -59,7 +62,7 @@ class HttpApiRuntimeTest {
         .andExpect(jsonPath("$.detail").value("VERSION_CONFLICT"));
 
     JsonNode validation=body(http.perform(post("/api/semantic/v1/revisions/{id}:validate",revision)
-        .with(actor("validator","OUF_SERVICE",Set.of("ouf.semantic.propose")))).andExpect(status().isOk())
+        .with(actor("validator","OUF_SERVICE",Set.of("ouf.semantic.review.prepare")))).andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("PASS")).andReturn());
     String hash=validation.get("validated_content_hash").asText();
 
@@ -142,6 +145,17 @@ class HttpApiRuntimeTest {
     http.perform(post("/api/semantic/v1/artifacts").with(actor("writer","OUF_SERVICE",Set.of("ouf.semantic.read"))).requestAttr("ouf.authorizedCapabilities",Set.of("ouf.semantic.propose")).contentType(MediaType.APPLICATION_JSON).content("{}"))
       .andExpect(status().isForbidden());
     http.perform(post("/api/semantic/v1/revisions/"+UUID.randomUUID()+":validate").with(actor("writer","OUF_SERVICE",Set.of()))).andExpect(status().isForbidden());
+  }
+
+  @Autowired org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping mappings;
+  @Test void everySemanticRouteRejectsAuthenticatedPrincipalWithoutItsGrant()throws Exception{
+    for(var entry:mappings.getHandlerMethods().entrySet())for(String pattern:entry.getKey().getPatternValues()){
+      if(!pattern.startsWith("/api/semantic/v1"))continue;
+      org.assertj.core.api.Assertions.assertThat(entry.getValue().getMethodAnnotation(it.comune.trieste.ouf.semantic.api.SemanticCapability.class)).isNotNull();
+      String path=pattern.replaceAll("\\{[^}]+\\}",UUID.randomUUID().toString());
+      for(var method:entry.getKey().getMethodsCondition().getMethods())http.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(org.springframework.http.HttpMethod.valueOf(method.name()),path).with(actor("no-grant","OUF_SERVICE",Set.of())).contentType(MediaType.APPLICATION_JSON).content("{}"))
+        .andExpect(status().isForbidden());
+    }
   }
 
   private static RequestPostProcessor actor(String subject,String role,Set<String> capabilities) {

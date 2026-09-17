@@ -1,0 +1,133 @@
+{
+  "version": "1.0",
+  "authority": "PET Semantic 1.3 sections 65 and 160.7; deployed capability prefix ouf.semantic",
+  "default": "DENY for registered routes without an explicit annotation",
+  "routes": [
+    {
+      "controller": "ArtifactApi.java",
+      "method": "POST",
+      "mapping": "\"/artifacts\"",
+      "capability": "ouf.semantic.propose"
+    },
+    {
+      "controller": "ArtifactApi.java",
+      "method": "GET",
+      "mapping": "\"/artifacts/{id}\") Map<String,Object> get(@PathVariable UUID id,HttpServletRequest request) {var result=service.get(id);if(!\"ACTIVE\".equals(result.get(\"status\")))requireDraftRead(request",
+      "capability": "ouf.semantic.read"
+    },
+    {
+      "controller": "ArtifactApi.java",
+      "method": "GET",
+      "mapping": "\"/search\") List<Map<String,Object>> search(@RequestParam String q,@RequestParam(defaultValue=\"ACTIVE\") String status,@RequestParam(defaultValue=\"20\") int limit,HttpServletRequest request) {if(!\"ACTIVE\".equals(status))requireDraftRead(request);return service.search(q,status,limit",
+      "capability": "ouf.semantic.search"
+    },
+    {
+      "controller": "ArtifactApi.java",
+      "method": "PATCH",
+      "mapping": "\"/revisions/{id}\") ResponseEntity<Map<String,Object>> patch(@PathVariable UUID id,@RequestHeader(\"If-Match\") String etag,@Valid @RequestBody PatchRevision patch,HttpServletRequest request,@RequestHeader HttpHeaders headers",
+      "capability": "ouf.semantic.propose"
+    },
+    {
+      "controller": "ChangeGovernanceApi.java",
+      "method": "POST",
+      "mapping": "\"/change-notices\") Map<String,Object> notice(@RequestBody NoticeRequest r,HttpServletRequest request){return service.notice(r.changeId(),r.decision(),actors.actor(request).subject()",
+      "capability": "ouf.semantic.propose"
+    },
+    {
+      "controller": "ChangeGovernanceApi.java",
+      "method": "GET",
+      "mapping": "\"/change-notices/{id}\") Map<String,Object> notice(@PathVariable UUID id){return service.getNotice(id",
+      "capability": "ouf.semantic.read"
+    },
+    {
+      "controller": "ChangeGovernanceApi.java",
+      "method": "POST",
+      "mapping": "\"/migration-proposals\") Map<String,Object> propose(@RequestBody ProposalRequest r,HttpServletRequest request){return service.propose(r.changeId(),r.replacementRefs(),r.rationale(),actors.actor(request).subject()",
+      "capability": "ouf.semantic.propose"
+    },
+    {
+      "controller": "ChangeGovernanceApi.java",
+      "method": "GET",
+      "mapping": "\"/migration-proposals/{id}\") Map<String,Object> proposal(@PathVariable UUID id){return service.proposal(id",
+      "capability": "ouf.semantic.read"
+    },
+    {
+      "controller": "DiscoveryApi.java",
+      "method": "POST",
+      "mapping": "",
+      "capability": "ouf.semantic.discovery"
+    },
+    {
+      "controller": "DiscoveryApi.java",
+      "method": "GET",
+      "mapping": "\"/{id}/candidates\") List<Map<String,Object>> candidates(@PathVariable UUID id){return service.candidates(id",
+      "capability": "ouf.semantic.discovery"
+    },
+    {
+      "controller": "DiscoveryApi.java",
+      "method": "POST",
+      "mapping": "\"/{requestId}/candidates/{candidateId}:adopt\") Map<String,Object> adopt(@PathVariable UUID requestId,@PathVariable UUID candidateId,@RequestBody Adoption r,HttpServletRequest request){UUID artifact=service.adopt(candidateId,r.semanticId(),r.namespace(),r.localName(),r.ownerRef(),r.authorityRef(),actors.actor(request).subject());return Map.of(\"artifactId\",artifact,\"status\",\"DRAFT\"",
+      "capability": "ouf.semantic.propose"
+    },
+    {
+      "controller": "DiscoveryApi.java",
+      "method": "GET",
+      "mapping": "\"/providers\") Map<String,Object> providers(){return Map.of(\"providers\",List.of(schemaGov.status())",
+      "capability": "ouf.semantic.discovery"
+    },
+    {
+      "controller": "GovernanceApi.java",
+      "method": "POST",
+      "mapping": "\"/approval-challenges\") ResponseEntity<Map<String,Object>> challenge(@Valid @RequestBody ChallengeRequest r,HttpServletRequest request,@RequestHeader HttpHeaders headers){var actor=actors.actor(request);Map<String,Object> out=service.challenge(r.revisionId(),r.contentHash(),Duration.ofMinutes(15),actor.subject(),actor.type(),correlation(headers));return ResponseEntity.status(HttpStatus.CREATED).body(out",
+      "capability": "ouf.semantic.approval.request"
+    },
+    {
+      "controller": "InterchangeApi.java",
+      "method": "POST",
+      "mapping": "value=\"/imports\",consumes={\"text/turtle\",\"application/ld+json\",\"application/rdf+xml\",\"application/n-triples\"}",
+      "capability": "ouf.semantic.propose"
+    },
+    {
+      "controller": "InterchangeApi.java",
+      "method": "GET",
+      "mapping": "\"/publication-sets/{setId}/artifacts/{artifactId}\") ResponseEntity<byte[]> export(@PathVariable UUID setId,@PathVariable UUID artifactId,@RequestHeader(value=HttpHeaders.ACCEPT,defaultValue=\"application/ld+json\") String accept){String selected=select(accept);var out=service.export(setId,artifactId,selected);return ResponseEntity.ok().contentType(MediaType.parseMediaType(out.mediaType())).body(out.body()",
+      "capability": "ouf.semantic.read"
+    },
+    {
+      "controller": "ValidationApi.java",
+      "method": "POST",
+      "mapping": "\"/revisions/{id}:validate\") Map<String,Object> validate(@PathVariable UUID id,HttpServletRequest request){return service.validate(id,actors.actor(request).subject()",
+      "capability": "ouf.semantic.review.prepare"
+    },
+    {
+      "controller": "ValidationApi.java",
+      "method": "GET",
+      "mapping": "\"/validation-runs/{id}\") Map<String,Object> validation(@PathVariable UUID id){return service.validation(id",
+      "capability": "ouf.semantic.read"
+    },
+    {
+      "controller": "ValidationApi.java",
+      "method": "POST",
+      "mapping": "\"/impact-reports\") Map<String,Object> impact(@RequestBody ImpactRequest r,HttpServletRequest request){return service.impact(r.fromRevisionId(),r.toRevisionId(),actors.actor(request).subject()",
+      "capability": "ouf.semantic.review.prepare"
+    },
+    {
+      "controller": "ValidationApi.java",
+      "method": "GET",
+      "mapping": "\"/impact-reports/{id}\") Map<String,Object> impact(@PathVariable UUID id){return service.impact(id",
+      "capability": "ouf.semantic.read"
+    },
+    {
+      "controller": "ValidationApi.java",
+      "method": "GET",
+      "mapping": "\"/references:resolve\") Map<String,Object> resolve(@RequestParam String semanticId,@RequestParam UUID revisionId,@RequestParam UUID publicationSetId){return service.resolve(semanticId,revisionId,publicationSetId",
+      "capability": "ouf.semantic.read"
+    },
+    {
+      "controller": "ValidationApi.java",
+      "method": "PUT",
+      "mapping": "\"/consumer-references\") ResponseEntity<Void> consumer(@RequestBody ConsumerReference r,HttpServletRequest request){var actor=actors.actor(request);actors.require(actor,\"ouf.semantic.consumer-reference.write\");service.registerConsumer(r.consumerType(),r.consumerId(),r.semanticId(),r.revisionId(),r.publicationSetId());return ResponseEntity.noContent().build(",
+      "capability": "ouf.semantic.consumer-reference.write"
+    }
+  ]
+}
