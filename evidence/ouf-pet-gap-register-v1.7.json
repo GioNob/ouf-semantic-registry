@@ -2204,7 +2204,7 @@
         "PET UDP v1.3; criteria and IDs cited in assessment"
       ],
       "ownerRepository": "GioNob/ouf-udp-object-resolution",
-      "status": "OPEN",
+      "status": "PARTIAL",
       "phase": "R6",
       "dependencies": [
         "R1a",
@@ -2218,7 +2218,7 @@
         "R5"
       ],
       "baselineCommit": "a18e1c1d1f6add41bb11c975e5f2487f352d1bdb",
-      "assessment": "INTEGRAZIONE/EVIDENZA: breaking drift senza perdita dello storico, preflight contro registry reali, WFS conversazionale/GIS statico, source-to-serving correlation e capacity gate per nuove fonti (E2E-04/13/15, A07/08/09/10/20).",
+      "assessment": "R2b/R2c: correlazione source-to-serving, riferimenti al Semantic Registry reale e REPRODUCE UDP sulla configurazione storica verificati fra processi. Restano breaking drift completo, recupero di tutti gli artefatti storici dai rispettivi owner, WFS conversazionale/GIS statico e capacity gate (E2E-04/13/15, A07/08/09/10/20).",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -2241,7 +2241,13 @@
       "sourceReferences": [
         "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/docs/pet-traceability-v1.3.json",
         "https://github.com/GioNob/ouf-udp-object-resolution/tree/a18e1c1d1f6add41bb11c975e5f2487f352d1bdb/src/main/java/it/comune/trieste/ouf/udp/ResolutionWorker.java"
-      ]
+      ],
+      "r2cEvidence": {
+        "commit": "a19d5447c8db0a2a8ae556ceae7a5225fa975f5b",
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35193378609",
+        "conclusion": "success",
+        "test": "Historical REPRODUCE with v2 ACTIVE and original raw evidence verified"
+      }
     },
     {
       "id": "SEM-01",
@@ -2252,7 +2258,7 @@
         "§§133–136, 160"
       ],
       "ownerRepository": "GioNob/ouf-semantic-registry",
-      "status": "OPEN",
+      "status": "PARTIAL",
       "phase": "R2c",
       "dependencies": [
         "R1a",
@@ -2260,7 +2266,7 @@
         "R2b"
       ],
       "baselineCommit": "353d2fc821035c5c3db1c2b142aeb9e3800ec0e3",
-      "assessment": "INTEGRAZIONE: correggere il live pairwise e successivamente provarlo contro Gateway e identità conformi. Agganciare Onboarding/Ingestion/UDP agli exact SemanticReference; non basta il test Authorization basato su ispezione di schema e stringhe del resolver. PET §§133–136, 160.7, 160.15.",
+      "assessment": "R0: live pairwise ripristinato e verificato. R2c: Semantic reale collegato a Onboarding/Ingestion/UDP con riferimenti esatti, pubblicazione governata, cambio ACTIVE senza mutazione degli snapshot e REPRODUCE UDP storico. Rimangono Gateway/APISIX e identità IAM/THS reali, copertura completa PET §§133–136, 160.7, 160.15; fixture upstream/Gateway/identità dichiarate.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -2318,6 +2324,12 @@
           }
         ],
         "r1aNote": "R0 credential fixture now constructs the common trusted principal and evaluates its laboratory grant with shared SDK; real Gateway/IAM remains open."
+      },
+      "r2cEvidence": {
+        "commit": "22dc923edafccb068cc003c6a1281e2574d49c40",
+        "ciUrl": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35193378609",
+        "conclusion": "success",
+        "test": "36-check four-owner publication and historical UDP replay"
       }
     },
     {
@@ -3953,7 +3965,12 @@
       "udpCommit": "a19d5447c8db0a2a8ae556ceae7a5225fa975f5b",
       "semanticCommit": "cfef6777ff14c218182c06682c6663840437d3d2"
     },
-    "nextStep": "R2d: configurable municipal CRS and governed transformation policy"
+    "nextStep": "R2d: configurable municipal CRS and governed transformation policy",
+    "mergedRepositories": {
+      "Onboarding": "5c2647e7e31fa9e74c2e04fbf44b4a3cfbe2f89b",
+      "Ingestion": "944459254c842d3a21f968e3e3ca590586fb6d25",
+      "UDP": "7cb940960c95965d27e17cae7d41e277dfd2bbb5"
+    }
   },
   "gisRoadmap": {
     "R2d": "Configurable municipal CRS, governed convert/reject choice, versioned transformation grids and control points",
