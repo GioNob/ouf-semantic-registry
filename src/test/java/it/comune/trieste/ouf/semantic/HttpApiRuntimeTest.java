@@ -147,7 +147,7 @@ class HttpApiRuntimeTest {
     http.perform(post("/api/semantic/v1/revisions/"+UUID.randomUUID()+":validate").with(actor("writer","OUF_SERVICE",Set.of()))).andExpect(status().isForbidden());
   }
 
-  @Autowired org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping mappings;
+  @Autowired @org.springframework.beans.factory.annotation.Qualifier("requestMappingHandlerMapping") org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping mappings;
   @Test void everySemanticRouteRejectsAuthenticatedPrincipalWithoutItsGrant()throws Exception{
     for(var entry:mappings.getHandlerMethods().entrySet())for(String pattern:entry.getKey().getPatternValues()){
       if(!pattern.startsWith("/api/semantic/v1"))continue;
