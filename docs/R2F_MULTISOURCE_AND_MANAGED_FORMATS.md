@@ -50,7 +50,7 @@ R2e certifica GeoPackage e relazioni dichiarate per chiave. Non certifica ATTRIB
 | Area | Stato |
 |---|---|
 | Score pesato e integrazione nella risoluzione UDP | Score puro e integrazione PostgreSQL/PostGIS verificati in CI; validazione prima dell’approvazione e replay della decisione umana aggiunti |
-| Authority geometrica, ruoli e workflow umano | Da completare |
+| Authority geometrica, ruoli e workflow umano | Backend di scelta tra due geometrie, audit e ripresa verificati; ruoli, proprietà non geometriche e interfaccia cartografica ancora aperti |
 | Shapefile ZIP | Lettore, profiler, adapter e controlli di integrità implementati; fixture punti/poligoni con buchi; percorso completo fra owner aperto |
 | Access, chiavi e relazioni | Lettore/profiler/adapter, chiavi composite e metadata/suggerimenti semantici implementati; pubblicazione semantica governata integrata ancora aperta |
 | Tracciabilità e collaudo integrato | Aperto |
@@ -64,7 +64,28 @@ Nessun grigliato IGM reale, collaudo territoriale o accettazione operativa è at
 - Le metriche spaziali usano la geometria trasformata secondo R2d. I candidati senza geometria possono concorrere sugli attributi quando non è richiesto un filtro geografico. Il confronto testuale usa NFKC, case folding e distanza di modifica; gli attributi di blocking richiedono invece uguaglianza JSON, da configurare su valori normalizzati.
 - Il percorso pubblicato conserva la geometria corrente davanti a contributi discordanti di pari autorità e mette il job in revisione. Il confronto è topologico nel CRS di serving, non una tolleranza territoriale configurabile. La via legacy di materializzazione diretta non è certificata come corretta per il caso multi-fonte.
 - L’approvazione di un match riprende la lavorazione attraverso il binding umano e conserva la decisione automatica append-only. La policy di authority viene rivalutata sui contributi storici, senza riscriverne il rank originale.
-- Sono ancora aperti: decisioni su conflitti di proprietà/geometria e relativa persistenza, ruoli/validità geometrica, controllo degli aggiornamenti fuori ordine della stessa fonte, superfici umane autorizzate e cartografia. Nessuno di questi requisiti è dichiarato completo.
+- Sono ancora aperti: decisioni sui conflitti di proprietà non geometriche, ruoli/validità geometrica, controllo degli aggiornamenti fuori ordine della stessa fonte e la superficie cartografica con IAM reale. Il backend per scegliere la geometria è ora implementato e verificato nel caso di due contributi di pari autorità; questo non equivale al collaudo umano completo.
 - Access conserva `metadata.semanticHints` e `sourceSchemaEvidence` nella bozza: classi/proprietà da cercare, chiavi dichiarate e coppie di colonne delle relazioni, senza inventare IRI o direzioni ontologiche. Il workflow di selezione/pubblicazione del Semantic Registry resta da collegare e collaudare.
 - I nuovi lettori sono identici tra Onboarding e Ingestion. Limiti e formati effettivamente collaudati sono descritti in `docs/R2F_MANAGED_FORMATS.md` nei due repository.
 - Nessuna nuova prova source-to-serving Access/Shapefile è attestata dalle vecchie pairwise: esse fissano i commit e i profili dello scenario storico. Prima del merge occorre una prova che usi le nuove pubblicazioni e tutti gli owner interessati.
+
+
+## Decisione umana sulla geometria
+
+UDP espone `GET /api/udp/v1/governance/geometry/issues/{id}` e `POST .../{id}/decisions`. La lettura richiede `resolution.issue.read` e `urban.geometry.read`, con tenant, sorgente e label controllati su **entrambe** le geometrie. Il comando richiede un principal umano, `authority.override`, motivazione e revisione corrente attesa. Header arbitrari non costituiscono un’identità.
+
+La decisione append-only seleziona una delle due revisioni, registra actor/authorization/correlation/evidence e rimette in esecuzione l’handoff sospeso. Geometria di serving e proprietà canonica vengono allineate nella transazione di materializzazione. La stessa coppia sotto la stessa policy conserva la scelta anche riordinando gli import; un valore geometrico diverso produce un nuovo conflitto, senza trasformare la scelta puntuale in priorità generale della fonte. Un retry identico autorizzato restituisce lo stesso riferimento; una scelta discordante o una revisione corrente superata produce conflitto.
+
+`SpatialMaterializerRuntimeTest.humanGeometryChoiceResumesJobAndSurvivesReimportWithoutBecomingAGlobalRule` verifica entrambe le scelte, ripresa del job, coerenza canonica/geometrica, reimport, immutabilità, actor automatico negato, label insufficienti negate e nuova geometria nuovamente in revisione. Si tratta di un test owner PostgreSQL/PostGIS, non di un collaudo browser con identità esterna.
+
+Gateway aggiunge due binding nel namespace limitato dell’owner; il comando è dichiarato umano e non è pubblicato come tool MCP. Pubblicazione APISIX, IAM e browser THS restano da collaudare.
+
+## PR di sviluppo
+
+- [Onboarding #17](https://github.com/GioNob/ouf-source-onboarding/pull/17): profilazione, evidenze Access e validazione.
+- [Ingestion #27](https://github.com/GioNob/ouf-ingestion-runtime/pull/27): adapter e test di identità/replay/limiti.
+- [UDP #30](https://github.com/GioNob/ouf-udp-object-resolution/pull/30): score, authority e decisione geometrica.
+- [Gateway #28](https://github.com/GioNob/ouf-api-gateway/pull/28): binding della revisione e della decisione.
+- [Registry #14](https://github.com/GioNob/ouf-semantic-registry/pull/14): roadmap e tracciabilità PET.
+
+Le PR restano in bozza; `main` non è stato modificato da R2f.

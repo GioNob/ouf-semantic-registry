@@ -254,7 +254,7 @@ R2e consegna profilazione dei layer, scelta esplicita di layer/chiavi, acquisizi
 
 La CI fra quattro owner, PostGIS e MinIO contiene **25 verifiche PASS**. Fixture Gateway/identità dichiarate, commit, run, limiti e stato dei merge sono riportati in [R2E_GEOPACKAGE_RELATIONSHIPS_EVIDENCE.md](R2E_GEOPACKAGE_RELATIONSHIPS_EVIDENCE.md) e nella sezione `r2e` del registro JSON. La geometria sorgente mappata richiede il permesso geometrico anche in current, history e search.
 
-Restano 2D simple features e limiti di parser espliciti; altri formati/casi sono R4b. Nessun grigliato IGM reale o collaudo territoriale è attestato. La UI cartografica resta R4a; incremento corrente **R2f**, prima di R3 — Operational Awareness.
+Restano 2D simple features e limiti di parser espliciti; Shapefile e Access sono anticipati in R2f, gli altri casi restano R4b. Nessun grigliato IGM reale o collaudo territoriale è attestato. La UI cartografica generale resta R4a; R2f include quella necessaria ai conflitti multi-fonte. Incremento corrente **R2f**, prima di R3 — Operational Awareness.
 
 Ogni sprint deve consultare tutti i sette PET e L0: [regola obbligatoria e manifest delle fonti](OUF_SPRINT_PET_ALIGNMENT.md).
 
