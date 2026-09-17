@@ -44,7 +44,8 @@ public class AuthenticatedSemanticFixture {
         response.sendError(401,"PAIRWISE_AUTHENTICATION_REQUIRED");return;
       }
       String path=request.getRequestURI(), method=request.getMethod();
-      boolean allowed=(method.equals("POST") && path.equals("/api/semantic/v1/discovery-requests"))
+      boolean allowed=(method.equals("GET") && path.equals("/api/semantic/v1/references:resolve"))
+          || (method.equals("POST") && path.equals("/api/semantic/v1/discovery-requests"))
           || (method.equals("GET") && path.matches("/api/semantic/v1/discovery-requests/[a-f0-9-]+/candidates"))
           || (method.equals("POST") && path.matches("/api/semantic/v1/discovery-requests/[a-f0-9-]+/candidates/[a-f0-9-]+:adopt"))
           || (method.equals("GET") && path.matches("/api/semantic/v1/artifacts/[a-f0-9-]+"));
