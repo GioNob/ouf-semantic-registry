@@ -153,7 +153,7 @@ class HttpApiRuntimeTest {
       if(!pattern.startsWith("/api/semantic/v1"))continue;
       org.assertj.core.api.Assertions.assertThat(entry.getValue().getMethodAnnotation(it.comune.trieste.ouf.semantic.api.SemanticCapability.class)).isNotNull();
       String path=pattern.replaceAll("\\{[^}]+\\}",UUID.randomUUID().toString());
-      for(var method:entry.getKey().getMethodsCondition().getMethods())http.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(org.springframework.http.HttpMethod.valueOf(method.name()),path).with(actor("no-grant","OUF_SERVICE",Set.of())).contentType(MediaType.APPLICATION_JSON).content("{}"))
+      for(var method:entry.getKey().getMethodsCondition().getMethods())http.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(org.springframework.http.HttpMethod.valueOf(method.name()),path).with(actor("no-grant","OUF_SERVICE",Set.of())).contentType(entry.getKey().getConsumesCondition().getConsumableMediaTypes().stream().findFirst().orElse(MediaType.APPLICATION_JSON)).content("{}"))
         .andExpect(status().isForbidden());
     }
   }
