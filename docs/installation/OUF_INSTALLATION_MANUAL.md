@@ -556,3 +556,61 @@ Prima di avviare MCP devono risultare verdi:
 6. PolicyBundle path protetto e raggiungibile tramite Gateway;
 7. generic execution e recovery materializzati nel Gateway;
 8. nessuna porta host diretta del MCP Server.
+
+
+## 18. Export governato della InstallationProjection ACTIVE
+
+La InstallationProjection consumata da Gateway/Caddy/MCP non deve essere ricostruita manualmente sul server.
+
+Il Source Onboarding espone una Trusted Human operation:
+
+`GET /api/trusted-human/v1/installations/{installationId}/projection`
+
+Requisiti:
+- actor HUMAN;
+- capability `installation.configuration.export`;
+- descriptor canonico registrato nel capability registry con owner `installation`, operation `READ`, actor `HUMAN`;
+- grant/policy ACTIVE che assegna la capability all'installer HUMAN;
+- header `X-Correlation-ID`;
+- opzionale query `revision` usata come precondizione sulla revision ACTIVE.
+
+Regole:
+- viene esportata solo la revision ACTIVE;
+- se non esiste una ACTIVE revision -> 404;
+- se la revision richiesta non coincide con ACTIVE -> 409;
+- SERVICE/AI_AGENT non possono usare questa surface;
+- la risposta usa `Cache-Control: no-store`;
+- response header `X-OUF-Installation-Revision` e `X-OUF-Installation-Checksum` devono coincidere con il payload esportato;
+- l'export produce audit append-only con subject HUMAN, correlation id, revision e checksum.
+
+L'export può contenere secret references, ad esempio:
+- `MCP_OIDC_CLIENT_SECRET_FILE`;
+- `MCP_FINGERPRINT_KEY_FILE`.
+
+Non può contenere secret values, password, bearer/access token o private key material.
+
+### 18.1 Materializzazione sul server
+
+Dopo un export riuscito, il file operativo deve essere scritto atomicamente, non con modifica manuale in place.
+
+Percorso canonico:
+
+`/opt/ouf/installation/active-projection.json`
+
+Sequenza operativa:
+1. esportare la projection in un file temporaneo;
+2. verificare revision e checksum restituiti dall'endpoint;
+3. verificare che il JSON sia parsabile;
+4. sostituire atomicamente `active-projection.json`;
+5. usare lo stesso file per risolvere Gateway, Caddy e MCP;
+6. conservare la projection precedente per rollback quando compatibile.
+
+### 18.2 Esempio laboratorio Netcup
+
+Per il laboratorio corrente:
+- installationId atteso: `ouf-lab-netcup-01`;
+- capability HUMAN richiesta: `installation.configuration.export`;
+- prima dell'export il descriptor canonico deve essere registrato con owner `installation` e poi incluso in una nuova PolicyBundle ACTIVE;
+- destinazione operativa: `/opt/ouf/installation/active-projection.json`.
+
+Il file non deve essere costruito a mano usando i valori di questa sezione: deve provenire dall'endpoint governato della revision ACTIVE.
