@@ -120,3 +120,6 @@ Resolution:
 - Semantic fixture receives that dynamic port in `SPRING_DATASOURCE_URL`.
 
 The failure and fix are retained here so the evidence history includes CI regressions as well as successful runs.
+
+
+Follow-up on run `35321344450`: PostgreSQL itself started successfully and accepted connections, but the shell parser used to extract Docker's dynamically assigned host port returned an empty string, so the explicit non-empty assertion stopped the scenario before Semantic/Gateway startup. The parser was replaced with a simple IPv4-safe `awk -F:` extraction for Docker's `127.0.0.1:<port>` output.
