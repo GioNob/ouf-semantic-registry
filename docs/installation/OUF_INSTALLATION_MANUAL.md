@@ -1,0 +1,338 @@
+# OUF — Manuale di installazione e bootstrap
+
+Versione iniziale: 2026-09-18  
+Stato: WORKING DRAFT  
+Ambito: installazione multi-Ente / environment binding / bootstrap piattaforma
+
+## 1. Regola di governo
+
+Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
+
+Ordine di autorità:
+1. Reality Baseline Package / PET vigenti;
+2. Cross-Module Alignment Matrix;
+3. questo manuale di installazione;
+4. runbook specifici di modulo.
+
+Se questo manuale diverge dai PET, prevalgono i PET e il manuale deve essere aggiornato.
+
+Il manuale deve essere aggiornato nello stesso incremento che modifica:
+- DNS o hostname;
+- IAM / realm / client / scope;
+- TLS / CA / certificati;
+- endpoint pubblici o interni;
+- database, storage o object store;
+- reti Docker/Kubernetes;
+- secret layout;
+- ordine di bootstrap;
+- acceptance gates;
+- rollback o disaster recovery.
+
+## 2. Principi di industrializzazione
+
+OUF non deve contenere hostname, domini, IP, realm, endpoint o coordinate infrastrutturali specifici di un Ente hardcoded nel codice.
+
+Ogni installazione deve produrre una Installation Configuration versionata e validata.
+
+La configurazione environment-specific deve:
+- essere raccolta durante bootstrap;
+- essere validata prima dell'attivazione;
+- essere revisionabile;
+- avere checksum/versione;
+- supportare rollback;
+- separare rigorosamente configurazione e segreti;
+- essere proiettata ai moduli, senza ricostruzioni autonome da convenzioni implicite.
+
+I segreti non devono comparire in:
+- Git;
+- log;
+- output di comandi;
+- documentazione;
+- bundle di configurazione non protetti.
+
+## 3. Bootstrap della piattaforma
+
+Il bootstrap OUF deve diventare un Installation Bootstrap Wizard, non solo una creazione dell'amministratore.
+
+### 3.1 Dati minimi da raccogliere
+
+Identità installazione:
+- organizationId / tenantId;
+- nome Ente;
+- environment: dev / test / staging / production;
+- installationId;
+- timezone;
+- eventuale dominio base gestito dall'Ente.
+
+IAM:
+- issuer host;
+- realm;
+- admin HUMAN iniziale;
+- policy per Device Flow / MFA;
+- client workload richiesti;
+- audience Gateway;
+- scope bootstrap e scope permanenti;
+- eventuale CA aziendale.
+
+Gateway:
+- hostname pubblico API;
+- hostname pubblico IAM;
+- endpoint amministrativi interni;
+- policy di esposizione;
+- timeout / request limits / rate limits.
+
+Networking:
+- backend network;
+- edge network;
+- control-plane network;
+- service discovery strategy;
+- policy che vieta esposizione diretta dei moduli interni.
+
+Persistence:
+- PostgreSQL host/service;
+- database per modulo;
+- object storage;
+- filesystem persistente;
+- backup target;
+- retention.
+
+Secrets:
+- secret store strategy;
+- file mount paths o secret references;
+- ownership UID/GID;
+- rotation policy.
+
+Observability:
+- metrics endpoint;
+- log sink;
+- alert destination;
+- incident retention.
+
+### 3.2 Output del bootstrap
+
+Il bootstrap deve produrre:
+- InstallationConfiguration revision;
+- checksum;
+- stato VALIDATED / ACTIVE;
+- secret references separati;
+- projection per Gateway/Caddy;
+- projection per MCP;
+- projection per Source Onboarding;
+- projection per Ingestion;
+- projection per Semantic Registry;
+- projection per UDP;
+- acceptance report;
+- rollback reference.
+
+## 4. Piano DNS
+
+Il numero di record DNS deve derivare dalle superfici pubbliche effettivamente abilitate, non da domini hardcoded.
+
+### 4.1 Record minimi obbligatori
+
+Per l'installazione OUF attuale il minimo architetturale è di **2 record A/AAAA pubblici**:
+
+| Funzione | Host logico | Tipo | Destinazione | Obbligatorio | Note |
+|---|---|---|---|---|---|
+| IAM / OIDC issuer | `<issuer-host>` | A/AAAA | IP/VIP edge OUF | sì | Deve coincidere esattamente con il claim OIDC `iss`; TLS obbligatorio |
+| API Gateway / MCP northbound | `<api-host>` | A/AAAA | IP/VIP edge OUF | sì | Termina TLS su reverse proxy / ingress e inoltra verso Gateway |
+
+Esempio di laboratorio, non normativo:
+- `auth.ouf-lab.it`
+- `api.ouf-lab.it`
+
+Questi nomi non devono comparire come default nel software.
+
+### 4.2 Record opzionali
+
+Possono essere richiesti in base al deployment:
+- `<staging-host>` per ambiente staging separato;
+- hostname UI/THS;
+- hostname observability;
+- hostname object storage pubblico;
+- hostname DR;
+- record CNAME verso load balancer gestiti.
+
+Ogni record opzionale deve avere:
+- owner;
+- finalità;
+- esposizione;
+- TLS policy;
+- lifecycle;
+- acceptance test.
+
+### 4.3 Regole DNS
+
+- Nessun modulo interno deve dipendere da hairpin NAT verso l'IP pubblico quando esiste un percorso interno governato.
+- Se un workload deve usare lo stesso hostname pubblico per preservare TLS/SNI/issuer semantics, la rete interna deve risolvere quel nome verso il reverse proxy interno mediante DNS/service alias dichiarativo.
+- Vietati workaround permanenti `--add-host` per singolo consumer.
+- Ogni hostname deve essere verificato sia da rete esterna sia dalla rete backend.
+- DNS TTL deve essere esplicito e documentato.
+- DNSSEC è raccomandato quando supportato dall'Ente, ma non sostituisce TLS.
+
+### 4.4 Acceptance DNS
+
+Per ogni hostname pubblico:
+- risoluzione autoritativa corretta;
+- risoluzione da resolver pubblico;
+- risoluzione da host;
+- risoluzione da backend workload;
+- TLS certificate valido;
+- SNI corretto;
+- reverse proxy verso il target previsto;
+- nessuna esposizione diretta del modulo interno.
+
+## 5. TLS e reverse proxy
+
+Caddy/Ingress è il boundary TLS pubblico.
+
+Regole:
+- i moduli interni non devono pubblicare porte host salvo esplicita necessità governata;
+- IAM e API Gateway devono essere raggiunti tramite hostname configurati dall'installazione;
+- i certificati devono essere validi per gli hostname effettivi;
+- il percorso interno deve preservare hostname e SNI dove richiesto;
+- rollback del reverse proxy deve essere disponibile prima dello switch.
+
+## 6. IAM
+
+L'issuer OIDC è configurazione dell'installazione.
+
+Il bootstrap deve:
+- creare o validare il realm;
+- creare l'admin HUMAN;
+- creare i client workload;
+- configurare audience;
+- configurare tenant claim;
+- configurare actor type;
+- assegnare scope iniziali;
+- pubblicare la prima PolicyBundle;
+- chiudere il bootstrap latch;
+- rimuovere scope bootstrap temporanei.
+
+I token workload devono essere rinnovabili automaticamente; non si persistono access token short-lived in file env.
+
+## 7. Secret management
+
+I segreti devono essere conservati fuori dal repository.
+
+Ogni secret deve avere:
+- path/reference;
+- owner UID/GID;
+- mode;
+- consumer;
+- rotation policy;
+- acceptance test di leggibilità dal solo consumer previsto.
+
+Esempi di categorie:
+- DB password;
+- Keycloak client secret;
+- fingerprint/HMAC key;
+- object storage secret;
+- APISIX admin key.
+
+## 8. Database e migration
+
+Prima di avviare un modulo:
+- database presente;
+- ruolo corretto;
+- migration applicate;
+- ownership e grant verificati;
+- backup/restore policy definita.
+
+Le application process non devono inventare schema o bypassare il ruolo di migration quando il PET prevede un migration role separato.
+
+## 9. Ordine di bootstrap / avvio
+
+Ordine iniziale di riferimento:
+1. rete / storage persistente;
+2. PostgreSQL;
+3. Keycloak / IAM;
+4. reverse proxy / TLS;
+5. Source Onboarding / Authorization registry;
+6. prima PolicyBundle;
+7. Gateway control plane;
+8. MCP Server;
+9. Semantic Registry;
+10. Ingestion Runtime;
+11. UDP / Object Resolution;
+12. UI / THS;
+13. observability;
+14. acceptance end-to-end.
+
+L'ordine può essere raffinato, ma ogni deviazione deve essere documentata.
+
+## 10. Acceptance minima installazione
+
+Un'installazione non è ACTIVE finché non sono verdi almeno:
+- DNS;
+- TLS;
+- issuer discovery;
+- admin HUMAN login;
+- workload token issuance;
+- PolicyBundle fetch;
+- Gateway reachability;
+- MCP bootstrap;
+- module health/readiness;
+- database persistence;
+- restart acceptance;
+- rollback acceptance;
+- test negativo senza token;
+- test negativo con audience/scope errati;
+- audit/correlation smoke.
+
+## 11. Rollback
+
+Ogni switch deve preservare:
+- configurazione precedente;
+- container/image precedente o deployment revision;
+- DB migration compatibility;
+- secret references precedenti quando consentito;
+- procedura di restore documentata.
+
+## 12. Stato corrente del laboratorio OUF
+
+Questa sezione documenta il lab corrente senza trasformarlo in default di prodotto.
+
+- VPS: Netcup
+- edge IP lab: `62.83.33.202`
+- IAM hostname lab: `auth.ouf-lab.it`
+- API hostname lab: `api.ouf-lab.it`
+- backend network: `ouf-backend`
+- edge network: `ouf-edge`
+- Gateway control network: `ouf-gateway-control`
+- Caddy: TLS / reverse proxy boundary
+- APISIX: Gateway runtime interno
+- Keycloak realm lab: `ouf`
+
+Questi valori sono evidence dell'installazione corrente e non devono diventare costanti applicative.
+
+## 13. TBD — MUST BE RESOLVED
+
+Prima di dichiarare il bootstrap industrializzato completo devono essere definiti:
+- schema canonico `InstallationConfiguration`;
+- persistence owner;
+- API/THS bootstrap;
+- lifecycle revision/activation/rollback;
+- validation engine;
+- secret reference model;
+- CA enterprise handling;
+- HA/LB topology;
+- backup/restore contract;
+- observability bootstrap;
+- unattended/headless bootstrap mode;
+- export/import install profile;
+- upgrade workflow tra versioni OUF.
+
+## 14. Change control
+
+Ogni PR che cambia installazione o deployment deve verificare se questo manuale necessita aggiornamento.
+
+Checklist obbligatoria:
+- cambia DNS? aggiornare §4;
+- cambia endpoint? aggiornare §3/§5;
+- cambia IAM? aggiornare §6;
+- cambia secret? aggiornare §7;
+- cambia DB/migration? aggiornare §8;
+- cambia ordine di avvio? aggiornare §9;
+- cambia acceptance? aggiornare §10;
+- cambia rollback? aggiornare §11.
