@@ -155,6 +155,7 @@ Il validation engine deve verificare almeno:
 - HTTPS/TLS dell'issuer;
 - OIDC discovery;
 - corrispondenza esatta tra issuer configurato e campo `issuer` restituito dalla discovery;
+- corrispondenza esatta tra token endpoint configurato e `token_endpoint` pubblicato dalla discovery;
 - HTTPS/TLS del Gateway pubblico;
 - reachability TCP di PostgreSQL;
 - reachability dello storage quando applicabile.
