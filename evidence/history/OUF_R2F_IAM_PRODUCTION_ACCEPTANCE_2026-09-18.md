@@ -108,3 +108,15 @@ The next roadmap increment remains **R3 Operational Awareness**, but R3 should b
 - operational/fault awareness should therefore consume real trusted identity and active Authorization state rather than test-only assumptions.
 
 R3 must still be checked against the PETs at sprint start. This record does not assert full PET closure, representative SLO/load acceptance, complete THS/browser acceptance, or closure of unrelated module gaps.
+
+
+## Evidence-PR CI follow-up
+
+During PR #15, `Semantic Gateway live pairwise` run `35321119084` failed immediately after starting the PostgreSQL fixture. The workflow still used fixed host port `55432`, a previously known collision mode on hosted runners. No product/runtime behavior was implicated.
+
+Resolution:
+- pairwise PostgreSQL now publishes `127.0.0.1::5432` using a Docker-assigned host port;
+- the resolved port is discovered with `docker port`;
+- Semantic fixture receives that dynamic port in `SPRING_DATASOURCE_URL`.
+
+The failure and fix are retained here so the evidence history includes CI regressions as well as successful runs.
