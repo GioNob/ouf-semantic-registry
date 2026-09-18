@@ -30,6 +30,24 @@ Il manuale deve essere aggiornato nello stesso incremento che modifica:
 
 ## 2. Principi di industrializzazione
 
+### 2.1 Lifecycle della configurazione di installazione
+
+Le revisioni di InstallationConfiguration sono evidence immutabile: una revisione già persistita non si modifica in place.
+
+Ogni tentativo di configurazione produce una nuova revision:
+- `VALIDATED` se supera i controlli previsti per quella fase;
+- `REJECTED` se fallisce, con findings persistiti.
+
+I tentativi rifiutati non vengono cancellati: restano come evidence di bootstrap.
+
+Activation, supersession, rollback e revocation sono eventi di lifecycle separati e append-only.
+
+Il puntatore ACTIVE può cambiare, ma il payload della revision non cambia mai.
+
+Il rollback non significa “riscrivere” una vecchia configurazione: significa riattivare una revision precedente già validata, registrando un evento `ROLLBACK_ACTIVATED`.
+
+
+
 OUF non deve contenere hostname, domini, IP, realm, endpoint o coordinate infrastrutturali specifici di un Ente hardcoded nel codice.
 
 Ogni installazione deve produrre una Installation Configuration versionata e validata.
@@ -263,6 +281,16 @@ L'ordine può essere raffinato, ma ogni deviazione deve essere documentata.
 
 ## 10. Acceptance minima installazione
 
+Prima dell'attivazione devono inoltre essere verificati:
+- revision persistita con checksum SHA-256;
+- validation state `VALIDATED`;
+- assenza di secret values nel payload;
+- lifecycle event di activation registrato;
+- possibilità di rollback a una revision precedente validata;
+- impossibilità di attivare revision `REJECTED` o `REVOKED`.
+
+
+
 Un'installazione non è ACTIVE finché non sono verdi almeno:
 - DNS;
 - TLS;
@@ -309,8 +337,6 @@ Questi valori sono evidence dell'installazione corrente e non devono diventare c
 ## 13. TBD — MUST BE RESOLVED
 
 Prima di dichiarare il bootstrap industrializzato completo devono essere definiti:
-- schema canonico `InstallationConfiguration`;
-- persistence owner;
 - API/THS bootstrap;
 - lifecycle revision/activation/rollback;
 - validation engine;
@@ -336,3 +362,23 @@ Checklist obbligatoria:
 - cambia ordine di avvio? aggiornare §9;
 - cambia acceptance? aggiornare §10;
 - cambia rollback? aggiornare §11.
+
+
+## 15. Esempio laboratorio — lifecycle InstallationConfiguration
+
+Nel laboratorio Netcup la futura revisione di installazione deve rappresentare, come esempio concreto e non come default di prodotto:
+- installationId: `ouf-lab-netcup-01`;
+- issuer: `https://auth.ouf-lab.it/realms/ouf`;
+- API base: `https://api.ouf-lab.it`;
+- backend network: `ouf-backend`;
+- edge network: `ouf-edge`;
+- Gateway control network: `ouf-gateway-control`;
+- PostgreSQL service: `ouf-postgres:5432`;
+- secret references sotto `/opt/ouf/secrets/`.
+
+Durante il bootstrap reale:
+1. una configurazione invalida deve essere persistita come `REJECTED` con findings;
+2. una configurazione valida deve diventare una nuova revision `VALIDATED`;
+3. l'attivazione deve produrre un lifecycle event;
+4. un eventuale rollback deve riattivare una revision precedente senza modificarne il payload;
+5. una revision revocata non deve essere riattivabile.
