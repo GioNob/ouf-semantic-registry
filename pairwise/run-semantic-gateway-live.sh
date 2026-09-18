@@ -44,10 +44,15 @@ docker run -d --name "$postgres_name" -p 127.0.0.1::5432 \
   -e POSTGRES_DB=ouf_semantic -e POSTGRES_USER=ouf_semantic -e POSTGRES_PASSWORD=ouf_semantic \
   postgres:17-alpine >/dev/null
 for _ in $(seq 1 60); do
-  docker exec "$postgres_name" pg_isready -U ouf_semantic -d ouf_semantic >/dev/null 2>&1 && break
+  docker logs "$postgres_name" 2>&1 | grep -q 'PostgreSQL init process complete; ready for start up.' && break
   sleep 1
 done
-docker exec "$postgres_name" pg_isready -U ouf_semantic -d ouf_semantic >/dev/null
+docker logs "$postgres_name" 2>&1 | grep -q 'PostgreSQL init process complete; ready for start up.'
+for _ in $(seq 1 60); do
+  docker exec "$postgres_name" psql -U ouf_semantic -d ouf_semantic -Atqc 'select 1' 2>/dev/null | grep -qx '1' && break
+  sleep 1
+done
+docker exec "$postgres_name" psql -U ouf_semantic -d ouf_semantic -Atqc 'select 1' | grep -qx '1'
 postgres_port="$(docker port "$postgres_name" 5432/tcp | head -n1 | awk -F: '{print $NF}')"
 test -n "$postgres_port"
 
