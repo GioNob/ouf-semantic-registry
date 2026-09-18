@@ -569,6 +569,8 @@ Il Source Onboarding espone una Trusted Human operation:
 Requisiti:
 - actor HUMAN;
 - capability `installation.configuration.export`;
+- descriptor canonico registrato nel capability registry con owner `installation`, operation `READ`, actor `HUMAN`;
+- grant/policy ACTIVE che assegna la capability all'installer HUMAN;
 - header `X-Correlation-ID`;
 - opzionale query `revision` usata come precondizione sulla revision ACTIVE.
 
@@ -608,6 +610,7 @@ Sequenza operativa:
 Per il laboratorio corrente:
 - installationId atteso: `ouf-lab-netcup-01`;
 - capability HUMAN richiesta: `installation.configuration.export`;
+- prima dell'export il descriptor canonico deve essere registrato con owner `installation` e poi incluso in una nuova PolicyBundle ACTIVE;
 - destinazione operativa: `/opt/ouf/installation/active-projection.json`.
 
 Il file non deve essere costruito a mano usando i valori di questa sezione: deve provenire dall'endpoint governato della revision ACTIVE.
