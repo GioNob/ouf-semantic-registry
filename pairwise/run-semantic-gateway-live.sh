@@ -40,7 +40,7 @@ d=json.load(open(sys.argv[1]))
 assert d['results']['bindings'], 'official SPARQL endpoint returned no graph'
 PY
 
-docker run -d --name "$postgres_name" -p 55432:5432 \
+docker run -d --name "$postgres_name" -p 127.0.0.1::5432 \
   -e POSTGRES_DB=ouf_semantic -e POSTGRES_USER=ouf_semantic -e POSTGRES_PASSWORD=ouf_semantic \
   postgres:17-alpine >/dev/null
 for _ in $(seq 1 60); do
@@ -48,6 +48,8 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 docker exec "$postgres_name" pg_isready -U ouf_semantic -d ouf_semantic >/dev/null
+postgres_port="$(docker port "$postgres_name" 5432/tcp | sed -n 's/.*:\\([0-9][0-9]*\\)$/\\1/p' | head -n1)"
+test -n "$postgres_port"
 
 docker build -f "$repo_dir/pairwise/semantic-fixture/Dockerfile" -t ouf-semantic-pairwise "$repo_dir" >/dev/null
 docker build -t ouf-gateway-pairwise "$repo_dir/pairwise/gateway-fixture" >/dev/null
@@ -63,7 +65,7 @@ export OUF_PAIRWISE_TOKEN="$(python3 -c 'import secrets; print(secrets.token_hex
 docker run -d --name "$semantic_name" --network host \
   -e PORT=18080 \
   -e OUF_PAIRWISE_TOKEN \
-  -e SPRING_DATASOURCE_URL=jdbc:postgresql://127.0.0.1:55432/ouf_semantic \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://127.0.0.1:"$postgres_port"/ouf_semantic \
   -e SPRING_DATASOURCE_USERNAME=ouf_semantic \
   -e SPRING_DATASOURCE_PASSWORD=ouf_semantic \
   -e OUF_SCHEMA_GOV_ENABLED=true \
