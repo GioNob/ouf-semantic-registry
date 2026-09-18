@@ -1082,7 +1082,7 @@
         "R1a"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "Motori/cache e vincoli policy verificati. Follow-up owner implementato e testato per tutte le route Semantic, serving/query UDP (graph/related/spatial inclusi), OA Ingestion e protected log Onboarding/Ingestion. Rimane PARTIAL per accettazione completa delle proiezioni nei restanti domini governance/historical/runtime-issue e del percorso reale Gateway/MCP/THS: non si estende la prova dei boundary coperti a endpoint non verificati.",
+      "assessment": "Motori/cache e vincoli policy verificati. Follow-up owner implementato e testato per tutte le route Semantic, serving/query UDP (graph/related/spatial inclusi), OA Ingestion e protected log Onboarding/Ingestion. Il 2026-09-18 è stato inoltre esercitato un percorso IAM reale per HUMAN admin e MCP SERVICE, inclusi distribuzione del bundle ACTIVE e restart production. Rimane PARTIAL per accettazione completa delle proiezioni nei restanti domini governance/historical/runtime-issue e dei restanti percorsi Gateway/MCP/THS: non si estende la prova dei boundary coperti a endpoint non verificati.",
       "evidenceLevel": "MODULE_RUNTIME_AND_CROSS_LANGUAGE_FIXTURES",
       "baselineEvidence": [
         {
@@ -1108,8 +1108,8 @@
           "Versioned admin revocation with next-refresh denial and pinned snapshot behavior"
         ],
         "remaining": [
-          "AUT-03: complete owner projection acceptance for domain governance, historical-contract and runtime-issue outputs, including actual Gateway/MCP channel-neutral paths; verified boundaries are listed in docs/R1B_ENDPOINT_COVERAGE_AUDIT.md",
-          "AUT-04: real IAM/workload/THS authentication and CSRF bindings, directory claims, rotation/revocation acceptance"
+          "AUT-03: complete owner projection acceptance for domain governance, historical-contract and runtime-issue outputs, including the remaining actual Gateway/MCP/channel-neutral paths; verified boundaries are listed in docs/R1B_ENDPOINT_COVERAGE_AUDIT.md",
+          "Complete representative THS/browser and remaining IAM consumer acceptance; AUT-04 real binding is now partial rather than open"
         ],
         "evidence": [
           {
@@ -1606,14 +1606,14 @@
         "§109"
       ],
       "ownerRepository": "GioNob/ouf-source-onboarding",
-      "status": "OPEN",
-      "phase": "R1a",
+      "status": "PARTIAL",
+      "phase": "R1a/R2f production binding",
       "dependencies": [
         "R0"
       ],
       "baselineCommit": "fb2dd51dfc204577a47c1e702f17531dd0709b3c",
-      "assessment": "AMBIENTE: selezionare/configurare scenario A/B/C, issuer/JWKS, audience, claim mapping, rotazione/revoca e identità workload (§109.5). Avviare questa dipendenza subito, senza bloccare lo sviluppo scenario-neutral.",
-      "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
+      "assessment": "AMBIENTE/DEPLOYMENT: binding IAM reale ora esercitato sul VPS per Source Onboarding/Authorization con Keycloak realm `ouf`, issuer pubblico/JWKS discovery, audience `ouf-api-gateway`, claim `tenant_id`/`ouf_actor_type`/`acr`, HUMAN Device Flow, workload MCP client_credentials, primo PolicyBundle ACTIVE e restart acceptance. Lo scope bootstrap temporaneo è stato rimosso dopo l'accettazione. Rimane PARTIAL perché l'exit criterion PET/roadmap include prove reali di rotazione e revoca, oltre alla qualificazione rappresentativa degli altri consumer/THS entro R6.",
+      "evidenceLevel": "REAL_DEPLOYED_IAM_IDENTITY_AND_FIRST_POLICY_WITHOUT_ROTATION_REVOCATION",
       "baselineEvidence": [
         {
           "name": "Source Onboarding module CI",
@@ -1629,7 +1629,64 @@
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/src/main/java/it/comune/trieste/ouf/onboarding",
         "https://github.com/GioNob/ouf-source-onboarding/tree/fb2dd51dfc204577a47c1e702f17531dd0709b3c/contracts/authorization/authorization-sdk-v1.json"
       ],
-      "planningNote": "Start platform binding now; representative acceptance closes in R6."
+      "planningNote": "Platform binding is deployed and accepted for Source Onboarding/Authorization. Keep AUT-04 PARTIAL until credential/key rotation, revocation propagation and remaining representative IAM/THS consumers are exercised.",
+      "partialProgress": {
+        "date": "2026-09-18",
+        "implemented": [
+          "Keycloak HUMAN Device Flow with issuer/audience/tenant/actor/acr validation",
+          "MCP SERVICE client_credentials with tenant/actor/acr and bundle-read/related-search scopes",
+          "Canonical capability registration and first immutable ACTIVE PolicyBundle",
+          "One-way bootstrap latch closure with HUMAN anti-lockout grant",
+          "Production IAM-enabled Onboarding activation and restart acceptance",
+          "Temporary authorization.bootstrap scope removed after post-restart HUMAN acceptance",
+          "Docker-internal issuer discovery made declarative through Caddy network alias"
+        ],
+        "remaining": [
+          "Real credential/key rotation acceptance",
+          "Real revocation propagation acceptance",
+          "Representative IAM/THS acceptance across remaining consumers/channels by R6"
+        ],
+        "evidence": [
+          {
+            "repository": "GioNob/ouf-source-onboarding",
+            "pr": 18,
+            "mergeCommit": "8c444cb3ae52ef78093a0d1763358bb19278b774",
+            "runs": [
+              35313470808,
+              35313470898
+            ]
+          },
+          {
+            "repository": "GioNob/ouf-source-onboarding",
+            "pr": 19,
+            "mergeCommit": "26986fe09c236a3aabcfcc3a32283128c087b7d0",
+            "runs": [
+              35318850814,
+              35318850826
+            ]
+          },
+          {
+            "repository": "GioNob/ouf-api-gateway",
+            "pr": 29,
+            "mergeCommit": "9af37cee292b8a5930b40ad0849078c26aaffc3e",
+            "runs": [
+              35316146906
+            ]
+          },
+          {
+            "repository": "GioNob/ouf-api-gateway",
+            "pr": 30,
+            "mergeCommit": "6cd593a926399d793a78b408952a4a997ef0d40c",
+            "runs": [
+              35317130999
+            ]
+          },
+          {
+            "repository": "GioNob/ouf-semantic-registry",
+            "history": "evidence/history/OUF_R2F_IAM_PRODUCTION_ACCEPTANCE_2026-09-18.md"
+          }
+        ]
+      }
     },
     {
       "id": "ONB-01",
@@ -2465,7 +2522,7 @@
         "R1b"
       ],
       "baselineCommit": "8a1757e5879f73ee60c2786a7f5e2b325741c940",
-      "assessment": "INTEGRAZIONE/CODICE: esercitare compiler/publication/controller con APISIX ed etcd reali, con entrypoint e scheduling/deployment operativo del control plane. Oggi la CI principale esegue Python/pytest e compile config; non avvia la topologia APISIX/etcd. Implementazioni dei port e manifest non sono prova del dataplane. Collegare anche i binding business mancanti man mano che si espande il catalogo.",
+      "assessment": "INTEGRAZIONE/CODICE: il 2026-09-18 il deployment Caddy/TLS per l'issuer IAM è stato reso dichiarativo e collaudato realmente su `ouf-backend`, con OIDC discovery 200 e rollback preservato. GW-01 resta OPEN: occorre ancora esercitare compiler/publication/controller con APISIX ed etcd reali, con entrypoint e scheduling/deployment operativo del control plane. La CI principale non costituisce ancora prova completa del dataplane APISIX/etcd. Collegare anche i binding business mancanti man mano che si espande il catalogo.",
       "evidenceLevel": "SOURCE_REVIEW_WITH_EXISTING_MODULE_CI",
       "baselineEvidence": [
         {
@@ -2487,6 +2544,31 @@
         "remaining": "Real APISIX/etcd deployment and governed source invocation/managed-storage bindings remain unverified",
         "evidenceReference": "r2b.evidence",
         "closureClaim": false
+      },
+      "r2fIamProgress": {
+        "date": "2026-09-18",
+        "completed": [
+          "Declarative Caddy deployment",
+          "Internal issuer DNS alias auth.ouf-lab.it on ouf-backend",
+          "OIDC discovery 200 from backend network",
+          "Rollback-preserving live deployment"
+        ],
+        "stillOpen": [
+          "Real APISIX/etcd compiler/publication/controller deployment acceptance",
+          "Governed source invocation and remaining business bindings"
+        ],
+        "evidence": [
+          {
+            "pr": 29,
+            "mergeCommit": "9af37cee292b8a5930b40ad0849078c26aaffc3e",
+            "runId": 35316146906
+          },
+          {
+            "pr": 30,
+            "mergeCommit": "6cd593a926399d793a78b408952a4a997ef0d40c",
+            "runId": 35317130999
+          }
+        ]
       }
     },
     {
@@ -4451,5 +4533,126 @@
       }
     ],
     "artifactDigestMeaning": "GitHub artifact metadata; archives were not downloaded to recompute hashes"
+  },
+  "r2f": {
+    "status": "IMPLEMENTED_DEPLOYED_SOURCE_ONBOARDING_WITH_MANAGED_FORMATS_AND_TRUSTED_REVIEW",
+    "normativeReferences": [
+      "Reality Baseline Package v1.7",
+      "Cross-Module Alignment Matrix v1.7",
+      "Source Onboarding / Configuration / THS PET v1.6",
+      "Authorization / Access Control PET v1.5",
+      "Gateway PET v1.5"
+    ],
+    "pullRequests": {
+      "Onboarding": 17
+    },
+    "commits": {
+      "onboarding": {
+        "mergeSha": "0f1467f5d8bed279a37094a83671930125f01aa7"
+      }
+    },
+    "evidence": [
+      {
+        "repository": "ouf-source-onboarding",
+        "name": "R2f trusted review browser",
+        "runId": 35273607616,
+        "conclusion": "success"
+      },
+      {
+        "repository": "ouf-source-onboarding",
+        "name": "Source Onboarding module CI",
+        "runId": 35273607485,
+        "conclusion": "success"
+      }
+    ],
+    "deployed": {
+      "image": "ouf-onboarding:0f1467f",
+      "flywayVersion": 20,
+      "formats": [
+        "GEOPACKAGE",
+        "SHAPEFILE",
+        "ACCESS"
+      ],
+      "accessSemantics": "Primary/unique/foreign keys and declared relationships are proposal evidence only; no automatic ontology publication",
+      "rollbackPreserved": true
+    },
+    "limits": [
+      "R2f Source Onboarding deployment evidence does not by itself close all downstream Ingestion/UDP/Semantic representative acceptance for every managed format",
+      "THS/browser and operational-awareness acceptance remain roadmap-scoped"
+    ],
+    "generalPetClosureClaim": false,
+    "nextStep": "R3: Operational Awareness, starting from the updated real-IAM production baseline; R4a guided map UI and R4b remaining formats follow."
+  },
+  "iamProductionAcceptance": {
+    "date": "2026-09-18",
+    "status": "PASS_FOR_DEPLOYED_SOURCE_ONBOARDING_AUTHORIZATION_GATE",
+    "onboarding": {
+      "productionImage": "ouf-onboarding:26986fe",
+      "productionMerge": "26986fe09c236a3aabcfcc3a32283128c087b7d0",
+      "health": 200,
+      "noToken": 401,
+      "serviceBundleReader": 200,
+      "restartHealth": 200,
+      "restartServiceBundleReader": 200,
+      "restartHumanAdmin": 200,
+      "smokeRemoved": true,
+      "rollbacks": [
+        "ouf-onboarding-rollback-0f1467f-4a40acd3287b",
+        "ouf-onboarding-rollback-7f051e69"
+      ]
+    },
+    "authorization": {
+      "activeBundle": "ouf-lab-authorization",
+      "version": 1,
+      "bootstrapCompleted": true,
+      "capabilityCount": 3,
+      "bootstrapScopeRemoved": true
+    },
+    "gateway": {
+      "caddyIssuerDiscovery": 200,
+      "internalIssuerAlias": "auth.ouf-lab.it",
+      "rollback": "ouf-caddy-rollback-de52015c14f1"
+    },
+    "repositoryEvidence": [
+      {
+        "repository": "GioNob/ouf-source-onboarding",
+        "pr": 18,
+        "mergeCommit": "8c444cb3ae52ef78093a0d1763358bb19278b774",
+        "runs": [
+          35313470808,
+          35313470898
+        ]
+      },
+      {
+        "repository": "GioNob/ouf-source-onboarding",
+        "pr": 19,
+        "mergeCommit": "26986fe09c236a3aabcfcc3a32283128c087b7d0",
+        "runs": [
+          35318850814,
+          35318850826
+        ]
+      },
+      {
+        "repository": "GioNob/ouf-api-gateway",
+        "pr": 29,
+        "mergeCommit": "9af37cee292b8a5930b40ad0849078c26aaffc3e",
+        "runs": [
+          35316146906
+        ]
+      },
+      {
+        "repository": "GioNob/ouf-api-gateway",
+        "pr": 30,
+        "mergeCommit": "6cd593a926399d793a78b408952a4a997ef0d40c",
+        "runs": [
+          35317130999
+        ]
+      }
+    ],
+    "limitations": [
+      "Does not close credential/key rotation or revocation propagation acceptance",
+      "Does not claim full PET closure or representative SLO/load/DR acceptance",
+      "Does not close remaining THS/browser and all-module IAM consumer acceptance"
+    ]
   }
 }
