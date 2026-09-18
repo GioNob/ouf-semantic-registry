@@ -394,7 +394,7 @@ Questi valori sono evidence dell'installazione corrente e non devono diventare c
 ## 13. TBD — MUST BE RESOLVED
 
 Prima di dichiarare il bootstrap industrializzato completo devono essere definiti:
-- API/THS bootstrap;
+- browser bootstrap wizard;
 - secret reference model;
 - CA enterprise handling;
 - HA/LB topology;
@@ -614,3 +614,40 @@ Per il laboratorio corrente:
 - destinazione operativa: `/opt/ouf/installation/active-projection.json`.
 
 Il file non deve essere costruito a mano usando i valori di questa sezione: deve provenire dall'endpoint governato della revision ACTIVE.
+
+
+## 19. Trusted Human Installation Bootstrap API
+
+La lifecycle della InstallationConfiguration è governata dalla Trusted Human Surface.
+
+Capability canoniche con owner `installation`:
+- `installation.configuration.read` — READ — HUMAN;
+- `installation.configuration.write` — EXECUTE — HUMAN;
+- `installation.configuration.activate` — EXECUTE — HUMAN;
+- `installation.configuration.export` — READ — HUMAN.
+
+Endpoint:
+- `GET /api/trusted-human/v1/installations/{installationId}/active`;
+- `GET /api/trusted-human/v1/installations/{installationId}/revisions/{revision}`;
+- `POST /api/trusted-human/v1/installations/{installationId}/revisions`;
+- `POST /api/trusted-human/v1/installations/{installationId}/revisions/{revision}:validate-environment`;
+- `POST /api/trusted-human/v1/installations/{installationId}/revisions/{revision}:activate`;
+- `POST /api/trusted-human/v1/installations/{installationId}/revisions/{revision}:rollback`;
+- `POST /api/trusted-human/v1/installations/{installationId}/revisions/{revision}:revoke`.
+
+Le operazioni mutanti richiedono HUMAN, capability dedicata, trusted-write proof e `X-Correlation-ID`.
+
+L'activation richiede revision VALIDATED, non REVOKED e ultima environment validation PASS. Il rollback può puntare solo a una revision più vecchia dell'ACTIVE e produce `ROLLBACK_ACTIVATED`.
+
+Da V24 la correlation viene persistita anche per ogni tentativo di creazione revision e per ogni environment validation.
+
+### 19.1 Sequenza laboratorio Netcup
+
+1. registrare le capability read/write/activate con owner `installation`;
+2. pubblicare una nuova PolicyBundle con grant a `ouf-admin`;
+3. creare la revision `ouf-lab-netcup-01`;
+4. eseguire environment validation;
+5. attivare con PASS;
+6. esportare la projection ACTIVE;
+7. materializzare atomicamente `/opt/ouf/installation/active-projection.json`;
+8. proseguire con Gateway/Caddy/MCP dalla stessa projection.
