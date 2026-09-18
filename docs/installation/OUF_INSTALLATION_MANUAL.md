@@ -338,7 +338,6 @@ Questi valori sono evidence dell'installazione corrente e non devono diventare c
 
 Prima di dichiarare il bootstrap industrializzato completo devono essere definiti:
 - API/THS bootstrap;
-- lifecycle revision/activation/rollback;
 - validation engine;
 - secret reference model;
 - CA enterprise handling;
