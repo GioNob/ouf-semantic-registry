@@ -142,6 +142,63 @@ Il bootstrap deve produrre:
 - acceptance report;
 - rollback reference.
 
+
+### 3.3 Validazione dell'ambiente reale
+
+Una configurazione sintatticamente valida non può essere attivata solo perché i campi sono presenti.
+
+Prima dell'activation deve esistere evidence environment `PASS` prodotta dal contesto di rete del deployment.
+
+Il validation engine deve verificare almeno:
+- risoluzione DNS dell'issuer IAM;
+- risoluzione DNS dell'API Gateway;
+- HTTPS/TLS dell'issuer;
+- OIDC discovery;
+- corrispondenza esatta tra issuer configurato e campo `issuer` restituito dalla discovery;
+- corrispondenza esatta tra token endpoint configurato e `token_endpoint` pubblicato dalla discovery;
+- HTTPS/TLS del Gateway pubblico;
+- reachability TCP di PostgreSQL;
+- reachability dello storage quando applicabile.
+
+Ogni esecuzione del validator è append-only e produce risultati strutturati.
+
+La regola è **latest-result-wins**:
+- nessuna environment validation -> activation vietata;
+- ultimo risultato `FAIL` -> activation vietata anche se un controllo precedente era PASS;
+- ultimo risultato `PASS` -> l'activation può proseguire agli altri gate.
+
+Un HTTP `404` sulla root dell'API può essere un PASS di reachability/TLS quando la root non è una route applicativa: il validator deve distinguere reachability da semantica della singola capability.
+
+### 3.4 Projection runtime
+
+I moduli non devono ricostruire autonomamente gli endpoint a partire da nomi convenzionali.
+
+Una revision VALIDATED deve poter produrre projection deterministiche.
+
+**Caddy projection**
+- backend network;
+- edge network;
+- issuer host;
+- API host;
+- OIDC discovery URL.
+
+**Gateway projection**
+- issuer URL;
+- audience richiesta;
+- API base URL;
+- internal service reference.
+
+**MCP projection**
+- endpoint token OIDC;
+- client id workload MCP;
+- generic governed Gateway execution endpoint;
+- endpoint PolicyBundle;
+- endpoint recovery;
+- reference al client secret;
+- reference alla fingerprint key.
+
+Le projection non devono contenere password, client secret, bearer token o key material.
+
 ## 4. Piano DNS
 
 Il numero di record DNS deve derivare dalle superfici pubbliche effettivamente abilitate, non da domini hardcoded.
@@ -338,7 +395,6 @@ Questi valori sono evidence dell'installazione corrente e non devono diventare c
 
 Prima di dichiarare il bootstrap industrializzato completo devono essere definiti:
 - API/THS bootstrap;
-- validation engine;
 - secret reference model;
 - CA enterprise handling;
 - HA/LB topology;
@@ -381,3 +437,35 @@ Durante il bootstrap reale:
 3. l'attivazione deve produrre un lifecycle event;
 4. un eventuale rollback deve riattivare una revision precedente senza modificarne il payload;
 5. una revision revocata non deve essere riattivabile.
+
+
+## 16. Esempio laboratorio — environment validation e projection
+
+Per il laboratorio Netcup, una revision candidata deve produrre almeno:
+
+**Caddy**
+- issuer host: `auth.ouf-lab.it`;
+- API host: `api.ouf-lab.it`;
+- backend network: `ouf-backend`;
+- edge network: `ouf-edge`.
+
+**Gateway**
+- issuer: `https://auth.ouf-lab.it/realms/ouf`;
+- audience: `ouf-api-gateway`;
+- API base: `https://api.ouf-lab.it`.
+
+**MCP**
+- token endpoint: `https://auth.ouf-lab.it/realms/ouf/protocol/openid-connect/token`;
+- workload client: `ouf-mcp-server`;
+- Gateway execution base: `https://api.ouf-lab.it/internal/capabilities/v1/execute`;
+- PolicyBundle: `https://api.ouf-lab.it/internal/capabilities/v1/authorization/policy-bundle/active`;
+- recovery: `https://api.ouf-lab.it/internal/capabilities/v1/recovery`;
+- client-secret e fingerprint-key come reference a file protetti sotto `/opt/ouf/secrets/`.
+
+Situazione osservata durante R3a:
+- il record pubblico `api.ouf-lab.it -> 62.83.33.202` è stato pubblicato;
+- HTTPS pubblico verso Caddy/APISIX ha restituito `404`, confermando TLS e proxy;
+- da `ouf-backend`, il tentativo di hairpin verso l'IP pubblico non era raggiungibile;
+- pertanto il lab richiede la projection Caddy con alias DNS interno dichiarativo per `api.ouf-lab.it`, analogo al già accettato issuer alias.
+
+Questa evidence è specifica del laboratorio e non crea alcun default di prodotto.
