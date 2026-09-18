@@ -48,7 +48,7 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 docker exec "$postgres_name" pg_isready -U ouf_semantic -d ouf_semantic >/dev/null
-postgres_port="$(docker port "$postgres_name" 5432/tcp | sed -n 's/.*:\\([0-9][0-9]*\\)$/\\1/p' | head -n1)"
+postgres_port="$(docker port "$postgres_name" 5432/tcp | head -n1 | awk -F: '{print $NF}')"
 test -n "$postgres_port"
 
 docker build -f "$repo_dir/pairwise/semantic-fixture/Dockerfile" -t ouf-semantic-pairwise "$repo_dir" >/dev/null
