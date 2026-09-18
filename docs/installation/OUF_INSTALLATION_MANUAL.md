@@ -469,3 +469,90 @@ Situazione osservata durante R3a:
 - pertanto il lab richiede la projection Caddy con alias DNS interno dichiarativo per `api.ouf-lab.it`, analogo al già accettato issuer alias.
 
 Questa evidence è specifica del laboratorio e non crea alcun default di prodotto.
+
+
+## 17. Gateway e Caddy — applicazione della InstallationProjection
+
+Il catalogo Gateway deve rimanere indipendente dai valori specifici dell'Ente.
+
+Nel catalogo di prodotto, le coordinate installation-specific vengono rappresentate da reference logiche, ad esempio:
+
+- `installation://iam.gatewayAudience`;
+- `installation://iam.workloadClients.mcpServer`.
+
+Prima della pubblicazione runtime, il compiled Gateway catalog deve essere risolto contro la InstallationProjection ACTIVE.
+
+### 17.1 Endpoint interni MCP
+
+Il Gateway espone tre superfici necessarie al runtime MCP.
+
+**Generic execution**
+
+`POST /internal/capabilities/v1/execute`
+
+È un endpoint di mediazione Gateway, non una business capability. Il body contiene il `CapabilityID` e il Gateway seleziona esclusivamente un binding già pubblicato nel catalogo.
+
+**Recovery**
+
+`POST /internal/capabilities/v1/recovery`
+
+È anch'esso mediazione Gateway e usa solo owner/service/path di recovery già pubblicati dal catalogo. Non accetta destinazioni dal client.
+
+**Authorization PolicyBundle**
+
+`GET /internal/capabilities/v1/authorization/policy-bundle/active`
+
+Questa superficie corrisponde invece alla capability reale `authorization.bundle.read` e viene inoltrata dal Gateway al Source Onboarding/Authorization registry.
+
+### 17.2 Caddy
+
+Il deploy Caddy deve ricevere una InstallationProjection, non hostname/network impostati come default nel prodotto.
+
+Forma canonica:
+
+```sh
+sudo env OUF_INSTALLATION_PROJECTION=/opt/ouf/installation/active-projection.json \
+  sh ops/caddy/deploy.sh
+```
+
+Dalla projection vengono letti:
+- backend network;
+- edge network;
+- issuer hostname;
+- API hostname;
+- OIDC discovery URL.
+
+Il deploy deve assegnare issuer e API hostname come alias dichiarativi sul backend network quando la strategia dell'installazione è `REVERSE_PROXY_ALIAS`.
+
+Il Caddyfile è un artefatto dell'installazione e deve contenere entrambi gli hostname proiettati. Il deploy fallisce se projection e Caddyfile non coincidono.
+
+### 17.3 Esempio laboratorio Netcup
+
+Per il laboratorio corrente, la projection deve risolvere:
+
+- backend network: `ouf-backend`;
+- edge network: `ouf-edge`;
+- issuer host: `auth.ouf-lab.it`;
+- API host: `api.ouf-lab.it`;
+- audience Gateway: `ouf-api-gateway`;
+- workload MCP: `ouf-mcp-server`.
+
+Il risultato runtime atteso per MCP è:
+
+- `MCP_GATEWAY_ENDPOINT=https://api.ouf-lab.it/internal/capabilities/v1/execute`;
+- `MCP_AUTHORIZATION_BUNDLE_ENDPOINT=https://api.ouf-lab.it/internal/capabilities/v1/authorization/policy-bundle/active`;
+- `MCP_GATEWAY_RECOVERY_ENDPOINT=https://api.ouf-lab.it/internal/capabilities/v1/recovery`.
+
+Client secret e fingerprint key restano secret references e non entrano nel catalogo Gateway.
+
+### 17.4 Acceptance prima del deploy MCP
+
+Prima di avviare MCP devono risultare verdi:
+1. projection ACTIVE esportata;
+2. compiled Gateway catalog risolto contro la projection;
+3. Caddy redeploy dalla stessa projection;
+4. risoluzione interna issuer/API verso Caddy;
+5. OIDC discovery interna 200;
+6. PolicyBundle path protetto e raggiungibile tramite Gateway;
+7. generic execution e recovery materializzati nel Gateway;
+8. nessuna porta host diretta del MCP Server.
