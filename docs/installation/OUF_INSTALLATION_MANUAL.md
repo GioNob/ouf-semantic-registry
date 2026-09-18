@@ -651,3 +651,102 @@ Da V24 la correlation viene persistita anche per ogni tentativo di creazione rev
 6. esportare la projection ACTIVE;
 7. materializzare atomicamente `/opt/ouf/installation/active-projection.json`;
 8. proseguire con Gateway/Caddy/MCP dalla stessa projection.
+
+
+## 20. Bootstrap IAM — procedura normativa per i client scope
+
+Questa sezione è obbligatoria per il bootstrap IAM su Keycloak.
+
+### 20.1 Regola di creazione e binding
+
+Ogni client scope OUF deve essere creato esplicitamente e il binding al client deve usare l'ID restituito dalla stessa operazione di create.
+
+Forma operativa:
+
+`kcadm.sh create client-scopes -r <realm> -s name=<scope> -s protocol=openid-connect -i`
+
+L'output `-i` è il client-scope ID canonico da usare immediatamente nel binding:
+
+`kcadm.sh update clients/<client-id>/default-client-scopes/<scope-id> -r <realm> -n`
+
+Regole:
+- non riutilizzare un scope ID tra scope differenti;
+- non dedurre il client-scope ID tramite query non validate;
+- nel laboratorio Keycloak 26.7.4, la forma `get client-scopes -q name=<scope>` non è accettata come procedura normativa perché ha prodotto risultati non filtrati e può quindi restituire un ID non corrispondente al nome richiesto;
+- il runbook deve usare l'ID restituito direttamente da `create ... -i` oppure, per scope già esistenti, una lettura completa seguita da matching esatto lato client sul campo `name`;
+- ogni scope deve avere un ID distinto salvo esplicita evidenza contraria del provider.
+
+### 20.2 Acceptance del binding
+
+Dopo aver creato/bindato nuovi scope:
+1. emettere un nuovo token;
+2. verificare una sola volta il claim `scope`;
+3. il claim deve contenere tutti gli scope appena configurati prima di usare endpoint THS che li richiedono.
+
+Il controllo del token è acceptance del binding IAM, non un controllo ripetitivo da eseguire a ogni chiamata applicativa.
+
+### 20.3 Esempio laboratorio Netcup
+
+Per `ouf-human-admin` devono risultare emessi almeno:
+- `authorization.policy.admin`;
+- `installation.configuration.read`;
+- `installation.configuration.write`;
+- `installation.configuration.activate`;
+- `installation.configuration.export`.
+
+Il bootstrap non deve procedere alla Trusted Human Installation API se il token non contiene gli scope richiesti.
+
+## 21. Bootstrap a due fasi della InstallationProjection
+
+La prima activation non può dipendere da una projection ACTIVE già materializzata, perché l'environment validation deve risultare PASS prima dell'activation.
+
+Quando il networking interno richiede alias derivati dalla InstallationConfiguration, il bootstrap deve usare due fasi distinte.
+
+### 21.1 Candidate projection
+
+Una revision `VALIDATED` deve poter produrre una projection candidata deterministica e bound a:
+- installationId;
+- revision;
+- checksum.
+
+La candidate projection:
+- è usata solo per predisporre l'ambiente necessario alla validation;
+- non equivale a una revision ACTIVE;
+- non può essere consumata come stato runtime canonico da moduli applicativi;
+- deve essere auditata e correlata;
+- deve derivare esclusivamente dalla revision immutabile richiesta.
+
+### 21.2 Sequenza obbligatoria
+
+Per il primo bootstrap o quando la validation dipende da coordinate di rete proiettate:
+1. creare revision `VALIDATED`;
+2. esportare la candidate projection della stessa revision;
+3. applicare solo i prerequisiti di bootstrap/validation, ad esempio alias DNS interni su Caddy/reverse proxy;
+4. eseguire environment validation;
+5. se l'ultima validation è PASS, attivare la revision;
+6. esportare la projection ACTIVE;
+7. verificare che ACTIVE revision/checksum coincidano con quelli della candidate projection;
+8. materializzare la projection ACTIVE canonica e proseguire con i moduli runtime.
+
+### 21.3 Divieti
+
+Non sono ammessi:
+- `--add-host` permanenti per singolo consumer;
+- modifica SQL dell'InstallationConfiguration;
+- creazione manuale di una projection non derivata dal servizio;
+- considerare una candidate projection come ACTIVE;
+- bypassare la regola latest-result-wins della environment validation.
+
+### 21.4 Evidence laboratorio Netcup
+
+La validation della revision 1 di `ouf-lab-netcup-01` ha prodotto:
+- IAM DNS PASS;
+- OIDC discovery PASS;
+- issuer match PASS;
+- token endpoint match PASS;
+- PostgreSQL PASS;
+- object storage PASS;
+- Gateway DNS FAIL per `api.ouf-lab.it` dalla rete backend;
+- Gateway HTTPS FAIL conseguente.
+
+Questa evidence conferma che, nel laboratorio corrente, la candidate projection deve predisporre anche l'alias interno di `api.ouf-lab.it` verso Caddy prima di rieseguire la validation.
