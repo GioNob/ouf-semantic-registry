@@ -394,7 +394,7 @@ Questi valori sono evidence dell'installazione corrente e non devono diventare c
 ## 13. TBD — MUST BE RESOLVED
 
 Prima di dichiarare il bootstrap industrializzato completo devono essere definiti:
-- API/THS bootstrap;
+- browser bootstrap wizard;
 - secret reference model;
 - CA enterprise handling;
 - HA/LB topology;
