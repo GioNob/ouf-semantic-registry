@@ -274,3 +274,19 @@ Il [rapporto di verifica del 17 settembre](R2F_REVIEW_2026_09_17.md) collega i d
 Il [rapporto aggiornato](R2F_COMPLETION_2026_09_17.md) documenta decisioni scalari, coerenza e ruoli geometrici, validità/ordine delle osservazioni, code e confronto cartografico THS, collegamento dei suggerimenti Access ai gap e al riferimento semantico pubblicato. La prova fra quattro owner comprende equivalenza GeoPackage/Shapefile, comandi HTTP umani, CSRF/stale/retry e persistenza al riavvio. Browser e owner hanno prove separate con i propri limiti dichiarati.
 
 Resta il collaudo dell’operatore con IdP, sessione browser, HTTPS e APISIX nell’ambiente rappresentativo. R3 segue l’accettazione R2f; non si attestano né merge in main né accettazione operativa sulla sola base della CI.
+
+
+## Ripresa R3 — 20 settembre 2026
+
+Questa sezione riconcilia lo stato operativo osservato senza retrocedere o chiudere implicitamente R2f.
+
+- **R2f resta preservato** sui commit di branch già verificati: Semantic `cf163063572d1fc9f7712c8c150083939ea136bd` e UDP `862a975e28dc681faa6482dba1feef0acd2a3988`; le PR R2f rimangono draft e l'accettazione umana/ambiente resta separata.
+- **R3 è IMPLEMENTATO in laboratorio, ma non ACCETTATO.** Le PR draft coordinate restano Gateway #48, MCP #33 e Ingestion #28. Ingestion è INSTALLATO sul commit integrato `33f3f547039f78ee3a533f189e2411fe77765965`, che conserva R2f e aggiunge R3; non sostituirlo con la testa della sola PR #28 senza riconciliare l'ascendenza.
+- L'installazione Ingestion ha readiness UP, rifiuto 403 del summary anonimo, rinnovo del token policy tramite systemd e lettura HTTP 200 del bundle ACTIVE 12. Queste evidenze non equivalgono al collaudo completo del summary R3.
+- Il blocco Gateway viene separato in due piani: (a) owner Java di sola lettura e autorizzazione locale; (b) raccolta persistente e fresca di eventi APISIX/etcd. Il candidato R3 introduce ora un collector persistente e un timestamp di freschezza per APISIX/ETCD; il summary restituisce UNKNOWN/partial se la raccolta è assente o stale, quindi uno store vuoto o abbandonato non diventa HEALTHY.
+- La persistenza SQLite rimane un adapter rappresentativo del laboratorio single-node. HA, backup/restore, retention e multi-replica restano gate GW-02/R6 e non sono attestati dal nuovo collector.
+- La rotta governata `mcp-authorization-policy-bundle-read` viene riconciliata per ammettere sia il workload MCP sia il workload Ingestion con allowlist esplicita; nessuna wildcard e nessun indebolimento di issuer, audience, scope o actor. La InstallationProjection deve però acquisire il binding `iam.workloadClients.ingestion` prima di una nuova materializzazione/deploy, altrimenti il drift si ripresenta.
+- La latenza ChatGPT/MCP resta un problema aperto. La misura deve correlare durata percepita dal connettore con POST `/mcp` e `/internal/capabilities/v1/execute` nello stesso intervallo, distinguendo tempi annidati e risultato business da HTTP 200. Non aumentare timeout, introdurre retry di scritture o bypassare l'autorizzazione per ridurre l'attesa.
+- Le conferme THS restano esclusivamente umane. Nessun avanzamento R3 autorizza una pubblicazione automatica di grant o policy.
+
+Stati da usare nelle evidenze: **IMPLEMENTATO**, **INSTALLATO**, **ACCETTATO**. Una CI verde o un deploy parziale non promuovono automaticamente lo stato successivo.
