@@ -750,3 +750,65 @@ La validation della revision 1 di `ouf-lab-netcup-01` ha prodotto:
 - Gateway HTTPS FAIL conseguente.
 
 Questa evidence conferma che, nel laboratorio corrente, la candidate projection deve predisporre anche l'alias interno di `api.ouf-lab.it` verso Caddy prima di rieseguire la validation.
+
+
+## 22. Ingestion workload e refresh della policy — stato 20 settembre 2026
+
+Questa sezione registra un workload già configurato nell'installazione reale. Non è una procedura per ricreare client, secret o realm già esistenti.
+
+### 22.1 Binding IAM da proiettare
+
+La InstallationConfiguration deve rappresentare anche il workload Ingestion usato per leggere il PolicyBundle ACTIVE. Il riferimento logico del catalogo Gateway è:
+
+`installation://iam.workloadClients.ingestion`
+
+Nel laboratorio il valore risolto è il client IAM `ouf-ingestion`. Il binding va aggiunto tramite una nuova revision governata della InstallationConfiguration e una projection esportata; non modificare a mano `active-projection.json` per far passare il materializzatore.
+
+La rotta `mcp-authorization-policy-bundle-read` mantiene allowlist esplicita per:
+- `installation://iam.workloadClients.mcpServer`;
+- `installation://iam.workloadClients.ingestion`.
+
+Non usare wildcard. Issuer, firma/JWKS, audience, actor SERVICE e scope `authorization.bundle.read` restano invariati.
+
+### 22.2 Stato installato Ingestion
+
+Checkpoint osservato:
+- immagine `ouf-ingestion:33f3f54`;
+- readiness `UP`;
+- POST summary anonimo rifiutato con HTTP 403;
+- bundle ACTIVE 12 letto con HTTP 200 usando il workload Ingestion;
+- il token client-credentials è breve e viene rinnovato da systemd;
+- il processo Ingestion legge il token da un file montato come directory, così il rinnovo atomico non resta vincolato al vecchio inode.
+
+File e directory del laboratorio:
+- `/opt/ouf/secrets/ingestion-client-secret`: secret del client, non documentare il valore;
+- `/opt/ouf/secrets/ingestion-summary-receipt-key`: chiave receipt dedicata al producer Ingestion;
+- `/opt/ouf/secrets/ingestion-summary.properties`: configurazione aggiuntiva;
+- `/run/ouf-ingestion-auth/token`: bearer temporaneo;
+- `/opt/ouf/ops/refresh-ingestion-policy-token.py`: rinnovatore host;
+- `/etc/systemd/system/ouf-ingestion-policy-token.service` e `.timer`: rinnovo periodico.
+
+Questi artefatti sono evidence dell'installazione corrente. Il packaging di prodotto deve versionare procedure equivalenti, idempotenti e prive di secret values.
+
+### 22.3 Ordine di avvio e reboot
+
+`/run` è volatile. L'acceptance di reboot deve dimostrare nell'ordine:
+1. ricreazione di `/run/ouf-ingestion-auth` con ownership e mode previsti;
+2. esecuzione riuscita del rinnovatore e creazione di un token fresco;
+3. avvio/ripresa di Ingestion con mount della directory, non del singolo inode;
+4. refresh del PolicyBundle entro la finestra governata;
+5. readiness applicativa;
+6. prova negativa senza receipt;
+7. prova autorizzata del summary soltanto dopo la disponibilità della policy.
+
+Un HTTP 200 ottenuto da uno script host sul PolicyBundle non sostituisce la prova che il consumer abbia caricato e validato lo stesso bundle.
+
+### 22.4 Drift e rollback
+
+La modifica live della route APISIX che ammette `ouf-ingestion` deve essere riconciliata nel catalogo e nella InstallationProjection prima di una nuova materializzazione. Rigenerare le route da una projection che conosce solo MCP può eliminare l'accesso Ingestion e, dopo la scadenza della cache, produrre indisponibilità policy.
+
+Il rollback del container Ingestion non implica rollback automatico del database o della policy. Conservare il container precedente fino alla conclusione dell'acceptance e non ripristinare dump PostgreSQL senza una decisione separata sul punto di consistenza.
+
+### 22.5 Gateway Operational Awareness
+
+Il Gateway owner R3 legge uno store di incidenti esistente e non deve creare evidence per ottenere HEALTHY. Il collector dell'installazione deve alimentare eventi semantici reali e aggiornare la freschezza delle sorgenti APISIX ed ETCD. Se la raccolta manca o è stale, la proiezione deve essere UNKNOWN/partial, non HEALTHY. La persistenza SQLite del laboratorio non costituisce da sola evidence HA/backup/multi-replica.
