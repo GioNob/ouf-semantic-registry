@@ -58,6 +58,10 @@ materializzare la rotta. Il deploy della rotta usa `--backup-dir
 come `BACKUP=` va conservato per il restore. I dettagli e il registro del
 preflight sono nel runbook R4a del Gateway.
 
+Questo paragrafo descrive la baseline precedente allo staging: i container
+UDP e APISIX sono stati successivamente sostituiti con i candidati R4a,
+conservando gli originali per il rollback, come registrato sotto.
+
 La discovery OIDC del realm `ouf` al preflight non pubblicizza ancora
 `urban.object.search` (`scopes_supported`: assente). Prima di creare lo scope,
 controllarne l'esistenza con confronto esatto in Keycloak, non con la sola
@@ -193,6 +197,17 @@ readiness UDP e coerenza con l'InstallationProjection ACTIVE; produce il
 runtime e il manifest di rotta con file 0600 e `APISIX_ROUTES_UNCHANGED=true`.
 Non abilita il tool MCP né pubblica la rotta. L'installazione della rotta richiede
 ancora snapshot persistente, prova negativa e test di policy positivo/negativo.
+
+La preparazione sul lab è PASS dal commit Gateway
+`c5101856ce4c3c0c620c14b9b4dd60def9252387`: manifest
+`/opt/ouf/backup/r4a-runtime-lqgphlwp/candidate-xja04twe/materialization-r4a.json`
+creato nella directory privata, ID `execute-urban-object-search`, rotte APISIX
+invariate. Prima dell'installazione, eseguire il preflight read-only
+`ops.apisix.preflight_r4a_route` con manifest, file chiave Admin e backup root;
+richiede che la nuova route sia assente. Il deploy controlla poi che una POST
+non autenticata alla nuova route risponda 401 e ripristina la rotta al fallimento.
+Il collaudo positivo necessita il grant temporaneo approvato tramite THS e la
+verifica owner; il tool MCP resta `INACTIVE` e R-INSTALL resta OPEN.
 
 ## 1. Regola di governo
 
