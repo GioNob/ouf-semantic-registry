@@ -127,6 +127,13 @@ montato invariati. La CI Gateway sul commit è PASS. Verificare i metadati dei
 quattro file candidati e completare rollout/rollback verificabili prima di
 installare la rotta.
 
+I metadati dei quattro file sono conformi: directory privata `700 root:root`,
+chiave UDP `400 10004:10004`, env-file `600 root:root`, YAML `400 636:636`.
+Il Gateway R4a comprende ora `ops.apisix.preflight_r4a_runtime`, controllo
+read-only che confronta il candidato con lo snapshot e il runtime Docker senza
+stampare valori segreti; il suo output determina le opzioni da conservare nello
+script di rollout. La prova sul server di questo controllo è ancora pendente.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
