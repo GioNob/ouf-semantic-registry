@@ -58,6 +58,21 @@ materializzare la rotta. Il deploy della rotta usa `--backup-dir
 come `BACKUP=` va conservato per il restore. I dettagli e il registro del
 preflight sono nel runbook R4a del Gateway.
 
+La discovery OIDC del realm `ouf` al preflight non pubblicizza ancora
+`urban.object.search` (`scopes_supported`: assente). Prima di creare lo scope,
+controllarne l'esistenza con confronto esatto in Keycloak, non con la sola
+discovery. Il profilo lab
+[`keycloak-r4a-lab.json`](../../scripts/installation/keycloak-r4a-lab.json)
+specifica lo scope per il client HUMAN `ouf-chatgpt`: il Gateway esige lo scope
+nella delega umana; il token workload `ouf-mcp-server` è verificato per client,
+issuer, audience e tipo di attore. Lo script `keycloak_scopes.py --desired
+scripts/installation/keycloak-r4a-lab.json --mode plan` mostra il piano senza
+accedere a Keycloak; `--mode check --token-file <file-0600>` legge il realm e
+segnala scope/binding mancanti; `--mode apply` richiede una sessione admin e
+crea solo i mancanti. Emettere poi un **nuovo** token HUMAN e controllare il
+claim `scope`. Non usare il client Inspector di prova per il profilo di
+installazione.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
