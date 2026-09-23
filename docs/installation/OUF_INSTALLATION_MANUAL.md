@@ -226,6 +226,13 @@ workload e delega genuini, la decisione owner governata, le risposte positive
 e negative UDP, la release coordinata. Il tool MCP rimane `INACTIVE` e
 R-INSTALL rimane OPEN. Conservare lo snapshot per il restore della sola rotta.
 
+La PR MCP draft [#42](https://github.com/GioNob/ouf-mcp-server/pull/42)
+prepara il DTO `{type,pageSize?,cursor?}` e il dispatch al binding Gateway
+di ricerca. Il manifest della PR conserva `publicationState=INACTIVE`: non
+aggiornare il container MCP lab con un'immagine non verificata e non rendere
+il tool visibile senza il collaudo governato. Registrare commit, image digest,
+comando di rollout/rollback e prove in questo manuale prima dell'attivazione.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
