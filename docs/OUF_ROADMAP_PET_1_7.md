@@ -205,6 +205,8 @@ R0 e R1a sono consegnati; R1b ha ora implementazione centrale e controlli owner 
 
 **R4a, seconda tranche candidate:** il POST UDP per la ricerca riusa il serving governato; il Gateway ora propone `tools.materialize_object_search` per una rotta APISIX autenticata, con receipt di 30 secondi sul corpo esatto. Il filtro UDP installa un `TrustedPrincipal` solo dopo verifica crittografica e ammissione con bundle owner. `ops.apisix.deploy_object_search` applica solo questa rotta con snapshot e rollback; il manuale R-INSTALL ne registra i parametri. Il manifest MCP mantiene `urban.object.search` `INACTIVE`: occorrono CI dei rami coordinati e prova sul percorso reale APISIX→UDP, inclusi casi negati e risultato minimizzato con cursor/partial, prima dell'attivazione. R-INSTALL rimane **OPEN**.
 
+**R4a, prova APISIX nella CI Gateway:** il job Docker esercita la nuova rotta con OIDC, delega, scope, firma del receipt e owner HTTP di test; include casi negati. La CI UDP esercita a parte il filtro owner Java. Resta da eseguire la prova congiunta APISIX→UDP reale su dati e bundle rappresentativi, compresi minimizzazione, cursore e `partial`, e da registrare i commit coordinati nel release lock. MCP `INACTIVE`; R-INSTALL **OPEN**.
+
 
 ## Avanzamento R1b — 17 settembre 2026
 
