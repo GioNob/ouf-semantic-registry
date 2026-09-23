@@ -162,6 +162,11 @@ nessuno dei due container è stato modificato. Prima dell'apply acquisire una
 baseline dell'endpoint readiness UDP sul servizio corrente; dopo lo staging
 verificare lo stesso endpoint e fermarsi se fallisce, senza passare ad APISIX.
 
+La baseline UDP del lab è PASS: `/usr/bin/wget` è presente nel container e
+`http://127.0.0.1:8080/actuator/health/readiness` risponde con successo.
+Il rollout UDP verifica lo stesso endpoint dopo il riavvio; se non diventa
+pronto entro i tentativi previsti, tenta il rollback e verifica l'originale.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
