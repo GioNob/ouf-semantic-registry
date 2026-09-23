@@ -176,6 +176,14 @@ Staging UDP del lab: PASS dal commit Gateway
 sostituito; la route R4a e il tool MCP rimangono inattivi. La readiness e lo
 stato MCP non sostituiscono il successivo test completo APISIX→UDP.
 
+Staging APISIX del lab: PASS sullo stesso commit Gateway. Nuovo
+`ouf-apisix` in esecuzione con YAML candidato, originale preservato spento
+come `ouf-apisix-r4a-original`. Una chiamata live HUMAN a `ouf.system.status`
+dopo la sostituzione ha restituito di nuovo MCP `HEALTHY`, senza stato parziale.
+La route `urban.object.search` non è ancora pubblicata; eseguire materializzazione,
+verifiche dei binding e collaudo prima di dichiarare R4a installato. Il rollback
+dei container segue ordine inverso: APISIX e poi UDP.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
