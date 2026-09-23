@@ -167,6 +167,15 @@ La baseline UDP del lab è PASS: `/usr/bin/wget` è presente nel container e
 Il rollout UDP verifica lo stesso endpoint dopo il riavvio; se non diventa
 pronto entro i tentativi previsti, tenta il rollback e verifica l'originale.
 
+Staging UDP del lab: PASS dal commit Gateway
+`51898cd9863bbe6f985a620e06bae54712abb789` (CI PASS). Nuovo container
+`ouf-udp:r4a-3980fe2` in esecuzione e readiness `UDP_R4A_READY`; originale
+`ouf-udp:862a975e` preservato spento come `ouf-udp-r4a-original`. Il tool
+`ouf.system.status` chiamato dopo lo staging con identità HUMAN risponde MCP
+`HEALTHY`, `actionRequired=false`, `partial=false`. APISIX non è stato ancora
+sostituito; la route R4a e il tool MCP rimangono inattivi. La readiness e lo
+stato MCP non sostituiscono il successivo test completo APISIX→UDP.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
