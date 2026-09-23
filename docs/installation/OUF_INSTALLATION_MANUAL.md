@@ -37,8 +37,9 @@ commit e prove nel release lock; R-INSTALL rimane OPEN.
 
 La CI Gateway riproduce la rotta in APISIX Docker con issuer e owner HTTP di
 test (`OUF_APISIX_LIVE_TEST=1 python3 -m pytest -q
-tests/test_execute_apisix_live.py`); la CI UDP testa separatamente filtro
-receipt e policy owner. Nel collaudo installativo eseguire ancora la prova
+tests/test_execute_apisix_live.py`); il job Gateway `object-search-pairwise`
+fa verificare al filtro Java UDP un receipt firmato dal Lua Gateway. La CI UDP
+testa separatamente serving e policy owner. Nel collaudo installativo eseguire ancora la prova
 congiunta APISIX→UDP reali su bundle e dati rappresentativi, documentando
 commit e risultato per minimizzazione, cursore e `partial`.
 
