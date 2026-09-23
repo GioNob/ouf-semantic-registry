@@ -156,6 +156,12 @@ ordine inverso. La verifica running del nuovo container non equivale a
 collaudo funzionale: mantenere la rotta inattiva fino ai test di salute,
 policy e recupero descritti nel runbook Gateway.
 
+Le simulazioni `rollout_r4a_runtime.py` di UDP e APISIX sul lab sono entrambe
+PASS dal commit Gateway `60900c7d5c0623e5b57922f678a87716abbac4a2`;
+nessuno dei due container è stato modificato. Prima dell'apply acquisire una
+baseline dell'endpoint readiness UDP sul servizio corrente; dopo lo staging
+verificare lo stesso endpoint e fermarsi se fallisce, senza passare ad APISIX.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
