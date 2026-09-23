@@ -106,6 +106,20 @@ percorso. **Questo file contiene segreti:** non va versionato o condiviso.
 Fornisce l'evidenza privata per ricostruire l'avvio corrente, ma non esegue
 rollout o restore; tali procedure restano un gate aperto di R-INSTALL.
 
+Nel lab del 23 settembre lo snapshot privato è stato acquisito e la build UDP
+R4a `ouf-udp:r4a-3980fe2` (commit `3980fe2bf03ea590914e404cd58b19822a553b9c`)
+è pronta, senza modifiche ai container correnti. Il branch Gateway R4a aggiunge
+`ops.apisix.prepare_r4a_runtime`: da eseguire come root con `--snapshot
+/opt/ouf/backup/r4a-runtime-lqgphlwp/containers.inspect.json --tenant
+ouf-lab`. Il comando verifica identità e stato dei container rispetto allo
+snapshot, la sorgente YAML montata da APISIX e l'UID UDP; prepara in una nuova
+directory root-only i due env-file con i binding esistenti, una chiave dedicata
+di proprietà dell'UID UDP, e una copia YAML con il solo nome della nuova
+variabile in `nginx_config.envs`. Non installa né riavvia servizi. I file
+contengono segreti e rimangono sul server; lo script comunica soltanto il
+percorso della directory. Rollout, prova di rollback e collaudo APISIX→UDP
+restano necessari; `urban.object.search` rimane `INACTIVE` e R-INSTALL `OPEN`.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
