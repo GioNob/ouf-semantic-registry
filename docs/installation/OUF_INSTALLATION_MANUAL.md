@@ -91,6 +91,13 @@ bundle owner prima di fissare `OUF_UDP_SEARCH_TENANT_ID`; non inferirlo
 dall'installation ID. Le configurazioni complete dei due container contengono
 segreti e non devono essere copiate nei documenti o in chat.
 
+Il nuovo token HUMAN del collaudatore indica `tenant_id=ouf-lab`. La lettura
+amministrativa read-only della policy `ouf-lab-authorization:14` non mostra
+un grant configurato `urban.object.search` per `giovanni-chatgpt`; la risposta
+è un elenco di grant configurati, non una decisione effettiva. Il positivo
+richiede grant temporaneo governato dalla THS e una verifica owner separata.
+Nessun grant è stato proposto né pubblicato durante il preflight.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
