@@ -73,6 +73,13 @@ crea solo i mancanti. Emettere poi un **nuovo** token HUMAN e controllare il
 claim `scope`. Non usare il client Inspector di prova per il profilo di
 installazione.
 
+**Esito IAM lab, 23 settembre 2026: PASS.** Verificata assenza effettiva dello
+scope nella console; creato con `Include in token scope=On` e assegnato
+**Default** a `ouf-chatgpt`. La discovery ora lo include in
+`scopes_supported` e un nuovo access token valutato per `giovanni-chatgpt`
+riporta `urban.object.search` nel claim `scope`. Non è stato condiviso il token.
+La verifica riguarda solo IAM; il collaudo APISIX→UDP resta da eseguire.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
