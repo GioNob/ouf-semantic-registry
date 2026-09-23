@@ -1,0 +1,10 @@
+{
+  "repositories": {
+    "ouf-source-onboarding": "21de5f21e903e6e99f4ef4d6617a446d60a54792",
+    "ouf-ingestion-runtime": "a8ba969a5a0e20e9c53977d2875094ce82802f9d",
+    "ouf-udp-object-resolution": "6285b733c49b89cb6d3382abe8dc469f8a0e8b1b",
+    "ouf-semantic-registry": "d188e5e727eca7a22f414f43f164f85c31411bcf",
+    "ouf-api-gateway": "dbdc24b5481dc9473b21b360ab1142c9aef0194b",
+    "ouf-mcp-server": "5615fdcad8cbcad9ff41ec3d0ad2ccbf9423c042"
+  }
+}

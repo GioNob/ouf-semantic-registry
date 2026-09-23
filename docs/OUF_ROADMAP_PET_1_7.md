@@ -154,10 +154,18 @@ Le tranche seguenti sono una proposta di sequenza, non nuove prescrizioni dei PE
 | R3 | Operational Awareness completa, priorità prodotto | R1 e R2a/b | OUF-OA-001…006 e OUF-OA-CN-001…005: fault offline, retry/dedup/recovery, misfire, retention, partial/deny, medesimo owner via MCP/API |
 | R4a | Catalogo capability e THS comune | R1/R2; può procedere con R3 | Onboarding/file, serving e proposal esposti via Gateway/MCP; decisioni umane e protected logs confinati a THS browser |
 | R4b | Residui di dominio | R2; per moduli indipendenti | UDP PARTIAL chiusi; altri formati/casi GIS previsti oltre GeoPackage; Semantic job/limits/upstream lifecycle e Onboarding discovery automatica completi |
+| R-INSTALL (gate trasversale, OPEN) | Installazione riproducibile da zero, avvio subito | R0 per lock dei sei commit; con R3/R4 si aggiornano i binding; chiusura prima di R6 | Un operatore nuovo, con sei repo, manifest di release, profilo di installazione e secret forniti dal custode, installa e ripristina senza ricorrere a SSH precedenti: IAM, DB/migrazioni, sei moduli, APISIX/Caddy, policy, test positivi/negativi e rollback con evidence |
 | R5 | Gate riproducibili di release | Avvio già in R0, chiusura dopo R4 | Upgrade N/N+1, contract diff, protocol/interoperability, negative security, supply chain e package operativo conformi per ciascun modulo |
 | R6 | Acceptance cross-module e rappresentativa | R1–R5; IAM/CNI/storage pronti | 25 scenari E2E, suite locali PET, HA/fault/load/restore, RPO/RTO misurati e sign-off delle evidenze |
 
 Il lavoro di piattaforma va avviato **subito in parallelo alla pianificazione**: scelta IAM A/B/C, ambiente APISIX/etcd, PostgreSQL/object storage, CNI/NetworkPolicy, log/metrics e client THS. Il PET consente fixture conformi nello sviluppo; la vera integrazione e l'accettazione richiedono binding effettivi. Questa è una dipendenza da governare, non un motivo per fermare ogni sviluppo.
+
+L'[audit di installabilità del 23 settembre 2026](installation/INSTALLABILITY_AUDIT_2026-09-23.md)
+apre esplicitamente R-INSTALL: il manuale esistente non è prova di rebuild.
+Le automazioni iniziali validano sorgenti e scope Keycloak; gli script per
+bootstrap completo, pubblicazione di tutte le route e DR restano da
+implementare e provare su un ambiente pulito. R-INSTALL non è implicito in R4
+né automaticamente chiuso da CI di modulo o da deploy riusciti in laboratorio.
 
 Ogni tranche deve produrre PR limitate, riferimenti PET/Matrix, test negativi e criterio di uscita. Nessun nuovo microservizio Authorization, incident hub o Agent Host interno è necessario per questa roadmap.
 

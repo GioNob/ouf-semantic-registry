@@ -4,6 +4,15 @@ Versione iniziale: 2026-09-18
 Stato: WORKING DRAFT  
 Ambito: installazione multi-Ente / environment binding / bootstrap piattaforma
 
+**Audit di installabilità:** [verdetto e blocchi verificati il 23 settembre
+2026](INSTALLABILITY_AUDIT_2026-09-23.md). La checklist iniziale
+[`source_preflight.py`](../../scripts/installation/source_preflight.py)
+controlla i sei checkout e il lock esatto senza installare nulla. Lo
+[`script Keycloak per scope`](../../scripts/installation/keycloak_scopes.py)
+copre solo la creazione e il binding degli scope su client già esistenti.
+R-INSTALL nella roadmap rimane OPEN fino alla prova di installazione su ambiente
+pulito con bootstrap, sei moduli, rotte, acceptance e restore completi.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
@@ -695,6 +704,28 @@ Per `ouf-human-admin` devono risultare emessi almeno:
 - `installation.configuration.export`.
 
 Il bootstrap non deve procedere alla Trusted Human Installation API se il token non contiene gli scope richiesti.
+
+### 20.4 Primo script idempotente: soli client scope
+
+Su una macchina amministrativa Linux con Python 3.12+, preparare una copia
+privata di `scripts/installation/keycloak-scopes.example.json` usando
+l'issuer effettivo e i nomi esatti dei client **già creati**. Il file di
+esempio non è il profilo di produzione.
+
+```bash
+python3 scripts/installation/keycloak_scopes.py --desired /path/desired-scopes.json --mode plan
+python3 scripts/installation/keycloak_scopes.py --desired /path/desired-scopes.json --mode check --token-file /path/admin-token-0600
+python3 scripts/installation/keycloak_scopes.py --desired /path/desired-scopes.json --mode apply --token-file /path/admin-token-0600
+```
+
+`plan` è offline e non legge token; `check` fallisce in caso di drift, senza
+scritture; `apply` crea soltanto scope mancanti e binding Default mancanti,
+senza cancellare o alterare scope esistenti. La creazione usa l'ID dalla
+risposta Keycloak, il riuso usa matching esatto dell'intera lista, seguito da
+readback. Eseguire `apply` soltanto dopo aver verificato realm, client,
+profilo e autorizzazione dell'operatore. Script e test non configurano
+realm/client/secret/utente/mapper/ruoli, non pubblicano policy e non attestano
+l'emissione dei nuovi scope nel JWT: quest'ultima resta l'acceptance §20.2.
 
 ## 21. Bootstrap a due fasi della InstallationProjection
 

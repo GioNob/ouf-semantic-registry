@@ -1,0 +1,16 @@
+{
+  "issuer": "https://auth.example.org/realms/ouf",
+  "clients": {
+    "ouf-human-admin": [
+      "authorization.policy.admin",
+      "installation.configuration.read",
+      "installation.configuration.write",
+      "installation.configuration.activate",
+      "installation.configuration.export"
+    ],
+    "ouf-chatgpt": [
+      "mcp.connect",
+      "operations.status.read"
+    ]
+  }
+}
