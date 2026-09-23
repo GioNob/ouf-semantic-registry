@@ -184,6 +184,16 @@ La route `urban.object.search` non è ancora pubblicata; eseguire materializzazi
 verifiche dei binding e collaudo prima di dichiarare R4a installato. Il rollback
 dei container segue ordine inverso: APISIX e poi UDP.
 
+Per preparare la rotta dal commit Gateway verificato senza modificare APISIX,
+archiviare il commit in una sottodirectory `source` del candidato root-only ed
+eseguire da lì `python3 -m ops.apisix.prepare_r4a_route --candidate
+/opt/ouf/backup/r4a-runtime-lqgphlwp/candidate-xja04twe`. Lo script controlla
+immagini, mount, chiave condivisa senza divulgarla, ereditarietà Nginx,
+readiness UDP e coerenza con l'InstallationProjection ACTIVE; produce il
+runtime e il manifest di rotta con file 0600 e `APISIX_ROUTES_UNCHANGED=true`.
+Non abilita il tool MCP né pubblica la rotta. L'installazione della rotta richiede
+ancora snapshot persistente, prova negativa e test di policy positivo/negativo.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
