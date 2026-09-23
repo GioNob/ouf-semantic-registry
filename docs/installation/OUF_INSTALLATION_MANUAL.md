@@ -98,6 +98,14 @@ un grant configurato `urban.object.search` per `giovanni-chatgpt`; la risposta
 richiede grant temporaneo governato dalla THS e una verifica owner separata.
 Nessun grant è stato proposto né pubblicato durante il preflight.
 
+Prima di toccare i container, il branch Gateway R4a include
+`ops.apisix.snapshot_r4a_runtime`: eseguire come root con `/opt/ouf/backup`
+root-owned e privato (0700). Il comando legge `docker inspect` per APISIX e UDP
+e salva il risultato completo in un file 0600 sul server, stampando solo il
+percorso. **Questo file contiene segreti:** non va versionato o condiviso.
+Fornisce l'evidenza privata per ricostruire l'avvio corrente, ma non esegue
+rollout o restore; tali procedure restano un gate aperto di R-INSTALL.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
