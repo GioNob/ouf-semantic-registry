@@ -16,6 +16,7 @@ def module(name):
 
 scopes = module("keycloak_scopes")
 preflight = module("source_preflight")
+checkout = module("checkout_sources")
 
 
 class FakeAdmin:
@@ -87,6 +88,16 @@ class InstallationToolsTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             with self.assertRaisesRegex(ValueError, "six OUF"):
                 preflight.check(Path(temp), {"repositories": {"ouf-mcp-server": "0" * 40}})
+
+    def test_checkout_plan_validates_lock_and_existing_targets_offline(self):
+        entries = {name: "a" * 40 for name in preflight.EXPECTED}
+        self.assertEqual(set(checkout.inspect_existing(Path("/does/not/exist"), entries)), set(entries))
+        with tempfile.TemporaryDirectory() as temp:
+            (Path(temp) / "ouf-mcp-server").mkdir()
+            with self.assertRaisesRegex(ValueError, "not usable"):
+                checkout.inspect_existing(Path(temp), entries)
+        with self.assertRaisesRegex(ValueError, "40-character"):
+            checkout.validate({"repositories": {**entries, "ouf-mcp-server": "main"}})
 
 
 if __name__ == "__main__":

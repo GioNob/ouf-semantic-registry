@@ -41,6 +41,9 @@ def check(root, lock):
         if not repo.is_dir():
             issues.append(f"{name}: checkout missing")
             continue
+        if not (repo / ".git").exists():
+            issues.append(f"{name}: not a usable Git checkout")
+            continue
         try:
             actual = git(repo, "rev-parse", "HEAD")
             origin = git(repo, "remote", "get-url", "origin")

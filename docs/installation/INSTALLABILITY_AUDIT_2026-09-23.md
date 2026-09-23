@@ -33,7 +33,7 @@ provenienza degli artefatti.
 
 | Passaggio | Evidenza nei repository | Esito / informazione ancora necessaria |
 |---|---|---|
-| Clonare sei commit compatibili | Sei repository e lock di esempio; nessun release manifest coordinato | **BLOCCATO**: main non include tutte le tranche; non dedurre il release da branch di lavoro |
+| Clonare sei commit compatibili | `checkout_sources.py` prepara i sei checkout da lock; nessun release manifest coordinato | **BLOCCATO**: il lock di esempio non è una release; main non include tutte le tranche |
 | Provisionare rete, DNS, TLS, etcd, PostgreSQL, object store, backup | Manuale §§3–5, 7–8, 12–13; topologia lab descritta | **BLOCCATO**: definizioni complete di provisioning e segreti/owner, restore e CA non versionati |
 | Avviare realm e client IAM | Guida Keycloak in MCP; manuale §20; `keycloak_scopes.py` per subset idempotente | **PARZIALE**: manca bootstrap riproducibile di realm, utenti HUMAN, workload, secret, profile, audience, redirect, ruoli e verifica token |
 | Migrare e avviare sei servizi | Dockerfile Java in quattro repo; `ouf-mcp migrate`; Helm Ingestion/UDP | **BLOCCATO**: no orchestratore con DB/ruolo migration, image digest, ConfigMap/Secret, readiness, restart e rollback per tutti e sei |
@@ -69,8 +69,11 @@ pulito, senza accesso alla macchina o a un export dichiarativo sanitizzato.
 
 ## Primo incremento committato e gate di uscita
 
-`scripts/installation/source_preflight.py` blocca commit imprevisti,
-repository mancanti/origin diversi e working tree sporchi. È read-only.
+`scripts/installation/checkout_sources.py` mostra offline il piano dei sei
+checkout e con `--apply` clona soltanto i repository mancanti a commit esatti;
+si ferma se trova checkout già presenti ma divergenti. Non crea servizi.
+`source_preflight.py` blocca commit imprevisti, repository mancanti/origin
+diversi e working tree sporchi. È read-only.
 `keycloak_scopes.py` riconcilia soltanto scope OIDC **di client già
 esistenti**: default `--mode plan` offline, `check` read-only, `apply`
 esplicito con token da file 0600, esatta verifica degli ID restituiti da

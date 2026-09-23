@@ -18,3 +18,4 @@ jobs:
           python-version: '3.12'
       - run: python -m unittest discover -s scripts/installation -p 'test_*.py' -v
       - run: python scripts/installation/keycloak_scopes.py --desired scripts/installation/keycloak-scopes.example.json --mode plan
+      - run: python scripts/installation/checkout_sources.py --root /tmp/ouf-six-checkouts --lock scripts/installation/source-lock.example.json

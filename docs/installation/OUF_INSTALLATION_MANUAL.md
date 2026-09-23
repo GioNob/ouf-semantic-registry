@@ -5,7 +5,10 @@ Stato: WORKING DRAFT
 Ambito: installazione multi-Ente / environment binding / bootstrap piattaforma
 
 **Audit di installabilità:** [verdetto e blocchi verificati il 23 settembre
-2026](INSTALLABILITY_AUDIT_2026-09-23.md). La checklist iniziale
+2026](INSTALLABILITY_AUDIT_2026-09-23.md). Il comando
+[`checkout_sources.py`](../../scripts/installation/checkout_sources.py)
+prepara i sei checkout dai commit del lock (piano offline; `--apply` per clonare),
+mentre la checklist
 [`source_preflight.py`](../../scripts/installation/source_preflight.py)
 controlla i sei checkout e il lock esatto senza installare nulla. Lo
 [`script Keycloak per scope`](../../scripts/installation/keycloak_scopes.py)

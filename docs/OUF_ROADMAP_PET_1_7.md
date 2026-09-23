@@ -162,7 +162,7 @@ Il lavoro di piattaforma va avviato **subito in parallelo alla pianificazione**:
 
 L'[audit di installabilità del 23 settembre 2026](installation/INSTALLABILITY_AUDIT_2026-09-23.md)
 apre esplicitamente R-INSTALL: il manuale esistente non è prova di rebuild.
-Le automazioni iniziali validano sorgenti e scope Keycloak; gli script per
+Le automazioni iniziali preparano e validano i checkout sorgente e riconciliano un subset di scope Keycloak; gli script per
 bootstrap completo, pubblicazione di tutte le route e DR restano da
 implementare e provare su un ambiente pulito. R-INSTALL non è implicito in R4
 né automaticamente chiuso da CI di modulo o da deploy riusciti in laboratorio.
