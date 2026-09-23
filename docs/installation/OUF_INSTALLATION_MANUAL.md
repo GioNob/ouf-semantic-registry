@@ -132,7 +132,7 @@ chiave UDP `400 10004:10004`, env-file `600 root:root`, YAML `400 636:636`.
 Il Gateway R4a comprende ora `ops.apisix.preflight_r4a_runtime`, controllo
 read-only che confronta il candidato con lo snapshot e il runtime Docker senza
 stampare valori segreti; il suo output determina le opzioni da conservare nello
-script di rollout. La prova sul server di questo controllo è ancora pendente.
+script di rollout. La prova sul server di questo controllo è PASS.
 
 Il preflight read-only è PASS: i due container originali coincidono con lo
 snapshot e il candidato mantiene gli env-file precedenti con i soli binding
@@ -143,6 +143,18 @@ R4a. UDP: 2 GiB, UID `10004:10004`, rete `ouf-backend`, alias
 `NetworkSettings.Ports` non prova pubblicazione host: il report esteso del
 preflight rileva separatamente `HostConfig.PortBindings` e le opzioni di avvio
 avanzate prima di scrivere la procedura di sostituzione e rollback.
+
+Report esteso: nessuna porta host pubblicata; UDP ha limite RAM+swap 4 GiB,
+rete primaria `ouf-backend`, IPC privato e log json-file; APISIX ha rete
+primaria `ouf-gateway-control`, IPC privato e log json-file. Non ci sono
+filesystem read-only o tmpfs su questi due container. Il branch Gateway
+aggiunge `ops/apisix/rollout_r4a_runtime.py`: la simulazione senza `--apply`
+confronta i digest locali e i default delle immagini con lo snapshot e
+verifica che le opzioni Docker siano riproducibili. Il rollout controllato è
+separato in UDP e APISIX; conserva gli originali e include `--rollback` in
+ordine inverso. La verifica running del nuovo container non equivale a
+collaudo funzionale: mantenere la rotta inattiva fino ai test di salute,
+policy e recupero descritti nel runbook Gateway.
 
 ## 1. Regola di governo
 
