@@ -209,6 +209,8 @@ R0 e R1a sono consegnati; R1b ha ora implementazione centrale e controlli owner 
 
 **R4a, staging lab 23 settembre 2026:** immagine UDP candidata e YAML APISIX sono in esecuzione con container originali preservati per rollback. La sola rotta `execute-urban-object-search` è stata installata dal Gateway `9401ee2bcbba26174d448529e60b2e2457c5699c` dopo preflight Admin PASS, con snapshot di restore privato; readback e rifiuto 401 senza credenziali PASS. `ouf.system.status` attraverso MCP HUMAN è ancora `HEALTHY`. Il percorso autenticato per la ricerca non è stato collaudato. Il codice MCP corrente tratta i tool non operativi e non Authorization con il tipo input `relatedSearchInput` e invia le capability non speciali al Gateway `/execute`: serve un binding MCP esplicito per `{type,pageSize?,cursor?}` e `/execute/urban.object.search`, poi prova con workload e delega reali e decisione owner. Il manifest MCP rimane `INACTIVE`; nessuna grant THS di ricerca è stata pubblicata. R-INSTALL rimane **OPEN**.
 
+**R4a, candidato MCP:** PR draft [#42](https://github.com/GioNob/ouf-mcp-server/pull/42) aggiunge il descrittore con schema chiuso, DTO tipizzato e routing esplicito al Gateway; il manifest resta `INACTIVE` e il container lab non viene sostituito. Il PET MCP v1.4 richiede il binding logico governato, la verifica di Authorization su ogni chiamata e il serving autorizzato dall'owner; questa prima tranche ammette solo tipo canonico esatto e paginazione, non l'espressione/predicati più ampi del PET. Prima di attivare: CI coordinata, deploy MCP candidato con rollback, grant mirato tramite THS, prove APISIX→UDP con workload/delega reali, minimizzazione e rilascio con lock. R-INSTALL resta **OPEN**.
+
 
 ## Avanzamento R1b — 17 settembre 2026
 
