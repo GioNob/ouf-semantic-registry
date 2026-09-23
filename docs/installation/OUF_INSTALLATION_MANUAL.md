@@ -45,6 +45,19 @@ separatamente la minimizzazione delle proprietà. Nel collaudo installativo
 ripetere la prova con bundle/identità dell'ambiente e oggetti con proprietà
 classificate, annotando binding, risultati e commit nel release lock.
 
+**Preflight del lab, 23 settembre 2026:** i checkout del server sono puliti ma
+ancora anteriori a R4a (Gateway `dbdc24b5481dc9473b21b360ab1142c9aef0194b`,
+UDP `862a975e28dc681faa6482dba1feef0acd2a3988`); i container APISIX e
+UDP non hanno i nuovi binding `OUF_UDP_SEARCH_*`. L'alias DNS di UDP sulla rete
+condivisa esiste. I container sono avviati manualmente, senza Compose o script
+di rollout UDP sotto `/opt/ouf/ops`. **Il collaudo del lab non è ancora
+iniziato**: prima registrare la definizione di avvio e il rollback di UDP,
+installare versioni candidate e binding con bundle/policy verificati, poi
+materializzare la rotta. Il deploy della rotta usa `--backup-dir
+/opt/ouf/backup` per lo snapshot privato persistente; il percorso stampato
+come `BACKUP=` va conservato per il restore. I dettagli e il registro del
+preflight sono nel runbook R4a del Gateway.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
