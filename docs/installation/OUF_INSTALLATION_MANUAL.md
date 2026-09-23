@@ -120,6 +120,13 @@ contengono segreti e rimangono sul server; lo script comunica soltanto il
 percorso della directory. Rollout, prova di rollback e collaudo APISIX→UDP
 restano necessari; `urban.object.search` rimane `INACTIVE` e R-INSTALL `OPEN`.
 
+Nel lab la preparazione dal commit Gateway
+`5bf289f9f0cce651a6daa6f232417cdb6eeb6fa5` è riuscita: directory privata
+`/opt/ouf/backup/r4a-runtime-lqgphlwp/candidate-xja04twe`, container e YAML
+montato invariati. La CI Gateway sul commit è PASS. Verificare i metadati dei
+quattro file candidati e completare rollout/rollback verificabili prima di
+installare la rotta.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
