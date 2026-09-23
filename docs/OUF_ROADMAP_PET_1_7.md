@@ -207,6 +207,8 @@ R0 e R1a sono consegnati; R1b ha ora implementazione centrale e controlli owner 
 
 **R4a, prova APISIX e owner nella CI Gateway:** il job Docker esercita la rotta con OIDC, delega, scope, firma e casi negati. `object-search-pairwise` fa consumare al filtro Java UDP un receipt prodotto dal Lua Gateway, correggendo l'omissione del campo `client` individuata dal test tra repository. `object-search-network` attraversa APISIX→UDP Java reale con PostgreSQL e bundle sintetico, verifica due pagine, esclusione per tenant/oggetto e `partial`. La CI UDP esercita a parte la minimizzazione delle proprietà. Restano la verifica delle proprietà classificate nel percorso di rete, collaudo con bundle e IAM dell'installazione, release lock coordinato e attivazione governata. MCP `INACTIVE`; R-INSTALL **OPEN**.
 
+**R4a, staging lab 23 settembre 2026:** immagine UDP candidata e YAML APISIX sono in esecuzione con container originali preservati per rollback. La sola rotta `execute-urban-object-search` è stata installata dal Gateway `9401ee2bcbba26174d448529e60b2e2457c5699c` dopo preflight Admin PASS, con snapshot di restore privato; readback e rifiuto 401 senza credenziali PASS. `ouf.system.status` attraverso MCP HUMAN è ancora `HEALTHY`. Il percorso autenticato per la ricerca non è stato collaudato. Il codice MCP corrente tratta i tool non operativi e non Authorization con il tipo input `relatedSearchInput` e invia le capability non speciali al Gateway `/execute`: serve un binding MCP esplicito per `{type,pageSize?,cursor?}` e `/execute/urban.object.search`, poi prova con workload e delega reali e decisione owner. Il manifest MCP rimane `INACTIVE`; nessuna grant THS di ricerca è stata pubblicata. R-INSTALL rimane **OPEN**.
+
 
 ## Avanzamento R1b — 17 settembre 2026
 
