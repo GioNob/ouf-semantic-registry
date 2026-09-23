@@ -211,6 +211,8 @@ R0 e R1a sono consegnati; R1b ha ora implementazione centrale e controlli owner 
 
 **R4a, candidato MCP:** PR draft [#42](https://github.com/GioNob/ouf-mcp-server/pull/42) aggiunge il descrittore con schema chiuso, DTO tipizzato e routing esplicito al Gateway; il manifest resta `INACTIVE` e il container lab non viene sostituito. Il PET MCP v1.4 richiede il binding logico governato, la verifica di Authorization su ogni chiamata e il serving autorizzato dall'owner; questa prima tranche ammette solo tipo canonico esatto e paginazione, non l'espressione/predicati più ampi del PET. Prima di attivare: CI coordinata, deploy MCP candidato con rollback, grant mirato tramite THS, prove APISIX→UDP con workload/delega reali, minimizzazione e rilascio con lock. R-INSTALL resta **OPEN**.
 
+La CI della PR MCP #42 al commit `b2580333a33261b98cceb0db582f83bfef69ac7f` è PASS per `MCP evidence and late recovery` e `Authorization Java Go conformance`. Si tratta di verifica del candidato, senza aggiornamento del container in laboratorio né prova con dati/policy live.
+
 
 ## Avanzamento R1b — 17 settembre 2026
 
