@@ -16,6 +16,18 @@ copre solo la creazione e il binding degli scope su client già esistenti.
 R-INSTALL nella roadmap rimane OPEN fino alla prova di installazione su ambiente
 pulito con bootstrap, sei moduli, rotte, acceptance e restore completi.
 
+**R4a / `urban.object.search` (23 settembre 2026):** la RouteBinding candidate
+`POST /internal/capabilities/v1/execute/urban.object.search` inoltra a
+`POST /api/udp/v1/objects/search` (filtro `type` esatto obbligatorio, `pageSize`
+1–100 e cursore opaco). Il descrittore MCP è `INACTIVE`: **non** aggiungere
+questa rotta alle pubblicazioni APISIX durante il bootstrap. Prima
+dell'attivazione servono uno script di materializzazione chiuso per la rotta,
+la verifica del principal trusted sul processo UDP e un test reale di
+autorizzazione positiva/negativa attraverso APISIX. Registrare nel release lock
+i commit coordinati UDP, Gateway e MCP, l'evidenza della prova e la procedura
+di rollback. Il solo catalogo compilato e i test con upstream simulato non
+soddisfano questi gate; R-INSTALL rimane OPEN.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
