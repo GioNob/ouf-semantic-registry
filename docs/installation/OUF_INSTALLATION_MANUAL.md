@@ -209,6 +209,13 @@ non autenticata alla nuova route risponda 401 e ripristina la rotta al falliment
 Il collaudo positivo necessita il grant temporaneo approvato tramite THS e la
 verifica owner; il tool MCP resta `INACTIVE` e R-INSTALL resta OPEN.
 
+Preflight Admin sul lab: PASS dal commit Gateway
+`9401ee2bcbba26174d448529e60b2e2457c5699c` (CI PASS). Il controllo
+read-only ha confermato manifest e backup privati, accesso Admin e ID rotta
+ancora assente (`SEARCH_ROUTE_CURRENTLY_ABSENT=true`). L'installazione della
+sola rotta è il passo successivo; annotare il `BACKUP=` root-only per poterla
+ripristinare. Il risultato PASS del preflight non prova il serving positivo.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
