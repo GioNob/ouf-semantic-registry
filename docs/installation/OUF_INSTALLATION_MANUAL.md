@@ -216,6 +216,16 @@ ancora assente (`SEARCH_ROUTE_CURRENTLY_ABSENT=true`). L'installazione della
 sola rotta è il passo successivo; annotare il `BACKUP=` root-only per poterla
 ripristinare. Il risultato PASS del preflight non prova il serving positivo.
 
+La rotta singola `execute-urban-object-search` è ora installata sul lab dal
+commit Gateway `9401ee2bcbba26174d448529e60b2e2457c5699c`. Snapshot privato
+di restore: `/opt/ouf/backup/ouf-status-routes-8uraxbjo/previous.json`.
+Il deploy ha verificato readback e HTTP 401 senza credenziali sulla nuova rotta.
+Una chiamata HUMAN a `ouf.system.status` dopo l'installazione è ancora
+`HEALTHY`, senza azioni né stato parziale. Restano la prova autenticata con
+workload e delega genuini, la decisione owner governata, le risposte positive
+e negative UDP, la release coordinata. Il tool MCP rimane `INACTIVE` e
+R-INSTALL rimane OPEN. Conservare lo snapshot per il restore della sola rotta.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
