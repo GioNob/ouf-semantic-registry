@@ -19,14 +19,21 @@ pulito con bootstrap, sei moduli, rotte, acceptance e restore completi.
 **R4a / `urban.object.search` (23 settembre 2026):** la RouteBinding candidate
 `POST /internal/capabilities/v1/execute/urban.object.search` inoltra a
 `POST /api/udp/v1/objects/search` (filtro `type` esatto obbligatorio, `pageSize`
-1–100 e cursore opaco). Il descrittore MCP è `INACTIVE`: **non** aggiungere
-questa rotta alle pubblicazioni APISIX durante il bootstrap. Prima
-dell'attivazione servono uno script di materializzazione chiuso per la rotta,
-la verifica del principal trusted sul processo UDP e un test reale di
-autorizzazione positiva/negativa attraverso APISIX. Registrare nel release lock
-i commit coordinati UDP, Gateway e MCP, l'evidenza della prova e la procedura
-di rollback. Il solo catalogo compilato e i test con upstream simulato non
-soddisfano questi gate; R-INSTALL rimane OPEN.
+1–100 e cursore opaco). Il descrittore MCP è `INACTIVE`: **non** abilitare
+questa capability durante il bootstrap. Il Gateway candidate ora offre
+`tools.materialize_object_search` e `ops.apisix.deploy_object_search` per
+applicare la sola rotta con snapshot e restore; UDP verifica un receipt HMAC
+legato al corpo e ammette il principal tramite bundle locale. Installare una
+chiave dedicata distinta da delega e altri owner: nome env APISIX
+`OUF_UDP_SEARCH_OWNER_KEY` (anche in `nginx_config.envs`), medesimi 64 caratteri
+esadecimali nel file `OUF_UDP_SEARCH_OWNER_KEY_FILE` di UDP. Configurare UDP
+con `OUF_UDP_SEARCH_TENANT_ID`, `OUF_UDP_SEARCH_ISSUER`,
+`OUF_UDP_SEARCH_AUDIENCE` e `OUF_UDP_SEARCH_WORKLOAD` allineati alla projection
+Gateway e al bundle attivo. I comandi esatti e il rollback sono in
+`ouf-api-gateway/docs/R4A_OBJECT_SEARCH_BINDING.md`. Prima di attivare il tool
+servono CI coordinata, installazione controllata della rotta e test reali
+positivi/negativi APISIX→UDP con minimizzazione, cursore e `partial`. Registrare
+commit e prove nel release lock; R-INSTALL rimane OPEN.
 
 ## 1. Regola di governo
 
