@@ -80,6 +80,17 @@ scope nella console; creato con `Include in token scope=On` e assegnato
 riporta `urban.object.search` nel claim `scope`. Non è stato condiviso il token.
 La verifica riguarda solo IAM; il collaudo APISIX→UDP resta da eseguire.
 
+La projection ACTIVE del lab conferma issuer
+`https://auth.ouf-lab.it/realms/ouf`, audience `ouf-api-gateway` e workload
+`ouf-mcp-server`. APISIX eredita già ai worker le chiavi OIDC, delega,
+authorization owner e summary; aggiungere il **nome**
+`OUF_UDP_SEARCH_OWNER_KEY` conservando l'elenco esistente. UDP viene eseguito
+come `10004:10004` su `ouf-backend`, senza mount o porta pubblicata e senza
+binding SEARCH preesistenti. Determinare il tenant dal token umano e dal
+bundle owner prima di fissare `OUF_UDP_SEARCH_TENANT_ID`; non inferirlo
+dall'installation ID. Le configurazioni complete dei due container contengono
+segreti e non devono essere copiate nei documenti o in chat.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
