@@ -134,6 +134,16 @@ read-only che confronta il candidato con lo snapshot e il runtime Docker senza
 stampare valori segreti; il suo output determina le opzioni da conservare nello
 script di rollout. La prova sul server di questo controllo è ancora pendente.
 
+Il preflight read-only è PASS: i due container originali coincidono con lo
+snapshot e il candidato mantiene gli env-file precedenti con i soli binding
+R4a. UDP: 2 GiB, UID `10004:10004`, rete `ouf-backend`, alias
+`ouf-udp-object-resolution`; APISIX: reti `ouf-backend` e
+`ouf-gateway-control`, UID `apisix`, un bind YAML. Entrambi
+`restart=unless-stopped`. Il conteggio di due porte per APISIX nel metadata
+`NetworkSettings.Ports` non prova pubblicazione host: il report esteso del
+preflight rileva separatamente `HostConfig.PortBindings` e le opzioni di avvio
+avanzate prima di scrivere la procedura di sostituzione e rollback.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
