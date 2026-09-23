@@ -203,6 +203,8 @@ R0 e R1a sono consegnati; R1b ha ora implementazione centrale e controlli owner 
 
 **R4a, avvio del 23 settembre 2026:** il manifest MCP del branch di integrazione espone già tre capability Authorization tramite Gateway e conserva il confine `MCP_PROPOSAL_ONLY`/`TRUSTED_HUMAN_ONLY`. Il serving UDP nel manifest MCP si ferma a `urban.object.related_search`; il backend UDP espone anche `urban.object.search` (`GET /api/udp/v1/objects`, filtro `type` obbligatorio), non ancora pubblicato con binding MCP verificato. Prima tranche verticale: catalogo `urban.object.search` owner→Gateway→MCP con filtro indicizzato, limite, cursore, autorizzazione e minimizzazione verificati. In parallelo progettare la shell browser THS nel deployable Onboarding (§§101–106 del PET), senza introdurre conferme via `tools/call` né log protetti nel manifest. Aggiornare manuale/script R-INSTALL quando questi binding diventano installabili; R-INSTALL rimane **OPEN**.
 
+**R4a, prima tranche candidate:** il POST UDP per la ricerca riusa il serving governato e il Gateway compila un binding a destinazione fissa; il manifest MCP descrive il tool ma lo tiene `INACTIVE`. La materializzazione APISIX attuale non include questa capability e UDP richiede ancora un principal trusted comprovato nel percorso Gateway→owner. L'accettazione verticale e l'attivazione attendono un test reale positivo/negativo, insieme all'aggiornamento degli script di installazione; il test del dispatcher con upstream simulato non sostituisce queste prove.
+
 
 ## Avanzamento R1b — 17 settembre 2026
 
