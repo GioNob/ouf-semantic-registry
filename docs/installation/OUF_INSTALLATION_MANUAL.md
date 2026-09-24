@@ -1001,3 +1001,12 @@ La validation della revision 1 di `ouf-lab-netcup-01` ha prodotto:
 - Gateway HTTPS FAIL conseguente.
 
 Questa evidence conferma che, nel laboratorio corrente, la candidate projection deve predisporre anche l'alias interno di `api.ouf-lab.it` verso Caddy prima di rieseguire la validation.
+
+
+## R4a MCP: immagine e staging riproducibile del laboratorio (24 settembre 2026)
+
+La [procedura completa MCP](https://github.com/GioNob/ouf-mcp-server/blob/codex/r4a-object-search-mcp/docs/R4A_MCP_RUNTIME_ROLLOUT.md) è versionata insieme al Dockerfile e ai quattro script di snapshot, preflight, preparazione e rollout/rollback nella [PR MCP #42](https://github.com/GioNob/ouf-mcp-server/pull/42). Eseguire i comandi nel terminale SSH del server come `oufadmin`; gli script leggono lo snapshot solo sotto `/opt/ouf/backup` root-only. Lo snapshot e `mcp.env` includono valori riservati e non sono artefatti da distribuire.
+
+Sul lab la build dal commit MCP `fbd0e8c0cc22c127ded04ffc658269699fb433ae` ha prodotto `ouf-mcp:r4a-fbd0e8c`, immagine `sha256:ac64e6e7220a9fcc614b6b3dd90a30e01513bab804dbc3f462cfc68f6c6c999a`, utente `10005:10005`. Snapshot privato `/opt/ouf/backup/r4a-mcp-runtime-4i2mfgwn/container.inspect.json`; preflight PASS: rete `ouf-backend`, due mount dei secret in sola lettura, restart `unless-stopped`, immagine originale invariata. Directory candidata privata `/opt/ouf/backup/r4a-mcp-runtime-4i2mfgwn/candidate-mcp-xgxnpg5w`; dry run rollout PASS dal commit script `07a3ac562779009a2e11d0707a6f27cd6fa0e482`, `NO_CONTAINERS_CHANGED=true`. **Non risulta ancora un apply MCP né un test positivo della ricerca.** La rotta Gateway R4a è installata, ma `urban.object.search` resta INACTIVE nel manifest MCP.
+
+I digest e i percorsi sono evidenza del lab, non input universali. Per un ambiente nuovo il lock release, l'immagine costruita e i riferimenti ai secret devono provenire dalla proiezione di installazione e da artefatti verificati; la parametrizzazione del rollout e la prova di reinstallazione completa sono ancora mancanti. R-INSTALL resta **OPEN**. I PET v1.7 sono la fonte normativa per i gate di identità, mediazione Gateway e fail-closed.
