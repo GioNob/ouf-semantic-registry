@@ -4,6 +4,235 @@ Versione iniziale: 2026-09-18
 Stato: WORKING DRAFT  
 Ambito: installazione multi-Ente / environment binding / bootstrap piattaforma
 
+**Audit di installabilità:** [verdetto e blocchi verificati il 23 settembre
+2026](INSTALLABILITY_AUDIT_2026-09-23.md). Il comando
+[`checkout_sources.py`](../../scripts/installation/checkout_sources.py)
+prepara i sei checkout dai commit del lock (piano offline; `--apply` per clonare),
+mentre la checklist
+[`source_preflight.py`](../../scripts/installation/source_preflight.py)
+controlla i sei checkout e il lock esatto senza installare nulla. Lo
+[`script Keycloak per scope`](../../scripts/installation/keycloak_scopes.py)
+copre solo la creazione e il binding degli scope su client già esistenti.
+R-INSTALL nella roadmap rimane OPEN fino alla prova di installazione su ambiente
+pulito con bootstrap, sei moduli, rotte, acceptance e restore completi.
+
+**R4a / `urban.object.search` (23 settembre 2026):** la RouteBinding candidate
+`POST /internal/capabilities/v1/execute/urban.object.search` inoltra a
+`POST /api/udp/v1/objects/search` (filtro `type` esatto obbligatorio, `pageSize`
+1–100 e cursore opaco). Il descrittore MCP è `INACTIVE`: **non** abilitare
+questa capability durante il bootstrap. Il Gateway candidate ora offre
+`tools.materialize_object_search` e `ops.apisix.deploy_object_search` per
+applicare la sola rotta con snapshot e restore; UDP verifica un receipt HMAC
+legato al corpo e ammette il principal tramite bundle locale. Installare una
+chiave dedicata distinta da delega e altri owner: nome env APISIX
+`OUF_UDP_SEARCH_OWNER_KEY` (anche in `nginx_config.envs`), medesimi 64 caratteri
+esadecimali nel file `OUF_UDP_SEARCH_OWNER_KEY_FILE` di UDP. Configurare UDP
+con `OUF_UDP_SEARCH_TENANT_ID`, `OUF_UDP_SEARCH_ISSUER`,
+`OUF_UDP_SEARCH_AUDIENCE` e `OUF_UDP_SEARCH_WORKLOAD` allineati alla projection
+Gateway e al bundle attivo. I comandi esatti e il rollback sono in
+`ouf-api-gateway/docs/R4A_OBJECT_SEARCH_BINDING.md`. Prima di attivare il tool
+servono CI coordinata, installazione controllata della rotta e test reali
+positivi/negativi APISIX→UDP con minimizzazione, cursore e `partial`. Registrare
+commit e prove nel release lock; R-INSTALL rimane OPEN.
+
+La CI Gateway riproduce la rotta in APISIX Docker con issuer e owner HTTP di
+test (`OUF_APISIX_LIVE_TEST=1 python3 -m pytest -q
+tests/test_execute_apisix_live.py`); il job Gateway `object-search-pairwise`
+fa verificare al filtro Java UDP un receipt firmato dal Lua Gateway. Il job
+`object-search-network` avvia APISIX, UDP Java e PostgreSQL con bundle sintetico:
+verifica cursore, tenant, diniego per oggetto e `partial`. La CI UDP testa
+separatamente la minimizzazione delle proprietà. Nel collaudo installativo
+ripetere la prova con bundle/identità dell'ambiente e oggetti con proprietà
+classificate, annotando binding, risultati e commit nel release lock.
+
+**Preflight del lab, 23 settembre 2026:** i checkout del server sono puliti ma
+ancora anteriori a R4a (Gateway `dbdc24b5481dc9473b21b360ab1142c9aef0194b`,
+UDP `862a975e28dc681faa6482dba1feef0acd2a3988`); i container APISIX e
+UDP non hanno i nuovi binding `OUF_UDP_SEARCH_*`. L'alias DNS di UDP sulla rete
+condivisa esiste. I container sono avviati manualmente, senza Compose o script
+di rollout UDP sotto `/opt/ouf/ops`. **Il collaudo del lab non è ancora
+iniziato**: prima registrare la definizione di avvio e il rollback di UDP,
+installare versioni candidate e binding con bundle/policy verificati, poi
+materializzare la rotta. Il deploy della rotta usa `--backup-dir
+/opt/ouf/backup` per lo snapshot privato persistente; il percorso stampato
+come `BACKUP=` va conservato per il restore. I dettagli e il registro del
+preflight sono nel runbook R4a del Gateway.
+
+Questo paragrafo descrive la baseline precedente allo staging: i container
+UDP e APISIX sono stati successivamente sostituiti con i candidati R4a,
+conservando gli originali per il rollback, come registrato sotto.
+
+La discovery OIDC del realm `ouf` al preflight non pubblicizza ancora
+`urban.object.search` (`scopes_supported`: assente). Prima di creare lo scope,
+controllarne l'esistenza con confronto esatto in Keycloak, non con la sola
+discovery. Il profilo lab
+[`keycloak-r4a-lab.json`](../../scripts/installation/keycloak-r4a-lab.json)
+specifica lo scope per il client HUMAN `ouf-chatgpt`: il Gateway esige lo scope
+nella delega umana; il token workload `ouf-mcp-server` è verificato per client,
+issuer, audience e tipo di attore. Lo script `keycloak_scopes.py --desired
+scripts/installation/keycloak-r4a-lab.json --mode plan` mostra il piano senza
+accedere a Keycloak; `--mode check --token-file <file-0600>` legge il realm e
+segnala scope/binding mancanti; `--mode apply` richiede una sessione admin e
+crea solo i mancanti. Emettere poi un **nuovo** token HUMAN e controllare il
+claim `scope`. Non usare il client Inspector di prova per il profilo di
+installazione.
+
+**Esito IAM lab, 23 settembre 2026: PASS.** Verificata assenza effettiva dello
+scope nella console; creato con `Include in token scope=On` e assegnato
+**Default** a `ouf-chatgpt`. La discovery ora lo include in
+`scopes_supported` e un nuovo access token valutato per `giovanni-chatgpt`
+riporta `urban.object.search` nel claim `scope`. Non è stato condiviso il token.
+La verifica riguarda solo IAM; il collaudo APISIX→UDP resta da eseguire.
+
+La projection ACTIVE del lab conferma issuer
+`https://auth.ouf-lab.it/realms/ouf`, audience `ouf-api-gateway` e workload
+`ouf-mcp-server`. APISIX eredita già ai worker le chiavi OIDC, delega,
+authorization owner e summary; aggiungere il **nome**
+`OUF_UDP_SEARCH_OWNER_KEY` conservando l'elenco esistente. UDP viene eseguito
+come `10004:10004` su `ouf-backend`, senza mount o porta pubblicata e senza
+binding SEARCH preesistenti. Determinare il tenant dal token umano e dal
+bundle owner prima di fissare `OUF_UDP_SEARCH_TENANT_ID`; non inferirlo
+dall'installation ID. Le configurazioni complete dei due container contengono
+segreti e non devono essere copiate nei documenti o in chat.
+
+Il nuovo token HUMAN del collaudatore indica `tenant_id=ouf-lab`. La lettura
+amministrativa read-only della policy `ouf-lab-authorization:14` non mostra
+un grant configurato `urban.object.search` per `giovanni-chatgpt`; la risposta
+è un elenco di grant configurati, non una decisione effettiva. Il positivo
+richiede grant temporaneo governato dalla THS e una verifica owner separata.
+Nessun grant è stato proposto né pubblicato durante il preflight.
+
+Prima di toccare i container, il branch Gateway R4a include
+`ops.apisix.snapshot_r4a_runtime`: eseguire come root con `/opt/ouf/backup`
+root-owned e privato (0700). Il comando legge `docker inspect` per APISIX e UDP
+e salva il risultato completo in un file 0600 sul server, stampando solo il
+percorso. **Questo file contiene segreti:** non va versionato o condiviso.
+Fornisce l'evidenza privata per ricostruire l'avvio corrente, ma non esegue
+rollout o restore; tali procedure restano un gate aperto di R-INSTALL.
+
+Nel lab del 23 settembre lo snapshot privato è stato acquisito e la build UDP
+R4a `ouf-udp:r4a-3980fe2` (commit `3980fe2bf03ea590914e404cd58b19822a553b9c`)
+è pronta, senza modifiche ai container correnti. Il branch Gateway R4a aggiunge
+`ops.apisix.prepare_r4a_runtime`: da eseguire come root con `--snapshot
+/opt/ouf/backup/r4a-runtime-lqgphlwp/containers.inspect.json --tenant
+ouf-lab`. Il comando verifica identità e stato dei container rispetto allo
+snapshot, la sorgente YAML montata da APISIX e l'UID UDP; prepara in una nuova
+directory root-only i due env-file con i binding esistenti, una chiave dedicata
+di proprietà dell'UID UDP, e una copia YAML con il solo nome della nuova
+variabile in `nginx_config.envs`. Non installa né riavvia servizi. I file
+contengono segreti e rimangono sul server; lo script comunica soltanto il
+percorso della directory. Rollout, prova di rollback e collaudo APISIX→UDP
+restano necessari; `urban.object.search` rimane `INACTIVE` e R-INSTALL `OPEN`.
+
+Nel lab la preparazione dal commit Gateway
+`5bf289f9f0cce651a6daa6f232417cdb6eeb6fa5` è riuscita: directory privata
+`/opt/ouf/backup/r4a-runtime-lqgphlwp/candidate-xja04twe`, container e YAML
+montato invariati. La CI Gateway sul commit è PASS. Verificare i metadati dei
+quattro file candidati e completare rollout/rollback verificabili prima di
+installare la rotta.
+
+I metadati dei quattro file sono conformi: directory privata `700 root:root`,
+chiave UDP `400 10004:10004`, env-file `600 root:root`, YAML `400 636:636`.
+Il Gateway R4a comprende ora `ops.apisix.preflight_r4a_runtime`, controllo
+read-only che confronta il candidato con lo snapshot e il runtime Docker senza
+stampare valori segreti; il suo output determina le opzioni da conservare nello
+script di rollout. La prova sul server di questo controllo è PASS.
+
+Il preflight read-only è PASS: i due container originali coincidono con lo
+snapshot e il candidato mantiene gli env-file precedenti con i soli binding
+R4a. UDP: 2 GiB, UID `10004:10004`, rete `ouf-backend`, alias
+`ouf-udp-object-resolution`; APISIX: reti `ouf-backend` e
+`ouf-gateway-control`, UID `apisix`, un bind YAML. Entrambi
+`restart=unless-stopped`. Il conteggio di due porte per APISIX nel metadata
+`NetworkSettings.Ports` non prova pubblicazione host: il report esteso del
+preflight rileva separatamente `HostConfig.PortBindings` e le opzioni di avvio
+avanzate prima di scrivere la procedura di sostituzione e rollback.
+
+Report esteso: nessuna porta host pubblicata; UDP ha limite RAM+swap 4 GiB,
+rete primaria `ouf-backend`, IPC privato e log json-file; APISIX ha rete
+primaria `ouf-gateway-control`, IPC privato e log json-file. Non ci sono
+filesystem read-only o tmpfs su questi due container. Il branch Gateway
+aggiunge `ops/apisix/rollout_r4a_runtime.py`: la simulazione senza `--apply`
+confronta i digest locali e i default delle immagini con lo snapshot e
+verifica che le opzioni Docker siano riproducibili. Il rollout controllato è
+separato in UDP e APISIX; conserva gli originali e include `--rollback` in
+ordine inverso. La verifica running del nuovo container non equivale a
+collaudo funzionale: mantenere la rotta inattiva fino ai test di salute,
+policy e recupero descritti nel runbook Gateway.
+
+Le simulazioni `rollout_r4a_runtime.py` di UDP e APISIX sul lab sono entrambe
+PASS dal commit Gateway `60900c7d5c0623e5b57922f678a87716abbac4a2`;
+nessuno dei due container è stato modificato. Prima dell'apply acquisire una
+baseline dell'endpoint readiness UDP sul servizio corrente; dopo lo staging
+verificare lo stesso endpoint e fermarsi se fallisce, senza passare ad APISIX.
+
+La baseline UDP del lab è PASS: `/usr/bin/wget` è presente nel container e
+`http://127.0.0.1:8080/actuator/health/readiness` risponde con successo.
+Il rollout UDP verifica lo stesso endpoint dopo il riavvio; se non diventa
+pronto entro i tentativi previsti, tenta il rollback e verifica l'originale.
+
+Staging UDP del lab: PASS dal commit Gateway
+`51898cd9863bbe6f985a620e06bae54712abb789` (CI PASS). Nuovo container
+`ouf-udp:r4a-3980fe2` in esecuzione e readiness `UDP_R4A_READY`; originale
+`ouf-udp:862a975e` preservato spento come `ouf-udp-r4a-original`. Il tool
+`ouf.system.status` chiamato dopo lo staging con identità HUMAN risponde MCP
+`HEALTHY`, `actionRequired=false`, `partial=false`. APISIX non è stato ancora
+sostituito; la route R4a e il tool MCP rimangono inattivi. La readiness e lo
+stato MCP non sostituiscono il successivo test completo APISIX→UDP.
+
+Staging APISIX del lab: PASS sullo stesso commit Gateway. Nuovo
+`ouf-apisix` in esecuzione con YAML candidato, originale preservato spento
+come `ouf-apisix-r4a-original`. Una chiamata live HUMAN a `ouf.system.status`
+dopo la sostituzione ha restituito di nuovo MCP `HEALTHY`, senza stato parziale.
+La route `urban.object.search` non è ancora pubblicata; eseguire materializzazione,
+verifiche dei binding e collaudo prima di dichiarare R4a installato. Il rollback
+dei container segue ordine inverso: APISIX e poi UDP.
+
+Per preparare la rotta dal commit Gateway verificato senza modificare APISIX,
+archiviare il commit in una sottodirectory `source` del candidato root-only ed
+eseguire da lì `python3 -m ops.apisix.prepare_r4a_route --candidate
+/opt/ouf/backup/r4a-runtime-lqgphlwp/candidate-xja04twe`. Lo script controlla
+immagini, mount, chiave condivisa senza divulgarla, ereditarietà Nginx,
+readiness UDP e coerenza con l'InstallationProjection ACTIVE; produce il
+runtime e il manifest di rotta con file 0600 e `APISIX_ROUTES_UNCHANGED=true`.
+Non abilita il tool MCP né pubblica la rotta. L'installazione della rotta richiede
+ancora snapshot persistente, prova negativa e test di policy positivo/negativo.
+
+La preparazione sul lab è PASS dal commit Gateway
+`c5101856ce4c3c0c620c14b9b4dd60def9252387`: manifest
+`/opt/ouf/backup/r4a-runtime-lqgphlwp/candidate-xja04twe/materialization-r4a.json`
+creato nella directory privata, ID `execute-urban-object-search`, rotte APISIX
+invariate. Prima dell'installazione, eseguire il preflight read-only
+`ops.apisix.preflight_r4a_route` con manifest, file chiave Admin e backup root;
+richiede che la nuova route sia assente. Il deploy controlla poi che una POST
+non autenticata alla nuova route risponda 401 e ripristina la rotta al fallimento.
+Il collaudo positivo necessita il grant temporaneo approvato tramite THS e la
+verifica owner; il tool MCP resta `INACTIVE` e R-INSTALL resta OPEN.
+
+Preflight Admin sul lab: PASS dal commit Gateway
+`9401ee2bcbba26174d448529e60b2e2457c5699c` (CI PASS). Il controllo
+read-only ha confermato manifest e backup privati, accesso Admin e ID rotta
+ancora assente (`SEARCH_ROUTE_CURRENTLY_ABSENT=true`). L'installazione della
+sola rotta è il passo successivo; annotare il `BACKUP=` root-only per poterla
+ripristinare. Il risultato PASS del preflight non prova il serving positivo.
+
+La rotta singola `execute-urban-object-search` è ora installata sul lab dal
+commit Gateway `9401ee2bcbba26174d448529e60b2e2457c5699c`. Snapshot privato
+di restore: `/opt/ouf/backup/ouf-status-routes-8uraxbjo/previous.json`.
+Il deploy ha verificato readback e HTTP 401 senza credenziali sulla nuova rotta.
+Una chiamata HUMAN a `ouf.system.status` dopo l'installazione è ancora
+`HEALTHY`, senza azioni né stato parziale. Restano la prova autenticata con
+workload e delega genuini, la decisione owner governata, le risposte positive
+e negative UDP, la release coordinata. Il tool MCP rimane `INACTIVE` e
+R-INSTALL rimane OPEN. Conservare lo snapshot per il restore della sola rotta.
+
+La PR MCP draft [#42](https://github.com/GioNob/ouf-mcp-server/pull/42)
+prepara il DTO `{type,pageSize?,cursor?}` e il dispatch al binding Gateway
+di ricerca. Il manifest della PR conserva `publicationState=INACTIVE`: non
+aggiornare il container MCP lab con un'immagine non verificata e non rendere
+il tool visibile senza il collaudo governato. Registrare commit, image digest,
+comando di rollout/rollback e prove in questo manuale prima dell'attivazione.
+
 ## 1. Regola di governo
 
 Questo manuale è la fonte operativa versionata per installare e avviare OUF su infrastrutture reali.
@@ -696,6 +925,28 @@ Per `ouf-human-admin` devono risultare emessi almeno:
 
 Il bootstrap non deve procedere alla Trusted Human Installation API se il token non contiene gli scope richiesti.
 
+### 20.4 Primo script idempotente: soli client scope
+
+Su una macchina amministrativa Linux con Python 3.12+, preparare una copia
+privata di `scripts/installation/keycloak-scopes.example.json` usando
+l'issuer effettivo e i nomi esatti dei client **già creati**. Il file di
+esempio non è il profilo di produzione.
+
+```bash
+python3 scripts/installation/keycloak_scopes.py --desired /path/desired-scopes.json --mode plan
+python3 scripts/installation/keycloak_scopes.py --desired /path/desired-scopes.json --mode check --token-file /path/admin-token-0600
+python3 scripts/installation/keycloak_scopes.py --desired /path/desired-scopes.json --mode apply --token-file /path/admin-token-0600
+```
+
+`plan` è offline e non legge token; `check` fallisce in caso di drift, senza
+scritture; `apply` crea soltanto scope mancanti e binding Default mancanti,
+senza cancellare o alterare scope esistenti. La creazione usa l'ID dalla
+risposta Keycloak, il riuso usa matching esatto dell'intera lista, seguito da
+readback. Eseguire `apply` soltanto dopo aver verificato realm, client,
+profilo e autorizzazione dell'operatore. Script e test non configurano
+realm/client/secret/utente/mapper/ruoli, non pubblicano policy e non attestano
+l'emissione dei nuovi scope nel JWT: quest'ultima resta l'acceptance §20.2.
+
 ## 21. Bootstrap a due fasi della InstallationProjection
 
 La prima activation non può dipendere da una projection ACTIVE già materializzata, perché l'environment validation deve risultare PASS prima dell'activation.
@@ -750,3 +1001,16 @@ La validation della revision 1 di `ouf-lab-netcup-01` ha prodotto:
 - Gateway HTTPS FAIL conseguente.
 
 Questa evidence conferma che, nel laboratorio corrente, la candidate projection deve predisporre anche l'alias interno di `api.ouf-lab.it` verso Caddy prima di rieseguire la validation.
+
+
+## R4a MCP: immagine e staging riproducibile del laboratorio (24 settembre 2026)
+
+La [procedura completa MCP](https://github.com/GioNob/ouf-mcp-server/blob/codex/r4a-object-search-mcp/docs/R4A_MCP_RUNTIME_ROLLOUT.md) è versionata insieme al Dockerfile e ai quattro script di snapshot, preflight, preparazione e rollout/rollback nella [PR MCP #42](https://github.com/GioNob/ouf-mcp-server/pull/42). Eseguire i comandi nel terminale SSH del server come `oufadmin`; gli script leggono lo snapshot solo sotto `/opt/ouf/backup` root-only. Lo snapshot e `mcp.env` includono valori riservati e non sono artefatti da distribuire.
+
+Sul lab la build dal commit MCP `fbd0e8c0cc22c127ded04ffc658269699fb433ae` ha prodotto `ouf-mcp:r4a-fbd0e8c`, immagine `sha256:ac64e6e7220a9fcc614b6b3dd90a30e01513bab804dbc3f462cfc68f6c6c999a`, utente `10005:10005`. Snapshot privato `/opt/ouf/backup/r4a-mcp-runtime-4i2mfgwn/container.inspect.json`; preflight PASS: rete `ouf-backend`, due mount dei secret in sola lettura, restart `unless-stopped`, immagine originale invariata. Directory candidata privata `/opt/ouf/backup/r4a-mcp-runtime-4i2mfgwn/candidate-mcp-xgxnpg5w`; dry run rollout PASS dal commit script `07a3ac562779009a2e11d0707a6f27cd6fa0e482`, `NO_CONTAINERS_CHANGED=true`. **Staging MCP lab: PASS, 24 settembre 2026.** Il comando `--apply` dello script MCP ha restituito `MCP_R4A_STAGED=true`, `ouf-mcp:r4a-fbd0e8c` è Up, e l'originale `ouf-mcp:2ea473c` è fermo e conservato come `ouf-mcp-r4a-original`. La readiness del candidato è PASS; `ouf.system.status` tramite connettore HUMAN dopo lo staging restituisce MCP `HEALTHY`, `actionRequired=false`, `partial=false`. Il test positivo della ricerca è ancora mancante. La rotta Gateway R4a è installata, ma `urban.object.search` resta INACTIVE nel manifest MCP.
+
+I digest e i percorsi sono evidenza del lab, non input universali. Per un ambiente nuovo il lock release, l'immagine costruita e i riferimenti ai secret devono provenire dalla proiezione di installazione e da artefatti verificati; la parametrizzazione del rollout e la prova di reinstallazione completa sono ancora mancanti. R-INSTALL resta **OPEN**. I PET v1.7 sono la fonte normativa per i gate di identità, mediazione Gateway e fail-closed.
+
+## Catalogo capability Authorization per nuove installazioni (R-INSTALL aperto)
+
+Il catalogo Authorization si registra tramite API trusted HUMAN e un manifest versionato per owner; gli scope Keycloak e le route APISIX non lo popolano. Esempio R4a UDP: [manifest e procedura Source Onboarding](https://github.com/GioNob/ouf-source-onboarding/blob/codex/r4a-authorization-catalogue/docs/R4A_AUTHORIZATION_CATALOGUE.md). Il reconciler `scripts/r4a_register_capabilities.py` valida e confronta i descriptor, rifiuta conflitti immutabili e registra solo le voci mancanti con Device Authorization Grant HUMAN. Prima di invocare `--apply`, distribuire il GET catalogo paginato e verificare CI e `--check`; tenere i manifest dei moduli nel controllo versione, derivati dai PET e dai proprietari semantici. Una nuova policy versionata con preview/simulate e publish trusted, poi i grant necessari, costituisce un passaggio distinto. Nel laboratorio, il 24 settembre 2026 la policy `ouf-lab-authorization:14` non conteneva `urban.object.search` e la capability risultava non registrata; nessuna modifica alla policy è implicita in questa sezione. Il bootstrap completo del catalogo e del bundle resta requisito aperto di R-INSTALL.

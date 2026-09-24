@@ -1,0 +1,8 @@
+{
+  "issuer": "https://auth.ouf-lab.it/realms/ouf",
+  "clients": {
+    "ouf-chatgpt": [
+      "urban.object.search"
+    ]
+  }
+}
