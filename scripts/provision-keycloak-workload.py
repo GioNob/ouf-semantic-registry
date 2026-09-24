@@ -249,15 +249,25 @@ def ensure_mappers(realm: str, cid: str, audience: str, tenant: str) -> None:
             run("update", f"clients/{cid}/protocol-mappers/models/{mid}", "-r", realm, "-f", "-", input_text=payload)
 
 
+def validate_secret_target(target: Path) -> None:
+    parent = target.parent
+    if not parent.exists() or not parent.is_dir() or parent.is_symlink():
+        raise ProvisioningError("SECRET_DIRECTORY_INVALID")
+    metadata = parent.stat()
+    if metadata.st_uid != 0 or stat.S_IMODE(metadata.st_mode) & 0o022:
+        raise ProvisioningError("SECRET_DIRECTORY_NOT_PRIVATE")
+    if target.exists():
+        st = target.stat()
+        if target.is_symlink() or st.st_uid != 0 or stat.S_IMODE(st.st_mode) & 0o077:
+            raise ProvisioningError("SECRET_OUTPUT_NOT_PRIVATE")
+
+
 def write_secret(realm: str, cid: str, target: Path) -> None:
     response = get_json("get", f"clients/{cid}/client-secret", "-r", realm)
     secret = response.get("value")
     if not isinstance(secret, str) or not secret or len(secret) > 4096 or any(ch.isspace() for ch in secret):
         raise ProvisioningError("INVALID_CLIENT_SECRET")
-    target.parent.mkdir(parents=True, exist_ok=True)
-    parent = target.parent.stat()
-    if parent.st_uid != 0 or stat.S_IMODE(parent.st_mode) & 0o022:
-        raise ProvisioningError("SECRET_DIRECTORY_NOT_PRIVATE")
+    validate_secret_target(target)
     fd, temporary = tempfile.mkstemp(prefix="." + target.name + "-", dir=target.parent)
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as stream:
@@ -311,6 +321,8 @@ def main() -> None:
         if a.mode == "apply":
             if os.geteuid() != 0:
                 raise ProvisioningError("APPLY_REQUIRES_ROOT")
+            if a.secret_output:
+                validate_secret_target(a.secret_output)
             client = exact_client(a.realm, a.client_id)
             cid = client["id"] if client else create_client(a.realm, a.client_id)
             ensure_client_flags(a.realm, cid)
