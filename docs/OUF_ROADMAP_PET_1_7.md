@@ -276,3 +276,8 @@ La CI fra quattro owner, PostGIS e MinIO contiene **25 verifiche PASS**. Fixture
 Restano 2D simple features e limiti di parser espliciti; altri formati/casi sono R4b. Nessun grigliato IGM reale o collaudo territoriale è attestato. La UI cartografica resta R4a; prossimo incremento **R3 — Operational Awareness**.
 
 Ogni sprint deve consultare tutti i sette PET e L0: [regola obbligatoria e manifest delle fonti](OUF_SPRINT_PET_ALIGNMENT.md).
+
+
+### R4a MCP staging checkpoint — 24 settembre 2026
+
+La [procedura MCP R4a](https://github.com/GioNob/ouf-mcp-server/blob/codex/r4a-object-search-mcp/docs/R4A_MCP_RUNTIME_ROLLOUT.md) e i relativi script sono nella PR draft #42: Dockerfile committato e CI build PASS; snapshot del runtime MCP e preparazione dei file privati PASS; dry run del rollout PASS con originale invariato. Prossimi gate: apply controllato e probe del comportamento MCP esistente, rollback disponibile; poi grant HUMAN approvato in THS e prove positive/negative di ricerca tramite owner. La capability resta **INACTIVE**. R-INSTALL resta **OPEN**, inclusa la parametrizzazione dell'immagine e dei binding su ambienti nuovi e la prova di installazione da zero secondo i PET.
