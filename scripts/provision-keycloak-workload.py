@@ -254,7 +254,7 @@ def validate_secret_target(target: Path) -> None:
     if not parent.exists() or not parent.is_dir() or parent.is_symlink():
         raise ProvisioningError("SECRET_DIRECTORY_INVALID")
     metadata = parent.stat()
-    if metadata.st_uid != 0 or stat.S_IMODE(metadata.st_mode) & 0o022:
+    if stat.S_IMODE(metadata.st_mode) & 0o077:
         raise ProvisioningError("SECRET_DIRECTORY_NOT_PRIVATE")
     if target.exists():
         st = target.stat()
