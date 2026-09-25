@@ -490,9 +490,9 @@ richiede a bordo lo scope profile e nel backend anche capability
 `ouf.managed-source.onboarding.create`; sono previsti entrambi nel bundle
 di scope/grant HUMAN.
 
-La CI Onboarding sul HEAD ultimo è ancora in esecuzione al momento di questa
-nota. Non dichiarare successo finché module CI e build immagine non siano
-SUCCESS sullo stesso SHA. Onboarding live è ancora il tag precedente e
+La CI Onboarding sul HEAD `243606edb55a61ed55d9c3bb6ce082d40d275b92` è SUCCESS
+(module CI `36192565381`, inclusa la build immagine non-root; trusted review
+browser `36192565373` SUCCESS). Onboarding live è ancora il tag precedente e
 APISIX non è stato mutato. Sul VPS risultano: nessun bucket/intake nuovo
 verificato; nessun token `ouf-onboarding` montato; minio/onboarding/apisix
 nella rete `ouf-backend`. Il CSV della chat NON è automaticamente sul VPS.
