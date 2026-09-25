@@ -256,3 +256,83 @@ La CI fra quattro owner, PostGIS e MinIO contiene **25 verifiche PASS**. Fixture
 Restano 2D simple features e limiti di parser espliciti; altri formati/casi sono R4b. Nessun grigliato IGM reale o collaudo territoriale è attestato. La UI cartografica resta R4a; prossimo incremento **R3 — Operational Awareness**.
 
 Ogni sprint deve consultare tutti i sette PET e L0: [regola obbligatoria e manifest delle fonti](OUF_SPRINT_PET_ALIGNMENT.md).
+
+
+---
+
+## Aggiornamento operativo 25 settembre 2026 — R4a, R-INSTALL e smoke verticale
+
+Questo aggiornamento fotografa il laboratorio Netcup e integra, senza sostituire, la roadmap PET v1.7 originaria.
+
+### R4a — stato corrente
+
+La vertical slice `urban.object.search` è entrata nella fase di integrazione con dati reali governati.
+
+Stato verificato:
+- UDP Published Execution è attivo nel runtime live;
+- Source Onboarding è stato aggiornato con boundary HUMAN/SERVICE per il lifecycle;
+- Gateway espone le route HUMAN Onboarding e la route M2M di compatibility attestation;
+- le route anonime rispondono 401 come atteso;
+- PolicyBundle ACTIVE: `ouf-lab-authorization:22`;
+- la capability `ouf.onboarding.configuration.write` è registrata e inclusa;
+- la capability `ouf.ingestion.configuration.attest` è registrata e inclusa;
+- il grant SERVICE `grant-onboarding-configuration-attest-ingestion` per `ouf-ingestion` è pubblicato in v22;
+- i due nuovi OAuth client scope non sono ancora presenti in Keycloak: questo è il punto operativo aperto;
+- Source Onboarding PR #37 HEAD `648b6cab5d6b1deda900dcc4c39316bcafae5ae1` ha CI verde: Module CI #554 e R2f trusted review browser #374;
+- il nuovo helper versionato `scripts/r4a_keycloak_client_scope_catalogue.py` supporta plan/apply/verify per la creazione/reconciliation dei client scope OIDC.
+
+Prossimo passo R4a:
+1. creare/reconciliare in Keycloak `ouf.onboarding.configuration.write` e `ouf.ingestion.configuration.attest`;
+2. assegnare `ouf.onboarding.configuration.write` a `ouf-human-admin` come OPTIONAL;
+3. assegnare `ouf.ingestion.configuration.attest` a `ouf-ingestion` come DEFAULT;
+4. creare il grant HUMAN governato per `ouf-admin`;
+5. eseguire acceptance autenticata HUMAN e SERVICE;
+6. inventariare le reference Semantic live necessarie a una PublishedRuntimeConfiguration valida;
+7. creare la prima source governata;
+8. far transitare almeno tre oggetti reali attraverso Ingestion/Lake/Handoff/UDP;
+9. verificare pagination, cursor, partial e minimizzazione su `urban.object.search`.
+
+### Gate formale R-INSTALL
+
+R-INSTALL resta OPEN. La chiusura richiede una prova di installazione riproducibile da repository, non una ricostruzione basata su cronologia chat o modifiche manuali al lab.
+
+Criteri minimi:
+- orchestrator/bootstrap top-level per i sei moduli;
+- manifest dichiarativo dell'installazione con secret references, senza secret values;
+- procedure versionate plan/apply/verify per IAM, Authorization, Gateway, runtime e projection;
+- clean install su macchina vuota;
+- upgrade N/N+1;
+- backup/restore;
+- rollback verificato;
+- acceptance E2E;
+- CI di installabilità che eserciti almeno un ambiente effimero o equivalente;
+- supply chain riproducibile per le immagini terze critiche.
+
+Ogni procedura scoperta durante R4a deve essere assorbita nel percorso R-INSTALL; non deve rimanere un comando one-off necessario per installare un secondo ambiente.
+
+### Gate formale R-SMOKE — “vedere il fumo”
+
+R-SMOKE è una acceptance verticale distinta dall'health infrastrutturale. Deve consentire a un operatore di osservare un ciclo completo senza SQL manuale e senza dover conoscere UUID o endpoint interni.
+
+Acceptance target:
+- registrare o caricare una source reale;
+- almeno CSV o GeoPackage nel primo smoke;
+- successivamente XLSX, Shapefile ZIP, Access e source dinamiche via web service secondo roadmap;
+- osservare schema/struttura rilevata;
+- osservare ontologie e vocabolari controllati proposti/selezionati;
+- approvare/correggere la semantica tramite superficie governata;
+- avviare l'Ingestion;
+- osservare RAW/Lake, handoff e materializzazione UDP;
+- ottenere Urban Object persistiti;
+- cercare gli oggetti tramite `urban.object.search`;
+- ripetere con un aggiornamento incrementale almeno per una source dinamica.
+
+Il primo smoke tecnico può precedere la UI completa, ma non può bypassare i percorsi governati.
+
+### Priorità immediata
+
+Fino alla prima vertical slice reale:
+- evitare nuovi fronti infrastrutturali non necessari;
+- privilegiare il primo dataset reale governato end-to-end;
+- trasformare ogni nuovo passaggio manuale in helper idempotente/versionato se riutilizzabile;
+- mantenere R-INSTALL e R-SMOKE come gate espliciti di roadmap, non come attività opzionali finali.
