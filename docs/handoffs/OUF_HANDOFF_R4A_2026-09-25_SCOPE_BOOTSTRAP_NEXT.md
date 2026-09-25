@@ -545,3 +545,13 @@ Verifica CI post-fix: Source Onboarding HEAD `79b7e7f42a7a779352ddba09e3b9a6fdc7
 Gateway HEAD `47a3cec` CI #36194792203 e #36194788745 SUCCESS; MCP PR #44 CI #36194928930 SUCCESS, altra workflow #36194928909 ancora in corso al controllo.
 
 MCP PR #44 entrambe le workflow CI #36194928909 e #36194928930 SUCCESS sul commit `954cfd928d70d41e8966aca5c8003b44e5f8f19f` (solo contratto, tool non pubblicati).
+
+## 18.4 Candidato MCP profile/preview — 26 settembre 2026
+
+L'owner ha confermato di proseguire. Sviluppo GitHub-first senza mutazioni live:
+
+- Source Onboarding PR #37 HEAD `4107e0c4917c20c96911f29b25a8dc834e90d519`: vincolo owner per asset/profile/job/preview/DRAFT, verifica receipt HMAC vincolata a metodo, path, hash e soggetto, endpoint MCP interni profile/preview con output limitato; CI module e trusted review SUCCESS.
+- Gateway PR #51 HEAD `10a711bb4a3b3d9dec126f95df3fb096860985b9`: capability e route MCP profile/preview con envelope chiuso, verifica workload+delegation HUMAN, receipt owner firmata; test percorso URI prima/dopo proxy-rewrite; installer limitato a due route con snapshot, readback, prova anonima e rollback. 39 test mirati PASS localmente. CI del nuovo HEAD in corso alla scrittura.
+- MCP Server PR draft #44 HEAD `f1f2f72aa474d5f20b33cb971ea014c2d98e93c5`: tool candidati `source.file.profile` e `source.file.preview` verso Gateway; test MCP client e correzione ordine aspettative nella CI. CI del nuovo HEAD in corso alla scrittura.
+
+Il plugin **live** non contiene ancora questi tool. L'attachment bridge chat→Gateway, streaming APISIX end-to-end, trust dell'upstream su reti distinte, grant/scopes nuovi, installazione route e deploy restano aperti. Nessun CSV trasferito o profilato in produzione; zero publication set Semantic e nessun R-SMOKE completato. Issue MCP #43 e Gateway #52 tracciano i gate. Non usare lo script HTTP da VPS come sostituto della prova attraverso il plugin.
