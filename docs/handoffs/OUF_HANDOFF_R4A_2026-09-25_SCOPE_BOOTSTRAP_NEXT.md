@@ -503,3 +503,21 @@ scope, quindi capability/grant plan e bootstrap MinIO con secret ristretti,
 backup e rollback. Attivare route e deploy solo a valle dei gate; eseguire
 lo smoke esatto tramite Gateway, poi Semantic cold start, approval e
 Ingestion→UDP→search. R-INSTALL e R-SMOKE restano OPEN.
+
+### 18.1 Chiusura del candidato e prossimo comando read-only
+
+Gateway HEAD `b3e5e8aee4ec371cdf6b43b98bab556a025d08b3`, CI
+`36192786906` SUCCESS incluse tutte le suite; installer ora verifica
+401/403 anonimi anche sulle nuove route managed-file.
+Onboarding HEAD `a3ca5af34016368493662a47acf44eaf1fb9a53e` redige nella GET
+asset `staging_ref`/hash/utente (solo ID/stato/media type/size visibili).
+Module CI `36192952745` è in corso sul build immagine; compile/test già PASS,
+non dichiarare green finché il run non è SUCCESS. Trusted review browser
+`36192952711` SUCCESS. Nessun deploy o modifica IAM live.
+
+Prima operazione del VPS, dopo controllo CI sullo HEAD: `plan` del client
+Keycloak `ouf-onboarding` dal nuovo helper
+`scripts/r4a_keycloak_workload_client.py --container ouf-keycloak`.
+Conservare l'output, non creare client o secret finché il piano non è
+esaminato. Poi i cinque scope in plan. Il CSV rimane allegato in chat,
+non sul VPS.
