@@ -329,7 +329,7 @@ Acceptance target:
 
 Il primo smoke tecnico può precedere la UI completa, ma non può bypassare i percorsi governati.
 
-### Priorità immediata
+**Stato 25/09/2026:** il CSV reale di 8 cinema è disponibile; intake MinIO nel deployable Onboarding, route HUMAN/SERVICE Gateway, manifest di capability/grant e script di smoke esatto sono candidati versionati in PR Onboarding #37 e Gateway #51. Gateway CI verde; Onboarding CI finale e deploy live ancora da accettare. Mancano bootstrap MinIO/IAM, pubblicazione semantica cold start e round trip Ingestion→UDP→search. R-SMOKE resta OPEN. Vedere `docs/handoffs/OUF_HANDOFF_R4A_2026-09-25_SCOPE_BOOTSTRAP_NEXT.md` §18.\n\n### Priorità immediata
 
 Fino alla prima vertical slice reale:
 - evitare nuovi fronti infrastrutturali non necessari;
