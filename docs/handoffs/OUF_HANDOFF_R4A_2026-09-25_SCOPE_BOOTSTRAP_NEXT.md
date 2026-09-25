@@ -364,3 +364,53 @@ Non reinstallare servizi.
 Non rigenerare password.
 Non eliminare rollback.
 Non creare dati direttamente nel DB.
+
+
+## 16. Aggiornamento operativo — 25 settembre 2026, sera (sostituisce §15)
+
+Source Onboarding PR #37, branch `codex/r4a-authorization-catalogue`, HEAD
+`44b4bea40efcf0c4d78e30f6d1d4102e1a7c9d45`. CI module #600 e trusted
+review browser #420 entrambe SUCCESS. Il branch aggiunge riconciliazione dei
+binding client scope, controllo dell'attributo Device Flow, smoke token HUMAN,
+lifecycle add-only del grant HUMAN, test CI espliciti e runbook.
+
+Keycloak live:
+- `ouf.onboarding.configuration.write` e `ouf.ingestion.configuration.attest` creati e verificati;
+- `ouf-human-admin` -> OPTIONAL write; `ouf-ingestion` -> DEFAULT attest;
+- attributo effettivo Device Flow del client HUMAN
+  `oauth2.device.authorization.grant.enabled=true` già presente; il primo
+  reconciler leggeva erroneamente un campo assente e il suo tentativo di apply
+  è stato respinto. Script e runbook corretti, verify PASS, nessuna modifica
+  necessaria al Device Flow;
+- token workload Ingestion rinnovato: client, freshness, expiry e attest scope PASS;
+- token HUMAN nuovo con write scope: issuer, client, user `ouf-admin`, actor,
+  Gateway audience, scope, freshness e expiry PASS.
+
+Authorization ACTIVE è ora `ouf-lab-authorization:23`. Grant HUMAN
+`grant-onboarding-configuration-write-human-admin` per il subject IAM corrente
+`b93d8cf6-cd14-4ee6-91d7-84cd76c4f500`, capability
+`ouf.onboarding.configuration.write`, tenant `ouf-lab`, validità
+2026-09-25T00:00:00Z–2026-10-25T00:00:00Z. Lifecycle governato
+plan/draft/preview/publish/verify completato. Existing grants preserved.
+
+Acceptance applicativa: token HUMAN fresco attraverso Gateway su
+`POST /api/onboarding/v1/sources/<random-nonexistent>/onboarding-versions`
+restituisce HTTP 404 con owner code `ONB_NOT_FOUND` e
+`ONBOARDING_AUTHORIZED_NO_WRITE=true`. Nessuna source/versione è stata creata
+in questo smoke.
+
+Semantic live: `published_sets=0`, `active_artifacts=0`, nessun latest
+publication set. Nel container non sono impostati
+`OUF_SCHEMA_GOV_ENABLED` o `OUF_DISCOVERY_WORKER_ENABLED`: default versionati
+rispettivamente false e true. L'unico provider runtime di discovery esterna è
+`SCHEMA_GOV_IT`; disabilitato, restituisce zero candidati. Non inventare
+riferimenti Semantic o configurazioni UDP. Il PET supporta cold start governato:
+DRAFT Semantic -> validazione -> approvazione HUMAN -> publication set ->
+exact SemanticReference in Onboarding.
+
+**Prossimo tratto:** acquisire un CSV reale per R-SMOKE, inventariare il
+percorso di staging `object://` e il worker di profiling Onboarding; produrre
+schema/profilo osservabile e proposta semantica, poi pubblicare reference
+Semantic tramite review HUMAN. Solo dopo creare/attivare una
+PublishedRuntimeConfiguration valida per Ingestion/UDP. Non usare SQL fixture.
+R-INSTALL e R-SMOKE restano OPEN.
