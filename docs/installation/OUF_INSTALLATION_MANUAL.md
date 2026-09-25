@@ -750,3 +750,35 @@ La validation della revision 1 di `ouf-lab-netcup-01` ha prodotto:
 - Gateway HTTPS FAIL conseguente.
 
 Questa evidence conferma che, nel laboratorio corrente, la candidate projection deve predisporre anche l'alias interno di `api.ouf-lab.it` verso Caddy prima di rieseguire la validation.
+
+## 22. Provisioning standardizzato dei workload IAM
+
+I client workload OUF devono essere creati e verificati con una procedura idempotente, non con modifiche manuali della console IAM.
+
+Il repository fornisce `scripts/provision-keycloak-workload.py` con tre modalità:
+- `plan`: confronto read-only fra stato desiderato e stato Keycloak;
+- `apply`: creazione/aggiornamento del client, binding dello scope richiesto, mapper canonici e materializzazione atomica della credenziale nel percorso runtime fornito dall'installazione;
+- `verify`: acceptance read-only e fail-closed su qualsiasi drift.
+
+Il contratto minimo di un workload SERVICE che legge la PolicyBundle ACTIVE è:
+- OIDC confidential client;
+- service account abilitato;
+- Standard Flow disabilitato;
+- Direct Access Grants disabilitati;
+- default scope `authorization.bundle.read`;
+- audience access-token uguale alla Gateway audience della InstallationConfiguration;
+- claim `ouf_actor_type=SERVICE`;
+- claim `tenant_id` uguale al tenant della InstallationConfiguration.
+
+La procedura non stampa client secret o access token. La credenziale runtime resta fuori da Git e viene scritta atomicamente con ownership/mode verificati.
+
+Per R4a, UDP deve avere una propria workload identity distinta da MCP e Ingestion. Il runtime UDP usa poi un token short-lived rinnovato automaticamente per leggere `/internal/capabilities/v1/authorization/policy-bundle/active`. Non è ammesso riusare il client MCP come identità UDP.
+
+Acceptance obbligatoria:
+1. `plan` mostra solo il drift atteso prima del primo provisioning;
+2. `apply` termina con `VERIFY=PASS`;
+3. un successivo `verify` termina con `VERIFY=PASS` senza modifiche;
+4. il token SERVICE contiene audience, tenant, actor type e scope richiesti;
+5. il Gateway accetta il workload sulla route PolicyBundle;
+6. il consumer carica la PolicyBundle ACTIVE e continua a rinfrescarla entro il limite di staleness.
+
