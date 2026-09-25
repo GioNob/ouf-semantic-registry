@@ -470,7 +470,7 @@ l'allegato reale. Source Onboarding PR #37, branch
 nel deployable Onboarding (nessun nuovo container), upload HUMAN
 `POST /api/managed-sources/v1/files`, read SERVICE
 `GET /api/internal/v1/onboarding/managed-files/content`, limite 10 MiB,
-hash byte esatti, content-addressed registration/opaque object ref, capability
+hash byte esatti, registrazione con hash e riferimento oggetto opaco, capability
 owner su upload/profiling/preview/create-onboarding/read, token workload
 Onboarding letto da file a ogni chiamata Gateway, manifest capability/grant,
 batch HUMAN add-only, helper per catturare secret esistente senza stamparlo o
