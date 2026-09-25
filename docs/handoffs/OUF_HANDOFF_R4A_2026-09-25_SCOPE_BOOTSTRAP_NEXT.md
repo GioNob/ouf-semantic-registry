@@ -541,3 +541,5 @@ Verifica CI post-fix: Source Onboarding HEAD `79b7e7f42a7a779352ddba09e3b9a6fdc7
 - La FAQ ufficiale Apache APISIX spiega che APISIX non verifica il certificato TLS degli upstream: `scheme: https` da solo non soddisfa il trust richiesto fra macchine. La documentazione proxy-control richiede APISIX-Runtime per controllare dinamicamente il request buffering. Issue Gateway #52 aggiornato con entrambi i vincoli e prova negativa di certificato richiesto.
 - MCP Server PR draft #44 (HEAD `954cfd928d70d41e8966aca5c8003b44e5f8f19f`) versione il contratto attachment HUMAN/owner, tool semantici e acceptance senza esporre tool non funzionanti. Il plugin live espone status, operazioni, permessi e ricerca, ma nessun tool managed-file/onboarding/ingestion; bridge attachment e relative route/receipt non sono implementati. Issue MCP #43 resta aperto.
 - Nessun bootstrap IAM o deploy live; non far partire il giro CSV tramite script HTTP come sostituto dell'accettazione plugin.
+
+Gateway HEAD `47a3cec` CI #36194792203 e #36194788745 SUCCESS; MCP PR #44 CI #36194928930 SUCCESS, altra workflow #36194928909 ancora in corso al controllo.
