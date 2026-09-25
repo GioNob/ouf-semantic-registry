@@ -543,3 +543,5 @@ Verifica CI post-fix: Source Onboarding HEAD `79b7e7f42a7a779352ddba09e3b9a6fdc7
 - Nessun bootstrap IAM o deploy live; non far partire il giro CSV tramite script HTTP come sostituto dell'accettazione plugin.
 
 Gateway HEAD `47a3cec` CI #36194792203 e #36194788745 SUCCESS; MCP PR #44 CI #36194928930 SUCCESS, altra workflow #36194928909 ancora in corso al controllo.
+
+MCP PR #44 entrambe le workflow CI #36194928909 e #36194928930 SUCCESS sul commit `954cfd928d70d41e8966aca5c8003b44e5f8f19f` (solo contratto, tool non pubblicati).
