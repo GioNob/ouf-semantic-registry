@@ -278,7 +278,7 @@ Stato verificato:
 - la capability `ouf.ingestion.configuration.attest` è registrata e inclusa;
 - il grant SERVICE `grant-onboarding-configuration-attest-ingestion` per `ouf-ingestion` è pubblicato in v22;
 - i due nuovi OAuth client scope non sono ancora presenti in Keycloak: questo è il punto operativo aperto;
-- Source Onboarding PR #37 HEAD `648b6cab5d6b1deda900dcc4c39316bcafae5ae1` ha CI verde: Module CI #554 e R2f trusted review browser #374;
+- Source Onboarding PR #37 HEAD `3d21b0b31ac3547a4c810e67d17c45f687d0cb23` include l'aggiornamento del runbook; il commit funzionale precedente `648b6cab5d6b1deda900dcc4c39316bcafae5ae1` ha Module CI #554 e R2f #374 verdi; le run #556/#376 sul nuovo HEAD erano in esecuzione al momento dell'aggiornamento;
 - il nuovo helper versionato `scripts/r4a_keycloak_client_scope_catalogue.py` supporta plan/apply/verify per la creazione/reconciliation dei client scope OIDC.
 
 Prossimo passo R4a:
