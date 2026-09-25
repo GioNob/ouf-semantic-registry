@@ -336,3 +336,5 @@ Fino alla prima vertical slice reale:
 - privilegiare il primo dataset reale governato end-to-end;
 - trasformare ogni nuovo passaggio manuale in helper idempotente/versionato se riutilizzabile;
 - mantenere R-INSTALL e R-SMOKE come gate espliciti di roadmap, non come attività opzionali finali.
+
+**Correzione di gate del 25/09/2026:** CI verde del commit Onboarding `79b7e7f` certifica solo lo slice HTTP. L'upload via plugin/MCP non esiste ancora (MCP issue #43); lo streaming APISIX e il deployment Gateway remoto restano da provare (Gateway issue #52). Il client CLI ora usa binding dell'installazione e Onboarding limita la memoria con spool temporaneo. Bloccare bootstrap/deploy del percorso CSV fino a risoluzione dei gate PET T25; non assegnare stato DONE a R-SMOKE.
