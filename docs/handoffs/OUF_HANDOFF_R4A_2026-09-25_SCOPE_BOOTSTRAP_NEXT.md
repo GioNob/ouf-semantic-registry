@@ -460,3 +460,46 @@ APISIX con backup/rollback, configurare e deployare Onboarding profiler,
 poi registrare l'asset usando stagingRef, size 509 e hash esatto.
 Eseguire profiling/preview e cold start Semantic governato prima di
 qualsiasi ACTIVE bundle. Non creare fixture DB o reference Semantic inventate.
+
+## 18. Candidato intake governato del CSV — 25 settembre, notte
+
+Con l'autorizzazione dell'utente, sviluppato senza deploy live il percorso per
+l'allegato reale. Source Onboarding PR #37, branch
+`codex/r4a-authorization-catalogue`, HEAD
+`243606edb55a61ed55d9c3bb6ce082d40d275b92`: adapter MinIO condizionale
+nel deployable Onboarding (nessun nuovo container), upload HUMAN
+`POST /api/managed-sources/v1/files`, read SERVICE
+`GET /api/internal/v1/onboarding/managed-files/content`, limite 10 MiB,
+hash byte esatti, content-addressed registration/opaque object ref, capability
+owner su upload/profiling/preview/create-onboarding/read, token workload
+Onboarding letto da file a ogni chiamata Gateway, manifest capability/grant,
+batch HUMAN add-only, helper per catturare secret esistente senza stamparlo o
+ruotarlo, procedura `docs/R4A_MANAGED_CSV_INTAKE.md` e
+`scripts/r4a_managed_csv_smoke.py` sul CSV esatto. Il test locale legge
+l'allegato: 509 byte e SHA-256 atteso PASS. Non committare il CSV.
+
+Gateway PR #51, branch `codex/r4a-object-search`, HEAD
+`83444c1f06de6e332a92b1163be01974655a7194`, CI Gateway SUCCESS:
+route upload HUMAN e GET/POST HUMAN bounded namespace managed-files, route
+read M2M verso `ouf-onboarding:8080`, capability/actor/scope dichiarati,
+materializer e installer con snapshot/restore. Il contratto iniziale
+`MTLS_SERVICE` verso un backend inesistente è stato sostituito da M2M
+workload già supportato dagli installer APISIX; resta necessario bootstrap
+client e concessioni governate. La route POST per `create-onboarding`
+richiede a bordo lo scope profile e nel backend anche capability
+`ouf.managed-source.onboarding.create`; sono previsti entrambi nel bundle
+di scope/grant HUMAN.
+
+La CI Onboarding sul HEAD ultimo è ancora in esecuzione al momento di questa
+nota. Non dichiarare successo finché module CI e build immagine non siano
+SUCCESS sullo stesso SHA. Onboarding live è ancora il tag precedente e
+APISIX non è stato mutato. Sul VPS risultano: nessun bucket/intake nuovo
+verificato; nessun token `ouf-onboarding` montato; minio/onboarding/apisix
+nella rete `ouf-backend`. Il CSV della chat NON è automaticamente sul VPS.
+
+Prossimo gate operatore, solo dopo CI verde: checkout GitHub-first degli
+script, `plan` del client workload `ouf-onboarding` e dei cinque nuovi
+scope, quindi capability/grant plan e bootstrap MinIO con secret ristretti,
+backup e rollback. Attivare route e deploy solo a valle dei gate; eseguire
+lo smoke esatto tramite Gateway, poi Semantic cold start, approval e
+Ingestion→UDP→search. R-INSTALL e R-SMOKE restano OPEN.
