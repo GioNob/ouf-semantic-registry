@@ -521,3 +521,14 @@ Keycloak `ouf-onboarding` dal nuovo helper
 Conservare l'output, non creare client o secret finché il piano non è
 esaminato. Poi i cinque scope in plan. Il CSV rimane allegato in chat,
 non sul VPS.
+
+## 18.2 Revisione architetturale dopo le quattro domande dell'owner
+
+L'owner ha richiesto stop del bootstrap prima di verificare conformità PET, vera esecuzione tramite plugin/MCP, dominio dipendente dall'Ente e Gateway separabile dalla rete business/DB. Gli esiti, verificati nei PET v1.7 e nei PR, sono gate vincolanti:
+
+- Gateway T25: il percorso Attachment HUMAN -> Gateway -> Onboarding è normativo. Il comando HTTP da VPS è solo una prova di route, non il giro MCP richiesto. In Gateway i manifest managed-file sono `toolEligible=false`; MCP Server non contiene tali tool. Richiede attachment flow governato, profiling/preview/create via capability MCP, ingresso ingestion dopo bundle ACTIVE; non usare base64/URL storage come scorciatoia.
+- T25 richiede trasporto streaming e limite configurabile al Gateway. Il commit Onboarding `79b7e7f42a7a779352ddba09e3b9a6fdc777e882` usa spool temporaneo e digest incrementale con heap limitato, ma il buffering APISIX è ancora un gate aperto. Non certificare lo streaming end-to-end sulla sola CI.
+- Lo script CSV nel commit sopra richiede `--issuer`, `--gateway-base-url`, `--audience`, `--client-id` derivati dalla InstallationProjection approvata; non contiene più domini pubblici hardcoded del lab.
+- Il binding corrente `ouf-onboarding:8080` e gli altri nomi `ouf-*` sono del lab su Docker `ouf-backend`; distribuzione Gateway su host/reti distinte richiede endpoint per installazione approvati, DNS privato, TLS/mTLS, firewall/egress e test negativi; non dichiararla verificata.
+
+**Sospendere il comando `plan` del workload Keycloak indicato in 18.1 e qualunque deploy fino alla definizione/revisione dei binding MCP, streaming Gateway e topologia distribuita.** La CI del nuovo HEAD Onboarding è da rilevare; la CI verde precedente era `a3ca5af34016368493662a47acf44eaf1fb9a53e`. Lo smoke attuale termina a profiling e non conta come R-SMOKE completato.
