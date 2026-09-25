@@ -555,3 +555,5 @@ L'owner ha confermato di proseguire. Sviluppo GitHub-first senza mutazioni live:
 - MCP Server PR draft #44 HEAD `f1f2f72aa474d5f20b33cb971ea014c2d98e93c5`: tool candidati `source.file.profile` e `source.file.preview` verso Gateway; test MCP client e correzione ordine aspettative nella CI. CI del nuovo HEAD in corso alla scrittura.
 
 Il plugin **live** non contiene ancora questi tool. L'attachment bridge chat→Gateway, streaming APISIX end-to-end, trust dell'upstream su reti distinte, grant/scopes nuovi, installazione route e deploy restano aperti. Nessun CSV trasferito o profilato in produzione; zero publication set Semantic e nessun R-SMOKE completato. Issue MCP #43 e Gateway #52 tracciano i gate. Non usare lo script HTTP da VPS come sostituto della prova attraverso il plugin.
+
+Verifica successiva: Gateway HEAD `10a711b` workflow #36196977980 e #36196973424 SUCCESS; MCP HEAD `f1f2f72` workflow #36196956682, #36196956647, #36196953346, #36196953272 SUCCESS. La CI verde copre codice candidato e test, non il bridge attachment né l'accettazione live.
