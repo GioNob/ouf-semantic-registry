@@ -750,3 +750,80 @@ La validation della revision 1 di `ouf-lab-netcup-01` ha prodotto:
 - Gateway HTTPS FAIL conseguente.
 
 Questa evidence conferma che, nel laboratorio corrente, la candidate projection deve predisporre anche l'alias interno di `api.ouf-lab.it` verso Caddy prima di rieseguire la validation.
+
+
+---
+
+## 22. Standardizzazione IAM/Authorization e installabilità multi-host
+
+Questa sezione consolida le regole emerse durante R4a e diventa parte del percorso R-INSTALL.
+
+### 22.1 Divieto di bootstrap IAM ad-hoc
+
+La creazione di capability, OAuth client scope, client binding e grant non deve dipendere da sequenze `kcadm` ricordate dall'operatore.
+
+Ogni elemento deve avere una procedura versionata e idempotente con almeno:
+- `plan` read-only;
+- `apply`;
+- `verify`;
+- output che non espone token, password o client secret;
+- matching esatto dei nomi;
+- gestione esplicita del drift.
+
+Per i client scope OIDC usare il reconciler versionato del Source Onboarding:
+`scripts/r4a_keycloak_client_scope_catalogue.py`.
+
+Per il binding di uno scope esistente a un client usare il reconciler di client-scope assignment versionato nel repository che lo contiene, mantenendo il comportamento dichiarativo DEFAULT/OPTIONAL.
+
+### 22.2 Contratto corrente per le capability Onboarding
+
+Per il lifecycle Source Onboarding corrente:
+
+- `ouf.onboarding.configuration.write`
+  - owner: onboarding;
+  - actor: HUMAN;
+  - OAuth scope omonimo;
+  - client `ouf-human-admin`: assegnazione OPTIONAL;
+  - grant Authorization: subject HUMAN `ouf-admin` tramite percorso governato.
+
+- `ouf.ingestion.configuration.attest`
+  - owner: onboarding;
+  - actor: SERVICE;
+  - OAuth scope omonimo;
+  - client `ouf-ingestion`: assegnazione DEFAULT;
+  - grant Authorization: service principal `ouf-ingestion`.
+
+Il PolicyBundle ACTIVE del laboratorio al 25 settembre 2026 è `ouf-lab-authorization:22`, con il grant SERVICE di attestation già pubblicato.
+
+### 22.3 Acceptance IAM prima del test applicativo
+
+Prima di testare una route protetta:
+1. verificare che il client scope esista;
+2. verificare il binding corretto al client;
+3. emettere un token nuovo;
+4. verificare una volta che il claim `scope` contiene lo scope richiesto;
+5. verificare audience, `tenant_id` e `ouf_actor_type`;
+6. verificare che il PolicyBundle ACTIVE contenga capability e grant corrispondenti.
+
+Un 401/403 non deve essere “risolto” allentando il Gateway o il backend: prima si identifica quale dei due livelli, OAuth scope o Authorization grant, manca.
+
+### 22.4 Gate R-INSTALL
+
+L'installazione OUF su una nuova macchina è accettata solo quando un operatore con accesso ai repository può:
+1. partire da host supportato pulito;
+2. predisporre prerequisiti e secret references;
+3. eseguire un orchestrator documentato;
+4. ottenere InstallationConfiguration ACTIVE e projection;
+5. creare IAM/capability/grant senza comandi non versionati;
+6. distribuire Gateway e sei moduli;
+7. eseguire acceptance;
+8. eseguire rollback e restore documentati.
+
+La cronologia chat non è una dipendenza ammessa dell'installazione.
+
+### 22.5 Gate R-SMOKE
+
+Dopo R-INSTALL o su un ambiente già installato, deve esistere una vertical acceptance osservabile:
+source reale -> Onboarding -> selezione semantica -> Ingestion -> Lake -> Handoff -> UDP -> ricerca Urban Object.
+
+Il primo profilo deve usare almeno CSV o GeoPackage. L'espansione prevista comprende XLSX, Shapefile ZIP, Microsoft Access con inferenza da chiavi/relazioni e source dinamiche via web service. L'operatore deve poter osservare ontologie/vocabolari proposti e l'esito della materializzazione senza SQL manuale.
