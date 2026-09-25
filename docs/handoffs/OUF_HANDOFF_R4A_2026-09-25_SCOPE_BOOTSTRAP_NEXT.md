@@ -414,3 +414,49 @@ schema/profilo osservabile e proposta semantica, poi pubblicare reference
 Semantic tramite review HUMAN. Solo dopo creare/attivare una
 PublishedRuntimeConfiguration valida per Ingestion/UDP. Non usare SQL fixture.
 R-INSTALL e R-SMOKE restano OPEN.
+
+## 17. R-SMOKE CSV reale e gap intake — 25 settembre 2026, 23:08 Europe/Rome
+
+L'utente ha allegato `cinema_trieste(1).csv`: 509 byte, SHA-256
+`a07c2dcdc21aa9a23fb5585a69d52031dc08010d251bf39bfa67c8e0962c6e1a`,
+UTF-8 con BOM, CRLF, due colonne `cinema` e `indirizzo`, 8 righe
+senza campi vuoti. Non pubblicare l'allegato né caricarlo direttamente
+su MinIO eludendo l'intake Gateway; mantenere i byte originali/hash.
+Il profiler Source Onboarding lasciava il BOM nella prima intestazione:
+corretto in PR #37, commit `32d2713529adbe4434c731fe5a516f085b20af3e`,
+con test per intestazioni BOM e campi con virgole tra virgolette.
+Source Onboarding module CI #36189548425 SUCCESS e trusted review
+browser #36189548448 SUCCESS. Il runtime live non incorpora ancora il fix.
+
+VPS: `ouf-minio`, `ouf-onboarding` e `ouf-apisix` condividono la rete
+`ouf-backend`; APISIX è anche in `ouf-gateway-control`.
+Probe anonimo della route `GET /internal/object-storage/v1/content`
+ha restituito HTTP 404. Il Gateway dichiara la route verso
+`ouf-object-storage:8080/v1/content`, ma non esiste un container
+`ouf-object-storage` né un repository OUF omonimo trovato. Non dedurre
+dal solo 404 l'assenza certa di una route per ogni principal; l'endpoint
+non è comunque funzionante end-to-end senza backend.
+
+Mount `ouf-onboarding`: solo
+`/run/secrets/authorization-owner-key` e
+`/run/secrets/onboarding-ths.yaml`; manca un token workload dedicato
+alle letture dello storage. Mount `ouf-ingestion` include
+`/run/ouf-ingestion-auth`, il cui token/client non va riutilizzato
+come identità Onboarding. `GatewayManagedFileObjectStore` è condizionale
+su `ouf.onboarding.object-store.gateway-base-url`, assente dalle env live,
+e non allega oggi alcuna credenziale alla richiesta.
+La route dichiarativa specifica `MTLS_SERVICE`, mentre il materializer
+`tools/materialize_apisix_internal_m2m_routes.py` accetta soltanto
+`M2M` con scope/attore SERVICE. Risolvere coerentemente identità,
+materializzazione e autenticazione del client senza cambiare tacitamente
+il contratto PET. Il PET Gateway T25 richiede upload streaming tramite
+Gateway verso il servizio intake; upload diretto a MinIO con URL firmati
+richiede una decisione architetturale esplicita.
+
+Sequenza necessaria: implementare e testare il servizio intake/object
+storage su MinIO con upload HUMAN governato e lettura SERVICE governata,
+riconciliare scope/grant e credenziali di workload, materializzare route
+APISIX con backup/rollback, configurare e deployare Onboarding profiler,
+poi registrare l'asset usando stagingRef, size 509 e hash esatto.
+Eseguire profiling/preview e cold start Semantic governato prima di
+qualsiasi ACTIVE bundle. Non creare fixture DB o reference Semantic inventate.
