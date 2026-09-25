@@ -7,10 +7,10 @@ L'ultimo passo applicato è stato l'aggiornamento GitHub del Source Onboarding c
 
 PR Source Onboarding #37:
 - branch: `codex/r4a-authorization-catalogue`
-- HEAD: `648b6cab5d6b1deda900dcc4c39316bcafae5ae1`
+- HEAD: `3d21b0b31ac3547a4c810e67d17c45f687d0cb23`
 - CI:
-  - Source Onboarding module CI #554: SUCCESS
-  - R2f trusted review browser #374: SUCCESS
+  - il commit funzionale precedente `648b6cab5d6b1deda900dcc4c39316bcafae5ae1` aveva Module CI #554 e R2f #374: SUCCESS
+  - il nuovo HEAD `3d21b0b31ac3547a4c810e67d17c45f687d0cb23` aggiunge solo l'aggiornamento `docs/RUNBOOK.md`; CI #556/#376 era in esecuzione al momento dell'handoff
 
 Nuovi file:
 - `scripts/r4a_keycloak_client_scope_catalogue.py`
