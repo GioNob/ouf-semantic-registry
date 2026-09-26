@@ -573,3 +573,5 @@ Avanzamento senza deploy live sui PR draft:
 - MCP Server PR draft #44 HEAD `394fcb300ca8551520678d96556bacbc6aba4c43`: tool candidato `source.onboarding.create` come proposta, invio al Gateway e test MCP→Gateway; manifest richiede field decisions e sourceObjectKeyFields espliciti. CI parziale verde, suite lunga ancora in corso.
 
 La creazione produce solo una versione DRAFT. L'approvazione e l'attivazione restano sulla superficie HUMAN con semantic references reali e policy attiva. Il plugin live non espone questi tool, l'attachment bridge non esiste, nessun file è stato trasferito e R-SMOKE resta OPEN. Non fare bootstrap o deploy prima dei gate streaming/APISIX-Runtime e transport trust cross-network.
+
+Verifica conclusiva CI dell'incremento DRAFT: Onboarding HEAD `d92285a` workflow #36215540221, #36215540219, #36215537861 e #36215537848 SUCCESS; Gateway HEAD `3b2a22f` workflow #36215599887 e #36215596997 SUCCESS; MCP HEAD `394fcb3` workflow #36215544846, #36215544838, #36215542675 e #36215542628 SUCCESS. Il verde certifica il candidato versionato, non un deploy né un end-to-end attraverso il plugin live.
