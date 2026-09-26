@@ -561,3 +561,5 @@ Verifica successiva: Gateway HEAD `10a711b` workflow #36196977980 e #36196973424
 ## 18.5 Gate streaming upload — 26 settembre 2026
 
 Gateway PR #51 HEAD `3d4251942a2afe1b32c745c5413bd257b302b030`: materializzazione upload opzionale con `proxy-control.request_buffering=false` solo per la route HUMAN; l'installer rifiuta la route priva del controllo e verifica la presenza del plugin HTTP nell'Admin API prima di prendere lo snapshot o mutare APISIX. Test locali mirati: 12 PASS; CI nuovo commit ancora in corso. Runbook `docs/R4A_MANAGED_FILE_STREAMING_GATE.md` distingue plugin presente da prova comportamentale dello streaming a chunk con intake controllato. La documentazione ufficiale richiede APISIX-Runtime per `proxy-control`; la build live non è stata attestata. Nessun deploy; attachment bridge ChatGPT→Gateway e trasporto remoto certificato restano OPEN.
+
+CI successiva Gateway HEAD `3d4251942a2afe1b32c745c5413bd257b302b030`: workflow #36213548942 e #36213547066 SUCCESS. La verifica live del runtime e dell'upload chunked resta aperta.
