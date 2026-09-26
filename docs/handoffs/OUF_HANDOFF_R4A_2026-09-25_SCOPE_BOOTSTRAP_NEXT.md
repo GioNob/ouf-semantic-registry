@@ -563,3 +563,13 @@ Verifica successiva: Gateway HEAD `10a711b` workflow #36196977980 e #36196973424
 Gateway PR #51 HEAD `3d4251942a2afe1b32c745c5413bd257b302b030`: materializzazione upload opzionale con `proxy-control.request_buffering=false` solo per la route HUMAN; l'installer rifiuta la route priva del controllo e verifica la presenza del plugin HTTP nell'Admin API prima di prendere lo snapshot o mutare APISIX. Test locali mirati: 12 PASS; CI nuovo commit ancora in corso. Runbook `docs/R4A_MANAGED_FILE_STREAMING_GATE.md` distingue plugin presente da prova comportamentale dello streaming a chunk con intake controllato. La documentazione ufficiale richiede APISIX-Runtime per `proxy-control`; la build live non è stata attestata. Nessun deploy; attachment bridge ChatGPT→Gateway e trasporto remoto certificato restano OPEN.
 
 CI successiva Gateway HEAD `3d4251942a2afe1b32c745c5413bd257b302b030`: workflow #36213548942 e #36213547066 SUCCESS. La verifica live del runtime e dell'upload chunked resta aperta.
+
+## 18.6 Proposta MCP DRAFT da file gestito — 26 settembre 2026
+
+Avanzamento senza deploy live sui PR draft:
+
+- Source Onboarding PR #37 HEAD `d92285a63654ebac2beabbca18293f73563fac81`: migration V30 per idempotenza asset+subject+key, hash degli argomenti, ritorno della stessa versione al retry e conflitto se cambiano gli argomenti; endpoint receipt-only `/api/internal/v1/onboarding/managed-file-mcp/create` con risposta DRAFT limitata. La proposta MCP richiede classificazione esplicita dei campi e scelta esplicita (anche vuota) delle chiavi di identità. Test di retry, conflitto, altro owner, parsing delegato. CI Java/test PASS; build immagine e ulteriori workflow ancora in corso alla scrittura.
+- Gateway PR #51 HEAD `3b2a22f4690283bb97ecfc71889ef6d951c018cb`: capability `ouf.managed-source.onboarding.create` candidata a MCP, schema chiuso per asset/profile/semanticRefs/classificazione completa, route `managed.file/create`, receipt owner firmata, installer delle tre route con rollback. 11 test locali mirati PASS; CI in corso.
+- MCP Server PR draft #44 HEAD `394fcb300ca8551520678d96556bacbc6aba4c43`: tool candidato `source.onboarding.create` come proposta, invio al Gateway e test MCP→Gateway; manifest richiede field decisions e sourceObjectKeyFields espliciti. CI parziale verde, suite lunga ancora in corso.
+
+La creazione produce solo una versione DRAFT. L'approvazione e l'attivazione restano sulla superficie HUMAN con semantic references reali e policy attiva. Il plugin live non espone questi tool, l'attachment bridge non esiste, nessun file è stato trasferito e R-SMOKE resta OPEN. Non fare bootstrap o deploy prima dei gate streaming/APISIX-Runtime e transport trust cross-network.
