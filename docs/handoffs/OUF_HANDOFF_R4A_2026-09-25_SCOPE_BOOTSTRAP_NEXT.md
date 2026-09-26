@@ -1,0 +1,585 @@
+# OUF — HANDOFF OPERATIVO COMPLETO
+## Stato al 25 settembre 2026 — ripartenza da Keycloak client-scope bootstrap
+
+## 0. Punto esatto di ripartenza
+
+L'ultimo passo applicato è stato l'aggiornamento GitHub del Source Onboarding con un reconciler generico dei Keycloak client scope.
+
+PR Source Onboarding #37:
+- branch: `codex/r4a-authorization-catalogue`
+- HEAD: `3d21b0b31ac3547a4c810e67d17c45f687d0cb23`
+- CI:
+  - il commit funzionale precedente `648b6cab5d6b1deda900dcc4c39316bcafae5ae1` aveva Module CI #554 e R2f #374: SUCCESS
+  - il nuovo HEAD `3d21b0b31ac3547a4c810e67d17c45f687d0cb23` aggiunge solo l'aggiornamento `docs/RUNBOOK.md`; CI #556/#376 era in esecuzione al momento dell'handoff
+
+Nuovi file:
+- `scripts/r4a_keycloak_client_scope_catalogue.py`
+- `tests/test_r4a_keycloak_client_scope_catalogue.py`
+
+Il controllo live Keycloak ha restituito:
+```text
+ouf.onboarding.configuration.write=MISSING
+ouf.ingestion.configuration.attest=MISSING
+```
+
+NON è stato ancora eseguito alcun apply del nuovo reconciler su Keycloak.
+
+La nuova chat deve ripartire da qui.
+
+## 1. Regole operative mandatory
+
+- PET v1.7 + Cross-Module Alignment Matrix sono la BIBBIA.
+- A ogni sprint/cambio area confrontare il lavoro con PET e matrix.
+- Standardizzare, automatizzare, versionare; evitare hack live one-off.
+- GitHub-first: branch/commit/PR -> CI -> VPS fetch/build/test/deploy.
+- Un blocco corto di comandi per volta.
+- Indicare sempre la sede di esecuzione: SSH `oufadmin`, PowerShell PC, Browser, GitHub/ChatGPT.
+- Mai stampare token, password, client secret, private key o admin key.
+- Preservare rollback, container precedenti, snapshot e backup fino a chiusura acceptance.
+- Niente INSERT SQL diretti per “far passare” acceptance dati.
+- R-INSTALL resta OPEN finché non esiste prova clean-install/upgrade/restore.
+- Nuovo gate formale R-SMOKE: “vedere il fumo” end-to-end da source reale a ricerca oggetti.
+
+## 2. Obiettivo corrente
+
+Completare R4a `urban.object.search` con dati reali governati.
+
+Vertical slice attesa:
+source -> Onboarding -> semantic references -> activation -> Ingestion -> RAW/Lake -> handoff -> UDP materialization -> `urban.object.search`.
+
+Acceptance dati:
+- almeno 3 oggetti reali dello stesso canonical type;
+- almeno un candidato non accessibile per test minimizzazione;
+- due pagine reali;
+- cursor;
+- partial;
+- invalid cursor;
+- property/minimization authorization;
+- audit/evidence.
+
+## 3. Authorization
+
+PolicyBundle ACTIVE:
+`ouf-lab-authorization:22`.
+
+v21 ha aggiunto:
+- `ouf.onboarding.configuration.write`
+- `ouf.ingestion.configuration.attest`
+
+v22 ha aggiunto il grant SERVICE:
+- grantId: `grant-onboarding-configuration-attest-ingestion`
+- capability: `ouf.ingestion.configuration.attest`
+- tenant: `ouf-lab`
+- servicePrincipalId: `ouf-ingestion`
+
+Lifecycle v22 verificato:
+```text
+PUBLISHED=true POLICY_REF=ouf-lab-authorization:22
+ACTIVE_VERIFIED=true EXISTING_GRANTS_PRESERVED=true
+```
+
+Rimane da creare il grant HUMAN per `ouf.onboarding.configuration.write` al principal HUMAN `ouf-admin` attraverso percorso governato. Non usare lo script SERVICE per un subject grant e non modificare direttamente DB/PolicyBundle.
+
+## 4. Keycloak — punto aperto immediato
+
+Sessione `kcadm` era scaduta ed è stata rinnovata tramite login interattivo come bootstrap admin `oufadmin`.
+
+Controllo live:
+```text
+ouf.onboarding.configuration.write=MISSING
+ouf.ingestion.configuration.attest=MISSING
+```
+
+Nuovo helper Source Onboarding verde:
+`scripts/r4a_keycloak_client_scope_catalogue.py`.
+
+Contratto:
+- plan/apply/verify;
+- scope OIDC;
+- `include.in.token.scope=true`;
+- `display.on.consent.screen=false`;
+- matching esatto;
+- preserva attributi extra;
+- non stampa segreti.
+
+Ordine previsto:
+1. fetch del branch/HEAD verde sul VPS;
+2. `plan` per i due scope;
+3. `apply`;
+4. `verify`;
+5. assegnazione:
+   - `ouf-human-admin` -> OPTIONAL `ouf.onboarding.configuration.write`;
+   - `ouf-ingestion` -> DEFAULT `ouf.ingestion.configuration.attest`;
+6. token acceptance, senza stampare token;
+7. grant HUMAN governato;
+8. test autenticati.
+
+## 5. Source Onboarding live
+
+Repository:
+`GioNob/ouf-source-onboarding`
+
+Branch R4a:
+`codex/r4a-authorization-catalogue`
+
+Live container:
+`ouf-onboarding:r4a-5866007`
+
+Rollback recente:
+`ouf-onboarding-pre-5866007`
+
+Backup recente:
+`/opt/ouf/backup/onboarding-runtime-20260925T111539Z`
+
+Smoke:
+`ouf-onboarding-r4a-smoke`
+
+Nuove route/app behavior:
+- HUMAN mutating source lifecycle richiede `ouf.onboarding.configuration.write`;
+- compatibility attestation richiede SERVICE + `ouf.ingestion.configuration.attest`;
+- endpoint M2M:
+  `POST /api/internal/v1/onboarding/compatibility/ingestion-runtime`.
+
+Lifecycle source atteso:
+source -> version -> validate/submit -> approval challenge -> HUMAN approval -> SERVICE ingestion compatibility attestation -> HUMAN activate -> `published_configuration`.
+
+Le tabelle live erano ancora vuote per source/onboarding publication. Non creare fixture via SQL.
+
+## 6. Gateway
+
+Repository:
+`GioNob/ouf-api-gateway`
+
+Branch:
+`codex/r4a-object-search`
+
+HEAD versionato noto:
+`9fb177de3021ffc90b45a847a42ac7eec24d6784`
+
+Deploy route R4a completato.
+
+Backup HUMAN:
+`/opt/ouf/backup/trusted-human-onboarding-p9k1x5zk/previous.json`
+
+Backup M2M:
+`/opt/ouf/backup/internal-m2m-routes-5c04fc48/previous.json`
+
+WORK preservato:
+`/tmp/r4a-onboarding-gw.W9tTnm`
+
+Acceptance anonima:
+```text
+GET /api/onboarding/v1/sources -> 401
+POST /api/onboarding/v1/sources -> 401
+GET /api/trusted-human/v1/approval-challenges/<dummy> -> 401
+POST /api/internal/v1/onboarding/compatibility/ingestion-runtime -> 401
+```
+
+Questa acceptance è PASS.
+
+## 7. InstallationConfiguration
+
+ACTIVE revision: 5.
+
+Projection:
+`/opt/ouf/installation/active-projection.json`
+
+installationId:
+`ouf-lab-netcup-01`
+
+Valori verificati:
+- issuer: `https://auth.ouf-lab.it/realms/ouf`
+- audience: `ouf-api-gateway`
+- public API base: `https://api.ouf-lab.it`
+- ingestion workload client: `ouf-ingestion`
+- onboarding service binding: `ouf-onboarding`
+- semantic service binding: `ouf-semantic`
+
+Backup:
+`/opt/ouf/backup/active-projection-pre-r5.json`
+
+## 8. UDP R4a live
+
+Repository:
+`GioNob/ouf-udp-object-resolution`
+
+Branch:
+`codex/r4a-object-search`
+
+Current known HEAD:
+`944c2f5af8c6b760186af7ede5170318f932e812`
+
+Live:
+`ouf-udp:r4a-944c2f5`
+
+Rollback:
+`ouf-udp-pre-944c2f5`
+
+Backup:
+`/opt/ouf/backup/udp-runtime-20260925T103336Z/container-inspect.json`
+
+Smoke:
+`ouf-udp-r4a-smoke`
+
+Published Execution:
+- enabled = true;
+- Gateway URL = `https://api.ouf-lab.it`;
+- token file = `/run/ouf-udp-auth/token`;
+- tenant = `ouf-lab`.
+
+Flyway:
+- 27 migrations validate;
+- DB schema current version 26;
+- up to date.
+
+Dati live:
+```text
+handoff_intake=0
+materialization_job=0
+urban_object=0
+```
+
+Quindi il runtime è pronto ma non ha ancora ricevuto dati governati.
+
+## 9. Semantic live
+
+Repository:
+`GioNob/ouf-semantic-registry`
+
+R4a branch noto:
+`codex/r4a-udp-workload-bootstrap`
+
+HEAD verde noto:
+`b5e5c837efd30ff16e6a486df419d619244a93b3`
+
+Live:
+`ouf-semantic:r4a-b5e5c83`
+
+Rollback:
+`ouf-semantic-pre-b5e5c83`
+
+Backup:
+`/opt/ouf/backup/semantic-runtime-20260925T094420Z`
+
+Smoke:
+`ouf-semantic-r4a-smoke`
+
+Prima di creare la prima PublishedRuntimeConfiguration bisogna inventariare i riferimenti Semantic live realmente disponibili e usare exact identities valide. Non creare bundle di prova incompatibili con il runtime UDP.
+
+## 10. Ingestion — prossimo tratto dopo IAM
+
+Il runtime Ingestion dovrà:
+- ottenere token workload con `ouf.ingestion.configuration.attest`;
+- attestare la compatibility della configurazione Onboarding;
+- consumare una source ACTIVE;
+- scrivere RAW/Lake tramite capability governata;
+- produrre handoff UDP durable;
+- causare materializzazione di Urban Object.
+
+Prima di mutare Ingestion fare inventory del runtime live e riusare i meccanismi versionati esistenti.
+
+## 11. Backup/rollback da preservare
+
+Non cancellare:
+- `/opt/ouf/backup/internal-m2m-routes-g6w5z9p6/previous.json`
+- `/opt/ouf/backup/internal-m2m-routes-vop_6efs/previous.json`
+- `/opt/ouf/backup/internal-m2m-routes-5c04fc48/previous.json`
+- `/opt/ouf/backup/trusted-human-onboarding-p9k1x5zk/previous.json`
+- `/opt/ouf/backup/authorization-bundle-route-bs_do58x/previous.json`
+- `/opt/ouf/backup/onboarding-runtime-20260925T074324Z/container-inspect.json`
+- `/opt/ouf/backup/onboarding-runtime-20260925T111539Z`
+- `/opt/ouf/backup/active-projection-pre-r4.json`
+- `/opt/ouf/backup/active-projection-pre-r5.json`
+- `/opt/ouf/backup/semantic-runtime-20260925T094420Z`
+- `/opt/ouf/backup/udp-runtime-20260925T103336Z/container-inspect.json`
+
+Preservare anche rollback e smoke container elencati sopra.
+
+## 12. R-INSTALL — gate formale
+
+R-INSTALL non si chiude finché chi possiede accesso ai repository non può installare OUF su una nuova macchina senza ricostruire la procedura dalle chat.
+
+Deliverable minimi:
+- bootstrap/install orchestrator top-level;
+- Installation manifest dichiarativo;
+- secret reference model;
+- IAM bootstrap idempotente;
+- capability/grant lifecycle automatico e versionato;
+- Gateway materialization/deploy;
+- build/deploy dei sei moduli;
+- clean install;
+- upgrade;
+- backup/restore;
+- rollback;
+- acceptance E2E;
+- CI di installabilità.
+
+Ogni pattern scoperto in R4a va assorbito in questo percorso.
+
+## 13. R-SMOKE — gate formale “vedere il fumo”
+
+Obiettivo operatore:
+“carico/collego una source, OUF capisce cosa contiene, vedo come viene semantizzata, parte l'Ingestion e poi ritrovo gli oggetti”.
+
+Primo smoke:
+- CSV oppure GeoPackage reale;
+- schema/profilo osservabile;
+- ontologia e vocabolario controllato proposti/selezionati;
+- approval governata;
+- Ingestion reale;
+- Lake/handoff/materialization;
+- almeno 3 Urban Object;
+- ricerca reale.
+
+Estensioni successive:
+- XLSX;
+- Shapefile ZIP;
+- Microsoft Access con suggerimento da chiavi/relazioni;
+- layer dinamici via web service;
+- suggerimento di relazioni ontologiche;
+- verifica duplicati/soglia di similarità;
+- aggiornamento incrementale.
+
+La UI completa può arrivare dopo il primo smoke tecnico, ma il percorso non può bypassare governance/Authorization.
+
+## 14. Supply chain
+
+La CI UDP usa temporaneamente un mirror MinIO terzo pinned:
+`docker.io/tobi312/minio@sha256:e2226dea4b9aef896db02f7396102d48eb58cd339d930332e3d8bdac80012a78`.
+
+È una soluzione temporanea. R-INSTALL deve portare a un'immagine OUF-owned/vendor-built riproducibile, pinned, con SBOM/scanning.
+
+## 15. Punto operativo immediato per la nuova chat
+
+Prima di qualunque altra mutazione:
+1. leggere PET v1.7 / Matrix per IAM-Onboarding;
+2. verificare che PR #37 sia ancora verde sul HEAD atteso;
+3. sul VPS fare fetch del branch senza checkout distruttivo;
+4. eseguire il nuovo reconciler dei client scope in modalità `plan` per:
+   - `ouf.onboarding.configuration.write`
+   - `ouf.ingestion.configuration.attest`
+5. solo dopo output pulito procedere con apply/verify.
+
+Non reinstallare servizi.
+Non rigenerare password.
+Non eliminare rollback.
+Non creare dati direttamente nel DB.
+
+
+## 16. Aggiornamento operativo — 25 settembre 2026, sera (sostituisce §15)
+
+Source Onboarding PR #37, branch `codex/r4a-authorization-catalogue`, HEAD
+`44b4bea40efcf0c4d78e30f6d1d4102e1a7c9d45`. CI module #600 e trusted
+review browser #420 entrambe SUCCESS. Il branch aggiunge riconciliazione dei
+binding client scope, controllo dell'attributo Device Flow, smoke token HUMAN,
+lifecycle add-only del grant HUMAN, test CI espliciti e runbook.
+
+Keycloak live:
+- `ouf.onboarding.configuration.write` e `ouf.ingestion.configuration.attest` creati e verificati;
+- `ouf-human-admin` -> OPTIONAL write; `ouf-ingestion` -> DEFAULT attest;
+- attributo effettivo Device Flow del client HUMAN
+  `oauth2.device.authorization.grant.enabled=true` già presente; il primo
+  reconciler leggeva erroneamente un campo assente e il suo tentativo di apply
+  è stato respinto. Script e runbook corretti, verify PASS, nessuna modifica
+  necessaria al Device Flow;
+- token workload Ingestion rinnovato: client, freshness, expiry e attest scope PASS;
+- token HUMAN nuovo con write scope: issuer, client, user `ouf-admin`, actor,
+  Gateway audience, scope, freshness e expiry PASS.
+
+Authorization ACTIVE è ora `ouf-lab-authorization:23`. Grant HUMAN
+`grant-onboarding-configuration-write-human-admin` per il subject IAM corrente
+`b93d8cf6-cd14-4ee6-91d7-84cd76c4f500`, capability
+`ouf.onboarding.configuration.write`, tenant `ouf-lab`, validità
+2026-09-25T00:00:00Z–2026-10-25T00:00:00Z. Lifecycle governato
+plan/draft/preview/publish/verify completato. Existing grants preserved.
+
+Acceptance applicativa: token HUMAN fresco attraverso Gateway su
+`POST /api/onboarding/v1/sources/<random-nonexistent>/onboarding-versions`
+restituisce HTTP 404 con owner code `ONB_NOT_FOUND` e
+`ONBOARDING_AUTHORIZED_NO_WRITE=true`. Nessuna source/versione è stata creata
+in questo smoke.
+
+Semantic live: `published_sets=0`, `active_artifacts=0`, nessun latest
+publication set. Nel container non sono impostati
+`OUF_SCHEMA_GOV_ENABLED` o `OUF_DISCOVERY_WORKER_ENABLED`: default versionati
+rispettivamente false e true. L'unico provider runtime di discovery esterna è
+`SCHEMA_GOV_IT`; disabilitato, restituisce zero candidati. Non inventare
+riferimenti Semantic o configurazioni UDP. Il PET supporta cold start governato:
+DRAFT Semantic -> validazione -> approvazione HUMAN -> publication set ->
+exact SemanticReference in Onboarding.
+
+**Prossimo tratto:** acquisire un CSV reale per R-SMOKE, inventariare il
+percorso di staging `object://` e il worker di profiling Onboarding; produrre
+schema/profilo osservabile e proposta semantica, poi pubblicare reference
+Semantic tramite review HUMAN. Solo dopo creare/attivare una
+PublishedRuntimeConfiguration valida per Ingestion/UDP. Non usare SQL fixture.
+R-INSTALL e R-SMOKE restano OPEN.
+
+## 17. R-SMOKE CSV reale e gap intake — 25 settembre 2026, 23:08 Europe/Rome
+
+L'utente ha allegato `cinema_trieste(1).csv`: 509 byte, SHA-256
+`a07c2dcdc21aa9a23fb5585a69d52031dc08010d251bf39bfa67c8e0962c6e1a`,
+UTF-8 con BOM, CRLF, due colonne `cinema` e `indirizzo`, 8 righe
+senza campi vuoti. Non pubblicare l'allegato né caricarlo direttamente
+su MinIO eludendo l'intake Gateway; mantenere i byte originali/hash.
+Il profiler Source Onboarding lasciava il BOM nella prima intestazione:
+corretto in PR #37, commit `32d2713529adbe4434c731fe5a516f085b20af3e`,
+con test per intestazioni BOM e campi con virgole tra virgolette.
+Source Onboarding module CI #36189548425 SUCCESS e trusted review
+browser #36189548448 SUCCESS. Il runtime live non incorpora ancora il fix.
+
+VPS: `ouf-minio`, `ouf-onboarding` e `ouf-apisix` condividono la rete
+`ouf-backend`; APISIX è anche in `ouf-gateway-control`.
+Probe anonimo della route `GET /internal/object-storage/v1/content`
+ha restituito HTTP 404. Il Gateway dichiara la route verso
+`ouf-object-storage:8080/v1/content`, ma non esiste un container
+`ouf-object-storage` né un repository OUF omonimo trovato. Non dedurre
+dal solo 404 l'assenza certa di una route per ogni principal; l'endpoint
+non è comunque funzionante end-to-end senza backend.
+
+Mount `ouf-onboarding`: solo
+`/run/secrets/authorization-owner-key` e
+`/run/secrets/onboarding-ths.yaml`; manca un token workload dedicato
+alle letture dello storage. Mount `ouf-ingestion` include
+`/run/ouf-ingestion-auth`, il cui token/client non va riutilizzato
+come identità Onboarding. `GatewayManagedFileObjectStore` è condizionale
+su `ouf.onboarding.object-store.gateway-base-url`, assente dalle env live,
+e non allega oggi alcuna credenziale alla richiesta.
+La route dichiarativa specifica `MTLS_SERVICE`, mentre il materializer
+`tools/materialize_apisix_internal_m2m_routes.py` accetta soltanto
+`M2M` con scope/attore SERVICE. Risolvere coerentemente identità,
+materializzazione e autenticazione del client senza cambiare tacitamente
+il contratto PET. Il PET Gateway T25 richiede upload streaming tramite
+Gateway verso il servizio intake; upload diretto a MinIO con URL firmati
+richiede una decisione architetturale esplicita.
+
+Sequenza necessaria: implementare e testare il servizio intake/object
+storage su MinIO con upload HUMAN governato e lettura SERVICE governata,
+riconciliare scope/grant e credenziali di workload, materializzare route
+APISIX con backup/rollback, configurare e deployare Onboarding profiler,
+poi registrare l'asset usando stagingRef, size 509 e hash esatto.
+Eseguire profiling/preview e cold start Semantic governato prima di
+qualsiasi ACTIVE bundle. Non creare fixture DB o reference Semantic inventate.
+
+## 18. Candidato intake governato del CSV — 25 settembre, notte
+
+Con l'autorizzazione dell'utente, sviluppato senza deploy live il percorso per
+l'allegato reale. Source Onboarding PR #37, branch
+`codex/r4a-authorization-catalogue`, HEAD
+`243606edb55a61ed55d9c3bb6ce082d40d275b92`: adapter MinIO condizionale
+nel deployable Onboarding (nessun nuovo container), upload HUMAN
+`POST /api/managed-sources/v1/files`, read SERVICE
+`GET /api/internal/v1/onboarding/managed-files/content`, limite 10 MiB,
+hash byte esatti, registrazione con hash e riferimento oggetto opaco, capability
+owner su upload/profiling/preview/create-onboarding/read, token workload
+Onboarding letto da file a ogni chiamata Gateway, manifest capability/grant,
+batch HUMAN add-only, helper per catturare secret esistente senza stamparlo o
+ruotarlo, procedura `docs/R4A_MANAGED_CSV_INTAKE.md` e
+`scripts/r4a_managed_csv_smoke.py` sul CSV esatto. Il test locale legge
+l'allegato: 509 byte e SHA-256 atteso PASS. Non committare il CSV.
+
+Gateway PR #51, branch `codex/r4a-object-search`, HEAD
+`83444c1f06de6e332a92b1163be01974655a7194`, CI Gateway SUCCESS:
+route upload HUMAN e GET/POST HUMAN bounded namespace managed-files, route
+read M2M verso `ouf-onboarding:8080`, capability/actor/scope dichiarati,
+materializer e installer con snapshot/restore. Il contratto iniziale
+`MTLS_SERVICE` verso un backend inesistente è stato sostituito da M2M
+workload già supportato dagli installer APISIX; resta necessario bootstrap
+client e concessioni governate. La route POST per `create-onboarding`
+richiede a bordo lo scope profile e nel backend anche capability
+`ouf.managed-source.onboarding.create`; sono previsti entrambi nel bundle
+di scope/grant HUMAN.
+
+La CI Onboarding sul HEAD `243606edb55a61ed55d9c3bb6ce082d40d275b92` è SUCCESS
+(module CI `36192565381`, inclusa la build immagine non-root; trusted review
+browser `36192565373` SUCCESS). Onboarding live è ancora il tag precedente e
+APISIX non è stato mutato. Sul VPS risultano: nessun bucket/intake nuovo
+verificato; nessun token `ouf-onboarding` montato; minio/onboarding/apisix
+nella rete `ouf-backend`. Il CSV della chat NON è automaticamente sul VPS.
+
+Prossimo gate operatore, solo dopo CI verde: checkout GitHub-first degli
+script, `plan` del client workload `ouf-onboarding` e dei cinque nuovi
+scope, quindi capability/grant plan e bootstrap MinIO con secret ristretti,
+backup e rollback. Attivare route e deploy solo a valle dei gate; eseguire
+lo smoke esatto tramite Gateway, poi Semantic cold start, approval e
+Ingestion→UDP→search. R-INSTALL e R-SMOKE restano OPEN.
+
+### 18.1 Chiusura del candidato e prossimo comando read-only
+
+Gateway HEAD `b3e5e8aee4ec371cdf6b43b98bab556a025d08b3`, CI
+`36192786906` SUCCESS incluse tutte le suite; installer ora verifica
+401/403 anonimi anche sulle nuove route managed-file.
+Onboarding HEAD `a3ca5af34016368493662a47acf44eaf1fb9a53e` redige nella GET
+asset `staging_ref`/hash/utente (solo ID/stato/media type/size visibili).
+Module CI `36192952745` è in corso sul build immagine; compile/test già PASS,
+non dichiarare green finché il run non è SUCCESS. Trusted review browser
+`36192952711` SUCCESS. Nessun deploy o modifica IAM live.
+
+Prima operazione del VPS, dopo controllo CI sullo HEAD: `plan` del client
+Keycloak `ouf-onboarding` dal nuovo helper
+`scripts/r4a_keycloak_workload_client.py --container ouf-keycloak`.
+Conservare l'output, non creare client o secret finché il piano non è
+esaminato. Poi i cinque scope in plan. Il CSV rimane allegato in chat,
+non sul VPS.
+
+## 18.2 Revisione architetturale dopo le quattro domande dell'owner
+
+L'owner ha richiesto stop del bootstrap prima di verificare conformità PET, vera esecuzione tramite plugin/MCP, dominio dipendente dall'Ente e Gateway separabile dalla rete business/DB. Gli esiti, verificati nei PET v1.7 e nei PR, sono gate vincolanti:
+
+- Gateway T25: il percorso Attachment HUMAN -> Gateway -> Onboarding è normativo. Il comando HTTP da VPS è solo una prova di route, non il giro MCP richiesto. In Gateway i manifest managed-file sono `toolEligible=false`; MCP Server non contiene tali tool. Richiede attachment flow governato, profiling/preview/create via capability MCP, ingresso ingestion dopo bundle ACTIVE; non usare base64/URL storage come scorciatoia.
+- T25 richiede trasporto streaming e limite configurabile al Gateway. Il commit Onboarding `79b7e7f42a7a779352ddba09e3b9a6fdc777e882` usa spool temporaneo e digest incrementale con heap limitato, ma il buffering APISIX è ancora un gate aperto. Non certificare lo streaming end-to-end sulla sola CI.
+- Lo script CSV nel commit sopra richiede `--issuer`, `--gateway-base-url`, `--audience`, `--client-id` derivati dalla InstallationProjection approvata; non contiene più domini pubblici hardcoded del lab.
+- Il binding corrente `ouf-onboarding:8080` e gli altri nomi `ouf-*` sono del lab su Docker `ouf-backend`; distribuzione Gateway su host/reti distinte richiede endpoint per installazione approvati, DNS privato, TLS/mTLS, firewall/egress e test negativi; non dichiararla verificata.
+
+**Sospendere il comando `plan` del workload Keycloak indicato in 18.1 e qualunque deploy fino alla definizione/revisione dei binding MCP, streaming Gateway e topologia distribuita.** La CI del nuovo HEAD Onboarding è da rilevare; la CI verde precedente era `a3ca5af34016368493662a47acf44eaf1fb9a53e`. Lo smoke attuale termina a profiling e non conta come R-SMOKE completato.
+
+Verifica CI post-fix: Source Onboarding HEAD `79b7e7f42a7a779352ddba09e3b9a6fdc777e882`, Module CI #36193843522 SUCCESS e R2f trusted review browser #36193843474 SUCCESS. Lavori aperti con criteri d'accettazione: MCP Server issue #43 (attachment e capability fino a ingestion), Gateway issue #52 (streaming APISIX e rete separata). Nessuna modifica live IAM, APISIX, Onboarding, MinIO o Semantic causata da questo commit.
+
+## 18.3 Avanzamento del 26/09/2026 (00:00+ Europe/Rome)
+
+- Gateway PR #51 HEAD `47a3cec3608a9eeeeb3d64e056bb859b9764ef77` rifiuta la materializzazione delle sole nuove route managed-file verso endpoint diversi dal backend lab approvato `ouf-onboarding:8080` fino a un profilo di trasporto remoto verificato; nove test mirati passano localmente. CI remote da rilevare. Questo blocco è intenzionale e non equivale a supporto rete separata.
+- La FAQ ufficiale Apache APISIX spiega che APISIX non verifica il certificato TLS degli upstream: `scheme: https` da solo non soddisfa il trust richiesto fra macchine. La documentazione proxy-control richiede APISIX-Runtime per controllare dinamicamente il request buffering. Issue Gateway #52 aggiornato con entrambi i vincoli e prova negativa di certificato richiesto.
+- MCP Server PR draft #44 (HEAD `954cfd928d70d41e8966aca5c8003b44e5f8f19f`) versione il contratto attachment HUMAN/owner, tool semantici e acceptance senza esporre tool non funzionanti. Il plugin live espone status, operazioni, permessi e ricerca, ma nessun tool managed-file/onboarding/ingestion; bridge attachment e relative route/receipt non sono implementati. Issue MCP #43 resta aperto.
+- Nessun bootstrap IAM o deploy live; non far partire il giro CSV tramite script HTTP come sostituto dell'accettazione plugin.
+
+Gateway HEAD `47a3cec` CI #36194792203 e #36194788745 SUCCESS; MCP PR #44 CI #36194928930 SUCCESS, altra workflow #36194928909 ancora in corso al controllo.
+
+MCP PR #44 entrambe le workflow CI #36194928909 e #36194928930 SUCCESS sul commit `954cfd928d70d41e8966aca5c8003b44e5f8f19f` (solo contratto, tool non pubblicati).
+
+## 18.4 Candidato MCP profile/preview — 26 settembre 2026
+
+L'owner ha confermato di proseguire. Sviluppo GitHub-first senza mutazioni live:
+
+- Source Onboarding PR #37 HEAD `4107e0c4917c20c96911f29b25a8dc834e90d519`: vincolo owner per asset/profile/job/preview/DRAFT, verifica receipt HMAC vincolata a metodo, path, hash e soggetto, endpoint MCP interni profile/preview con output limitato; CI module e trusted review SUCCESS.
+- Gateway PR #51 HEAD `10a711bb4a3b3d9dec126f95df3fb096860985b9`: capability e route MCP profile/preview con envelope chiuso, verifica workload+delegation HUMAN, receipt owner firmata; test percorso URI prima/dopo proxy-rewrite; installer limitato a due route con snapshot, readback, prova anonima e rollback. 39 test mirati PASS localmente. CI del nuovo HEAD in corso alla scrittura.
+- MCP Server PR draft #44 HEAD `f1f2f72aa474d5f20b33cb971ea014c2d98e93c5`: tool candidati `source.file.profile` e `source.file.preview` verso Gateway; test MCP client e correzione ordine aspettative nella CI. CI del nuovo HEAD in corso alla scrittura.
+
+Il plugin **live** non contiene ancora questi tool. L'attachment bridge chat→Gateway, streaming APISIX end-to-end, trust dell'upstream su reti distinte, grant/scopes nuovi, installazione route e deploy restano aperti. Nessun CSV trasferito o profilato in produzione; zero publication set Semantic e nessun R-SMOKE completato. Issue MCP #43 e Gateway #52 tracciano i gate. Non usare lo script HTTP da VPS come sostituto della prova attraverso il plugin.
+
+Verifica successiva: Gateway HEAD `10a711b` workflow #36196977980 e #36196973424 SUCCESS; MCP HEAD `f1f2f72` workflow #36196956682, #36196956647, #36196953346, #36196953272 SUCCESS. La CI verde copre codice candidato e test, non il bridge attachment né l'accettazione live.
+
+## 18.5 Gate streaming upload — 26 settembre 2026
+
+Gateway PR #51 HEAD `3d4251942a2afe1b32c745c5413bd257b302b030`: materializzazione upload opzionale con `proxy-control.request_buffering=false` solo per la route HUMAN; l'installer rifiuta la route priva del controllo e verifica la presenza del plugin HTTP nell'Admin API prima di prendere lo snapshot o mutare APISIX. Test locali mirati: 12 PASS; CI nuovo commit ancora in corso. Runbook `docs/R4A_MANAGED_FILE_STREAMING_GATE.md` distingue plugin presente da prova comportamentale dello streaming a chunk con intake controllato. La documentazione ufficiale richiede APISIX-Runtime per `proxy-control`; la build live non è stata attestata. Nessun deploy; attachment bridge ChatGPT→Gateway e trasporto remoto certificato restano OPEN.
+
+CI successiva Gateway HEAD `3d4251942a2afe1b32c745c5413bd257b302b030`: workflow #36213548942 e #36213547066 SUCCESS. La verifica live del runtime e dell'upload chunked resta aperta.
+
+## 18.6 Proposta MCP DRAFT da file gestito — 26 settembre 2026
+
+Avanzamento senza deploy live sui PR draft:
+
+- Source Onboarding PR #37 HEAD `d92285a63654ebac2beabbca18293f73563fac81`: migration V30 per idempotenza asset+subject+key, hash degli argomenti, ritorno della stessa versione al retry e conflitto se cambiano gli argomenti; endpoint receipt-only `/api/internal/v1/onboarding/managed-file-mcp/create` con risposta DRAFT limitata. La proposta MCP richiede classificazione esplicita dei campi e scelta esplicita (anche vuota) delle chiavi di identità. Test di retry, conflitto, altro owner, parsing delegato. CI Java/test PASS; build immagine e ulteriori workflow ancora in corso alla scrittura.
+- Gateway PR #51 HEAD `3b2a22f4690283bb97ecfc71889ef6d951c018cb`: capability `ouf.managed-source.onboarding.create` candidata a MCP, schema chiuso per asset/profile/semanticRefs/classificazione completa, route `managed.file/create`, receipt owner firmata, installer delle tre route con rollback. 11 test locali mirati PASS; CI in corso.
+- MCP Server PR draft #44 HEAD `394fcb300ca8551520678d96556bacbc6aba4c43`: tool candidato `source.onboarding.create` come proposta, invio al Gateway e test MCP→Gateway; manifest richiede field decisions e sourceObjectKeyFields espliciti. CI parziale verde, suite lunga ancora in corso.
+
+La creazione produce solo una versione DRAFT. L'approvazione e l'attivazione restano sulla superficie HUMAN con semantic references reali e policy attiva. Il plugin live non espone questi tool, l'attachment bridge non esiste, nessun file è stato trasferito e R-SMOKE resta OPEN. Non fare bootstrap o deploy prima dei gate streaming/APISIX-Runtime e transport trust cross-network.
+
+Verifica conclusiva CI dell'incremento DRAFT: Onboarding HEAD `d92285a` workflow #36215540221, #36215540219, #36215537861 e #36215537848 SUCCESS; Gateway HEAD `3b2a22f` workflow #36215599887 e #36215596997 SUCCESS; MCP HEAD `394fcb3` workflow #36215544846, #36215544838, #36215542675 e #36215542628 SUCCESS. Il verde certifica il candidato versionato, non un deploy né un end-to-end attraverso il plugin live.
+
+## 18.7 Host attachment discovery e adapter vincolato — 26 settembre 2026
+
+La documentazione ufficiale ChatGPT Plugins Reference, sezione File APIs / Define file inputs (`https://developers.openai.com/plugins/reference`), descrive `_meta["openai/fileParams"]`: il client può passare un oggetto file con `file_id` e `download_url` temporaneo obbligatori, `mime_type`/`file_name` opzionali. Può quindi esistere un attachment bridge OUF senza URL fornito a mano o base64 dal modello. **Non è ancora verificato** se il client ChatGPT/Work dell'Ente supporta questo parametro nel plugin reale, né se il link diventa model-visible; la validità/associazione fileId↔URL deriva dall'host e richiede verifica. Il PET T25 resta vincolante: i byte devono passare attraverso il Gateway con contesto HUMAN. L'URL temporaneo dell'host non è un URL MinIO né un ingresso libero di fetch.
+
+MCP Server PR #44 HEAD `2444c4f30bd469bff939c5539dd87fabc71affff`: modulo candidato `internal/adapter/hostfiles` che accetta solo `file_…` e origini HTTPS esatte approvate, senza wildcard/redirect, con spool privato, limite 10 MiB, digest e pulizia. Test includono BOM+CRLF byte-exact, host estraneo, HTTP, redirect, fileId falso, oversized. La prima CI del commit funzionale ha rifiutato esclusivamente il formato Go (allineamento `Timeout`); follow-up gofmt push eseguito, CI da rilevare. Non esiste ancora il tool upload pubblicato, né la route streaming M2M delegata e il receipt di upload owner. Non caricare il CSV attraverso HTTP diretto come sostituto; R-SMOKE OPEN.
+
+CI definitiva adapter host files, MCP PR #44 HEAD `2444c4f30bd469bff939c5539dd87fabc71affff`: workflow #36217620217, #36217620199, #36217617976 e #36217617956 SUCCESS. Il bridge è ancora solo un adapter non connesso a un tool upload; serve una route Gateway delegata streaming e una verifica owner con idempotenza prima della pubblicazione.

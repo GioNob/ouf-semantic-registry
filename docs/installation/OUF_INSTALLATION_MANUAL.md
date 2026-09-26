@@ -750,3 +750,121 @@ La validation della revision 1 di `ouf-lab-netcup-01` ha prodotto:
 - Gateway HTTPS FAIL conseguente.
 
 Questa evidence conferma che, nel laboratorio corrente, la candidate projection deve predisporre anche l'alias interno di `api.ouf-lab.it` verso Caddy prima di rieseguire la validation.
+
+
+---
+
+## 22. Standardizzazione IAM/Authorization e installabilità multi-host
+
+Questa sezione consolida le regole emerse durante R4a e diventa parte del percorso R-INSTALL.
+
+### 22.1 Divieto di bootstrap IAM ad-hoc
+
+La creazione di capability, OAuth client scope, client binding e grant non deve dipendere da sequenze `kcadm` ricordate dall'operatore.
+
+Ogni elemento deve avere una procedura versionata e idempotente con almeno:
+- `plan` read-only;
+- `apply`;
+- `verify`;
+- output che non espone token, password o client secret;
+- matching esatto dei nomi;
+- gestione esplicita del drift.
+
+Per i client scope OIDC usare il reconciler versionato del Source Onboarding:
+`scripts/r4a_keycloak_client_scope_catalogue.py`.
+
+Per il binding di uno scope esistente a un client usare il reconciler di client-scope assignment versionato nel repository che lo contiene, mantenendo il comportamento dichiarativo DEFAULT/OPTIONAL.
+
+### 22.2 Contratto corrente per le capability Onboarding
+
+Per il lifecycle Source Onboarding corrente:
+
+- `ouf.onboarding.configuration.write`
+  - owner: onboarding;
+  - actor: HUMAN;
+  - OAuth scope omonimo;
+  - client `ouf-human-admin`: assegnazione OPTIONAL;
+  - grant Authorization: subject HUMAN `ouf-admin` tramite percorso governato.
+
+- `ouf.ingestion.configuration.attest`
+  - owner: onboarding;
+  - actor: SERVICE;
+  - OAuth scope omonimo;
+  - client `ouf-ingestion`: assegnazione DEFAULT;
+  - grant Authorization: service principal `ouf-ingestion`.
+
+Il PolicyBundle ACTIVE del laboratorio al 25 settembre 2026 è `ouf-lab-authorization:22`, con il grant SERVICE di attestation già pubblicato.
+
+### 22.3 Acceptance IAM prima del test applicativo
+
+Prima di testare una route protetta:
+1. verificare che il client scope esista;
+2. verificare il binding corretto al client;
+3. emettere un token nuovo;
+4. verificare una volta che il claim `scope` contiene lo scope richiesto;
+5. verificare audience, `tenant_id` e `ouf_actor_type`;
+6. verificare che il PolicyBundle ACTIVE contenga capability e grant corrispondenti.
+
+Un 401/403 non deve essere “risolto” allentando il Gateway o il backend: prima si identifica quale dei due livelli, OAuth scope o Authorization grant, manca.
+
+### 22.4 Gate R-INSTALL
+
+L'installazione OUF su una nuova macchina è accettata solo quando un operatore con accesso ai repository può:
+1. partire da host supportato pulito;
+2. predisporre prerequisiti e secret references;
+3. eseguire un orchestrator documentato;
+4. ottenere InstallationConfiguration ACTIVE e projection;
+5. creare IAM/capability/grant senza comandi non versionati;
+6. distribuire Gateway e sei moduli;
+7. eseguire acceptance;
+8. eseguire rollback e restore documentati.
+
+La cronologia chat non è una dipendenza ammessa dell'installazione.
+
+### 22.5 Gate R-SMOKE
+
+Dopo R-INSTALL o su un ambiente già installato, deve esistere una vertical acceptance osservabile:
+source reale -> Onboarding -> selezione semantica -> Ingestion -> Lake -> Handoff -> UDP -> ricerca Urban Object.
+
+Il primo profilo deve usare almeno CSV o GeoPackage. L'espansione prevista comprende XLSX, Shapefile ZIP, Microsoft Access con inferenza da chiavi/relazioni e source dinamiche via web service. L'operatore deve poter osservare ontologie/vocabolari proposti e l'esito della materializzazione senza SQL manuale.
+
+## 23. Stato R4a e portabilità upload MCP — 26 settembre 2026
+
+Questa sezione aggiorna la fotografia operativa del §22.2: PolicyBundle ACTIVE del laboratorio **`ouf-lab-authorization:23`**, con grant HUMAN `grant-onboarding-configuration-write-human-admin` pubblicato add-only dopo preview. I due scope OIDC e binding HUMAN OPTIONAL / SERVICE DEFAULT risultano verificati. Prima del bootstrap delle **nuove** capability managed-file occorre comunque ripetere `plan`, `apply`, `verify` su scope, client, Authorization grant, tenant e token freschi; non ereditano automaticamente il grant :23.
+
+Il candidate upload ChatGPT/MCP è versionato in PR Onboarding #37, Gateway #51, MCP #44 e ha CI verde sui rispettivi commit del 26/09 (vedere roadmap). Il plugin e le route di upload MCP **non sono ancora live**. Il Gateway live usa APISIX-Runtime 1.3.16 e contiene i plugin `proxy-control` e `client-control`. La sonda `ops/apisix/probe_request_streaming.py` del Gateway PR #51 ha dato `FIRST_BYTE_BEFORE_CLIENT_FINISH=true`, `PROBE_HTTP_STATUS=204`, `PROBE_ROUTE_REMOVED=true` sul commit `04d9aa924e84db77b1e9135efef21b10158bc999`; la lettura successiva ha trovato entrambe le route prodotto assenti (HTTP 404). La sonda crea/rimuove una route temporanea su loopback e non installa il prodotto; per abilitare il prodotto occorrono anche 413/415, checksum, owner permission, snapshot, readback e rollback.
+
+Nel bootstrap lab del 26/09 i cinque nuovi scope OAuth managed-file sono stati creati e verificati; il client workload `ouf-onboarding` è stato creato e verificato senza drift. I quattro scope HUMAN sono OPTIONAL su `ouf-human-admin`; `ouf.internal.object-storage.read` è DEFAULT su `ouf-onboarding` e `ouf-ingestion`, con `verify=PASS` separato. Questi binding non attestano ancora capability/grant Authorization, token workload funzionante o upload. Il `plan` del file secret Onboarding ha rilevato che `/opt/ouf/secrets` è una directory condivisa `0700` di UID 1000, con file di più owner: non cambiarne il proprietario. Usare il helper versionato aggiornato del PR Onboarding per creare solo in `apply` `/etc/ouf/secrets` root-owned `0700` e salvare `/etc/ouf/secrets/onboarding-client-secret` root-owned `0600`; verificare che `/etc/ouf` sia root-owned e non scrivibile da gruppo/altri. Il refresher Gateway riceve questo percorso come `--secret-file`; non pubblicare il valore del secret.
+
+Installazione multi-host e domini variabili per Ente:
+1. Raccogliere in InstallationConfiguration hostname pubblici IAM/API, issuer exact, audience e servizi privati di Gateway/MCP/Onboarding; generare projection versionate senza valori di secret. `auth.ouf-lab.it`, `api.ouf-lab.it` e `ouf-onboarding:8080` sono esempi Netcup, non default universali.
+2. Risolvere DNS e verificare TLS/SNI dal contesto di ciascun container e rete; autenticare il Gateway verso l'owner remoto mediante endpoint privato e certificato server realmente verificato (mTLS se richiesto). Impedire ingress diretto agli owner e egress arbitrario; testare il caso certificato non valido. Non inferire verifica TLS da `upstream.scheme=https` senza prova.
+3. Configurare per MCP remoto soltanto gli endpoint IAM e Gateway autorizzati. L'host attachment deve usare provenienza fileId/URL verificata, origini HTTPS esatte, limite e nessun redirect; non dare a MCP accesso diretto a DB/MinIO/owner. Tenere disabilitato `MCP_MANAGED_UPLOAD_ENABLED` finché tool discovery e invocazione reale non sono accettati.
+4. Prima dell'upload, usare helper versionati plan/apply/verify per bucket staging dedicato, secret ristretti, workload token renewal, scope/grant Authorization e route APISIX. Snapshot privati, deploy a commit CI verde, acceptance negativa, restore e conservazione dei container precedenti sono obbligatori.
+
+Questa sezione non dichiara concluso R-INSTALL: manca prova clean install/upgrade/restore da repository con due topologie. Non dichiara concluso R-SMOKE: il CSV della chat non ha ancora attraversato il plugin MCP verso Onboarding/Ingestion/UDP/search.
+
+### R4a lab: verifica IAM e prossimo gate staging (26/09/2026)
+
+Gli step descritti sopra come aperti per IAM sono stati completati nel lab: secret workload dedicato in `/etc/ouf/secrets`, timer di rinnovo installato e `WORKLOAD_TOKEN_ACCEPTANCE=PASS`; cinque capability managed-file registrate, PolicyBundle ACTIVE `ouf-lab-authorization:27` con due grant SERVICE, quattro grant HUMAN managed-file e sei ulteriori grant per `ouf-admin`, tutti add-only e verificati. Per il client `ouf-human-admin`, i 15 scope necessari alle 19 capability HUMAN sono associati; un token Device Flow fresco che li richiede tutti ha dato `ADMIN_HUMAN_TOKEN_ACCEPTANCE=PASS`. Gli scope OPTIONAL vanno richiesti nei token operativi e i 13 grant HUMAN precedenti conservano le proprie scadenze. Nessuna capability SERVICE-only viene resa utilizzabile dal token HUMAN.
+
+Il prossimo gate installativo è lo staging: i due container Onboarding attivi usano `ouf-onboarding:r4a-5866007`, rete `ouf-backend` e UID/GID `10003:10003`, ma hanno `STAGING_KEYS=NONE` e nessun mount per credenziali MinIO. Non è stato trovato un file Compose o uno script di avvio corrente. Prima di ricreare un container, usare `scripts/r4a_stage_deploy_snapshot.py` dal branch Source Onboarding in `plan`/`apply`/`verify`: conserva privatamente `docker inspect` dei due Onboarding e di `ouf-minio` in `/etc/ouf/deploy-snapshots` (directory 0700, file 0600) senza stampare env/secret e senza sovrascrivere snapshot esistenti. Lo snapshot non è il backup di DB/MinIO, né una procedura automatica di rollback. Verificare backup, bucket staging dedicato, identità di sola operatività sul prefisso, rifiuto su bucket UDP, file credenziali leggibili da UID/GID 10003 e ricostruzione/rollback dei container prima di installare route prodotto. Il runbook Source Onboarding `docs/R4A_MANAGED_CSV_INTAKE.md` riporta stato live e ordine delle prove. R-INSTALL e R-SMOKE restano OPEN.
+
+Il preflight MinIO R4a successivo allo snapshot ha verificato `ouf-minio` attivo sulla rete backend, volume dati e password admin montati, e client `mc` già presente nel container (nessuna immagine client aggiuntiva). Il piano in sola lettura ha confermato `BUCKET_EXISTS=false`, `USER_EXISTS=false`, `POLICY_EXISTS=false`, `APP_CREDENTIAL_FILES=none`. Il branch Source Onboarding contiene `scripts/r4a_minio_staging_bootstrap.py plan/apply/verify` e un test CI: l'apply crea solo `ouf-managed-files`, una policy sul prefisso `managed-files/*` e un utente `ouf-onboarding-staging` distinto dal root; persiste access/secret in file root:10003 0440, non li stampa, rifiuta file parziali e un utente preesistente privo dei file. `verify` prova write/read sul prefisso, il rifiuto di write sul bucket UDP e la pulizia della sonda via admin. Al momento di questa nota è verificato solo il **plan**: non attribuire l'esistenza di bucket/utente/policy fino a output `VERIFY=PASS` dall'apply. Anche dopo l'apply resta da predisporre backup, retention e prova multipart a 10 MiB prima dell'upload reale.
+
+
+### Checkpoint lab R4a — 26/09/2026, prima del rollout Onboarding
+
+Il catalogo e i grant Authorization managed-file sono pubblicati fino a `ouf-lab-authorization:27`; i 19 grant HUMAN di `ouf-admin`, i 15 scope OAuth e i token HUMAN/workload hanno superato i controlli sui claim. MinIO ha un bucket dedicato `ouf-managed-files`, utente e policy limitati a `managed-files/*`: `VERIFY=PASS`, scrittura/lettura autorizzata e scrittura su `ouf-udp` negata. Il dump privato dello schema Onboarding in `/etc/ouf/deploy-snapshots/r4a-onboarding-20260926T125405Z-d709d63d.dump` è stato ripristinato con successo in un DB temporaneo; Flyway live è a V29. Il bucket nuovo è vuoto.
+
+L'immagine candidata `ouf-onboarding:r4a-e0509e8` è stata costruita dal commit `e0509e8d48146d20d2134eb27c8b1a40be6c9141`, con image ID `sha256:8ca287241c4dd7753fe23a300c1b5764aab9485021efd626f5db6fee8356f920`. Il container `ouf-onboarding-r4a-candidate` è creato, configurato con mount privati e **fermo**; gli originali sono ancora attivi. Lo script di rollout con snapshot, readiness e rollback dei container è versionato nel branch Onboarding `codex/r4a-authorization-catalogue`; applicazione, CI del nuovo script e route prodotto restano da verificare. Migrazioni V30/V31, backup periodico degli oggetti, retention, test 413 e upload reale rimangono OPEN. Non dichiarare concluso R-SMOKE o R-INSTALL sulla base di questo checkpoint.
+
+
+### Correzione operativa R4a — 26/09/2026, rollback primo rollout
+
+Il primo `apply` del rollout Onboarding con l'immagine `r4a-e0509e8` ha terminato il nuovo container con `CONTAINER_NOT_RUNNING`; `AUTO_CONTAINER_ROLLBACK=PASS`. I container originali `ouf-onboarding` e `ouf-onboarding-r4a-smoke` sono tornati `running`, il candidato precedente resta `created` e il DB è a Flyway V31 (le migrazioni V30/V31 sono state applicate). I log del container fallito non erano stati conservati: la causa precisa non è provata. La revisione applicativa `e6b7647abb983db5cae1365730b891a4dc46797e` annota il costruttore MinIO per Spring e aggiunge un test di avvio con i nomi delle variabili di deploy; **CI del codice applicativo verde**. La revisione successiva dei tool `4b6017158dce9e499396f5a9e92f040e097272b9` aggiunge riconciliazione del tentativo fallito e log privati in caso di nuovo fallimento; CI dei tool da verificare. Non ripetere l'`apply` precedente né eliminare manualmente dump, snapshot e originali. Ricostruire l'immagine dal commit applicativo verde, riconciliare il candidato fermo con lo script versionato e ripetere il piano prima di qualunque nuovo rollout. Backup oggetti, retention e CSV reale restano OPEN.
+
+
+### Prevenzione delle regressioni di deploy R4a
+
+Nel branch Onboarding `codex/r4a-authorization-catalogue`, il commit `4564b942f8c6b80864c58de90f886d0d7ed90ec8` aggiunge un gate CI che avvia l'immagine realmente impacchettata con le variabili di staging usate sul VPS, mount in sola lettura, UID/GID 10003 e PostgreSQL effimero; la readiness deve rispondere 200. Il test Java separato verifica che Spring scelga il costruttore MinIO e risolva i nomi ambiente Docker. La CI del nuovo gate e il workflow browser sono PASS sul commit `4564b942f8c6b80864c58de90f886d0d7ed90ec8`. Sul VPS il rollback salva log privati prima di rimuovere un container fallito; la riconciliazione del tentativo precedente verifica identità dei container e preserva il dump. Questi controlli sono un incremento del percorso R-INSTALL; clean install multi-host, backup oggetti, retention e acceptance end-to-end sono ancora da automatizzare e provare.

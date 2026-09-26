@@ -256,3 +256,126 @@ La CI fra quattro owner, PostGIS e MinIO contiene **25 verifiche PASS**. Fixture
 Restano 2D simple features e limiti di parser espliciti; altri formati/casi sono R4b. Nessun grigliato IGM reale o collaudo territoriale è attestato. La UI cartografica resta R4a; prossimo incremento **R3 — Operational Awareness**.
 
 Ogni sprint deve consultare tutti i sette PET e L0: [regola obbligatoria e manifest delle fonti](OUF_SPRINT_PET_ALIGNMENT.md).
+
+
+---
+
+## Aggiornamento operativo 25 settembre 2026 — R4a, R-INSTALL e smoke verticale
+
+Questo aggiornamento fotografa il laboratorio Netcup e integra, senza sostituire, la roadmap PET v1.7 originaria.
+
+### R4a — stato corrente
+
+La vertical slice `urban.object.search` è entrata nella fase di integrazione con dati reali governati.
+
+Stato verificato:
+- UDP Published Execution è attivo nel runtime live;
+- Source Onboarding è stato aggiornato con boundary HUMAN/SERVICE per il lifecycle;
+- Gateway espone le route HUMAN Onboarding e la route M2M di compatibility attestation;
+- le route anonime rispondono 401 come atteso;
+- PolicyBundle ACTIVE: `ouf-lab-authorization:22`;
+- la capability `ouf.onboarding.configuration.write` è registrata e inclusa;
+- la capability `ouf.ingestion.configuration.attest` è registrata e inclusa;
+- il grant SERVICE `grant-onboarding-configuration-attest-ingestion` per `ouf-ingestion` è pubblicato in v22;
+- i due nuovi OAuth client scope non sono ancora presenti in Keycloak: questo è il punto operativo aperto;
+- Source Onboarding PR #37 HEAD `3d21b0b31ac3547a4c810e67d17c45f687d0cb23` include l'aggiornamento del runbook; il commit funzionale precedente `648b6cab5d6b1deda900dcc4c39316bcafae5ae1` ha Module CI #554 e R2f #374 verdi; le run #556/#376 sul nuovo HEAD erano in esecuzione al momento dell'aggiornamento;
+- il nuovo helper versionato `scripts/r4a_keycloak_client_scope_catalogue.py` supporta plan/apply/verify per la creazione/reconciliation dei client scope OIDC.
+
+Prossimo passo R4a:
+1. creare/reconciliare in Keycloak `ouf.onboarding.configuration.write` e `ouf.ingestion.configuration.attest`;
+2. assegnare `ouf.onboarding.configuration.write` a `ouf-human-admin` come OPTIONAL;
+3. assegnare `ouf.ingestion.configuration.attest` a `ouf-ingestion` come DEFAULT;
+4. creare il grant HUMAN governato per `ouf-admin`;
+5. eseguire acceptance autenticata HUMAN e SERVICE;
+6. inventariare le reference Semantic live necessarie a una PublishedRuntimeConfiguration valida;
+7. creare la prima source governata;
+8. far transitare almeno tre oggetti reali attraverso Ingestion/Lake/Handoff/UDP;
+9. verificare pagination, cursor, partial e minimizzazione su `urban.object.search`.
+
+### Gate formale R-INSTALL
+
+R-INSTALL resta OPEN. La chiusura richiede una prova di installazione riproducibile da repository, non una ricostruzione basata su cronologia chat o modifiche manuali al lab.
+
+Criteri minimi:
+- orchestrator/bootstrap top-level per i sei moduli;
+- manifest dichiarativo dell'installazione con secret references, senza secret values;
+- procedure versionate plan/apply/verify per IAM, Authorization, Gateway, runtime e projection;
+- clean install su macchina vuota;
+- upgrade N/N+1;
+- backup/restore;
+- rollback verificato;
+- acceptance E2E;
+- CI di installabilità che eserciti almeno un ambiente effimero o equivalente;
+- supply chain riproducibile per le immagini terze critiche.
+
+Ogni procedura scoperta durante R4a deve essere assorbita nel percorso R-INSTALL; non deve rimanere un comando one-off necessario per installare un secondo ambiente.
+
+### Gate formale R-SMOKE — “vedere il fumo”
+
+R-SMOKE è una acceptance verticale distinta dall'health infrastrutturale. Deve consentire a un operatore di osservare un ciclo completo senza SQL manuale e senza dover conoscere UUID o endpoint interni.
+
+Acceptance target:
+- registrare o caricare una source reale;
+- almeno CSV o GeoPackage nel primo smoke;
+- successivamente XLSX, Shapefile ZIP, Access e source dinamiche via web service secondo roadmap;
+- osservare schema/struttura rilevata;
+- osservare ontologie e vocabolari controllati proposti/selezionati;
+- approvare/correggere la semantica tramite superficie governata;
+- avviare l'Ingestion;
+- osservare RAW/Lake, handoff e materializzazione UDP;
+- ottenere Urban Object persistiti;
+- cercare gli oggetti tramite `urban.object.search`;
+- ripetere con un aggiornamento incrementale almeno per una source dinamica.
+
+Il primo smoke tecnico può precedere la UI completa, ma non può bypassare i percorsi governati.
+
+**Stato 25/09/2026:** il CSV reale di 8 cinema è disponibile; intake MinIO nel deployable Onboarding, route HUMAN/SERVICE Gateway, manifest di capability/grant e script di smoke esatto sono candidati versionati in PR Onboarding #37 e Gateway #51. Gateway CI e Onboarding CI (inclusa immagine non-root) verdi sui candidati; deploy live ancora da accettare. Mancano bootstrap MinIO/IAM, pubblicazione semantica cold start e round trip Ingestion→UDP→search. R-SMOKE resta OPEN. Vedere `docs/handoffs/OUF_HANDOFF_R4A_2026-09-25_SCOPE_BOOTSTRAP_NEXT.md` §18.\n\n### Priorità immediata
+
+Fino alla prima vertical slice reale:
+- evitare nuovi fronti infrastrutturali non necessari;
+- privilegiare il primo dataset reale governato end-to-end;
+- trasformare ogni nuovo passaggio manuale in helper idempotente/versionato se riutilizzabile;
+- mantenere R-INSTALL e R-SMOKE come gate espliciti di roadmap, non come attività opzionali finali.
+
+**Correzione di gate del 25/09/2026:** CI verde del commit Onboarding `79b7e7f` certifica solo lo slice HTTP. L'upload via plugin/MCP non esiste ancora (MCP issue #43); lo streaming APISIX e il deployment Gateway remoto restano da provare (Gateway issue #52). Il client CLI ora usa binding dell'installazione e Onboarding limita la memoria con spool temporaneo. Bloccare bootstrap/deploy del percorso CSV fino a risoluzione dei gate PET T25; non assegnare stato DONE a R-SMOKE.
+
+## Avanzamento operativo 26 settembre 2026 — candidate MCP e streaming APISIX
+
+La fotografia del 25/09 sopra è storica. Il grant HUMAN `ouf.onboarding.configuration.write` è stato pubblicato add-only in PolicyBundle ACTIVE `ouf-lab-authorization:23`; il token HUMAN fresco è stato accettato dal Gateway e un source ID inesistente ha restituito 404 `ONB_NOT_FOUND` senza write. Gli scope OIDC e i binding dei client `ouf-human-admin` e `ouf-ingestion` sono stati verificati. Questo non registra automaticamente i nuovi scope/grant managed-file.
+
+Il codice candidato per l'upload CSV **tramite MCP** esiste ora nei PR draft [MCP #44](https://github.com/GioNob/ouf-mcp-server/pull/44), [Gateway #51](https://github.com/GioNob/ouf-api-gateway/pull/51) e [Onboarding #37](https://github.com/GioNob/ouf-source-onboarding/pull/37). I rispettivi HEAD `1477794494aa02f8b031bf19e08b1cda99dc0ec9`, `04d9aa924e84db77b1e9135efef21b10158bc999`, `140e95ca4d738d23c605e08ca34019467703546f` hanno CI verde. Il **plugin live non espone ancora** il nuovo tool; le route MCP di upload non sono installate. Il backend non ha un asset/PublishedConfigurationBundle prodotto da questo CSV e nel Registry non c'erano publication set live alla precedente lettura. [MCP issue #43](https://github.com/GioNob/ouf-mcp-server/issues/43) traccia il flusso reale host attachment → MCP → Gateway → Onboarding → THS → Ingestion → UDP → search; [Gateway issue #52](https://github.com/GioNob/ouf-api-gateway/issues/52) traccia streaming e upstream sicuro fra reti.
+
+Il container APISIX live ha `APISIX_RUNTIME_VER=1.3.16`, moduli e plugin `proxy-control`/`client-control` presenti. Il PR Gateway #51 include una sonda temporanea isolata per provare l'arrivo del primo byte prima della fine dell'upload; **non è ancora stata eseguita sul VPS**. La sonda non chiude i test 413/415, la route vera, l'attachment ChatGPT o R-SMOKE. Per l'ordine operativo e il commit esatto vedere `docs/R4A_MANAGED_FILE_STREAMING_GATE.md` nel PR Gateway.
+
+I prossimi gate ordinati sono: (1) sonda streaming senza file di produzione; (2) request streaming/limiti e rollback della route prodotto; (3) binding owner privato e trasporto verificato anche con Gateway/MCP su host e reti diversi, domini e issuer configurati per Ente tramite InstallationConfiguration; (4) prova host attachment e discovery tool nel plugin live; (5) IAM/grant/staging e riferimenti Semantic ACTIVE; (6) CSV → DRAFT → THS HUMAN → bundle ACTIVE → Ingestion/RAW/handoff → UDP → `urban.object.search`; (7) XLSX e GeoPackage reali; (8) clean install/upgrade/restore R-INSTALL. La CI verde su singoli PR non trasforma alcuno di questi gate live in PASS. Ogni procedura ricorrente va versionata nei runbook e negli script plan/apply/verify.
+
+### Avanzamento lab del 26/09: sonda PASS e bootstrap IAM parziale
+
+La sonda isolata sul runtime APISIX live ha restituito primo byte prima della fine dell'invio `true`, HTTP 204 e rimozione route `true`, sul commit Gateway `04d9aa924e84db77b1e9135efef21b10158bc999`. Le route prodotto HUMAN/MCP upload risultavano assenti (HTTP 404) dopo la sonda. Il prerequisito comportamentale del runtime è PASS; streaming sulla route prodotto, 413/415, checksum, owner e rollback restano OPEN.
+
+I cinque scope OAuth managed-file sono stati creati e verificati; il client Keycloak `ouf-onboarding` è stato creato e verificato senza drift. I quattro binding HUMAN OPTIONAL e i due binding SERVICE DEFAULT per `ouf.internal.object-storage.read` sono BOUND e verificati. Nessun grant Authorization managed-file né token workload/asset di questo CSV è attestato da questi controlli. Il `plan` del secret workload ha rilevato che `/opt/ouf/secrets` è condivisa e di proprietà UID 1000; lo script e il manuale Onboarding vanno aggiornati per usare `/etc/ouf/secrets` root-owned prima di proseguire col token renewal. Dopo il fix e la sua CI: `plan → apply → verify` del secret, quindi inventario Authorization/MinIO, test sulla route reale e catena end-to-end. R-SMOKE e R-INSTALL restano OPEN.
+
+### Avanzamento lab del 26/09: Authorization :27 e staging aperto
+
+La sezione precedente registra uno stato storico. Il secret workload `ouf-onboarding` è ora in `/etc/ouf/secrets` senza rotazione, il timer policy-token è installato e il controllo locale dei claim ha restituito `WORKLOAD_TOKEN_ACCEPTANCE=PASS` (issuer, audience Gateway, client, attore SERVICE, tenant, scope e scadenza). Le cinque capability managed-file sono registrate; il PolicyBundle ACTIVE `ouf-lab-authorization:24` le ha aggiunte preservando 26 grant, `:25` ha aggiunto i due grant SERVICE e `:26` i quattro grant HUMAN per il managed file. Su richiesta esplicita, `:27` ha aggiunto altri sei grant per il subject IAM verificato di `ouf-admin`: in totale 19 capability HUMAN attive con grant validi, mentre le capability SERVICE-only restano ai workload. Per `ouf-human-admin` il batch Keycloak ha verificato tutti i 15 scope HUMAN associati dopo aver aggiunto due binding OPTIONAL mancanti (`operations.status.read`, `urban.object.search`). Un token fresco emesso con tutti i 15 scope ha restituito `ADMIN_HUMAN_TOKEN_ACCEPTANCE=PASS`; il test locale dei claim non sostituisce la verifica della firma al Gateway. Le sei nuove concessioni scadono il 26/09/2027; le 13 precedenti hanno scadenze indipendenti.
+
+`ouf-onboarding` e `ouf-onboarding-r4a-smoke` girano con immagine `ouf-onboarding:r4a-5866007`, UID/GID `10003:10003`, rete `ouf-backend` e **nessuna variabile `OUF_ONBOARDING_STAGING_*`**. Montano solo la chiave owner e `onboarding-ths.yaml`. `ouf-minio` conserva `/data` su volume persistente separato; nessun file Compose o script di avvio corrente è stato trovato. Prima di toccare questi container occorrono snapshot `docker inspect` private, backup, bucket `ouf-managed-files`, identità runtime circoscritta al suo prefisso, file credenziali dedicati, prova dei permessi e deploy rollbackabile. Il runbook e gli script snapshot/scope/grant versionati sono nel branch Source Onboarding `codex/r4a-authorization-catalogue`. Le route prodotto HUMAN/MCP restano assenti all'ultima verifica; non è stato caricato il CSV originale. R-SMOKE e R-INSTALL restano OPEN, e la filiera Semantic → Ingestion → UDP → search non è stata esercitata dal file.
+
+
+### Checkpoint R4a del 26/09/2026: IAM, MinIO e candidato Onboarding
+
+Sul lab, Authorization ACTIVE `ouf-lab-authorization:27` include i grant managed-file e tutti i 19 grant HUMAN di `ouf-admin`; 15 scope HUMAN sono disponibili nel client, token HUMAN e workload verificati. Bucket MinIO dedicato, identità e policy limitata al prefisso sono stati creati; prova lettura/scrittura del prefisso PASS e scrittura su `ouf-udp` negata. Il bucket nuovo è vuoto. Snapshot container e dump privato del DB Onboarding con restore in database temporaneo sono verificati. Flyway live V29; la nuova immagine candidata `ouf-onboarding:r4a-e0509e8` (revision `e0509e8d48146d20d2134eb27c8b1a40be6c9141`) è costruita e il candidato è configurato ma fermo. Runbook e script di backup, gate e rollout/rollback: `GioNob/ouf-source-onboarding`, branch `codex/r4a-authorization-catalogue`.
+
+Prossimi gate: CI e `plan/apply` del rollout con verifica readiness e rollback; backup degli oggetti e retention prima del primo CSV reale; installazione route Gateway con test streaming e limiti sul prodotto; upload/profiling, semantica THS, Ingestion, UDP, search e host attachment MCP. R-SMOKE e R-INSTALL restano OPEN.
+
+
+### Rollout Onboarding R4a del 26/09: rollback riuscito, fix in corso
+
+Primo `apply` della candidata `r4a-e0509e8`: avvio nuovo container fallito (`CONTAINER_NOT_RUNNING`), rollback automatico PASS; i due container Onboarding originali sono nuovamente `running`, il vecchio candidato è `created`. Il DB ha applicato Flyway V30/V31 ed è ora a V31; dump con restore testato conservato. La causa dell'arresto resta non dimostrata perché i log del container fallito sono stati eliminati dal primo installer. Il fix candidato annota il costruttore MinIO e prova il bootstrap Spring con le variabili di deploy; commit applicativo `e6b7647abb983db5cae1365730b891a4dc46797e`, CI verde. Gli script di riconciliazione e log privati sono nel commit `4b6017158dce9e499396f5a9e92f040e097272b9`, con CI da verificare. Nuova immagine, candidato e rollout non sono ancora stati applicati. Nessun CSV reale caricato; R-SMOKE e R-INSTALL restano OPEN.
+
+
+### Automatizzazione ricavata dal primo rollback R4a
+
+Controlli già versionati: bootstrap IAM/scopes/grant con `plan/apply/verify`; snapshot e dump DB con restore di prova; MinIO policy e test negativo; candidato Docker fermo con verifica di env/mount/image ID; rollout con readiness e rollback automatico dei container; riconciliazione del tentativo fallito per ID e log privati prima della rimozione. Il commit Onboarding `4564b942f8c6b80864c58de90f886d0d7ed90ec8` aggiunge alla CI il boot dell'immagine impacchettata con configurazione staging equivalente al deploy. La CI Source Onboarding e il workflow browser sono PASS su quel commit.
+
+R-INSTALL resta OPEN. Incrementi da completare: un unico manifest di release approvato per revisioni/digest, endpoint e secret references; orchestrator top-level idempotente con fasi e journal/rollback, senza comandi di chat; restore testato anche degli oggetti MinIO e retention; gate CI sull'immagine reale con negative test Gateway, 413/415/checksum, autorizzazioni e upload; prove clean install, upgrade e restore su topologie singolo host e multi-host con TLS verificato; acceptance CSV/XLSX/GeoPackage fino a search. Ogni gate deve conservare evidence privata e un esito macchina PASS/FAIL senza stampare credenziali.
