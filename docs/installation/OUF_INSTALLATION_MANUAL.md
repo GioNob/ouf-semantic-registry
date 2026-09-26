@@ -827,3 +827,17 @@ Dopo R-INSTALL o su un ambiente già installato, deve esistere una vertical acce
 source reale -> Onboarding -> selezione semantica -> Ingestion -> Lake -> Handoff -> UDP -> ricerca Urban Object.
 
 Il primo profilo deve usare almeno CSV o GeoPackage. L'espansione prevista comprende XLSX, Shapefile ZIP, Microsoft Access con inferenza da chiavi/relazioni e source dinamiche via web service. L'operatore deve poter osservare ontologie/vocabolari proposti e l'esito della materializzazione senza SQL manuale.
+
+## 23. Stato R4a e portabilità upload MCP — 26 settembre 2026
+
+Questa sezione aggiorna la fotografia operativa del §22.2: PolicyBundle ACTIVE del laboratorio **`ouf-lab-authorization:23`**, con grant HUMAN `grant-onboarding-configuration-write-human-admin` pubblicato add-only dopo preview. I due scope OIDC e binding HUMAN OPTIONAL / SERVICE DEFAULT risultano verificati. Prima del bootstrap delle **nuove** capability managed-file occorre comunque ripetere `plan`, `apply`, `verify` su scope, client, Authorization grant, tenant e token freschi; non ereditano automaticamente il grant :23.
+
+Il candidate upload ChatGPT/MCP è versionato in PR Onboarding #37, Gateway #51, MCP #44 e ha CI verde sui rispettivi commit del 26/09 (vedere roadmap). Il plugin e le route di upload MCP **non sono ancora live**. Il Gateway live usa APISIX-Runtime 1.3.16 e contiene i plugin `proxy-control` e `client-control`; la prova di request streaming con la sonda `ops/apisix/probe_request_streaming.py` del Gateway PR #51 **non è ancora stata eseguita**. Il runbook Gateway `docs/R4A_MANAGED_FILE_STREAMING_GATE.md` contiene il comando e i tre risultati richiesti. La sonda crea/rimuove una route temporanea su loopback e non installa il prodotto; per abilitare il prodotto occorrono anche 413/415, checksum, owner permission, snapshot, readback e rollback.
+
+Installazione multi-host e domini variabili per Ente:
+1. Raccogliere in InstallationConfiguration hostname pubblici IAM/API, issuer exact, audience e servizi privati di Gateway/MCP/Onboarding; generare projection versionate senza valori di secret. `auth.ouf-lab.it`, `api.ouf-lab.it` e `ouf-onboarding:8080` sono esempi Netcup, non default universali.
+2. Risolvere DNS e verificare TLS/SNI dal contesto di ciascun container e rete; autenticare il Gateway verso l'owner remoto mediante endpoint privato e certificato server realmente verificato (mTLS se richiesto). Impedire ingress diretto agli owner e egress arbitrario; testare il caso certificato non valido. Non inferire verifica TLS da `upstream.scheme=https` senza prova.
+3. Configurare per MCP remoto soltanto gli endpoint IAM e Gateway autorizzati. L'host attachment deve usare provenienza fileId/URL verificata, origini HTTPS esatte, limite e nessun redirect; non dare a MCP accesso diretto a DB/MinIO/owner. Tenere disabilitato `MCP_MANAGED_UPLOAD_ENABLED` finché tool discovery e invocazione reale non sono accettati.
+4. Prima dell'upload, usare helper versionati plan/apply/verify per bucket staging dedicato, secret ristretti, workload token renewal, scope/grant Authorization e route APISIX. Snapshot privati, deploy a commit CI verde, acceptance negativa, restore e conservazione dei container precedenti sono obbligatori.
+
+Questa sezione non dichiara concluso R-INSTALL: manca prova clean install/upgrade/restore da repository con due topologie. Non dichiara concluso R-SMOKE: il CSV della chat non ha ancora attraversato il plugin MCP verso Onboarding/Ingestion/UDP/search.
