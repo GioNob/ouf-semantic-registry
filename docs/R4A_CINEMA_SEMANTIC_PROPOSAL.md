@@ -29,25 +29,43 @@ It uses `MANAGED_DETERMINISTIC` source-row identity derived from the
 immutable managed asset and row ordinal. The cinema name is not a row key.
 This technical provenance is distinct from UDP canonical Urban Object identity.
 
-## Resolution decision and release gate
+## General object-resolution contract and release gate
 
-For automatic object matching, compare only normalized data mapped to
-controlled-vocabulary concepts under the same semantic class/property and
-vocabulary version. Two source observations may expose different property
-sets; compare the semantically comparable intersection. A likely common
-object requires governed resolution evidence and, where ambiguous, HUMAN
-review. On MATCH, UDP retains both source bindings and property provenance,
-forms one canonical object with the union of contributions, and resolves
-overlapping values through property-level authority or an explicit HUMAN
-decision. It does not overwrite either raw source record.
+The Semantic Registry publishes the meaning of classes, properties and
+controlled concepts. Onboarding maps source fields to those versioned
+semantic references. The values of a property may still be free text:
+schema:name and schema:address are examples, not special cases in UDP.
 
-This CSV has **no controlled-vocabulary values**. Its free-text name and
-address cannot be used for automatic identity matching under the reviewed
-rule. The Onboarding preflight returned `ONBOARDING_VALIDATION=PASS`
-against the then-running validator but also
-`UDP_RESOLUTION_CONFIGURED=false`. A validator correction is in progress
-to reject managed submissions without exact execution, Semantic
-publication, UDP resolution and materialization profiles. The DRAFT remains
-unsubmitted; no Ingestion run, UDP materialization or R-SMOKE PASS has been
-claimed. Any policy for absent comparable evidence must be reviewed before
-activation.
+A reusable resolution policy compares two observations by the same approved
+class and mapped property IRI (and compatible ontology version), on their
+shared property set. A versioned comparator is selected by value type:
+
+- Controlled concept: resolve to the published concept identifier/version
+  before comparison, preserving native code and mapping provenance.
+- Free text: normalize with a documented, reversible-evidence policy and
+  compare exact or approximate strings; this is candidate evidence, not a
+  universal identifier. Address text may first be parsed into structured
+  components where the mapping supports it.
+- Numeric, temporal, geometric and stable identifier values: use their
+  respective explicit unit, tolerance, CRS or exact-key policies.
+
+Candidate generation is bounded. The published policy declares required
+signals, weights/thresholds where applicable, ambiguity handling and
+permitted automatic decisions. Uncertain identity requires HUMAN review;
+neither a single free-text match nor an AI score is authority by itself.
+On MATCH, UDP keeps distinct source-object bindings and the union of property
+contributions. Overlapping conflicting values are handled by versioned
+property-level authority or an explicit HUMAN decision, retaining both raw
+values and provenance. The rule applies to every object class, not just
+cinemas.
+
+The cinema CSV offers two comparable, mapped free-text properties but no
+controlled concept values. It can produce candidate matches after versioned
+text/address normalization; there is currently no approved or deployed
+general resolution policy for automatic matching on this evidence.
+The Onboarding preflight returned `ONBOARDING_VALIDATION=PASS` against the
+then-running validator but `UDP_RESOLUTION_CONFIGURED=false`. A validator
+correction is in progress to reject managed submissions without exact
+execution, Semantic publication, UDP resolution and materialization profiles.
+The DRAFT remains unsubmitted; no Ingestion run, UDP materialization or
+R-SMOKE PASS has been claimed.
