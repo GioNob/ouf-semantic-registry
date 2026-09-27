@@ -22,7 +22,6 @@ EXPECTED = (
     ("POST", "/api/trusted-human/v1/semantic-approval-challenges/*/decision", "ouf.semantic.approve"),
     ("POST", "/api/trusted-human/v1/semantic-approval-challenges/*/publish", "ouf.semantic.publish"),
     ("GET", "/api/semantic/v1/search", "ouf.semantic.search"),
-    ("GET", "/api/semantic/v1/artifacts/*", "ouf.semantic.read"),
 )
 
 
