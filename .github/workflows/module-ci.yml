@@ -50,6 +50,8 @@ jobs:
         run: sha256sum -c evidence/source-checksums.txt
       - name: Validate cross-module evidence register
         run: python3 scripts/validate-pet-register.py
+      - name: Verify R4a read-only runtime inventory
+        run: python3 -m unittest discover -s tests -p 'test_r4a_handoff_snapshot.py'
       - name: Compile, test and package with bounded Maven execution
         run: |
           bash scripts/install-authorization-sdk.sh
