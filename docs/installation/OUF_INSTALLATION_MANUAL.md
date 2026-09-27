@@ -782,3 +782,21 @@ Acceptance obbligatoria:
 5. il Gateway accetta il workload sulla route PolicyBundle;
 6. il consumer carica la PolicyBundle ACTIVE e continua a rinfrescarla entro il limite di staleness.
 
+
+
+## 23. R4a — ripresa automatizzata e stato del lab (27 settembre 2026)
+
+[Handoff completo PET 1.7](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/OUF_HANDOFF_2026-09-27_R4A.md) è la fotografia operativa. I rollout picker Onboarding/MCP/Gateway, la riparazione owner-key e l'upload HUMAN tramite Gateway hanno prodotto l'asset `8ec8ae90-808a-4d9e-907c-d56de119e376`; Semantic ha pubblicato la revisione `51706bed-81e4-4306-aca1-70119821727d`. Il DRAFT Onboarding è ancora inattivo. Non esiste una prova del ciclo Ingestion → UDP → search per quell'asset. L'ultimo PolicyBundle attestato è `ouf-lab-authorization:28`, da rileggere prima di una nuova mutazione.
+
+### Procedura di modifica
+
+1. Identificare branch/commit e immagine/container live del solo modulo interessato; non dedurre deployment da PR, CI o body di issue. Registrare lo snapshot di route, container, config e DB richiesto dallo script di rollout versionato.
+2. Usare la modalità `plan`/dry run dello script e poi `apply` idempotente con verifiche e rollback automatico. Riportare all'operatore **un** esito sintetico PASS/BLOCKED, il riferimento di rollback e il gate successivo. Evitare lunghe sequenze manuali di controlli indipendenti. Non ripetere una prova già attestata se l'immagine e la configurazione pertinenti non sono cambiate.
+3. Comandi copiabili completi: `cd` esplicito, commit fissato, shell non interattiva salvo login HUMAN, `set -o pipefail` dove si usa `git show | sudo python3 -`; non interrompere un comando in modo che il pipe invii uno script parziale. Le credenziali vanno in secret file/runtime e non nei log o nella chat. Snapshot e dump restano finché il rollback è verificato.
+4. Dopo un blocco, conservare il motivo e correggere il solo contratto fallito, poi rieseguire la fase idempotente. Non trattare `KCADM_SESSION_EXPIRED`, route mancanti o un PASS del probe APISIX come prove di risultato E2E.
+
+### Binding del lab e gate ancora aperti
+
+Il bootstrap Keycloak dei cinque scope managed-file e dei client `ouf-onboarding`, `ouf-ingestion`, `ouf-human-admin` e `ouf-chatgpt` è stato applicato/verificato nei passaggi documentati in Onboarding; la sessione `kcadm` può scadere e richiede nuova autenticazione interattiva prima di mutazioni. Gli scope HUMAN legati come OPTIONAL a un client non compaiono automaticamente nel token di un altro. Gateway controlla route e capability, Onboarding/UDP fanno enforcement fine e il THS resta owner delle decisioni HUMAN.
+
+Il probe APISIX isolato ha mostrato early bytes/204/cleanup; per la route prodotto restano 413 senza asset parziale, media/checksum/auth negativi e rollback. L'upload live ha avuto successo ma non prova tutti quei casi. Le immagini e le route attive vanno osservate appena prima di un ulteriore rollout. Il profilo `resolution.weighted` è accettato come struttura opzionale da Onboarding ma UDP non ne esegue la semantica: la PR #34 lo rifiuta esplicitamente; non attivare una fonte che ne dipende finché il motore generale e il test di contratto versionato non sono attivi. La MinIO CI della PR usa un binario ufficiale con SHA fissato; nessun cambiamento al MinIO live del VPS.
