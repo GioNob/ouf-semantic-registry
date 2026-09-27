@@ -48,3 +48,23 @@ Authorization grants before a cold-start publication can be exercised.
 Do not call the Semantic container directly or insert a publication with SQL
 to bypass the governed path. Bundle this bootstrap in a reusable installer
 with readback and rollback rather than an operator sequence of raw commands.
+
+### Gateway cold-start work, 27 September
+
+The APISIX Admin API returned 42 routes, with no matching route for the
+Semantic proposal, validation, HUMAN review/decision/publication or search
+paths. The preflight read route metadata only and made no writes. Gateway
+draft PR #54 now carries seven exact HUMAN bindings, a materializer and an
+installer whose snapshot is limited to those seven IDs. Its `uriRegex`
+selectors separate approval from publication under the shared challenge
+namespace. The initial Gateway CI run passed; live route behavior and fresh
+HUMAN token acceptance remain unverified.
+
+Authorization's existing `ouf.semantic.read` registration is SERVICE-only
+and immutable. The HUMAN challenge card already returns the reviewed draft
+definition. The first smoke therefore uses that card and does not expand or
+replace the SERVICE read capability or deploy a new Semantic owner endpoint.
+The Onboarding branch carries exact seven-capability and seven-grant manifests,
+a batch Keycloak HUMAN scope reconciler, and a one-login add-only policy
+bootstrap. These are candidate code; no new Semantic IAM entry or Gateway
+route has been activated on the VPS. R-SMOKE remains OPEN.
