@@ -27,7 +27,7 @@ Le righe seguenti sono output VPS forniti in chat, non una nuova interrogazione 
 | Area | Ultima evidenza | Limite |
 | --- | --- | --- |
 | APISIX-Runtime | Probe isolato: `FIRST_BYTE_BEFORE_CLIENT_FINISH=true`, HTTP 204, route temporanea rimossa | Non dimostra 413/no asset parziale sulla route prodotto; digest precedente `sha256:84e6b5e787e9f889ebff88161cb9a16599bafcffa236c6b54c7f779a0655940d` |
-| IAM / Authorization | Cinque scope managed-file creati e verificati; grant SERVICE e HUMAN aggiunti; `ouf-admin` HUMAN token PASS; ultimo `ACTIVE_POLICY_REF=ouf-lab-authorization:28`, capability semantiche 7 aggiunte | Dopo cambi live verificare il ref; sessione `kcadm` era scaduta e fu recuperata |
+| IAM / Authorization | Quattro scope HUMAN managed-file e uno scope SERVICE di lettura object-storage creati e verificati; grant SERVICE e HUMAN aggiunti; `ouf-admin` HUMAN token PASS; ultimo `ACTIVE_POLICY_REF=ouf-lab-authorization:28`, capability semantiche 7 aggiunte | Dopo cambi live verificare il ref; sessione `kcadm` era scaduta e fu recuperata |
 | Object storage | Bucket `ouf-managed-files`, policy limitata al prefisso e credenziali app verificate; MinIO live immutato | La modifica del download binario MinIO in CI UDP non riguarda il VPS |
 | Onboarding / picker / MCP | Rollout picker e chat handoff PASS; upload reale di un CSV ha registrato l'asset sotto; route Gateway e owner-key repair PASS; Semantic human routes e search via Gateway PASS | Handoff UX tra host diversi richiede acceptance; non confondere PASS di rollout con R-SMOKE |
 | Semantic | Proposta RDF validata, approvata da HUMAN e pubblicata; dettagli sotto | Il solo Semantic non crea oggetti UDP |
@@ -77,6 +77,6 @@ I nomi delle branch non attestano merge né deployment. Confrontare HEAD, CI e i
 
 ## Evidenze e cautela sullo stato del codice
 
-La PR UDP #34 ha avuto CI PASS sul commit eseguibile `af28582819417f1bc66c4877e236fa3b8a4810f5`; un commit successivo documentale `f1a2b5cd47c2dc69af2592bdd204a159a9ee1a1c` richiede verifica del proprio check prima del merge. Il percorso CI usa il binario MinIO ufficiale verificato con SHA-256 fissato (`RELEASE.2025-09-07T16-13-09Z`, `7c5bd8512c6e966455b1d198209358b2d191c77a83ab377c4073281065fb855f`) per evitare rate limit registry; non cambia il MinIO live. Le evidenze di test non provano il flusso HUMAN reale fino a search.
+La PR UDP #34 ha avuto tre workflow GitHub Actions conclusi con successo sia sul commit eseguibile `af28582819417f1bc66c4877e236fa3b8a4810f5` sia sul successivo commit documentale `1c31c4ba0969a11b6fff872467e6bb3aabd877b6` (UDP module CI, Authorization SDK pairwise, CRS); verificare comunque lo stato del nuovo HEAD prima di un merge. Il percorso CI usa il binario MinIO ufficiale verificato con SHA-256 fissato (`RELEASE.2025-09-07T16-13-09Z`, `7c5bd8512c6e966455b1d198209358b2d191c77a83ab377c4073281065fb855f`) per evitare rate limit registry; non cambia il MinIO live. Le evidenze di test non provano il flusso HUMAN reale fino a search.
 
 Le PR/issue storiche spesso riportano uno stato live precedente: non sovrascrivere gli output VPS recenti con i loro body. Al contrario, un output `PASS` di deploy non dimostra che una modifica non ancora distribuita sia attiva. Se una informazione manca, annotare **non verificato** e fare un controllo mirato una sola volta.
