@@ -135,10 +135,10 @@ def main():
         if (challenge.get('status') != 'OPEN' or challenge.get('targetContentHash') != content_hash
                 or not re.fullmatch('[0-9a-f-]{36}', str(challenge.get('challengeId')))):
             raise Blocked('APPROVAL_CHALLENGE_MISMATCH')
-        card_exact(challenge, state, turtle)
         state['challengeId'] = challenge['challengeId']
         state['targetContentHash'] = content_hash
         update(state)
+        card_exact(challenge, state, turtle)
     if not state.get('publicationSetId'):
         challenge_id = state['challengeId']
         status, card = call(api + '/api/trusted-human/v1/semantic-approval-challenges/' +
