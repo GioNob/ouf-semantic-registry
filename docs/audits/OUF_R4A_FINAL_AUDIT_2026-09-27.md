@@ -101,7 +101,12 @@ UDP #34 (3), MCP #45/#46 (2 ciascuna). Dopo la correzione del widget,
 il commit MCP #46 `ab553578095c5236b62612160f4fd8fdd77da2f8`
 non aveva run PR restituiti dal connettore; la sua CI finale è **non
 attestata**. Su Semantic il commit `b46bb276409c102b5fc0609ef56c614cd2e856d3`
-aveva due workflow SUCCESS, uno in progress e uno pending. Su
+ha poi mostrato tre workflow SUCCESS e **module CI FAILURE**: il checksum
+congelato di `.github/workflows/module-ci.yml` non era stato aggiornato
+dopo l'aggiunta del test read-only. Il job si fermava prima dei test. Il
+checksum è stato corretto nel commit `65ce2bfddb7c820a44aeced8fa66d95d3c8ace5f`;
+la CI di questo nuovo HEAD resta da verificare e non va dichiarata verde
+per inferenza. Su
 Onboarding `5d770df635f8328a1e901b2d47bf8cd5bacab6c5`
 entrambi i workflow erano SUCCESS. Ricontrollare la CI su ogni nuovo
 HEAD; un esito verde non è prova live.
