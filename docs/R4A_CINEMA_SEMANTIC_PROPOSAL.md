@@ -49,10 +49,17 @@ shared property set. A versioned comparator is selected by value type:
 - Numeric, temporal, geometric and stable identifier values: use their
   respective explicit unit, tolerance, CRS or exact-key policies.
 
-Candidate generation is bounded. The published policy declares required
-signals, weights/thresholds where applicable, ambiguity handling and
-permitted automatic decisions. Uncertain identity requires HUMAN review;
-neither a single free-text match nor an AI score is authority by itself.
+Candidate generation is bounded. The class-neutral engine applies the
+published semantics of each mapped property or relation: comparator and
+version, evidence role, justified uniqueness scope, cardinality, temporal
+validity and geometry where relevant. A mapping alone does not make a value
+an identifier. Blocking rules retrieve candidates; value prevalence can
+inform retrieval and evidence explanation but never grants identity
+authority through a frequency cutoff. The published identity policy declares
+sufficient conditions for automatic decisions. A weighted score may rank
+candidates but is not itself sufficient authority to merge. Uncertain
+identity requires HUMAN review. Names, addresses and other example fields
+receive no special production branches.
 On MATCH, UDP keeps distinct source-object bindings and the union of property
 contributions. Overlapping conflicting values are handled by versioned
 property-level authority or an explicit HUMAN decision, retaining both raw
