@@ -790,6 +790,9 @@ Acceptance obbligatoria:
 
 ### Procedura di modifica
 
+Per fotografare i soli container, eseguire lo script read-only [r4a_handoff_snapshot.py](../../scripts/r4a_handoff_snapshot.py) dal commit fissato. Esempio: dalla directory del repository sul VPS, `git show <COMMIT_VERIFICATO>:scripts/r4a_handoff_snapshot.py | sudo python3 -`. Lo script non interroga policy, route, DB o stato della filiera e non sostituisce le acceptance.
+
+
 1. Identificare branch/commit e immagine/container live del solo modulo interessato; non dedurre deployment da PR, CI o body di issue. Registrare lo snapshot di route, container, config e DB richiesto dallo script di rollout versionato.
 2. Usare la modalità `plan`/dry run dello script e poi `apply` idempotente con verifiche e rollback automatico. Riportare all'operatore **un** esito sintetico PASS/BLOCKED, il riferimento di rollback e il gate successivo. Evitare lunghe sequenze manuali di controlli indipendenti. Non ripetere una prova già attestata se l'immagine e la configurazione pertinenti non sono cambiate.
 3. Comandi copiabili completi: `cd` esplicito, commit fissato, shell non interattiva salvo login HUMAN, `set -o pipefail` dove si usa `git show | sudo python3 -`; non interrompere un comando in modo che il pipe invii uno script parziale. Le credenziali vanno in secret file/runtime e non nei log o nella chat. Snapshot e dump restano finché il rollback è verificato.
