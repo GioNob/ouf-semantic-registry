@@ -1,8 +1,14 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
-Data di verifica: 16 settembre 2026. Stato: proposta esecutiva basata sui repository, non attestazione di conformità finale.
+Data della baseline: 16 settembre 2026. Snapshot operativo R4a: 27 settembre 2026. Stato: proposta esecutiva basata sui repository, non attestazione di conformità finale.
 
 La priorità è completare la catena eseguibile e autorizzata tra i moduli. I repository contengono una parte consistente del dominio e dei test, ma rimangono codice di integrazione, capability, superfici umane e criteri di accettazione da realizzare. Non è corretto descrivere il lavoro residuo come sola configurazione IAM o collaudo di produzione.
+
+## Snapshot R4a al 27 settembre 2026
+
+[Handoff cross-module per nuova chat](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/OUF_HANDOFF_2026-09-27_R4A.md). L'upload HUMAN attraverso picker/Gateway ha prodotto l'asset `8ec8ae90-808a-4d9e-907c-d56de119e376`; il profilo è `4462692b-9c85-446b-b6fd-779f01eab64d`. Semantic ha pubblicato con conferma HUMAN la revisione `51706bed-81e4-4306-aca1-70119821727d` nel set `f92a2e17-30c9-456f-bb12-63afa84f41e6`. Il DRAFT Onboarding `managed-cinema-8ec8ae90` non è submitted/ACTIVE e non c'è evidenza di Ingestion → UDP → search per questo asset. **R-SMOKE OPEN**.
+
+Prossimo incremento: [UDP PR #34](https://github.com/GioNob/ouf-udp-object-resolution/pull/34) rende durevole la review per record e rifiuta weighted non eseguito; [issue #35](https://github.com/GioNob/ouf-udp-object-resolution/issues/35) definisce il motore di identità canonica generale. La regola usa proprietà semantiche condivise e vincoli governati, non nomi o frequenza dei valori; uno score non autorizza da solo MATCH. Allineare Onboarding/UDP prima di attivare il DRAFT. Distinguere CI, PR e rollout live. L'ordine e i gate sono dettagliati nell'handoff.
 
 ## 1. Autorità e metodo
 
