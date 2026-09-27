@@ -1,70 +1,62 @@
-# R4a Semantic inventory for managed-file onboarding
+# R4a Semantic inventory and publication evidence
 
-After a file is staged and profiled, the PET R-SMOKE gate requires a governed
-Semantic publication and human-reviewed mapping before an Onboarding DRAFT is
-created. Do not substitute example IRIs or CI fixtures for live references.
+This document separates the **read-only cold-start inventory** from the later
+HUMAN publication. Normative sources: Semantic Registry PET v1.3,
+Onboarding/THS PET v1.6, Gateway PET v1.5, MCP PET v1.4 and Matrix v1.7.
+[Cross-module handoff](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/OUF_HANDOFF_2026-09-27_R4A.md).
 
-`scripts/r4a_semantic_inventory.py` performs one read-only, bounded query in
-the lab PostgreSQL container. It reports the latest published set, its member
-identities and versions, and whether the first 100-member listing is truncated.
-It does not read credentials or modify the database. Run the script from an
-exact reviewed repository revision as `oufadmin` on the lab VPS. The script
-assumes the existing lab container `ouf-postgres`, role `ouf_semantic`, and
-database `ouf_semantic`; a missing binding stops with `QUERY_FAILED`.
+## Chronology, 27 September 2026
 
-If `SEMANTIC_PUBLISHED_SETS=0`, first perform the governed Semantic DRAFT,
-validation, HUMAN approval and publication workflow. A published member list
-is evidence for review, not automatic approval of a class/property mapping.
-The operator must review `cinema` and `indirizzo` field classifications and
-select exact published class/property references before invoking
-`source.onboarding.create`. Continue R-SMOKE through Ingestion and UDP only
-after the governed Onboarding configuration is approved and active.
+| Checkpoint | Operator evidence | Meaning |
+| --- | --- | --- |
+| Before publication | `SEMANTIC_PUBLISHED_SETS=0`, `SEMANTIC_ACTIVE_ARTIFACTS=0` | No published set at that time; superseded by later evidence |
+| Gateway cold start | 42 routes, none for the seven needed HUMAN Semantic actions | The routes were then materialized and installed with private rollback snapshot |
+| Gateway acceptance | `SEMANTIC_HUMAN_ROUTES_ACTIVE=true COUNT=7`; search HTTP 200; invalid owner proposal HTTP 400 | Route and limited owner acceptance, not end-to-end ingestion |
+| Reviewed RDF | `VALIDATION=PASS ERRORS=0 WARNINGS=2`; HUMAN card checked exact RDF hash | Warning count is not an approval |
+| HUMAN publication | `SEMANTIC_HUMAN_PUBLICATION=PASS`, published set and manifest below | Published ontology, not an ACTIVE Onboarding source |
 
-Regression record (27 September 2026): the coordinated picker rollout pinned
-an older Gateway revision and overwrote the owner-key declaration in four
-managed-file MCP routes. The repair restored those routes; the coordinator
-now pins the corrected Gateway revision and rejects any materialization that
-omits the declaration before mutating APISIX. Keep that guard in the reusable
-installation/configuration path.
+Asset `8ec8ae90-808a-4d9e-907c-d56de119e376`, profile
+`4462692b-9c85-446b-b6fd-779f01eab64d`, eight rows,
+fields `cinema` and `indirizzo`. The initial profile suggested
+`cinema` as a native key; the HUMAN rejected its use as an identity key.
+The DRAFT uses `MANAGED_DETERMINISTIC` asset/ordinal source-row identity.
+That technical key is distinct from UDP canonical identity.
 
-## Lab observation, 27 September 2026
+Published Semantic ID `https://api.ouf-lab.it/semantic/cinema`,
+revision `51706bed-81e4-4306-aca1-70119821727d`, set
+`f92a2e17-30c9-456f-bb12-63afa84f41e6`, RDF SHA-256
+`4340986102db6e47345dd8157734d9db83b928edd94485f1b9a5b9e81c497a2e`,
+manifest hash
+`a711d0428f1cbe24c73cbf0fa5cabfcb52f85df774e7238d884e7f83f41b84e9`.
+The class/property meanings use governed Semantic Registry IRIs aligned to
+schema.org. Their actual values are free text with no controlled concept
+code-list mapping. Mapping gives comparable meaning; it does not give
+identity authority.
 
-The pinned read-only inventory returned `published_sets=0`,
-`active_artifacts=0`, and no latest set. The real picker staged asset
-`8ec8ae90-808a-4d9e-907c-d56de119e376`; Onboarding profile
-`4462692b-9c85-446b-b6fd-779f01eab64d` succeeded with eight CSV rows,
-fields `cinema` and `indirizzo`, and a proposed native key `cinema` awaiting
-human review. No Onboarding DRAFT, Semantic publication, Ingestion run or UDP
-object was produced by these checks.
+The Onboarding DRAFT `managed-cinema-8ec8ae90`, version
+`68394f42-5c82-4127-a1f3-126516665749`, is neither submitted nor ACTIVE.
+The former validator returned PASS while `UDP_RESOLUTION_CONFIGURED=false`.
+A validator correction exists on the work branch but its VPS deployment is not
+attested. R-SMOKE remains **OPEN**: there is no run for this asset through
+Ingestion → UDP materialization → governed search.
 
-The versioned Gateway catalogue currently contains an internal
-`ouf.semantic.read` reference-resolution route but no versioned route
-materialization for the Semantic proposal/validation/HUMAN
-approval/publication lifecycle. This does not establish the state of manually
-installed live routes; inspect them before applying a route change. The
-Semantic service implements these owner endpoints. Any missing live binding
-must be wired through Gateway with exact capability, IAM scope and
-Authorization grants before a cold-start publication can be exercised.
-Do not call the Semantic container directly or insert a publication with SQL
-to bypass the governed path. Bundle this bootstrap in a reusable installer
-with readback and rollback rather than an operator sequence of raw commands.
+## Repeatable read-only inventory
 
-### Gateway cold-start work, 27 September
+`scripts/r4a_semantic_inventory.py` performs a bounded query in the lab
+PostgreSQL container, reporting latest published set, members and a truncation
+flag. It does not read credentials or modify data. It assumes the lab
+`ouf-postgres` container, `ouf_semantic` role and database; a missing
+binding fails with `QUERY_FAILED`. Pin the script revision, run only when
+a fresh inventory is needed, and do not repeat publication based on the
+old zero-set result.
 
-The APISIX Admin API returned 42 routes, with no matching route for the
-Semantic proposal, validation, HUMAN review/decision/publication or search
-paths. The preflight read route metadata only and made no writes. Gateway
-draft PR #54 now carries seven exact HUMAN bindings, a materializer and an
-installer whose snapshot is limited to those seven IDs. Its `uriRegex`
-selectors separate approval from publication under the shared challenge
-namespace. The initial Gateway CI run passed; live route behavior and fresh
-HUMAN token acceptance remain unverified.
+The picker rollout had previously replaced the owner-key declaration in four
+managed-file MCP routes by using an old Gateway revision. A repair restored
+those routes. The versioned rollout coordinator now rejects materialization
+without that declaration before APISIX mutation. Keep this guard in the
+installation path and preserve its rollback snapshot.
 
-Authorization's existing `ouf.semantic.read` registration is SERVICE-only
-and immutable. The HUMAN challenge card already returns the reviewed draft
-definition. The first smoke therefore uses that card and does not expand or
-replace the SERVICE read capability or deploy a new Semantic owner endpoint.
-The Onboarding branch carries exact seven-capability and seven-grant manifests,
-a batch Keycloak HUMAN scope reconciler, and a one-login add-only policy
-bootstrap. These are candidate code; no new Semantic IAM entry or Gateway
-route has been activated on the VPS. R-SMOKE remains OPEN.
+The first-party upload, Semantic publication and any future Onboarding
+activation are separate transactions. No SQL fixture, direct Semantic
+container call, or installed route alone substitutes for the governed
+Gateway/THS acceptance.
