@@ -20,7 +20,7 @@ DEFAULT_CONTAINERS = (
 def snapshot(names: tuple[str, ...]) -> dict:
     listing = subprocess.run(
         ["docker", "container", "ls", "-a", "--format", "{{.Names}}"],
-        capture_output=True, text=True, check=False,
+        capture_output=True, text=True, check=False, timeout=10,
     )
     if listing.returncode:
         raise RuntimeError("docker container listing failed")
@@ -32,7 +32,7 @@ def snapshot(names: tuple[str, ...]) -> dict:
             continue
         proc = subprocess.run(
             ["docker", "inspect", "--type", "container", name],
-            capture_output=True, text=True, check=False,
+            capture_output=True, text=True, check=False, timeout=10,
         )
         if proc.returncode:
             raise RuntimeError(f"docker inspect failed for {name}")
@@ -71,7 +71,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         result = snapshot(tuple(args.containers))
-    except (OSError, RuntimeError) as exc:
+    except (OSError, RuntimeError, subprocess.TimeoutExpired) as exc:
         print(f"R4A_INVENTORY_BLOCKED={type(exc).__name__}", file=sys.stderr)
         return 2
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
