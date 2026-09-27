@@ -59,6 +59,34 @@ property-level authority or an explicit HUMAN decision, retaining both raw
 values and provenance. The rule applies to every object class, not just
 cinemas.
 
+### Ambiguous identity across acquisition modes
+
+For any object class, an ambiguous candidate set or an unresolved conflict
+between comparable values produces a durable `REVIEW_REQUIRED` item with
+the source observation, candidate canonical objects, shared semantic property
+references, normalized comparison evidence, policy/comparator versions and
+provenance. No candidate is selected, merged or published as a canonical
+object until a HUMAN makes an explicit, auditable decision. Uncertain absence
+of a match must not silently become `NEW`.
+
+The acquisition mode changes when that decision is requested, not the rule:
+an interactive managed-file upload presents the review to the available HUMAN
+and persists the item if that person leaves; a scheduled SUO pull persists
+the affected record in the UDP resolution review queue until a HUMAN returns.
+Other independent records can continue under their own policy. Review is
+resumable and does not hold open a request, database transaction or worker.
+A confirmed match then links the source observation to the canonical object;
+a confirmed new object may be materialized; conflicting overlapping values
+follow property authority or explicit HUMAN choice with provenance retained.
+
+Per the Ingestion/UDP PET boundary, a durable handoff/ACK can precede this
+resolution review after the raw observation and handoff are safely persisted.
+`REVIEW_REQUIRED` prevents canonical materialization and serving of that
+unresolved record; it does not retroactively invalidate the durable ACK or
+automatically stall the entire source watermark. A source-contract failure
+before handoff is a separate Ingestion quarantine condition.
+
+
 The cinema CSV offers two comparable, mapped free-text properties but no
 controlled concept values. It can produce candidate matches after versioned
 text/address normalization; there is currently no approved or deployed
