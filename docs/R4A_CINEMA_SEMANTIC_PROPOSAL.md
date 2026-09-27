@@ -2,8 +2,10 @@
 
 The real managed-file asset `8ec8ae90-808a-4d9e-907c-d56de119e376`
 has profile `4462692b-9c85-446b-b6fd-779f01eab64d`: eight rows and
-two non-null text fields, `cinema` and `indirizzo`. No controlled
-vocabulary is mapped for either field.
+two non-null text fields, `cinema` and `indirizzo`. Their **property meanings**
+are mapped to governed Semantic Registry IRIs aligned to schema.org;
+the free-text **values** have no controlled concept/code-list mapping.
+Those are different notions of vocabulary, and neither value is a unique key.
 
 The HUMAN reviewed the exact RDF approval card and published:
 
@@ -99,8 +101,11 @@ controlled concept values. It can produce candidate matches after versioned
 text/address normalization; there is currently no approved or deployed
 general resolution policy for automatic matching on this evidence.
 The Onboarding preflight returned `ONBOARDING_VALIDATION=PASS` against the
-then-running validator but `UDP_RESOLUTION_CONFIGURED=false`. A validator
-correction is in progress to reject managed submissions without exact
-execution, Semantic publication, UDP resolution and materialization profiles.
+then-running validator but `UDP_RESOLUTION_CONFIGURED=false`. A validator correction is present in the Onboarding work branch and had
+CI evidence, but deployment to the running VPS validator is not attested.
+It rejects managed submissions without exact execution, Semantic publication,
+UDP resolution and materialization profiles.
 The DRAFT remains unsubmitted; no Ingestion run, UDP materialization or
 R-SMOKE PASS has been claimed.
+
+Cross-module status and next step: [PET 1.7 handoff 27 September 2026](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/OUF_HANDOFF_2026-09-27_R4A.md).
