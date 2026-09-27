@@ -22,8 +22,19 @@ incremental updates. No controlled vocabulary mapping is proposed for these
 two free-text fields. The HUMAN reviewer may replace the class, properties,
 key or access labels before any Onboarding DRAFT or Semantic publication.
 
-This document is a review candidate only. The live Semantic Registry has no
-published set, and the Gateway/IAM/Authorization path for its governed
-proposal, validation and HUMAN approval has not yet been installed. Do not
-submit `source.onboarding.create` with these IRIs until an exact publication
-and its references are verified on the lab installation.
+This document is a review candidate only. The seven HUMAN Semantic Gateway
+routes and their IAM/Authorization grants have passed live authenticated
+acceptance; the RDF import route and the Registry review-card upgrade remain
+deployment candidates. The import route uses `ouf.semantic.propose` and an
+8 MiB body limit matching the Registry's parser. For imported RDF, the
+HUMAN approval card now includes the immutable source bytes, media type,
+statement count and independently verified SHA-256. A governed draft must
+be examined in that card before decision and publication.
+
+The reviewed RDF proposal must define the actual class and properties, with
+the exact published SemanticReference used in Onboarding. Merely storing a
+field-mapping JSON object inside an ONTOLOGY revision does not populate the
+Registry's RDF view with those class and property triples. No Semantic
+publication or Onboarding DRAFT has been performed for this asset. Do not
+submit `source.onboarding.create` until a HUMAN reviewer has approved the
+ontology, row key and field access, and the exact publication is verified.
