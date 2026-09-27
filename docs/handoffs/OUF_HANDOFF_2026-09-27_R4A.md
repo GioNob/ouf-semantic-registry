@@ -65,7 +65,7 @@ Il durable ACK UDP precede la risoluzione; la review per record non annulla l'AC
 | [UDP](https://github.com/GioNob/ouf-udp-object-resolution/tree/codex/r4a-ambiguous-review-resume) | `docs/R4A_RESOLUTION_REVIEW_GATE.md`, PR #34, issue #35 |
 | [Ingestion](https://github.com/GioNob/ouf-ingestion-runtime) | PET Ingestion v1.3 e contratti handoff/version pinning; nessun esito per questo asset |
 
-I nomi delle branch non attestano merge né deployment. Confrontare HEAD, CI e immagini live prima di attribuire una modifica al VPS. Lo script di rollout è la fonte operativa per la configurazione del relativo modulo; non replicare una lunga serie di comandi imperativi in chat. I backup di route, container e DB sono stati mantenuti durante i rollout precedenti; non cancellarli per “pulizia” durante R4a.
+I nomi delle branch non attestano merge né deployment. Confrontare HEAD, CI e immagini live prima di attribuire una modifica al VPS. Lo script read-only [`r4a_handoff_snapshot.py`](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/scripts/r4a_handoff_snapshot.py) comprime l'inventario Docker senza esporre secret: dal checkout Semantic eseguire `git show <COMMIT_VERIFICATO>:scripts/r4a_handoff_snapshot.py | sudo python3 -`. L'inventario non verifica policy, route o DB. Lo script di rollout è la fonte operativa per la configurazione del relativo modulo; non replicare una lunga serie di comandi imperativi in chat. I backup di route, container e DB sono stati mantenuti durante i rollout precedenti; non cancellarli per “pulizia” durante R4a.
 
 ## Gate residui per dire R-SMOKE PASS
 
