@@ -38,11 +38,13 @@ human review. No Onboarding DRAFT, Semantic publication, Ingestion run or UDP
 object was produced by these checks.
 
 The versioned Gateway catalogue currently contains an internal
-`ouf.semantic.read` reference-resolution route but no route materialization
-for the Semantic proposal/validation/HUMAN approval/publication lifecycle.
-The Semantic service implements these owner endpoints; they must be wired
-through Gateway with exact capability, IAM scope and Authorization grants
-before a cold-start publication can be exercised on this installation.
+`ouf.semantic.read` reference-resolution route but no versioned route
+materialization for the Semantic proposal/validation/HUMAN
+approval/publication lifecycle. This does not establish the state of manually
+installed live routes; inspect them before applying a route change. The
+Semantic service implements these owner endpoints. Any missing live binding
+must be wired through Gateway with exact capability, IAM scope and
+Authorization grants before a cold-start publication can be exercised.
 Do not call the Semantic container directly or insert a publication with SQL
 to bypass the governed path. Bundle this bootstrap in a reusable installer
 with readback and rollback rather than an operator sequence of raw commands.
