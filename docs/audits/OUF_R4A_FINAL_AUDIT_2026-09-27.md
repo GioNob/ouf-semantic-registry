@@ -75,9 +75,18 @@ validato da Onboarding non deve essere attivato finché UDP non lo esegue.
 ## Stato PR e dipendenze
 
 - Gateway PR #51, #53, #54: open/draft; i rispettivi branch hanno contenuto
-  diverso dal loro deployment storico. Non inferire merge da route installate.
+  diverso dal loro deployment storico. Il branch #51 non include ancora
+  le correzioni dell'installer #53 (blob diversi per deployer M2M/MCP);
+  #53 risultava anche non mergeable con la base al controllo; #54 deriva
+  da un ulteriore branch picker/owner-key. Queste dipendenze
+  vanno integrate e ricollaudate insieme prima di promuovere `main`.
+  Non inferire merge da route installate.
 - Onboarding PR #37: open/draft; Semantic PR #26: open/draft; Semantic docs
-  PR #25 e workload PR #24 restano separate.
+  PR #25 e workload PR #24 restano separate. #25 modifica gli stessi
+  roadmap/manuale di #26 e il vecchio handoff è storico; il provisioner
+  Keycloak di #24 è già presente con blob identico in #26. Evitare merge
+  indipendenti che sovrascrivano la documentazione corrente o duplicano
+  il bootstrap.
 - Ingestion PR #27 R2f: open/draft; nessuna PR R4a per questo asset.
 - UDP PR #34: open/ready for review, non deployed; issue #35 aperta;
   PR #33 chiusa senza merge. UDP PR #31 search open/draft e PR #32 già
@@ -88,9 +97,14 @@ validato da Onboarding non deve essere attivato finché UDP non lo esegue.
 
 Gli HEAD osservati prima degli ultimi cambi avevano workflow SUCCESS:
 Gateway #51 (1), Onboarding #37 (2), Semantic #26 (4), Ingestion #27 (7),
-UDP #34 (3), MCP #45/#46 (2 ciascuna). Gli aggiornamenti di questo audit e
-la correzione del widget generano **nuovi HEAD**: ricontrollare la CI finale.
-Un esito verde non è prova live.
+UDP #34 (3), MCP #45/#46 (2 ciascuna). Dopo la correzione del widget,
+il commit MCP #46 `ab553578095c5236b62612160f4fd8fdd77da2f8`
+non aveva run PR restituiti dal connettore; la sua CI finale è **non
+attestata**. Su Semantic il commit `b46bb276409c102b5fc0609ef56c614cd2e856d3`
+aveva due workflow SUCCESS, uno in progress e uno pending. Su
+Onboarding `5d770df635f8328a1e901b2d47bf8cd5bacab6c5`
+entrambi i workflow erano SUCCESS. Ricontrollare la CI su ogni nuovo
+HEAD; un esito verde non è prova live.
 
 ## Gate di uscita
 
