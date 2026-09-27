@@ -18,17 +18,24 @@ DEFAULT_CONTAINERS = (
 
 
 def snapshot(names: tuple[str, ...]) -> dict:
-    command = ["docker", "inspect", "--type", "container", *names]
-    # A missing optional name makes Docker exit non-zero, so inspect each one.
+    listing = subprocess.run(
+        ["docker", "container", "ls", "-a", "--format", "{{.Names}}"],
+        capture_output=True, text=True, check=False,
+    )
+    if listing.returncode:
+        raise RuntimeError("docker container listing failed")
+    present = set(listing.stdout.splitlines())
     entries = []
     for name in names:
+        if name not in present:
+            entries.append({"name": name, "present": False})
+            continue
         proc = subprocess.run(
             ["docker", "inspect", "--type", "container", name],
             capture_output=True, text=True, check=False,
         )
         if proc.returncode:
-            entries.append({"name": name, "present": False})
-            continue
+            raise RuntimeError(f"docker inspect failed for {name}")
         try:
             item = json.loads(proc.stdout)[0]
             config = item["Config"]
