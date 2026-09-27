@@ -786,7 +786,7 @@ Acceptance obbligatoria:
 
 ## 23. R4a — ripresa automatizzata e stato del lab (27 settembre 2026)
 
-[Handoff completo PET 1.7](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/OUF_HANDOFF_2026-09-27_R4A.md) è la fotografia operativa. I rollout picker Onboarding/MCP/Gateway, la riparazione owner-key e l'upload HUMAN tramite Gateway hanno prodotto l'asset `8ec8ae90-808a-4d9e-907c-d56de119e376`; Semantic ha pubblicato la revisione `51706bed-81e4-4306-aca1-70119821727d`. Il DRAFT Onboarding è ancora inattivo. Non esiste una prova del ciclo Ingestion → UDP → search per quell'asset. L'ultimo PolicyBundle attestato è `ouf-lab-authorization:28`, da rileggere prima di una nuova mutazione.
+[Handoff completo PET 1.7](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/OUF_HANDOFF_2026-09-27_R4A.md) e [audit con evidenze e difformità](../audits/OUF_R4A_FINAL_AUDIT_2026-09-27.md) sono la fotografia operativa. I rollout picker Onboarding/MCP/Gateway, la riparazione owner-key e l'upload HUMAN tramite Gateway hanno prodotto l'asset `8ec8ae90-808a-4d9e-907c-d56de119e376`; Semantic ha pubblicato la revisione `51706bed-81e4-4306-aca1-70119821727d`. Il DRAFT Onboarding è ancora inattivo. Non esiste una prova del ciclo Ingestion → UDP → search per quell'asset. L'ultimo PolicyBundle attestato è `ouf-lab-authorization:28`, da rileggere prima di una nuova mutazione.
 
 ### Procedura di modifica
 
@@ -803,3 +803,20 @@ Per fotografare i soli container, eseguire lo script read-only [r4a_handoff_snap
 Il bootstrap Keycloak dei cinque scope managed-file e dei client `ouf-onboarding`, `ouf-ingestion`, `ouf-human-admin` e `ouf-chatgpt` è stato applicato/verificato nei passaggi documentati in Onboarding; la sessione `kcadm` può scadere e richiede nuova autenticazione interattiva prima di mutazioni. Gli scope HUMAN legati come OPTIONAL a un client non compaiono automaticamente nel token di un altro. Gateway controlla route e capability, Onboarding/UDP fanno enforcement fine e il THS resta owner delle decisioni HUMAN.
 
 Il probe APISIX isolato ha mostrato early bytes/204/cleanup; per la route prodotto restano 413 senza asset parziale, media/checksum/auth negativi e rollback. L'upload live ha avuto successo ma non prova tutti quei casi. Le immagini e le route attive vanno osservate appena prima di un ulteriore rollout. Il profilo `resolution.weighted` è accettato come struttura opzionale da Onboarding ma UDP non ne esegue la semantica: la PR #34 lo rifiuta esplicitamente; non attivare una fonte che ne dipende finché il motore generale e il test di contratto versionato non sono attivi. La MinIO CI della PR usa un binario ufficiale con SHA fissato; nessun cambiamento al MinIO live del VPS.
+
+
+## 24. Stato R-INSTALL e confine del laboratorio
+
+**R-INSTALL OPEN.** La raccolta di script versionati di bootstrap e rollout ha
+ridotto errori del lab, ma non è un orchestrator d'installazione su nuova
+macchina. Per chiudere il gate servono manifest di installazione e secret refs,
+bootstrap idempotente IAM/Authorization e route, build/deploy dei sei moduli,
+clean install, upgrade N/N+1, backup/restore, rollback e CI d'installabilità.
+Il contratto deve supportare Gateway e owner su reti/host distinti con upstream
+versionato e trasporto verificato; il binding Docker `ouf-onboarding:8080` è
+soltanto il profilo lab. L'[audit R4a](../audits/OUF_R4A_FINAL_AUDIT_2026-09-27.md)
+registra i regressi che l'orchestrator deve prevenire: payload anonimo valido
+per il probe delle route, dichiarazione owner-key preservata, picker URL
+proiettato dall'installazione, snapshot/rollback e sessione IAM gestita
+senza inviare secret alla chat. Un output PASS dell'inventario container o
+del rollout picker non chiude R-INSTALL né R-SMOKE.
