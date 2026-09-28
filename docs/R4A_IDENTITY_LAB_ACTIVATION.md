@@ -133,6 +133,12 @@ ruolo applicativo `ouf_udp` non ha `CREATEDB`. La versione successiva dello
 script legge il ruolo amministrativo dal container PostgreSQL, ne verifica
 la facoltà di creare il database temporaneo e lo usa soltanto per creazione
 e rimozione. Non concede nuovi privilegi al ruolo applicativo.
+Il tentativo seguente ha creato il clone, ma il ripristino si è fermato sui
+privilegi richiesti per creare un'estensione PostgreSQL. La prova ora rileva
+nomi e versioni delle estensioni presenti nel database live, le prepara nel
+solo clone con il ruolo amministrativo, verifica le versioni, quindi ripristina
+lo schema e i dati con `ouf_udp` omettendo i commenti. Il clone viene rimosso
+anche in caso di errore; il database e il container live restano invariati.
 
 ## Inventario prima delle modifiche
 

@@ -93,10 +93,19 @@ def main():
     admin = db_env.get("POSTGRES_USER", "postgres")
     if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,62}", admin):
         raise RuntimeError("POSTGRES_ADMIN_ROLE_INVALID")
-    role_ready = admin_command("psql", "-U", admin, "-d", "ouf_udp", "-Atc",
-                               "select rolsuper or rolcreatedb from pg_roles where rolname=current_user")
-    if role_ready != "t":
+    role_flags = admin_command("psql", "-U", admin, "-d", "ouf_udp", "-Atc",
+                               "select rolsuper::text||':'||rolcreatedb::text "
+                               "from pg_roles where rolname=current_user")
+    if role_flags not in {"true:true", "true:false", "false:true"}:
         raise RuntimeError("POSTGRES_ADMIN_CANNOT_CREATE_CLONE")
+    extension_rows = docker("exec", "ouf-postgres", "psql", "-U", "ouf_udp", "-d", "ouf_udp",
+                            "-Atc", "select extname||':'||extversion from pg_extension "
+                            "where extname<>'plpgsql' order by extname").splitlines()
+    extensions = [tuple(row.split(":", 1)) for row in extension_rows]
+    if any(not re.fullmatch(r"[a-z][a-z0-9_]{0,62}", name) for name, _ in extensions):
+        raise RuntimeError("EXTENSION_NAME_UNSUPPORTED")
+    if extensions and not role_flags.startswith("true:"):
+        raise RuntimeError("POSTGRES_EXTENSION_ADMIN_REQUIRED")
     with BACKUP.open("rb") as source:
         subprocess.run(["docker", "exec", "-i", "ouf-postgres", "pg_restore", "-l"],
                        stdin=source, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
@@ -109,11 +118,20 @@ def main():
         print("R4A_PROBE_STAGE=CREATE_CLONE", flush=True)
         admin_command("createdb", "-U", admin, "-O", "ouf_udp", database)
         created_db = True
+        print("R4A_PROBE_STAGE=PREPARE_EXTENSIONS COUNT=" + str(len(extensions)), flush=True)
+        for extension, expected_version in extensions:
+            admin_command("psql", "-U", admin, "-d", database, "-v", "ON_ERROR_STOP=1",
+                          "-Atc", "create extension if not exists " + extension)
+            actual_version = docker("exec", "ouf-postgres", "psql", "-U", "ouf_udp",
+                                    "-d", database, "-Atc",
+                                    "select extversion from pg_extension where extname='" + extension + "'")
+            if actual_version != expected_version:
+                raise RuntimeError("EXTENSION_VERSION_MISMATCH")
         print("R4A_PROBE_STAGE=RESTORE_DUMP", flush=True)
         with BACKUP.open("rb") as source:
             restored = subprocess.run(["docker", "exec", "-i", "ouf-postgres", "pg_restore",
                                        "-U", "ouf_udp", "-d", database,
-                                       "--no-owner", "--no-acl"],
+                                       "--no-owner", "--no-acl", "--no-comments"],
                                       stdin=source, stdout=subprocess.DEVNULL,
                                       stderr=subprocess.PIPE, timeout=300)
         if restored.returncode != 0:
