@@ -810,6 +810,68 @@ distinti; un eventuale luogo fisico condiviso si rappresenta con un legame
 governato, senza fare merge fra le due classi. L'indirizzo o un nome simile
 propongono una relazione da verificare, non autorizzano da soli il link.
 
+#### Policy Authorization R4a: preparazione senza pubblicazione
+
+La policy ACTIVE `ouf-lab-authorization:28` non dichiara ancora
+`urban.identity.preflight`, `ouf.udp.identity.attestation.read`,
+`resolution.issue.read` e `resolution.match.approve`. Il percorso MCP di
+`authorization.permissions.propose` cambia un grant per volta e non registra
+descriptor: per questa prima introduzione usare l'API amministrativa
+`/api/trusted-human/v1/authorization`, con identità HUMAN autenticata e
+trusted write proof. Il backend rimane privato; non pubblicare queste API in
+MCP né creare grant con SQL. L'installazione Gateway attuale non espone route
+amministrative dedicate: verificare un canale autenticato appropriato prima
+di tentare POST, senza aprire la porta backend a Internet.
+
+Lo script [r4a_prepare_identity_policy.py](../../scripts/r4a_prepare_identity_policy.py)
+accetta due esportazioni **locali al server**: il JSON `bundle_payload`
+dell'ACTIVE, e un array JSON di `capability_id, descriptor` delle quattro
+registrazioni (può essere `[]`). Salvare l'output di queste query con il
+proprio `psql` protetto e permessi 0600:
+
+```sql
+select p.bundle_payload::text
+from ouf_authorization.active_policy_bundle a
+join ouf_authorization.policy_bundle p using (bundle_id, version);
+
+select coalesce(jsonb_agg(jsonb_build_object(
+  'capability_id', capability_id, 'descriptor', descriptor)), '[]'::jsonb)::text
+from ouf_authorization.capability_registration
+where capability_id in ('urban.identity.preflight',
+  'ouf.udp.identity.attestation.read', 'resolution.issue.read',
+  'resolution.match.approve');
+```
+
+```sh
+python3 scripts/r4a_prepare_identity_policy.py \
+  --active /opt/ouf/r4a-stage/active-policy.json \
+  --registrations /opt/ouf/r4a-stage/registered-identity-capabilities.json \
+  --valid-until 2027-09-28T00:00:00Z \
+  --output-dir /opt/ouf/r4a-stage/policy-29-review
+```
+
+La scadenza è un parametro esplicito da approvare. Il generatore blocca una
+ACTIVE diversa da :28 e descriptor incompatibili. Produce
+`capability-registrations.json` per i soli descriptor assenti e
+`policy-draft.json` per la nuova versione. Mantiene tutti i grant esistenti,
+inclusi quelli governati dal catalogo ruoli, e aggiunge il solo grant SERVICE
+`ouf-source-onboarding`. Rivedere il diff e i file sul server; registrare i
+descriptor mancanti con `POST /capabilities`, creare la bozza con
+`POST /policies`, poi confermare la pubblicazione con
+`POST /policies/{id}:publish` e l'ETag reale. La pubblicazione è una decisione
+HUMAN esplicita; se ACTIVE cambia, rigenerare dal nuovo bundle e riesaminare.
+
+Dopo la pubblicazione, aggiornare `ouf-admin` attraverso
+`authorization.permissions.read` (`view: CAPABILITIES`), proposta
+`REPLACE_ROLES` e conferma THS: includere ogni capability HUMAN del bundle,
+con i vincoli massimi previsti dal modello ruoli Onboarding. La capability
+SERVICE resta al workload, non al ruolo umano. Il manifest MCP in produzione
+deve esporre `view: CAPABILITIES`; se la validazione dello strumento la rifiuta,
+aggiornare manifest/Gateway prima della proposta. Anche dopo la policy servono
+scope IAM, route Gateway, token workload Onboarding e deployment delle immagini
+staged. Nessuna fonte si attiva sulla sola base del draft o della pubblicazione
+della policy.
+
 
 1. Identificare branch/commit e immagine/container live del solo modulo interessato; non dedurre deployment da PR, CI o body di issue. Registrare lo snapshot di route, container, config e DB richiesto dallo script di rollout versionato.
 2. Usare la modalità `plan`/dry run dello script e poi `apply` idempotente con verifiche e rollback automatico. Riportare all'operatore **un** esito sintetico PASS/BLOCKED, il riferimento di rollback e il gate successivo. Evitare lunghe sequenze manuali di controlli indipendenti. Non ripetere una prova già attestata se l'immagine e la configurazione pertinenti non sono cambiate.
