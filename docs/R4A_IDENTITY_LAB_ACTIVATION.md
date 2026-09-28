@@ -76,6 +76,16 @@ bearer. Prima di sostituire UDP, usare
 container, mount, rete e default dell'immagine senza divulgare env o sorgenti
 dei mount; fermare UDP e fare il backup PostgreSQL immediatamente prima delle
 migrazioni, conservando una via di ripristino del database.
+L'inventario live ha confermato la nuova immagine `d9626a91…`, rete unica
+`ouf-backend`, UID/GID `10004:10004`, due mount bind read-only, nessuna porta
+host, restart `unless-stopped`, entrypoint/cmd/workdir di default, ambiente
+monoriga, PostgreSQL `pg_dump` 17.11, issuer e audience attesi. I bind sono
+nel campo Docker `HostConfig.Mounts`, non in `HostConfig.Binds`.
+`scripts/r4a_prepare_udp_candidate.py` crea un container candidato **non
+avviato** con gli stessi mount e env live più le tre variabili IAM; confronta
+il readback e cancella il file temporaneo degli env. Non ferma UDP, non
+esegue migrazioni e non tocca il DB. Il backup va eseguito solo nella fase
+successiva, dopo aver fermato il live e prima di avviare il candidato.
 
 ## Inventario prima delle modifiche
 
