@@ -63,11 +63,19 @@ L'`apply` IAM successivo ha riportato PASS per le quattro definizioni, le tre
 assegnazioni OPTIONAL, il nuovo client SERVICE e i permessi root 0600 del
 secret. Il `verify` separato ha riportato PASS per le quattro definizioni,
 mentre il controllo successivo era ancora in corso al momento dell'output:
-non registrare `VERIFY=PASS` complessivo finché non termina. Lo script
+il controllo è poi terminato con `R4A_IAM_RECONCILE=PASS MODE=VERIFY`.
+Lo script
 `r4a_service_token_smoke.py` controlla issuer, audience, scope, attore,
 tenant, identità SERVICE, subject, ACR e scadenza con un token reale in
 memoria, poi registra il solo status HTTP della route Gateway. Con UDP live
 ancora vecchio, un 404 dopo l'autenticazione non prova il nuovo owner.
+La prova reale ha restituito PASS per tutti e nove i claim, HTTP 404 dal
+Gateway e `R4A_SERVICE_TOKEN_SMOKE=PASS`, senza stampa o persistenza del
+bearer. Prima di sostituire UDP, usare
+`scripts/r4a_udp_rollout_inventory.py` per confrontare immagine staged,
+container, mount, rete e default dell'immagine senza divulgare env o sorgenti
+dei mount; fermare UDP e fare il backup PostgreSQL immediatamente prima delle
+migrazioni, conservando una via di ripristino del database.
 
 ## Inventario prima delle modifiche
 
