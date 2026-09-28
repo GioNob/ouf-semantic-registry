@@ -35,13 +35,15 @@ class NoRedirect(HTTPRedirectHandler):
 OPENER = build_opener(NoRedirect)
 
 
-def http(url, method="GET", payload=None, token=None, form=False):
+def http(url, method="GET", payload=None, token=None, form=False, extra_headers=None):
     headers = {"Accept": "application/json"}
     if payload is not None:
         headers["Content-Type"] = "application/x-www-form-urlencoded" if form else "application/json"
         payload = urlencode(payload).encode() if form else json.dumps(payload).encode()
     if token:
         headers["Authorization"] = "Bearer " + token
+    if extra_headers:
+        headers.update(extra_headers)
     request = Request(url, data=payload, method=method, headers=headers)
     try:
         with OPENER.open(request, timeout=12) as response:
