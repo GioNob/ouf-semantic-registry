@@ -804,9 +804,11 @@ il deployment. Prima di attivare la fonte servono le route Gateway, il grant
 HUMAN `urban.identity.preflight`, il grant SERVICE
 `ouf.udp.identity.attestation.read`, il token workload rinnovabile per
 Onboarding, il preflight della configurazione congelata e la prova live del
-percorso fino a UDP. Il matching attuale è limitato alla classe canonica:
-cinema e teatri sono fonti distinte e richiedono una decisione semantica
-ulteriore per rappresentare un eventuale luogo fisico condiviso.
+percorso fino a UDP. Il matching attuale è limitato alla classe canonica.
+Decisione HUMAN del 28 settembre: cinema e teatro restano oggetti canonici
+distinti; un eventuale luogo fisico condiviso si rappresenta con un legame
+governato, senza fare merge fra le due classi. L'indirizzo o un nome simile
+propongono una relazione da verificare, non autorizzano da soli il link.
 
 
 1. Identificare branch/commit e immagine/container live del solo modulo interessato; non dedurre deployment da PR, CI o body di issue. Registrare lo snapshot di route, container, config e DB richiesto dallo script di rollout versionato.
