@@ -86,6 +86,20 @@ avviato** con gli stessi mount e env live più le tre variabili IAM; confronta
 il readback e cancella il file temporaneo degli env. Non ferma UDP, non
 esegue migrazioni e non tocca il DB. Il backup va eseguito solo nella fase
 successiva, dopo aver fermato il live e prima di avviare il candidato.
+Il candidato è stato creato spento con commit `d9626a91…`, due mount
+identici e ambiente live più le tre variabili IAM; UDP e DB risultavano
+invariati. `scripts/r4a_switch_udp.py` esige che il vecchio container sia
+healthy, legge la versione Flyway precedente, lo ferma, produce un dump
+custom completo del DB `ouf_udp` in `/opt/ouf/r4a-stage` (root 0600),
+valida il dump con `pg_restore -l`, conserva il container vecchio rinominato,
+avvia il candidato e controlla health, raggiungibilità da APISIX e Flyway 29.
+Se il backup fallisce riavvia il vecchio UDP; se l'avvio nuovo fallisce prova
+il rollback del **runtime** senza ripristinare automaticamente il DB. Non
+eliminare il dump né il container vecchio. In caso di vecchio runtime non
+avviabile dopo una migrazione parziale, fermare UDP e usare solo allora
+`scripts/r4a_restore_udp_backup.py --backup <dump> --old-version <versione>`;
+questo è un ripristino distruttivo del DB alla snapshot e richiede verificare
+che non siano state accettate nuove scritture dopo il dump.
 
 ## Inventario prima delle modifiche
 
