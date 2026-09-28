@@ -826,8 +826,11 @@ di tentare POST, senza aprire la porta backend a Internet.
 Lo script [r4a_prepare_identity_policy.py](../../scripts/r4a_prepare_identity_policy.py)
 accetta due esportazioni **locali al server**: il JSON `bundle_payload`
 dell'ACTIVE, e un array JSON di `capability_id, descriptor` delle quattro
-registrazioni (può essere `[]`). Salvare l'output di queste query con il
-proprio `psql` protetto e permessi 0600:
+registrazioni (può essere `[]`). Le istruzioni seguenti sono **SQL per psql**,
+non comandi della shell. Sul VPS usare `sudo docker exec -i ouf-postgres psql
+-X -qAt -v ON_ERROR_STOP=1 -U ouf_onboarding -d ouf_onboarding -c 'SQL'`
+e redirigere l'output in file locali con `umask 077`; se il ruolo DB
+dell'installazione è diverso, usare quello già verificato per Onboarding.
 
 ```sql
 select p.bundle_payload::text
