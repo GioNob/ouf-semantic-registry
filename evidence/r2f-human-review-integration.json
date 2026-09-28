@@ -1,0 +1,104 @@
+{
+  "status": "PASS",
+  "checks": [
+    "discovery_candidate_persisted",
+    "adoption_idempotent_and_draft",
+    "explicit_version_validated",
+    "service_cannot_approve",
+    "human_approved_publication",
+    "publication_idempotent",
+    "exact_reference_resolved",
+    "real_registry_reference_active",
+    "shapefile_has_authorized_geometry",
+    "shapefile_preserves_leading_zero_key",
+    "access_declared_relationship_is_proposal",
+    "access_composite_foreign_key_preserved",
+    "access_composite_primary_key_preserved",
+    "different_native_ids_reuse_same_urban_object",
+    "weighted_typo_match_keeps_evidence",
+    "identity_score_does_not_override_property_authority",
+    "tabular_contribution_preserves_existing_geometry",
+    "asset_navigates_to_both_access_children",
+    "access_child_navigates_to_asset",
+    "mdb_to_accdb_reordered_rows_keep_identities",
+    "reimport_does_not_duplicate_active_relations",
+    "three_canonical_objects_from_six_observations",
+    "original_access_profile_still_resolves",
+    "lineage_pins_original_contracts",
+    "workload_serving_denied",
+    "anonymous_serving_denied",
+    "raw_file_records_are_verified",
+    "access_relationship_proposals_resolved_to_published_semantics",
+    "geopackage_and_shapefile_reuse_canonical_identity",
+    "equivalent_formats_preserve_geometry_and_attributes",
+    "equivalent_formats_preserve_existing_relationships",
+    "human_property_missing_csrf_denied",
+    "human_property_cross_origin_denied",
+    "human_property_stale_revision_denied",
+    "human_property_retry_returns_same_decision",
+    "human_property_choice_updates_only_selected_property",
+    "human_property_decision_persisted_once",
+    "human_property_choice_survives_owner_restart",
+    "geometry_review_has_authorized_comparison_metrics",
+    "geometry_human_decision_retry_is_idempotent",
+    "geometry_human_choice_aligns_current_and_canonical_property",
+    "geometry_choice_preserves_scalar_human_value",
+    "geometry_decision_persisted_once"
+  ],
+  "calls": {
+    "handoff": 9,
+    "nondurableResponse": 0,
+    "duplicateAck": 0,
+    "semantic": 18
+  },
+  "publisherCommit": "7f051e69dadf54814293158ea480375d3e90580f",
+  "udpCommit": "862a975e28dc681faa6482dba1feef0acd2a3988",
+  "runtimeCommit": "b6de7c0f67646953e251740cf673375a043f9f1e",
+  "semanticCommit": "04cca9fa1194d6c20dbbaf2ab8149322eb49b923",
+  "level": "FOUR_REAL_OWNER_JVM_PROCESSES_POSTGRES_MINIO_WITH_DECLARED_GATEWAY_IDENTITY_FIXTURES",
+  "limitations": [
+    "Source data and human approvals use declared test fixtures",
+    "Registry publication and relation direction are explicitly selected by test actors; production IAM and APISIX remain separate acceptance gates",
+    "Geometry roles/validity and the browser use dedicated owner/browser suites; the live cross-owner human decisions cover scalar properties and geometry",
+    "Secure session cookie is explicitly forwarded by the HTTP test client; this is not production TLS/session acceptance"
+  ],
+  "evidenceRun": {
+    "repository": "GioNob/ouf-ingestion-runtime",
+    "runId": 35233389465,
+    "jobId": 105243017315,
+    "url": "https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/35233389465"
+  },
+  "verifiedHeads": {
+    "onboarding": "7f051e69dadf54814293158ea480375d3e90580f",
+    "udp": "862a975e28dc681faa6482dba1feef0acd2a3988",
+    "gateway": "a75a932d6c6f43025a963f7e7f8da8cec9e7aa0b",
+    "ingestion": "1b912bd58b851f6c4275d293d413293f86a948a6",
+    "semanticRuntimePin": "04cca9fa1194d6c20dbbaf2ab8149322eb49b923"
+  },
+  "ownerRuns": {
+    "onboarding": [
+      35233121749,
+      35233121754
+    ],
+    "udp": [
+      35233383718,
+      35233383788,
+      35233383819
+    ],
+    "gateway": [
+      35233140373
+    ],
+    "ingestion": [
+      35233389153,
+      35233389160,
+      35233389195,
+      35233389379,
+      35233389089,
+      35233389168,
+      35233389465
+    ]
+  },
+  "technicalStatus": "VERIFIED_DEVELOPMENT",
+  "operationalAcceptance": "OPEN_IDP_BROWSER_SESSION_HTTPS_APISIX_OPERATOR",
+  "mergeStatus": "DRAFT_PRS_NOT_MERGED"
+}
