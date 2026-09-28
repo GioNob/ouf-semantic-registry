@@ -62,6 +62,21 @@ def probe_health(name):
     return False
 
 
+def restore_error_category(stderr):
+    rules = (
+        (r"permission denied to create extension|must be superuser to create this extension", "EXTENSION_CREATE_DENIED"),
+        (r"must be owner of extension|permission denied for extension", "EXTENSION_OWNER_DENIED"),
+        (r"permission denied (?:for|to create) schema", "SCHEMA_PERMISSION_DENIED"),
+        (r"permission denied for database", "DATABASE_PERMISSION_DENIED"),
+        (r"role [^\n]+ does not exist", "RESTORE_ROLE_MISSING"),
+        (r"already exists", "OBJECT_ALREADY_EXISTS"),
+        (r"must be owner of", "OBJECT_OWNER_DENIED"),
+        (r"permission denied", "OTHER_PERMISSION_DENIED"),
+        (r"could not execute query", "QUERY_FAILED"),
+    )
+    return [label for pattern, label in rules if re.search(pattern, stderr, re.IGNORECASE)] or ["UNCLASSIFIED"]
+
+
 def main():
     if os.geteuid() != 0:
         raise RuntimeError("ROOT_REQUIRED")
@@ -96,10 +111,16 @@ def main():
         created_db = True
         print("R4A_PROBE_STAGE=RESTORE_DUMP", flush=True)
         with BACKUP.open("rb") as source:
-            subprocess.run(["docker", "exec", "-i", "ouf-postgres", "pg_restore",
-                            "-U", "ouf_udp", "-d", database, "--no-owner", "--no-acl"],
-                           stdin=source, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
-                           check=True, timeout=300)
+            restored = subprocess.run(["docker", "exec", "-i", "ouf-postgres", "pg_restore",
+                                       "-U", "ouf_udp", "-d", database,
+                                       "--no-owner", "--no-acl"],
+                                      stdin=source, stdout=subprocess.DEVNULL,
+                                      stderr=subprocess.PIPE, timeout=300)
+        if restored.returncode != 0:
+            print("R4A_PROBE_RESTORE_ERROR_CATEGORIES=" +
+                  json.dumps(restore_error_category(restored.stderr.decode("utf-8", "replace"))),
+                  flush=True)
+            raise RuntimeError("RESTORE_DUMP_FAILED")
         if version(database) != "26":
             raise RuntimeError("RESTORED_FLYWAY_NOT_26")
         print("R4A_PROBE_STAGE=PREPARE_CONTAINER", flush=True)
