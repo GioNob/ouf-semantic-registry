@@ -3,6 +3,7 @@
 
 import json
 import subprocess
+from urllib.request import urlopen
 
 
 KC = "/opt/keycloak/bin/kcadm.sh"
@@ -15,7 +16,10 @@ def get(*args):
     result = subprocess.run(["docker", "exec", "-i", "ouf-keycloak", KC, "get", *args,
                              "-r", "ouf"], capture_output=True, text=True)
     if result.returncode:
-        raise RuntimeError("KCADM_READ_FAILED_OR_SESSION_EXPIRED")
+        detail = (result.stderr + result.stdout).lower()
+        reason = "SESSION_EXPIRED" if "session has expired" in detail else (
+            "UNAUTHORIZED" if "unauthorized" in detail or "401" in detail else "COMMAND_FAILED")
+        raise RuntimeError("KCADM_" + reason)
     return json.loads(result.stdout)
 
 
@@ -27,6 +31,23 @@ def exactly_one(rows, key, value):
 
 
 def main():
+    try:
+        metadata = json.loads(urlopen(
+            "https://auth.ouf-lab.it/realms/ouf/.well-known/openid-configuration", timeout=8).read())
+        advertised = set(metadata.get("scopes_supported") or [])
+        for scope in SCOPES:
+            print("OIDC_SCOPE_ADVERTISED=" + scope + " PRESENT=" + str(scope in advertised).lower(), flush=True)
+    except (OSError, ValueError):
+        print("OIDC_SCOPE_DISCOVERY=UNAVAILABLE", flush=True)
+    descriptor = json.loads(subprocess.run(["docker", "inspect", "ouf-keycloak"],
+                                      capture_output=True, text=True, check=True).stdout)[0]
+    names = {item.partition("=")[0] for item in descriptor["Config"].get("Env") or []}
+    for name in ("KC_BOOTSTRAP_ADMIN_USERNAME", "KC_BOOTSTRAP_ADMIN_PASSWORD",
+                 "KC_BOOTSTRAP_ADMIN_PASSWORD_FILE", "KEYCLOAK_ADMIN",
+                 "KEYCLOAK_ADMIN_PASSWORD", "KEYCLOAK_ADMIN_PASSWORD_FILE"):
+        print("KEYCLOAK_ENV_NAME=" + name + " PRESENT=" + str(name in names).lower(), flush=True)
+    print("KEYCLOAK_MOUNT_DESTINATIONS=" + ",".join(sorted(
+        item["Destination"] for item in descriptor.get("Mounts") or [])), flush=True)
     scopes = get("client-scopes")
     clients = get("clients", "--fields", "id,clientId")
     for scope in SCOPES:
