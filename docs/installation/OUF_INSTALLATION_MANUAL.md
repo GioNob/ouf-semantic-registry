@@ -792,6 +792,22 @@ Acceptance obbligatoria:
 
 Per fotografare i soli container, eseguire lo script read-only [r4a_handoff_snapshot.py](../../scripts/r4a_handoff_snapshot.py) dal commit fissato. Esempio: dalla directory del repository sul VPS, `git show <COMMIT_VERIFICATO>:scripts/r4a_handoff_snapshot.py | sudo python3 -`. Lo script non interroga policy, route, DB o stato della filiera e non sostituisce le acceptance.
 
+Per preparare le immagini del motore d'identità senza modificare i container,
+usare [r4a_stage_identity_images.py](../../scripts/r4a_stage_identity_images.py)
+dal commit Semantic fissato. `--plan` verifica gli HEAD remoti e le immagini
+attive; `--stage` crea worktree separati in `/opt/ouf/r4a-stage`, costruisce
+UDP, Onboarding e Ingestion dai commit con CI verde e registra gli ID delle
+vecchie e nuove immagini in `identity-images.json` (0600). Non cambia branch,
+container, DB, route, policy o segreti. Un HEAD divergente blocca lo staging.
+Questo manifest è un input per il rollout con backup e rollback; non attesta
+il deployment. Prima di attivare la fonte servono le route Gateway, il grant
+HUMAN `urban.identity.preflight`, il grant SERVICE
+`ouf.udp.identity.attestation.read`, il token workload rinnovabile per
+Onboarding, il preflight della configurazione congelata e la prova live del
+percorso fino a UDP. Il matching attuale è limitato alla classe canonica:
+cinema e teatri sono fonti distinte e richiedono una decisione semantica
+ulteriore per rappresentare un eventuale luogo fisico condiviso.
+
 
 1. Identificare branch/commit e immagine/container live del solo modulo interessato; non dedurre deployment da PR, CI o body di issue. Registrare lo snapshot di route, container, config e DB richiesto dallo script di rollout versionato.
 2. Usare la modalità `plan`/dry run dello script e poi `apply` idempotente con verifiche e rollback automatico. Riportare all'operatore **un** esito sintetico PASS/BLOCKED, il riferimento di rollback e il gate successivo. Evitare lunghe sequenze manuali di controlli indipendenti. Non ripetere una prova già attestata se l'immagine e la configurazione pertinenti non sono cambiate.
