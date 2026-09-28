@@ -12,7 +12,7 @@ import sys
 HERE = Path(__file__).resolve().parent
 HUMAN = ("urban.identity.preflight", "resolution.issue.read", "resolution.match.approve")
 SERVICE = "ouf.udp.identity.attestation.read"
-SECRET_DIR = Path("/opt/ouf/secrets/r4a-identity")
+SECRET_DIR = Path("/var/lib/ouf-r4a-identity")
 SECRET_FILE = SECRET_DIR / "onboarding-client-secret"
 
 
