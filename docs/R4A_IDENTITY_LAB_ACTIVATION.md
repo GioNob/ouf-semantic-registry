@@ -8,7 +8,9 @@ HUMAN `admin`. Le immagini UDP, Onboarding e Ingestion sono preparate in
 container live. Il branch Gateway `codex/r4a-resolution-review-routes` al
 commit `d946a1f73be7db415ea38e5daf9b2cf434dae299` contiene la
 materializzazione delle tre route di preflight e il deploy con snapshot e
-rollback. La CI Gateway e la CI UDP del commit
+rollback. Il commit Gateway `b368284b3f6a7675863f85eeafc42d67bf9187dc`
+aggiunge il piano di sola lettura per la proiezione live e la raggiungibilità
+dell'upstream. La CI Gateway e la CI UDP del commit
 `d9626a91b3252b6bc0380f81e4f7a141bda4f3e7` sono verdi.
 
 Questi fatti non equivalgono a una prova end-to-end: servono ancora il
@@ -45,7 +47,10 @@ route. Ogni `R4A_INVENTORY_BLOCKED` è un gate da risolvere prima del deploy.
 2. Compilare il catalogo Gateway dal branch revisionato e applicare la
    proiezione **attiva** dell'installazione. Il materializzatore
    `tools/materialize_r4a_identity_preflight.py` accetta soltanto tre binding
-   esatti e un host upstream esplicito `ouf-udp` sulla rete privata.
+   esatti e un host upstream esplicito `ouf-udp` sulla rete privata. Lo script
+   `ops.apisix.plan_r4a_identity_preflight` fa entrambe le operazioni,
+   verifica la connessione dalla namespace APISIX e prepara il file di route
+   privato in `/opt/ouf/r4a-stage`, senza scrivere nell'Admin API.
 3. Il deploy `ops.apisix.deploy_r4a_identity_preflight` esige un percorso
    nuovo per la snapshot durevole `--backup-output`, modalità `0600`, la
    chiave Admin in file e il segreto OIDC ereditato da Nginx. Scrive soltanto
