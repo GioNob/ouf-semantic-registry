@@ -43,6 +43,18 @@ Prima di riconciliare scope e client, rinnovare la sessione kcadm tramite
 `scripts/r4a_refresh_kcadm_session.py` e ripetere l'inventario amministrativo;
 lo script usa le variabili soltanto nel container e non le stampa.
 
+`scripts/r4a_reconcile_identity_iam.py` usa i reconciler Keycloak esistenti
+in modalità `plan`, `apply`, `verify`. Crea gli scope mancanti, assegna i tre
+scope HUMAN a `ouf-human-admin` come **optional** e crea
+`ouf-source-onboarding` con scope SERVICE default, audience Gateway,
+`ouf_actor_type=SERVICE` e `tenant_id=ouf-lab`. Il client secret rimane in
+`/opt/ouf/secrets/r4a-identity/onboarding-client-secret` (directory root 0700,
+file root 0600); non montarlo nel container Onboarding. Il token a breve
+durata dovrà essere rinnovato da un workload distinto e letto da Onboarding
+attraverso un file di sola lettura. Gli scope HUMAN opzionali vanno richiesti
+nel Device Flow/sessione THS pertinente. Un PASS del reconciler non prova
+ancora i claim del token, da verificare nell'acceptance autenticata.
+
 ## Inventario prima delle modifiche
 
 Nel server, dal checkout Semantic, scaricare lo script revisionato senza
