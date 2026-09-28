@@ -864,6 +864,17 @@ descriptor mancanti con `POST /capabilities`, creare la bozza con
 `POST /policies/{id}:publish` e l'ETag reale. La pubblicazione è una decisione
 HUMAN esplicita; se ACTIVE cambia, rigenerare dal nuovo bundle e riesaminare.
 
+Per il profilo lab, lo script
+[r4a_create_identity_policy_draft.py](../../scripts/r4a_create_identity_policy_draft.py)
+verifica il diff e ACTIVE in sola lettura. Con `--apply` avvia il Device Flow
+del client HUMAN `ouf-human-admin`, mostra URL/codice da approvare nel browser,
+mantiene il bearer soltanto in memoria e usa l'API Onboarding attraverso
+l'indirizzo privato Docker. Registra i descriptor e crea la bozza; non
+pubblica ACTIVE né inoltra credenziali al chatbot. Richiede un login HUMAN
+effettivo e un grant corrente `authorization.policy.admin`. Se una
+registrazione riesce e il passo successivo fallisce, conservarla: il registro
+è immutabile e la successiva revisione deve partire dallo stato aggiornato.
+
 Dopo la pubblicazione, aggiornare `ouf-admin` attraverso
 `authorization.permissions.read` (`view: CAPABILITIES`), proposta
 `REPLACE_ROLES` e conferma THS: includere ogni capability HUMAN del bundle,
