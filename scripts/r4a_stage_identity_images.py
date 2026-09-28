@@ -54,10 +54,18 @@ def stage_image(repo, stage_root, name, branch, sha):
     else:
         output(["git", "-C", str(repo), "worktree", "add", "--detach", str(worktree), sha], timeout=180)
     tag = f"ouf-{name}:r4a-{sha[:12]}"
-    print(f"R4A_IMAGE_BUILDING={name}:{sha[:12]}", flush=True)
-    subprocess.run(["sudo", "docker", "build", "--label",
-                    f"org.opencontainers.image.revision={sha}", "--tag", tag,
-                    str(worktree)], check=True, timeout=1800)
+    try:
+        revision = docker("image", "inspect", "--format",
+                          "{{index .Config.Labels \"org.opencontainers.image.revision\"}}", tag)
+    except subprocess.CalledProcessError:
+        revision = None
+    if revision == sha:
+        print(f"R4A_IMAGE_REUSED={name}:{sha[:12]}", flush=True)
+    else:
+        print(f"R4A_IMAGE_BUILDING={name}:{sha[:12]}", flush=True)
+        subprocess.run(["sudo", "docker", "build", "--label",
+                        f"org.opencontainers.image.revision={sha}", "--tag", tag,
+                        str(worktree)], check=True, timeout=1800)
     image_id = docker("image", "inspect", "--format", "{{.Id}}", tag)
     return {"commit": sha, "tag": tag, "image_id": image_id, "worktree": str(worktree)}
 
