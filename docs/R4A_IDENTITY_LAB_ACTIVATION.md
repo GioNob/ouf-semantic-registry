@@ -27,6 +27,13 @@ l'inventario aveva restituito 404 per tutte e tre le route, e mancavano le
 variabili IAM UDP e il collegamento all'attestazione in Onboarding. Nessuna
 route APISIX è stata scritta dal piano.
 
+Il deploy delle tre route ha poi restituito
+`R4A_IDENTITY_ROUTES_INSTALLED=3 AUTHENTICATED_SMOKE_PENDING=true`.
+Lo snapshot durevole delle route precedenti è
+`/opt/ouf/r4a-stage/identity-routes-before-gdcn1xv5.json` (root-only).
+Il test senza bearer ha restituito 401 per i tre percorsi. Questo non
+attesta ancora token HUMAN/SERVICE né disponibilità del nuovo UDP.
+
 ## Inventario prima delle modifiche
 
 Nel server, dal checkout Semantic, scaricare lo script revisionato senza
