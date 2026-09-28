@@ -28,7 +28,12 @@ def call(script, mode, *args):
 
 
 def directory():
-    SECRET_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
+    parent = SECRET_DIR.parent
+    pst = parent.lstat()
+    if parent.is_symlink() or pst.st_uid != 0 or not stat.S_ISDIR(pst.st_mode) \
+            or stat.S_IMODE(pst.st_mode) & 0o022:
+        raise RuntimeError("IAM_SECRET_PARENT_INVALID")
+    SECRET_DIR.mkdir(mode=0o700, exist_ok=True)
     st = SECRET_DIR.lstat()
     if SECRET_DIR.is_symlink() or st.st_uid != 0 or stat.S_IMODE(st.st_mode) != 0o700:
         raise RuntimeError("IAM_SECRET_DIRECTORY_NOT_PRIVATE")
