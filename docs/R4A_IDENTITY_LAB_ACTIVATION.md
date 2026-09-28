@@ -34,6 +34,15 @@ Lo snapshot durevole delle route precedenti è
 Il test senza bearer ha restituito 401 per i tre percorsi. Questo non
 attesta ancora token HUMAN/SERVICE né disponibilità del nuovo UDP.
 
+L'inventario IAM successivo ha rilevato `PRESENT=false` per tutti e quattro
+gli scope R4a nella discovery Keycloak (`urban.identity.preflight`,
+`ouf.udp.identity.attestation.read`, `resolution.issue.read`,
+`resolution.match.approve`) e `KCADM_SESSION_EXPIRED`. Le variabili bootstrap
+amministrative sono presenti nel container Keycloak, senza mount aggiuntivi.
+Prima di riconciliare scope e client, rinnovare la sessione kcadm tramite
+`scripts/r4a_refresh_kcadm_session.py` e ripetere l'inventario amministrativo;
+lo script usa le variabili soltanto nel container e non le stampa.
+
 ## Inventario prima delle modifiche
 
 Nel server, dal checkout Semantic, scaricare lo script revisionato senza
