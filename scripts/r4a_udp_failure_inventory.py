@@ -38,6 +38,23 @@ def safe_error_lines(raw):
     return list(dict.fromkeys(lines))[-20:]
 
 
+def flyway_diagnosis(raw):
+    """Emit only Flyway's failure category and migration version, never log text."""
+    findings = []
+    patterns = (
+        (r"Migration checksum mismatch for migration version\s+([0-9.]+)", "CHECKSUM_MISMATCH"),
+        (r"Migration description mismatch for migration version\s+([0-9.]+)", "DESCRIPTION_MISMATCH"),
+        (r"Migration type mismatch for migration version\s+([0-9.]+)", "TYPE_MISMATCH"),
+        (r"Detected applied migration not resolved locally:\s*([0-9.]+)", "APPLIED_NOT_RESOLVED"),
+        (r"Detected resolved migration not applied to database:\s*([0-9.]+)", "RESOLVED_NOT_APPLIED"),
+        (r"Detected failed migration to version\s+([0-9.]+)", "FAILED_MIGRATION"),
+    )
+    for pattern, category in patterns:
+        for match in re.finditer(pattern, raw, re.IGNORECASE):
+            findings.append({"category": category, "version": match.group(1)})
+    return list({(item["category"], item["version"]): item for item in findings}.values())[-20:]
+
+
 def main():
     names = docker("ps", "-a", "--format", "{{.Names}}").splitlines()
     matches = [n for n in names if n.startswith("ouf-udp-r4a-failed-")]
@@ -56,9 +73,13 @@ def main():
     print("FAILED_IAM_ENABLED=" + str(env.get("OUF_UDP_IAM_ENABLED") == "true").lower())
     raw = docker_logs(matches[0])
     print("FAILED_LOG_ERROR_CLASSES=" + json.dumps(safe_error_lines(raw)))
+    print("FAILED_FLYWAY_DIAGNOSIS=" + json.dumps(flyway_diagnosis(raw)))
     version = docker("exec", "ouf-postgres", "psql", "-U", "ouf_udp", "-d", "ouf_udp",
                      "-Atc", "select coalesce(string_agg(version||':'||success,',' order by installed_rank),'none') from ouf_udp.flyway_schema_history where installed_rank > (select coalesce(max(installed_rank),0) from ouf_udp.flyway_schema_history where version='26')")
     print("FLYWAY_AFTER_ATTEMPT=" + version.strip())
+    history = docker("exec", "ouf-postgres", "psql", "-U", "ouf_udp", "-d", "ouf_udp",
+                     "-Atc", "select coalesce(string_agg(version||':'||checksum||':'||success,',' order by installed_rank),'none') from ouf_udp.flyway_schema_history where version in ('23','24','25','26','27','28','29')")
+    print("FLYWAY_HISTORY_23_29=" + history.strip())
     print("SECRETS_AND_RAW_LOG_NOT_PRINTED=true DB_UNCHANGED_BY_INVENTORY=true")
 
 
