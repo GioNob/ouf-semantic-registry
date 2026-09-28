@@ -92,7 +92,8 @@ invariati. `scripts/r4a_switch_udp.py` esige che il vecchio container sia
 healthy, legge la versione Flyway precedente, lo ferma, produce un dump
 custom completo del DB `ouf_udp` in `/opt/ouf/r4a-stage` (root 0600),
 valida il dump con `pg_restore -l`, conserva il container vecchio rinominato,
-avvia il candidato e controlla health, raggiungibilità da APISIX e Flyway 29.
+avvia il candidato e controlla health, raggiungibilità da APISIX e la versione
+Flyway attesa (34 nella versione aggiornata).
 Se il backup fallisce riavvia il vecchio UDP; se l'avvio nuovo fallisce prova
 il rollback del **runtime** senza ripristinare automaticamente il DB. Non
 eliminare il dump né il container vecchio. In caso di vecchio runtime non
@@ -100,6 +101,33 @@ avviabile dopo una migrazione parziale, fermare UDP e usare solo allora
 `scripts/r4a_restore_udp_backup.py --backup <dump> --old-version <versione>`;
 questo è un ripristino distruttivo del DB alla snapshot e richiede verificare
 che non siano state accettate nuove scritture dopo il dump.
+
+### Esito del primo switch UDP (29 settembre 2026)
+
+Il candidato `d9626a91…` non si è avviato: Flyway ha rifiutato la validazione
+per checksum diversi nelle migrazioni V22–V26. L'immagine live
+`944c2f5…` e il ramo R4a avevano assegnato gli stessi numeri a migrazioni
+diverse. Il rollback automatico del runtime è passato; il vecchio UDP è
+operativo e nessuna nuova migrazione risulta applicata. Il dump verificato è
+`/opt/ouf/r4a-stage/udp-before-r4a-j5k8rens.dump` ed è conservato.
+
+**Non rilanciare `r4a_switch_udp.py` con il candidato `d9626a91…`.** La
+correzione locale integra le migrazioni live V22–V26, conferma i checksum
+Flyway live V23–V26 e rinumera quelle R4a V27–V34. Occorrono CI verde,
+immagine nuova, nuovo inventario e script di switch aggiornato con commit e
+versione 34 prima di un altro tentativo. Le API di geometria e proprietà
+già presenti nel runtime live vanno preservate e verificate nel merge.
+
+La PR di integrazione in bozza è `GioNob/ouf-udp-object-resolution#37`.
+Il commit `3402050b36ee28758e5255a57b0d32bc3983a34f` ha superato tutti
+i job CI (Java/PostgreSQL, SDK, CRS, prestazioni, ripristino e supply chain).
+Gli script di staging, inventario, preparazione e switch sono ora fissati a
+questo commit; lo switch richiede esattamente Flyway 26 prima e 34 dopo.
+Prima dello switch, `scripts/r4a_probe_udp_migration.py` ripristina il dump
+in un database temporaneo, avvia un container temporaneo senza esecuzione
+worker, verifica health e Flyway 34, controlla che il database live rimanga
+a V26 e rimuove le risorse temporanee. La prova richiede che il nuovo
+candidato sia già stato preparato, ma non avviato.
 
 ## Inventario prima delle modifiche
 

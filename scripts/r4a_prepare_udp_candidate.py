@@ -9,7 +9,7 @@ import tempfile
 
 
 NAME = "ouf-udp-r4a-candidate"
-EXPECTED = "d9626a91b3252b6bc0380f81e4f7a141bda4f3e7"
+EXPECTED = "3402050b36ee28758e5255a57b0d32bc3983a34f"
 MANIFEST = Path("/opt/ouf/r4a-stage/identity-images.json")
 PROJECTION = Path("/opt/ouf/installation/active-projection.json")
 

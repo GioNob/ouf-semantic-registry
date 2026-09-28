@@ -12,7 +12,7 @@ import time
 CANDIDATE = "ouf-udp-r4a-candidate"
 LIVE = "ouf-udp"
 STAGE = Path("/opt/ouf/r4a-stage")
-EXPECTED = "d9626a91b3252b6bc0380f81e4f7a141bda4f3e7"
+EXPECTED = "3402050b36ee28758e5255a57b0d32bc3983a34f"
 
 
 def docker(*args):
@@ -101,7 +101,7 @@ def main():
         raise RuntimeError("R4A_OLD_UDP_NOT_HEALTHY")
     old_version = docker("exec", "ouf-postgres", "psql", "-U", "ouf_udp", "-d", "ouf_udp",
                          "-Atc", "select version from ouf_udp.flyway_schema_history order by installed_rank desc limit 1")
-    if not old_version.isdigit() or int(old_version) > 29:
+    if old_version != "26":
         raise RuntimeError("R4A_OLD_FLYWAY_VERSION_UNEXPECTED")
     print("R4A_UDP_FLYWAY_BEFORE=" + old_version, flush=True)
     previous = "ouf-udp-rollback-" + old["Id"][:12]
@@ -132,9 +132,9 @@ def main():
             raise RuntimeError("R4A_GATEWAY_TO_NEW_UDP_UNREACHABLE")
         version = docker("exec", "ouf-postgres", "psql", "-U", "ouf_udp", "-d", "ouf_udp",
                          "-Atc", "select version from ouf_udp.flyway_schema_history order by installed_rank desc limit 1")
-        if version != "29":
+        if version != "34":
             raise RuntimeError("R4A_FLYWAY_VERSION_UNEXPECTED")
-        print("R4A_UDP_SWITCH=PASS LIVE_IMAGE=" + EXPECTED + " FLYWAY=29", flush=True)
+        print("R4A_UDP_SWITCH=PASS LIVE_IMAGE=" + EXPECTED + " FLYWAY=34", flush=True)
         print("R4A_UDP_ROLLBACK_CONTAINER=" + previous, flush=True)
         print("R4A_UDP_DB_BACKUP_RETAINED=" + str(snapshot), flush=True)
         print("R4A_UDP_AUTHENTICATED_OWNER_SMOKE_PENDING=true", flush=True)

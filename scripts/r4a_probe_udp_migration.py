@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""Run the pinned UDP image against an isolated restore of the pre-R4a dump."""
+
+import json
+import os
+from pathlib import Path
+import re
+import secrets
+import subprocess
+import tempfile
+import time
+
+
+COMMIT = "3402050b36ee28758e5255a57b0d32bc3983a34f"
+BACKUP = Path("/opt/ouf/r4a-stage/udp-before-r4a-j5k8rens.dump")
+MANIFEST = Path("/opt/ouf/r4a-stage/identity-images.json")
+
+
+def run(command, **kwargs):
+    return subprocess.run(command, check=True, capture_output=True, text=True,
+                          timeout=kwargs.pop("timeout", 90), **kwargs).stdout.strip()
+
+
+def docker(*args, timeout=90):
+    return run(["docker", *args], timeout=timeout)
+
+
+def inspect(name):
+    return json.loads(docker("inspect", name))[0]
+
+
+def version(database):
+    return docker("exec", "ouf-postgres", "psql", "-U", "ouf_udp", "-d", database,
+                  "-Atc", "select version from ouf_udp.flyway_schema_history "
+                  "order by installed_rank desc limit 1")
+
+
+def mounts(descriptor):
+    return sorted((m["Type"], m["Source"], m["Destination"], bool(m["RW"]))
+                  for m in descriptor.get("Mounts") or [])
+
+
+def probe_health(name):
+    for _ in range(45):
+        if inspect(name)["State"]["Running"]:
+            answer = subprocess.run(["docker", "run", "--rm", "--network", "container:" + name,
+                                     "curlimages/curl:8.16.0", "--max-time", "3", "-sS",
+                                     "-o", "/dev/null", "-w", "%{http_code}",
+                                     "http://127.0.0.1:8080/actuator/health"],
+                                    capture_output=True, text=True, timeout=15)
+            if answer.returncode == 0 and answer.stdout == "200":
+                return True
+        time.sleep(2)
+    return False
+
+
+def main():
+    if os.geteuid() != 0:
+        raise RuntimeError("ROOT_REQUIRED")
+    live, candidate = inspect("ouf-udp"), inspect("ouf-udp-r4a-candidate")
+    staged = json.loads(MANIFEST.read_text())["modules"]["udp"]
+    if (not live["State"]["Running"] or candidate["State"]["Running"]
+        or live["Image"] != staged["live_image_id"] or candidate["Image"] != staged["image_id"]
+        or staged["commit"] != COMMIT or len(mounts(candidate)) != 2
+        or mounts(candidate) != mounts(live) or version("ouf_udp") != "26"):
+        raise RuntimeError("PINNED_PREFLIGHT_CHANGED")
+    if BACKUP.stat().st_size < 1024:
+        raise RuntimeError("BACKUP_MISSING_OR_EMPTY")
+    with BACKUP.open("rb") as source:
+        subprocess.run(["docker", "exec", "-i", "ouf-postgres", "pg_restore", "-l"],
+                       stdin=source, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                       check=True, timeout=90)
+    print("R4A_PROBE_PREFLIGHT=PASS LIVE_FLYWAY=26", flush=True)
+    suffix = secrets.token_hex(4)
+    database, name = "ouf_udp_r4a_probe_" + suffix, "ouf-udp-r4a-probe-" + suffix
+    created_db = created_container = False
+    try:
+        docker("exec", "ouf-postgres", "createdb", "-U", "ouf_udp", database)
+        created_db = True
+        with BACKUP.open("rb") as source:
+            subprocess.run(["docker", "exec", "-i", "ouf-postgres", "pg_restore",
+                            "-U", "ouf_udp", "-d", database, "--no-owner", "--no-acl"],
+                           stdin=source, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                           check=True, timeout=300)
+        if version(database) != "26":
+            raise RuntimeError("RESTORED_FLYWAY_NOT_26")
+        original = dict(item.partition("=")[::2] for item in candidate["Config"]["Env"])
+        jdbc = original.get("OUF_UDP_DB_URL", "")
+        changed, number = re.subn(r"/ouf_udp(?=$|\?)", "/" + database, jdbc)
+        if number != 1:
+            raise RuntimeError("JDBC_DATABASE_PATH_UNEXPECTED")
+        original["OUF_UDP_DB_URL"] = changed
+        original["OUF_UDP_EXECUTION_ENABLED"] = "false"
+        os.umask(0o077)
+        fd, env_file = tempfile.mkstemp(prefix="ouf-r4a-probe-env-", dir="/run")
+        try:
+            with os.fdopen(fd, "w") as out:
+                out.writelines(key + "=" + value + "\n" for key, value in original.items())
+            cmd = ["docker", "create", "--name", name, "--network", "ouf-backend",
+                   "--restart", "no", "--user", "10004:10004", "--env-file", env_file]
+            for kind, source, target, writable in mounts(candidate):
+                if kind != "bind" or "," in source or "," in target:
+                    raise RuntimeError("MOUNT_UNSUPPORTED")
+                mount = "type=bind,src=" + source + ",dst=" + target
+                cmd.extend(["--mount", mount if writable else mount + ",readonly"])
+            cmd.append(staged["image_id"])
+            run(cmd)
+            created_container = True
+        finally:
+            Path(env_file).unlink(missing_ok=True)
+        docker("start", name)
+        if not probe_health(name):
+            logs = subprocess.run(["docker", "logs", "--tail", "300", name],
+                                  capture_output=True, text=True, timeout=15)
+            kinds = re.findall(r"Caused by:\s+([A-Za-z0-9_.$]+(?:Exception|Error))",
+                               logs.stdout + "\n" + logs.stderr)
+            print("R4A_PROBE_ERROR_CLASSES=" + json.dumps(list(dict.fromkeys(kinds))[-12:]),
+                  flush=True)
+            raise RuntimeError("PROBE_UNHEALTHY")
+        if version(database) != "34" or version("ouf_udp") != "26":
+            raise RuntimeError("FLYWAY_ISOLATION_FAILED")
+        print("R4A_PROBE_MIGRATION=PASS CLONE_FLYWAY=34 LIVE_FLYWAY=26", flush=True)
+    finally:
+        if created_container:
+            try:
+                docker("stop", "--time", "30", name, timeout=60)
+            except subprocess.CalledProcessError:
+                pass
+            docker("rm", "-f", name)
+        if created_db:
+            docker("exec", "ouf-postgres", "dropdb", "-U", "ouf_udp", "--force", database)
+        print("R4A_PROBE_CLEANUP=PASS LIVE_CONTAINER_UNCHANGED=true", flush=True)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, ValueError, KeyError, IndexError, TypeError, subprocess.SubprocessError,
+            RuntimeError) as error:
+        print("R4A_PROBE_BLOCKED=" + type(error).__name__ + ":" +
+              (str(error) if isinstance(error, RuntimeError) else "COMMAND_FAILED"))
+        raise SystemExit(1)

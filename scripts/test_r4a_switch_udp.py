@@ -22,7 +22,7 @@ class SwitchOrderTest(unittest.TestCase):
                 if name == switch.CANDIDATE:
                     return {"Image": "new", "Id": "b" * 64, "State": {"Running": False}}
                 raise subprocess.CalledProcessError(1, ["docker", "inspect"])
-            versions = iter(("22", "29"))
+            versions = iter(("26", "34"))
             def docker(*args):
                 events.append(("docker", args[:2]))
                 return next(versions) if args[0] == "exec" else ""
@@ -61,7 +61,7 @@ class SwitchOrderTest(unittest.TestCase):
                 calls.append(args)
                 if args[0] == "stop": stopped[0] = True
                 if args[0] == "start": stopped[0] = False
-                return "22" if args[0] == "exec" else ""
+                return "26" if args[0] == "exec" else ""
             with patch.object(switch, "STAGE", stage), patch.object(switch.os, "geteuid", return_value=0), \
                  patch.object(switch, "inspect", side_effect=inspected), \
                  patch.object(switch, "health", return_value=True), \
