@@ -75,8 +75,10 @@ def main():
     database, name = "ouf_udp_r4a_probe_" + suffix, "ouf-udp-r4a-probe-" + suffix
     created_db = created_container = False
     try:
+        print("R4A_PROBE_STAGE=CREATE_CLONE", flush=True)
         docker("exec", "ouf-postgres", "createdb", "-U", "ouf_udp", database)
         created_db = True
+        print("R4A_PROBE_STAGE=RESTORE_DUMP", flush=True)
         with BACKUP.open("rb") as source:
             subprocess.run(["docker", "exec", "-i", "ouf-postgres", "pg_restore",
                             "-U", "ouf_udp", "-d", database, "--no-owner", "--no-acl"],
@@ -84,6 +86,7 @@ def main():
                            check=True, timeout=300)
         if version(database) != "26":
             raise RuntimeError("RESTORED_FLYWAY_NOT_26")
+        print("R4A_PROBE_STAGE=PREPARE_CONTAINER", flush=True)
         original = dict(item.partition("=")[::2] for item in candidate["Config"]["Env"])
         jdbc = original.get("OUF_UDP_DB_URL", "")
         changed, number = re.subn(r"/ouf_udp(?=$|\?)", "/" + database, jdbc)
@@ -109,6 +112,7 @@ def main():
         finally:
             Path(env_file).unlink(missing_ok=True)
         docker("start", name)
+        print("R4A_PROBE_STAGE=START_AND_MIGRATE", flush=True)
         if not probe_health(name):
             logs = subprocess.run(["docker", "logs", "--tail", "300", name],
                                   capture_output=True, text=True, timeout=15)
@@ -129,6 +133,8 @@ def main():
             docker("rm", "-f", name)
         if created_db:
             docker("exec", "ouf-postgres", "dropdb", "-U", "ouf_udp", "--force", database)
+        if version("ouf_udp") != "26" or inspect("ouf-udp")["Image"] != live["Image"]:
+            raise RuntimeError("LIVE_STATE_CHANGED_DURING_PROBE")
         print("R4A_PROBE_CLEANUP=PASS LIVE_CONTAINER_UNCHANGED=true", flush=True)
 
 
