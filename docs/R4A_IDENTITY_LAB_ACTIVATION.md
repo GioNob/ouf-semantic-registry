@@ -59,6 +59,15 @@ si è fermato prima di ogni mutazione Keycloak con
 `IAM_SECRET_PARENT_INVALID` per `/opt/ouf/secrets`. Il percorso privato
 dedicato sopra indicato risolve il prerequisito senza allentare i permessi
 del parent esistente.
+L'`apply` IAM successivo ha riportato PASS per le quattro definizioni, le tre
+assegnazioni OPTIONAL, il nuovo client SERVICE e i permessi root 0600 del
+secret. Il `verify` separato ha riportato PASS per le quattro definizioni,
+mentre il controllo successivo era ancora in corso al momento dell'output:
+non registrare `VERIFY=PASS` complessivo finché non termina. Lo script
+`r4a_service_token_smoke.py` controlla issuer, audience, scope, attore,
+tenant, identità SERVICE, subject, ACR e scadenza con un token reale in
+memoria, poi registra il solo status HTTP della route Gateway. Con UDP live
+ancora vecchio, un 404 dopo l'autenticazione non prova il nuovo owner.
 
 ## Inventario prima delle modifiche
 
