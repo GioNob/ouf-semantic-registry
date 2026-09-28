@@ -128,6 +128,11 @@ in un database temporaneo, avvia un container temporaneo senza esecuzione
 worker, verifica health e Flyway 34, controlla che il database live rimanga
 a V26 e rimuove le risorse temporanee. La prova richiede che il nuovo
 candidato sia già stato preparato, ma non avviato.
+Il primo tentativo della prova si è fermato nella creazione del clone: il
+ruolo applicativo `ouf_udp` non ha `CREATEDB`. La versione successiva dello
+script legge il ruolo amministrativo dal container PostgreSQL, ne verifica
+la facoltà di creare il database temporaneo e lo usa soltanto per creazione
+e rimozione. Non concede nuovi privilegi al ruolo applicativo.
 
 ## Inventario prima delle modifiche
 

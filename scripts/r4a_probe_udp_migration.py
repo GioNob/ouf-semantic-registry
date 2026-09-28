@@ -40,6 +40,14 @@ def mounts(descriptor):
                   for m in descriptor.get("Mounts") or [])
 
 
+def admin_command(*args):
+    # The password is expanded inside the database container, never in an
+    # argument, log line, local env file, or this script's output.
+    return docker("exec", "ouf-postgres", "sh", "-c",
+                  'PGPASSWORD="${POSTGRES_PASSWORD:-}" exec "$@"',
+                  "r4a-db-probe", *args)
+
+
 def probe_health(name):
     for _ in range(45):
         if inspect(name)["State"]["Running"]:
@@ -66,17 +74,25 @@ def main():
         raise RuntimeError("PINNED_PREFLIGHT_CHANGED")
     if BACKUP.stat().st_size < 1024:
         raise RuntimeError("BACKUP_MISSING_OR_EMPTY")
+    db_env = dict(item.partition("=")[::2] for item in inspect("ouf-postgres")["Config"]["Env"])
+    admin = db_env.get("POSTGRES_USER", "postgres")
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,62}", admin):
+        raise RuntimeError("POSTGRES_ADMIN_ROLE_INVALID")
+    role_ready = admin_command("psql", "-U", admin, "-d", "ouf_udp", "-Atc",
+                               "select rolsuper or rolcreatedb from pg_roles where rolname=current_user")
+    if role_ready != "t":
+        raise RuntimeError("POSTGRES_ADMIN_CANNOT_CREATE_CLONE")
     with BACKUP.open("rb") as source:
         subprocess.run(["docker", "exec", "-i", "ouf-postgres", "pg_restore", "-l"],
                        stdin=source, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
                        check=True, timeout=90)
-    print("R4A_PROBE_PREFLIGHT=PASS LIVE_FLYWAY=26", flush=True)
+    print("R4A_PROBE_PREFLIGHT=PASS LIVE_FLYWAY=26 ADMIN_CREATE_DB=true", flush=True)
     suffix = secrets.token_hex(4)
     database, name = "ouf_udp_r4a_probe_" + suffix, "ouf-udp-r4a-probe-" + suffix
     created_db = created_container = False
     try:
         print("R4A_PROBE_STAGE=CREATE_CLONE", flush=True)
-        docker("exec", "ouf-postgres", "createdb", "-U", "ouf_udp", database)
+        admin_command("createdb", "-U", admin, "-O", "ouf_udp", database)
         created_db = True
         print("R4A_PROBE_STAGE=RESTORE_DUMP", flush=True)
         with BACKUP.open("rb") as source:
@@ -132,7 +148,7 @@ def main():
                 pass
             docker("rm", "-f", name)
         if created_db:
-            docker("exec", "ouf-postgres", "dropdb", "-U", "ouf_udp", "--force", database)
+            admin_command("dropdb", "-U", admin, "--force", database)
         if version("ouf_udp") != "26" or inspect("ouf-udp")["Image"] != live["Image"]:
             raise RuntimeError("LIVE_STATE_CHANGED_DURING_PROBE")
         print("R4A_PROBE_CLEANUP=PASS LIVE_CONTAINER_UNCHANGED=true", flush=True)
