@@ -874,6 +874,14 @@ pubblica ACTIVE né inoltra credenziali al chatbot. Richiede un login HUMAN
 effettivo e un grant corrente `authorization.policy.admin`. Se una
 registrazione riesce e il passo successivo fallisce, conservarla: il registro
 è immutabile e la successiva revisione deve partire dallo stato aggiornato.
+Per la bozza lab `fb931b4e-46bb-4aee-8f0e-434b8aeda10b`, revisione 0,
+[r4a_publish_identity_policy.py](../../scripts/r4a_publish_identity_policy.py)
+rilegge il draft tramite API HUMAN, confronta l'intero payload col file
+revisionato, verifica ACTIVE `:28`, mostra la scadenza del grant e richiede di
+digitare l'identificativo esatto prima del `POST :publish` con `If-Match: "0"`.
+Il Device Flow è ripetuto perché il token precedente è effimero. La risposta
+e il puntatore ACTIVE devono entrambi attestare `:29`; un esito incerto richiede
+una lettura di stato, mai una ripetizione cieca della pubblicazione.
 
 Dopo la pubblicazione, aggiornare `ouf-admin` attraverso
 `authorization.permissions.read` (`view: CAPABILITIES`), proposta
