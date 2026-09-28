@@ -19,6 +19,14 @@ workload IAM Onboarding con scope
 le route APISIX, la configurazione IAM UDP e il token ruotabile accessibile
 al solo container Onboarding.
 
+Il piano live di sola lettura del 28 settembre ha restituito `PASS`,
+installazione `ouf-lab-netcup-01`, audience `ouf-api-gateway`, e raggiungibilità
+di `ouf-udp:8080` dalla namespace APISIX. Il file preparato è
+`/opt/ouf/r4a-stage/r4a-identity-routes-gdcn1xv5.json`. Prima del deploy,
+l'inventario aveva restituito 404 per tutte e tre le route, e mancavano le
+variabili IAM UDP e il collegamento all'attestazione in Onboarding. Nessuna
+route APISIX è stata scritta dal piano.
+
 ## Inventario prima delle modifiche
 
 Nel server, dal checkout Semantic, scaricare lo script revisionato senza
