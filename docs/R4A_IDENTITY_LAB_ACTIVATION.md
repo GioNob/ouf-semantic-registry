@@ -69,7 +69,7 @@ versione 30; `ouf_subject` è assente, il subject IAM coincide con quello del
 grant e `organizationId` è assente. La valutazione ricostruita è `ALLOW`,
 mentre UDP nel clone nega: occorre osservare la versione del bundle e il
 `decisionCode` effettivi. Il commit UDP
-`fb31d7f851a79f16405a2fd4a14995014217ff37` aggiunge un endpoint
+`9574fefbd864d7de88f287c2481cf843e7d65a37` aggiunge un endpoint
 diagnostico abilitabile solo con `OUF_UDP_AUTHORIZATION_DIAGNOSTIC_ENABLED=true`;
 resta disabilitato per default e restituisce soltanto metadati della decisione.
 `r4a_stage_udp_auth_diagnostic.py` compila e testa l'immagine senza cambiare il

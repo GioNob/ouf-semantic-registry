@@ -13,7 +13,7 @@ REPO = ROOT / "udp"
 STAGE = ROOT / "r4a-stage"
 BRANCH = "codex/r4a-live-schema-integration"
 PREVIOUS = "edaba2bff18a2aaf52d1180f21f0e68984cc3437"
-TARGET = "fb31d7f851a79f16405a2fd4a14995014217ff37"
+TARGET = "9574fefbd864d7de88f287c2481cf843e7d65a37"
 ALLOWED = {
     "Dockerfile",
     "src/main/java/it/comune/trieste/ouf/udp/UdpAuthorizationDiagnosticApi.java",

@@ -35,7 +35,7 @@ def main():
     human = load("r4a_cinema_semantic_draft.py")
     human.SCOPES = {"urban.identity.preflight"}
     clone.MANIFEST = Path("/opt/ouf/r4a-stage/udp-auth-diagnostic-image.json")
-    clone.EXPECTED_PROBE = "fb31d7f851a79f16405a2fd4a14995014217ff37"
+    clone.EXPECTED_PROBE = "9574fefbd864d7de88f287c2481cf843e7d65a37"
     clone.EXTRA_ENV = {"OUF_UDP_AUTHORIZATION_DIAGNOSTIC_ENABLED": "true"}
     service_probe = clone.probe_request
 
