@@ -1,5 +1,29 @@
 # R4a: attivazione controllata dell'identità nel laboratorio
 
+## Preflight HUMAN: diagnosi del 403 (29 settembre)
+
+La versione cinema è `IN_REVIEW`, congelata con hash
+`sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891`.
+Il preflight HUMAN ha restituito 403. L'inventario di sola lettura conferma
+policy attiva `ouf-lab-authorization:30`, un grant applicabile, scope e tipo
+attore HUMAN corretti nel bearer. La stessa GET autenticata con ID assente
+restituisce 403 generico sia tramite Gateway sia direttamente verso UDP:
+la route non è la causa. La forma della risposta colloca il rifiuto durante
+la risoluzione del contesto di autorizzazione, prima della decisione del
+preflight.
+
+Il bridge IAM di UDP era ordinato prima di
+`SecurityContextHolderAwareRequestFilter`, che ricopre la richiesta e può
+mascherare il principal verificato dal bridge. Il commit UDP
+`edaba2bff18a2aaf52d1180f21f0e68984cc3437` colloca il bridge dopo
+l'adattatore servlet e fa eseguire il test della sequenza durante la build
+dell'immagine. La causa runtime resta da confermare con lo smoke autenticato
+dopo la build. `scripts/r4a_stage_udp_principal_fix.py` accetta solo quel
+commit, controlla che le modifiche siano limitate a bridge, test e Dockerfile,
+esegue la build con il test e registra l'immagine senza toccare il live o DB.
+Non ripetere la submit della versione già congelata; riprendere il preflight
+solo dopo la verifica del runtime aggiornato.
+
 ## Stato e confini
 
 **Aggiornamento live 29 settembre 2026:** lo switch UDP è passato con immagine
