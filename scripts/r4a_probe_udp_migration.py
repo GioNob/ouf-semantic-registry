@@ -43,8 +43,8 @@ def application_ownership(database):
                           "from pg_namespace where nspname='ouf_udp'")
     objects = docker("exec", "ouf-postgres", "psql", "-X", "-v", "ON_ERROR_STOP=1",
                      "-v", "VERBOSITY=verbose", "-U", "ouf_udp", "-d",
-                     database, "-Atc", "select c.relname||':'||c.relkind||':'||"
-                     "pg_get_userbyid(c.relowner) from pg_class c "
+                     database, "-Atc", "select c.relname::text||':'||c.relkind::text||':'||"
+                     "pg_get_userbyid(c.relowner)::text from pg_class c "
                      "join pg_namespace n on n.oid=c.relnamespace "
                      "where n.nspname='ouf_udp' order by c.relname,c.relkind").splitlines()
     return schema_owner, objects

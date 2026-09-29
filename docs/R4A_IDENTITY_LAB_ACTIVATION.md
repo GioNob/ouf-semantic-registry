@@ -161,6 +161,13 @@ tabella nel live. L'ipotesi che `--no-acl` spieghi da sola questo errore non è
 supportata dai dati. La prova ora marca separatamente ciascuna verifica,
 classifica il codice SQLSTATE e, in caso di errore nel clone, interroga con il
 ruolo amministrativo presenza, proprietà e permessi senza stampare dati o SQL.
+Il primo output classificato ha mostrato `CLONE_FLYWAY` riuscito e
+`CLONE_OWNERSHIP` fallito con SQLSTATE 42725, mentre presenza, proprietà e
+permessi della tabella Flyway nel clone risultavano tutti validi. L'errore è
+quindi nella query di confronto scritta per la prova: la concatenazione
+implicita del tipo catalogo `pg_class.relkind` è ambigua. I valori della query
+vengono ora convertiti esplicitamente a `text`. La migrazione del candidato
+non è ancora stata provata e il live rimane a Flyway 26.
 
 ## Inventario prima delle modifiche
 
