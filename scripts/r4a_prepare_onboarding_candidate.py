@@ -58,6 +58,22 @@ def token_preflight():
         raise RuntimeError("TOKEN_CLAIMS_OR_EXPIRY_INVALID")
 
 
+def candidate_matches(candidate, record, expected_mounts, expected_env):
+    return (candidate["Image"] == record["image_id"]
+        and not candidate["State"]["Running"]
+        and candidate["Config"].get("User") == "10003:10003"
+        and candidate["HostConfig"].get("NetworkMode") == "ouf-backend"
+        and (candidate["HostConfig"].get("RestartPolicy") or {}).get("Name")
+            == "unless-stopped"
+        and (candidate["HostConfig"].get("LogConfig") or {}).get("Type")
+            == "json-file"
+        and mounts(candidate) == expected_mounts
+        and {value.partition("=")[0]: value.partition("=")[2]
+             for value in candidate["Config"].get("Env") or []}
+            == {value.partition("=")[0]: value.partition("=")[2]
+                for value in expected_env})
+
+
 def main():
     if os.geteuid() != 0:
         raise RuntimeError("ROOT_REQUIRED")
@@ -95,15 +111,22 @@ def main():
     if (any("\n" in value or "\r" in value or "=" not in value for value in environment)
         or any(value.startswith("OUF_ONB_UDP_IDENTITY_") for value in environment)):
         raise RuntimeError("LIVE_ENV_UNEXPECTED")
-    try:
-        inspect(NAME)
-    except subprocess.CalledProcessError:
-        pass
-    else:
-        raise RuntimeError("CANDIDATE_ALREADY_EXISTS")
     new_env = [*environment,
         "OUF_ONB_UDP_IDENTITY_GATEWAY_URL=https://api.ouf-lab.it",
         "OUF_ONB_UDP_IDENTITY_TOKEN_FILE=/run/ouf-onboarding-identity/token"]
+    expected_mounts = sorted(old_mounts + [
+        ("bind", str(TOKEN_DIR), str(TOKEN_DIR), False)])
+    try:
+        existing = inspect(NAME)
+    except subprocess.CalledProcessError:
+        pass
+    else:
+        if not candidate_matches(existing, record, expected_mounts, new_env):
+            raise RuntimeError("CANDIDATE_EXISTING_DRIFT")
+        print("R4A_ONB_CANDIDATE_REUSED=true RUNNING=false IMAGE=" + EXPECTED)
+        print("R4A_ONB_MOUNTS=LIVE_PLUS_TOKEN_DIRECTORY TOKEN_NOT_PRINTED=true")
+        print("R4A_ONB_LIVE_UNCHANGED=true DB_UNCHANGED=true")
+        return
     os.umask(0o077)
     fd, env_path = tempfile.mkstemp(prefix="ouf-r4a-onb-env-", dir="/run")
     created = False
@@ -125,15 +148,7 @@ def main():
         subprocess.run(command, check=True, capture_output=True, text=True, timeout=60)
         created = True
         candidate = inspect(NAME)
-        if (candidate["Image"] != record["image_id"] or candidate["State"]["Running"]
-            or candidate["Config"].get("User") != "10003:10003"
-            or candidate["HostConfig"].get("NetworkMode") != "ouf-backend"
-            or mounts(candidate) != sorted(old_mounts + [
-                ("bind", str(TOKEN_DIR), str(TOKEN_DIR), False)])
-            or {value.partition("=")[0]: value.partition("=")[2]
-                for value in candidate["Config"].get("Env") or []}
-               != {value.partition("=")[0]: value.partition("=")[2]
-                   for value in new_env}):
+        if not candidate_matches(candidate, record, expected_mounts, new_env):
             raise RuntimeError("CANDIDATE_READBACK_MISMATCH")
         print("R4A_ONB_CANDIDATE_PREPARED=true RUNNING=false IMAGE=" + EXPECTED)
         print("R4A_ONB_MOUNTS=LIVE_PLUS_TOKEN_DIRECTORY TOKEN_NOT_PRINTED=true")

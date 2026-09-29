@@ -65,7 +65,9 @@ dei secret o sorgenti dei mount.
 UID/GID, cinque mount live, env e impostazioni Docker, verifica il token
 rinnovato e crea **spento** `ouf-onboarding-r4a-candidate` con la directory
 del token in bind read-only e le sole due variabili UDP identity. Il readback
-del candidato è obbligatorio; non esegue migrazioni né cambia il live.
+del candidato è obbligatorio. Riutilizza un candidato già presente solo se
+spento e identico alla configurazione prevista; altrimenti si ferma senza
+rimuoverlo. Non esegue migrazioni né cambia il live.
 `scripts/r4a_switch_onboarding.py --expected-flyway <versione verificata>`
 richiede che il timer sia attivo, che il bearer abbia claim corretti,
 scadenza sufficiente e mtime recente, e che il candidato sia spento; controlla
