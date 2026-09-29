@@ -3,6 +3,7 @@
 
 import argparse
 import base64
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -25,6 +26,7 @@ SERVICE = Path("/etc/systemd/system/ouf-onboarding-identity-token.service")
 TIMER = Path("/etc/systemd/system/ouf-onboarding-identity-token.timer")
 TMPFILES = Path("/etc/tmpfiles.d/ouf-onboarding-identity.conf")
 GROUP = 10003
+LEGACY_STAGED_BLOB = "52d7a261b6b06a684d4ac10751b6ce2a33c49357"
 
 SERVICE_CONTENT = """[Unit]
 Description=Refresh OUF Onboarding SERVICE bearer for UDP identity read
@@ -34,13 +36,13 @@ After=network-online.target
 [Service]
 Type=oneshot
 User=root
-Group=10003
 ExecStart=/usr/bin/python3 /var/lib/ouf-r4a-identity/r4a_onboarding_token_runtime.py refresh
 NoNewPrivileges=true
 ProtectSystem=strict
 ReadWritePaths=/run/ouf-onboarding-identity
 PrivateTmp=true
 """
+LEGACY_SERVICE_CONTENT = SERVICE_CONTENT.replace("User=root\n", "User=root\nGroup=10003\n")
 TIMER_CONTENT = """[Unit]
 Description=Refresh OUF Onboarding SERVICE bearer every minute
 
@@ -140,11 +142,39 @@ def refresh():
           + " TOKEN_NOT_PRINTED=true")
 
 
-def install_file(path, content, mode):
+def approved_existing(path, content):
+    if path == SERVICE:
+        return content == LEGACY_SERVICE_CONTENT
+    if path == STAGED:
+        raw = content.encode()
+        blob = b"blob " + str(len(raw)).encode() + b"\0" + raw
+        return hashlib.sha1(blob).hexdigest() == LEGACY_STAGED_BLOB
+    return False
+
+
+def verify_existing(path, content, mode):
     if path.exists():
         protected(path, mode)
-        if path.read_text() != content:
+        existing = path.read_text()
+        if existing != content and not approved_existing(path, existing):
             raise RuntimeError("INSTALLATION_FILE_DRIFT")
+
+
+def install_file(path, content, mode):
+    if path.exists():
+        verify_existing(path, content, mode)
+        if path.read_text() == content:
+            return
+        fd, temporary = tempfile.mkstemp(prefix=".r4a-unit-", dir=path.parent)
+        try:
+            with os.fdopen(fd, "w") as stream:
+                os.fchmod(stream.fileno(), mode)
+                stream.write(content)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temporary, path)
+        finally:
+            Path(temporary).unlink(missing_ok=True)
         return
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, mode)
     with os.fdopen(descriptor, "w") as stream:
@@ -162,10 +192,7 @@ def install():
     files = ((STAGED, own_source, 0o600), (TMPFILES, TMPFILES_CONTENT, 0o644),
              (SERVICE, SERVICE_CONTENT, 0o644), (TIMER, TIMER_CONTENT, 0o644))
     for path, content, mode in files:
-        if path.exists():
-            protected(path, mode)
-            if path.read_text() != content:
-                raise RuntimeError("INSTALLATION_FILE_DRIFT")
+        verify_existing(path, content, mode)
     print("R4A_TOKEN_INSTALL_STAGE=WRITE_UNITS", flush=True)
     for path, content, mode in files:
         install_file(path, content, mode)

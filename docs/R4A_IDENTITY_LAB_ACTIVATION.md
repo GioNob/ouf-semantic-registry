@@ -49,6 +49,9 @@ installa un servizio oneshot e un timer che rinnova ogni minuto. Il client
 secret resta in `/var/lib/ouf-r4a-identity/onboarding-client-secret` (0600);
 lo script eseguito dal servizio viene copiato nella stessa directory privata
 (root:root, 0600), senza richiedere permessi particolari alla directory di staging;
+il servizio usa l'utente root senza la direttiva systemd `Group=10003`
+(l'host non espone quel GID come gruppo NSS). Il file bearer è assegnato al
+GID numerico 10003 dallo script dopo il rinnovo;
 il bearer viene sostituito atomicamente in
 `/run/ouf-onboarding-identity/token` (root:10003, 0640). Montare **la
 directory** `/run/ouf-onboarding-identity` in sola lettura nel container,
