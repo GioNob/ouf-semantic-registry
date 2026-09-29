@@ -55,6 +55,15 @@ sono stati eliminati e il live è invariato. Il successivo script
 `r4a_probe_udp_human_route.py` confronta una GET HUMAN senza scritture,
 con lo stesso bearer, direttamente verso la copia isolata e tramite Gateway
 verso il live. Questa prova separa il percorso HUMAN interno dal route layer.
+La GET HUMAN sul clone corretto ha restituito un 403 `Owner authorization
+denied`, quindi il principal arriva al controller ma la capability non è
+concessa nella decisione locale. La GET Gateway verso il live precedente ha
+restituito il 403 generico già noto. `scripts/r4a_human_policy_decision_inventory.py`
+ricostruisce ora, con un bearer HUMAN fresco e il bundle attivo, ogni vincolo
+del grant esattamente come l'SDK (incluso subject effettivo `ouf_subject` e
+organizationId omessi dall'inventario iniziale), senza stampare identità,
+bearer o policy. Non modificare la policy finché il vincolo fallito non è
+identificato.
 
 ## Stato e confini
 
