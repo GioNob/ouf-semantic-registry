@@ -6,16 +6,22 @@ La priorità è completare la catena eseguibile e autorizzata tra i moduli. I re
 
 ## Avanzamento live al 29 settembre 2026
 
-UDP R4a è stato attivato nel laboratorio con immagine `3402050b36ee…` e
-Flyway 34 dopo una prova di migrazione su clone riuscita. Dump e container
-precedente sono conservati per il rollback. Policy `ouf-lab-authorization:30`,
-scope/client IAM e tre route preflight APISIX sono attivi. Restano la prova
-autenticata HUMAN/SERVICE, il token rinnovabile e il rollout Onboarding e
-Ingestion, la configurazione congelata con preflight e decisione HUMAN, e la
-prova di acquisizione fino a UDP. **R-SMOKE OPEN; R-INSTALL OPEN.** Evidenze e
-procedura: [attivazione R4a](R4A_IDENTITY_LAB_ACTIVATION.md). La PR di
-integrazione UDP è [#37](https://github.com/GioNob/ouf-udp-object-resolution/pull/37);
-il rollout live non equivale al merge della PR.
+Lo [stato corrente e il punto esatto di ripresa](handoffs/OUF_HANDOFF_2026-09-29_R4A_PREFLIGHT_TO_INGESTION.md)
+superano lo snapshot del 27 settembre qui sotto. UDP live usa l'immagine
+`edaba2bff18a2aaf52d1180f21f0e68984cc3437`, Flyway 34, con backup e
+container rollback conservati. Policy `ouf-lab-authorization:31`; scope/client
+IAM e tre route APISIX di preflight sono attivi. Onboarding live ha token
+SERVICE rinnovabile e la versione cinema è `IN_REVIEW`, lock 2, hash
+congelato; il preflight HUMAN e la lettura dell'attestazione SERVICE sono
+`PASS`, attestazione `57499699-dbc5-419d-a14b-27cd3604ec6f` con **zero**
+oggetti ancora indicizzati. **Compatibilità Ingestion ABSENT**, immagine
+Ingestion staged diversa dal live; nessuna approval/activation Onboarding o
+run Ingestion → UDP → search attestata. L'inventario Ingestion read-only
+preparato sul branch Semantic non è stato eseguito per scelta dell'utente.
+**R-SMOKE OPEN; R-INSTALL OPEN.** Procedura e backup:
+[attivazione R4a](R4A_IDENTITY_LAB_ACTIVATION.md). PR UDP
+[#37](https://github.com/GioNob/ouf-udp-object-resolution/pull/37) open;
+rollout live e merge sono fatti diversi.
 
 ## Snapshot R4a al 27 settembre 2026
 

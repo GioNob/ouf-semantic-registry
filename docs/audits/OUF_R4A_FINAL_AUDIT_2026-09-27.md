@@ -1,5 +1,9 @@
 # OUF R4a · audit finale metodologico (27 settembre 2026)
 
+**Aggiornamento 29 settembre:** la fotografia operativa successiva, inclusi
+policy :31, preflight HUMAN riuscito e compatibilità Ingestion assente, è
+nell'[handoff aggiornato](../handoffs/OUF_HANDOFF_2026-09-29_R4A_PREFLIGHT_TO_INGESTION.md).
+
 Questo rapporto fotografa le evidenze disponibili nella chat e su GitHub; **non**
 è una nuova interrogazione del VPS. È parte dell'[handoff
 operativo](../handoffs/OUF_HANDOFF_2026-09-27_R4A.md). R-SMOKE e R-INSTALL

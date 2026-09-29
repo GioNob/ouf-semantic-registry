@@ -786,7 +786,37 @@ Acceptance obbligatoria:
 
 ## 23. R4a — ripresa automatizzata e stato del lab (27 settembre 2026)
 
-[Handoff completo PET 1.7](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/OUF_HANDOFF_2026-09-27_R4A.md) e [audit con evidenze e difformità](../audits/OUF_R4A_FINAL_AUDIT_2026-09-27.md) sono la fotografia operativa. I rollout picker Onboarding/MCP/Gateway, la riparazione owner-key e l'upload HUMAN tramite Gateway hanno prodotto l'asset `8ec8ae90-808a-4d9e-907c-d56de119e376`; Semantic ha pubblicato la revisione `51706bed-81e4-4306-aca1-70119821727d`. Il DRAFT Onboarding è ancora inattivo. Non esiste una prova del ciclo Ingestion → UDP → search per quell'asset. L'ultimo PolicyBundle attestato è `ouf-lab-authorization:28`, da rileggere prima di una nuova mutazione.
+**Aggiornamento operativo 29 settembre:** usare il nuovo
+[handoff dopo il preflight](../handoffs/OUF_HANDOFF_2026-09-29_R4A_PREFLIGHT_TO_INGESTION.md)
+prima di eseguire i passi storici sotto. La policy attiva è
+`ouf-lab-authorization:31`, UDP live è `edaba2bff18a2aaf52d1180f21f0e68984cc3437`
+con Flyway 34, Onboarding live è `f74c3a9f377b5ce93b5cab298fa24372de1602bc`
+con Flyway 31. La versione cinema è `IN_REVIEW`, lock 2, hash congelato
+`sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891`.
+Il preflight HUMAN e la lettura SERVICE della stessa attestazione UDP
+`57499699-dbc5-419d-a14b-27cd3604ec6f` sono PASS con zero oggetti.
+**Ingestion compatibility ABSENT** e immagine staged diversa dal live;
+non procedere ad attivazione o prima run finché non esiste un'attestazione
+SERVICE di compatibilità della configurazione congelata. Il prossimo
+inventario read-only `scripts/r4a_ingestion_compatibility_inventory.py`
+(commit `438e3fbfc00e742cbe55a376bda6626ba5f3a807`) è preparato ma
+**non eseguito**. Non ripetere submit/preflight e non cancellare backup o
+container rollback elencati nel nuovo handoff.
+
+Il grant admin per `urban.identity.preflight` nella policy :30 richiedeva
+cinque etichette e quattro livelli su una risorsa `capability` che non li
+espone. La proposta `REPLACE_ROLES` `86086d30-1f2d-4432-af09-fb45bf8189bd`
+è stata confermata HUMAN in THS e pubblicata come :31: soltanto i due insiemi
+di quel permesso sono vuoti, gli altri 28 permessi admin e le assegnazioni
+restano invariati. Keycloak ha già gli scope HUMAN preflight e SERVICE lettura
+attestazione; prima di introdurre `ouf.ingestion.configuration.attest`,
+verificare descriptor, grant SERVICE, client scope e route con l'inventario.
+Non trasformare il login IAM in approvazione automatica e non inserire
+attestazioni direttamente in DB. La compatibilità va valutata dal runtime
+Ingestion sul contratto esatto; Onboarding richiede identità SERVICE
+autorizzata e hash della versione congelata.
+
+**Snapshot storico al 27 settembre:** [handoff PET 1.7](../handoffs/OUF_HANDOFF_2026-09-27_R4A.md) e [audit con evidenze e difformità](../audits/OUF_R4A_FINAL_AUDIT_2026-09-27.md). I rollout picker Onboarding/MCP/Gateway, la riparazione owner-key e l'upload HUMAN tramite Gateway avevano prodotto l'asset `8ec8ae90-808a-4d9e-907c-d56de119e376`; Semantic aveva pubblicato la revisione `51706bed-81e4-4306-aca1-70119821727d`. La versione Onboarding allora era DRAFT e l'ultimo PolicyBundle attestato era `ouf-lab-authorization:28`. Oggi valgono lo stato `IN_REVIEW` e la policy :31 sopra; il ciclo Ingestion → UDP → search non è ancora provato.
 
 ### Procedura di modifica
 

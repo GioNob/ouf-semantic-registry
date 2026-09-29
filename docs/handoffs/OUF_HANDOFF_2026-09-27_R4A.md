@@ -1,5 +1,9 @@
 # OUF · handoff operativo R4a (27 settembre 2026)
 
+**Aggiornamento 29 settembre:** questo è uno snapshot storico. Per lo stato live
+dopo il preflight, il comando Ingestion esplicitamente non eseguito e tutti i
+gate residui, leggere l'[handoff aggiornato](OUF_HANDOFF_2026-09-29_R4A_PREFLIGHT_TO_INGESTION.md).
+
 Questo documento è destinato a una nuova chat senza contesto. Leggere prima il **Reality Baseline Package / PET 1.7** allegato alla nuova chat, poi questo handoff. Se una frase qui confligge con Blueprint L0 v0.3, Cross-Module Alignment Matrix v1.7 o PET L1 vigenti, prevale la baseline. Nessun output sotto costituisce da solo un'attestazione di release.
 
 ## Obiettivo del prodotto

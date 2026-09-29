@@ -1,6 +1,42 @@
 # R4a: attivazione controllata dell'identità nel laboratorio
 
-## Preflight HUMAN: diagnosi del 403 (29 settembre)
+## Esito del preflight HUMAN e prossimo gate (29 settembre, sera)
+
+Il diagnostic SDK nel clone UDP ha identificato il vincolo effettivo:
+`NO_APPLICABLE_GRANT` sul bundle `ouf-lab-authorization:30`. Il grant
+`urban.identity.preflight` del ruolo `admin` conteneva cinque
+`allowedDataLabels` e quattro `allowedDetailLevels`; la risorsa `capability`
+del preflight non ha né etichetta né livello. La proposta governata
+`86086d30-1f2d-4432-af09-fb45bf8189bd` ha cambiato **soltanto** i due
+insiemi di quel permesso nel catalogo ruoli. Il titolare ha confermato in THS:
+stato `PUBLISHED`, policy `ouf-lab-authorization:31`. La lettura del catalogo
+mostra ancora 29 permessi admin e due assegnazioni; i due insiemi del preflight
+sono vuoti. Il contratto SDK continua a negare una richiesta di dati etichettati
+quando manca l'etichetta richiesta; non modificarlo per questo caso.
+
+Il clone isolato dell'immagine UDP corretta ha poi restituito `ALLOW` con bundle
+31, scope HUMAN presente e un grant corrispondente. Sul vecchio UDP live il
+POST restituiva ancora 403; lo switch controllato ha portato live l'immagine
+`edaba2bff18a2aaf52d1180f21f0e68984cc3437` con Flyway 34 e preflight
+autenticato `PASS`. L'attestazione è
+`57499699-dbc5-419d-a14b-27cd3604ec6f`, `INDEXED_OBJECTS=0`: la fonte
+non è ancora stata ingerita. Backup verificato
+`/opt/ouf/r4a-stage/udp-before-principal-fix-g1580k75.dump`; precedente
+container `ouf-udp-principal-rollback-a4fb36e8ce32`. Conservare entrambi.
+
+`scripts/r4a_verify_cinema_attestation.py` ha letto senza nuova scrittura
+l'attestazione esistente dalla route SERVICE usata da Onboarding: versione e
+hash congelati `PASS`, `INDEXED_OBJECTS=0`, compatibilità Ingestion `ABSENT`,
+Ingestion live running ma immagine staged diversa dal live. Il successivo
+inventario read-only `scripts/r4a_ingestion_compatibility_inventory.py` del
+commit Semantic `438e3fbfc00e742cbe55a376bda6626ba5f3a807` è stato
+preparato e **non eseguito** su richiesta dell'utente. Il [nuovo handoff](handoffs/OUF_HANDOFF_2026-09-29_R4A_PREFLIGHT_TO_INGESTION.md)
+registra comando e gate. La successiva attivazione Onboarding richiede
+approvazione HUMAN, attestazione di compatibilità da Ingestion Runtime SERVICE
+e verifica della stessa attestazione UDP; nessuno dei tre gate è implicito nel
+solo preflight. Non ripetere il submit della versione già `IN_REVIEW`.
+
+## Preflight HUMAN: diagnosi storica del 403 (prima della policy :31)
 
 La versione cinema è `IN_REVIEW`, congelata con hash
 `sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891`.
