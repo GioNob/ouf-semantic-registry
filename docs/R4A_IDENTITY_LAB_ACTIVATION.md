@@ -291,6 +291,17 @@ route. Ogni `R4A_INVENTORY_BLOCKED` è un gate da risolvere prima del deploy.
    incerti, proposta e approvazione atomica HUMAN del pacchetto THS. Un
    CSV o verticale API cambia l'adapter Ingestion, non la regola UDP.
 
+**Evidenza live 29 settembre:** lo switch Onboarding è riuscito con immagine
+`f74c3a9f377b5ce93b5cab298fa24372de1602bc` e Flyway 31. Il backup
+`/opt/ouf/r4a-stage/onboarding-before-r4a-0yqagqb4.dump` ha superato
+`pg_restore -l`; il precedente container è conservato come
+`ouf-onboarding-rollback-e8c73d52f85e`. Il timer del bearer è attivo.
+L'attestazione positiva per una versione congelata e la filiera Ingestion →
+UDP restano da provare. L'inventario read-only
+`scripts/r4a_onboarding_post_switch_inventory.py` verifica il nuovo runtime e
+legge solo classe, proprietà, riferimenti semantici e presenza dei profili del
+DRAFT, senza mostrare configurazione completa o credenziali.
+
 Le route di review `resolution.issue.read` e
 `resolution.match.approve`, la card THS e la proiezione chatbot richiedono
 verifica separata prima di dichiarare completa la review end-to-end.
