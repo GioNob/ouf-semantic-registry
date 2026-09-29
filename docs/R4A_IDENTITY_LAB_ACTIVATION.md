@@ -315,6 +315,13 @@ verifica l'hash, ottiene un bearer HUMAN tramite device flow, aggiorna solo
 il DRAFT con ETag `ov:0`, legge il risultato e chiama `/validate`. Se un
 precedente tentativo ha già scritto esattamente la proposta con lock 1, riprende
 la validazione. Non effettua submit, approvazione o attivazione.
+La proposta è stata applicata nel DRAFT con lock 1 e `/validate` ha restituito
+PASS, zero errori e zero warning. `scripts/r4a_freeze_and_preflight_cinema.py`
+ricontrolla l'hash, verifica la validazione server prima del submit, congela
+la versione con ETag `ov:1` e chiama il preflight UDP con bearer HUMAN. Legge
+poi l'attestazione sia dalla route HUMAN sia dalla route SERVICE usata da
+Onboarding. Questo passaggio non approva né attiva la versione; se interrotto
+dopo il submit riconosce `IN_REVIEW` con lock 2 e hash identico.
 
 Le route di review `resolution.issue.read` e
 `resolution.match.approve`, la card THS e la proiezione chatbot richiedono
