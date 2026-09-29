@@ -139,6 +139,11 @@ nomi e versioni delle estensioni presenti nel database live, le prepara nel
 solo clone con il ruolo amministrativo, verifica le versioni, quindi ripristina
 lo schema e i dati con `ouf_udp` omettendo i commenti. Il clone viene rimosso
 anche in caso di errore; il database e il container live restano invariati.
+Il ripristino successivo ha superato la preparazione di due estensioni, ma
+`pg_restore` ha ancora segnalato un permesso insufficiente. La prova ora
+riporta soltanto la categoria SQL e il tipo di oggetto TOC coinvolto, senza
+mostrare query, nomi di oggetti, dati o credenziali; prima di cambiare
+ulteriormente il ripristino serve questa diagnosi circoscritta.
 
 ## Inventario prima delle modifiche
 

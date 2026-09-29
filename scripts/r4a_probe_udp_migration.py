@@ -77,6 +77,46 @@ def restore_error_category(stderr):
     return [label for pattern, label in rules if re.search(pattern, stderr, re.IGNORECASE)] or ["UNCLASSIFIED"]
 
 
+def restore_error_details(stderr):
+    """Report bounded SQL error types and TOC kinds, never SQL or values."""
+    kinds = ("TABLE DATA", "FK CONSTRAINT", "EVENT TRIGGER", "MATERIALIZED VIEW",
+             "EXTENSION", "SCHEMA", "TABLE", "FUNCTION", "INDEX", "CONSTRAINT",
+             "DEFAULT", "SEQUENCE", "ACL", "COMMENT", "TYPE", "DATABASE")
+    details = []
+    for segment in stderr.split("pg_restore: error:")[1:]:
+        reason = re.search(r"ERROR:\s*([^\r\n]+)", segment)
+        toc = re.search(r"pg_restore: from TOC entry \d+; \d+ \d+ ([A-Z ]+)", segment)
+        kind = "UNKNOWN"
+        if toc:
+            label = toc.group(1).strip()
+            kind = next((item for item in kinds if label == item or label.startswith(item + " ")),
+                        "UNKNOWN")
+        cause = "UNKNOWN"
+        if reason:
+            message = reason.group(1).lower()
+            for pattern, name in (
+                (r"permission denied for (\w+)", "PERMISSION_FOR_"),
+                (r"permission denied to (\w+)", "PERMISSION_TO_"),
+                (r"must be owner of (\w+)", "OWNER_OF_"),
+            ):
+                match = re.search(pattern, message)
+                if match:
+                    cause = name + match.group(1).upper()
+                    break
+            if cause == "UNKNOWN":
+                for marker, name in (("must be superuser", "SUPERUSER_REQUIRED"),
+                                     ("already exists", "ALREADY_EXISTS"),
+                                     ("duplicate key", "DUPLICATE_KEY"),
+                                     ("does not exist", "MISSING_OBJECT")):
+                    if marker in message:
+                        cause = name
+                        break
+        item = {"cause": cause, "toc": kind}
+        if item not in details:
+            details.append(item)
+    return details[:12]
+
+
 def main():
     if os.geteuid() != 0:
         raise RuntimeError("ROOT_REQUIRED")
@@ -135,8 +175,11 @@ def main():
                                       stdin=source, stdout=subprocess.DEVNULL,
                                       stderr=subprocess.PIPE, timeout=300)
         if restored.returncode != 0:
+            stderr = restored.stderr.decode("utf-8", "replace")
             print("R4A_PROBE_RESTORE_ERROR_CATEGORIES=" +
-                  json.dumps(restore_error_category(restored.stderr.decode("utf-8", "replace"))),
+                  json.dumps(restore_error_category(stderr)), flush=True)
+            print("R4A_PROBE_RESTORE_ERROR_DETAILS=" +
+                  json.dumps(restore_error_details(stderr), separators=(",", ":")),
                   flush=True)
             raise RuntimeError("RESTORE_DUMP_FAILED")
         if version(database) != "26":
