@@ -33,6 +33,8 @@ def mounts(descriptor):
 
 
 def token_preflight():
+    if not TOKEN_DIR.exists() or not TOKEN_FILE.exists():
+        raise RuntimeError("TOKEN_RUNTIME_NOT_INSTALLED")
     directory = TOKEN_DIR.lstat()
     token = TOKEN_FILE.lstat()
     if (not stat.S_ISDIR(directory.st_mode) or directory.st_uid != 0

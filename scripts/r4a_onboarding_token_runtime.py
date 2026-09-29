@@ -20,7 +20,7 @@ SCOPE = "ouf.udp.identity.attestation.read"
 SECRET = Path("/var/lib/ouf-r4a-identity/onboarding-client-secret")
 TOKEN_DIR = Path("/run/ouf-onboarding-identity")
 TOKEN = TOKEN_DIR / "token"
-STAGED = Path("/opt/ouf/r4a-stage/r4a_onboarding_token_runtime.py")
+STAGED = SECRET.parent / "r4a_onboarding_token_runtime.py"
 SERVICE = Path("/etc/systemd/system/ouf-onboarding-identity-token.service")
 TIMER = Path("/etc/systemd/system/ouf-onboarding-identity-token.timer")
 TMPFILES = Path("/etc/tmpfiles.d/ouf-onboarding-identity.conf")
@@ -35,7 +35,7 @@ After=network-online.target
 Type=oneshot
 User=root
 Group=10003
-ExecStart=/usr/bin/python3 /opt/ouf/r4a-stage/r4a_onboarding_token_runtime.py refresh
+ExecStart=/usr/bin/python3 /var/lib/ouf-r4a-identity/r4a_onboarding_token_runtime.py refresh
 NoNewPrivileges=true
 ProtectSystem=strict
 ReadWritePaths=/run/ouf-onboarding-identity
@@ -159,10 +159,6 @@ def install():
     print("R4A_TOKEN_INSTALL_STAGE=VERIFY_INPUTS", flush=True)
     secret()
     own_source = Path(__file__).read_text()
-    stage_parent = STAGED.parent.lstat()
-    if (not stat.S_ISDIR(stage_parent.st_mode) or stage_parent.st_uid != 0
-        or stat.S_IMODE(stage_parent.st_mode) != 0o700):
-        raise RuntimeError("STAGE_DIRECTORY_UNSAFE")
     files = ((STAGED, own_source, 0o600), (TMPFILES, TMPFILES_CONTENT, 0o644),
              (SERVICE, SERVICE_CONTENT, 0o644), (TIMER, TIMER_CONTENT, 0o644))
     for path, content, mode in files:

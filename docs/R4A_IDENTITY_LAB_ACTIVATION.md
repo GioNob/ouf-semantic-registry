@@ -47,6 +47,8 @@ configurazione congelata e la filiera di acquisizione fino a UDP.
 Per il token SERVICE di Onboarding, `scripts/r4a_onboarding_token_runtime.py`
 installa un servizio oneshot e un timer che rinnova ogni minuto. Il client
 secret resta in `/var/lib/ouf-r4a-identity/onboarding-client-secret` (0600);
+lo script eseguito dal servizio viene copiato nella stessa directory privata
+(root:root, 0600), senza richiedere permessi particolari alla directory di staging;
 il bearer viene sostituito atomicamente in
 `/run/ouf-onboarding-identity/token` (root:10003, 0640). Montare **la
 directory** `/run/ouf-onboarding-identity` in sola lettura nel container,
