@@ -322,6 +322,13 @@ la versione con ETag `ov:1` e chiama il preflight UDP con bearer HUMAN. Legge
 poi l'attestazione sia dalla route HUMAN sia dalla route SERVICE usata da
 Onboarding. Questo passaggio non approva né attiva la versione; se interrotto
 dopo il submit riconosce `IN_REVIEW` con lock 2 e hash identico.
+Il submit live ha congelato la versione con lock 2 e hash atteso, ma il primo
+POST HUMAN al preflight UDP ha risposto 403. L'inventario read-only
+`scripts/r4a_human_preflight_denial_inventory.py` confronta scope e ruolo del
+bearer con descriptor e grant nel PolicyBundle ACTIVE, ed esegue solo un GET
+su un ID inesistente per distinguere la denial di route/owner. Non ristampa il
+bearer, la policy completa né la configurazione congelata; nessuna
+attestazione è stata ancora prodotta.
 
 Le route di review `resolution.issue.read` e
 `resolution.match.approve`, la card THS e la proiezione chatbot richiedono
