@@ -27,6 +27,9 @@ class CandidateReuseTest(unittest.TestCase):
         descriptor["Mounts"][0]["RW"] = True
         self.assertFalse(candidate.candidate_matches(descriptor, record,
                                                         expected_mounts, environment))
+        self.assertEqual([key for key, ok in candidate.candidate_checks(
+            descriptor, record, expected_mounts, environment).items() if not ok],
+                         ["MOUNTS"])
 
 
 if __name__ == "__main__":

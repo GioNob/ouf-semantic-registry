@@ -58,20 +58,26 @@ def token_preflight():
         raise RuntimeError("TOKEN_CLAIMS_OR_EXPIRY_INVALID")
 
 
-def candidate_matches(candidate, record, expected_mounts, expected_env):
-    return (candidate["Image"] == record["image_id"]
-        and not candidate["State"]["Running"]
-        and candidate["Config"].get("User") == "10003:10003"
-        and candidate["HostConfig"].get("NetworkMode") == "ouf-backend"
-        and (candidate["HostConfig"].get("RestartPolicy") or {}).get("Name")
-            == "unless-stopped"
-        and (candidate["HostConfig"].get("LogConfig") or {}).get("Type")
-            == "json-file"
-        and mounts(candidate) == expected_mounts
-        and {value.partition("=")[0]: value.partition("=")[2]
-             for value in candidate["Config"].get("Env") or []}
+def candidate_checks(candidate, record, expected_mounts, expected_env):
+    return {
+        "IMAGE": candidate["Image"] == record["image_id"],
+        "STOPPED": not candidate["State"]["Running"],
+        "USER": candidate["Config"].get("User") == "10003:10003",
+        "NETWORK": candidate["HostConfig"].get("NetworkMode") == "ouf-backend",
+        "RESTART": (candidate["HostConfig"].get("RestartPolicy") or {}).get("Name")
+            == "unless-stopped",
+        "LOG_DRIVER": (candidate["HostConfig"].get("LogConfig") or {}).get("Type")
+            == "json-file",
+        "MOUNTS": mounts(candidate) == expected_mounts,
+        "ENV": {value.partition("=")[0]: value.partition("=")[2]
+                for value in candidate["Config"].get("Env") or []}
             == {value.partition("=")[0]: value.partition("=")[2]
-                for value in expected_env})
+                for value in expected_env},
+    }
+
+
+def candidate_matches(candidate, record, expected_mounts, expected_env):
+    return all(candidate_checks(candidate, record, expected_mounts, expected_env).values())
 
 
 def main():
@@ -121,7 +127,12 @@ def main():
     except subprocess.CalledProcessError:
         pass
     else:
-        if not candidate_matches(existing, record, expected_mounts, new_env):
+        differences = [key for key, matched in
+                       candidate_checks(existing, record, expected_mounts, new_env).items()
+                       if not matched]
+        if differences:
+            print("R4A_ONB_CANDIDATE_DRIFT_FIELDS=" + ",".join(differences)
+                  + " VALUES_NOT_PRINTED=true")
             raise RuntimeError("CANDIDATE_EXISTING_DRIFT")
         print("R4A_ONB_CANDIDATE_REUSED=true RUNNING=false IMAGE=" + EXPECTED)
         print("R4A_ONB_MOUNTS=LIVE_PLUS_TOKEN_DIRECTORY TOKEN_NOT_PRINTED=true")
