@@ -86,7 +86,7 @@ avviato** con gli stessi mount e env live più le tre variabili IAM; confronta
 il readback e cancella il file temporaneo degli env. Non ferma UDP, non
 esegue migrazioni e non tocca il DB. Il backup va eseguito solo nella fase
 successiva, dopo aver fermato il live e prima di avviare il candidato.
-Il candidato è stato creato spento con commit `d9626a91…`, due mount
+Il candidato attuale è stato creato spento con commit `3402050b…`, due mount
 identici e ambiente live più le tre variabili IAM; UDP e DB risultavano
 invariati. `scripts/r4a_switch_udp.py` esige che il vecchio container sia
 healthy, legge la versione Flyway precedente, lo ferma, produce un dump
@@ -166,8 +166,12 @@ Il primo output classificato ha mostrato `CLONE_FLYWAY` riuscito e
 permessi della tabella Flyway nel clone risultavano tutti validi. L'errore è
 quindi nella query di confronto scritta per la prova: la concatenazione
 implicita del tipo catalogo `pg_class.relkind` è ambigua. I valori della query
-vengono ora convertiti esplicitamente a `text`. La migrazione del candidato
-non è ancora stata provata e il live rimane a Flyway 26.
+vengono ora convertiti esplicitamente a `text`. Il tentativo successivo ha
+superato il restore e la verifica dei proprietari, avviato l'immagine
+`3402050b…` sul clone e migrato fino a Flyway 34. Pulizia del clone riuscita;
+il container e il database live sono rimasti a Flyway 26. Lo switch live e lo
+smoke con bearer autenticato sono i prossimi gate. I due test dello script di
+switch (ordine stop/backup/swap e recupero dopo errore backup) passano.
 
 ## Inventario prima delle modifiche
 
