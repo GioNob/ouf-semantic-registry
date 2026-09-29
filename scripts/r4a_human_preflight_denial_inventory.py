@@ -60,6 +60,7 @@ def main(revision):
     print("TOKEN_SCOPE_PRESENT=" + str(CAPABILITY in str(claims.get("scope", "")).split()).lower())
     print("TOKEN_ACTOR_HUMAN=" + str(claims.get("ouf_actor_type") in
           ("HUMAN", "HUMAN_USER")).lower())
+    print("TOKEN_ACTOR_TYPE=" + str(claims.get("ouf_actor_type")))
     print("TOKEN_ROLE_REFS=" + json.dumps(sorted(roles)))
     print("POLICY_GRANT_COUNT=" + str(len(grants)))
     applicable = 0
@@ -92,13 +93,20 @@ def main(revision):
                                     "Authorization": "Bearer " + bearer})
     try:
         with urlopen(request, timeout=15) as response:
-            status, server = response.status, response.headers.get("Server", "UNKNOWN")
-            response.read(4096)
+            status, media = response.status, response.headers.get("Content-Type", "UNKNOWN")
+            body = response.read(4096)
     except HTTPError as error:
-        status, server = error.code, error.headers.get("Server", "UNKNOWN")
-        error.read(4096)
-    print("HUMAN_READ_MISSING_ID_HTTP=" + str(status) + " SERVER=" +
-          ("APISIX" if "APISIX" in server.upper() else "OTHER"))
+        status, media = error.code, error.headers.get("Content-Type", "UNKNOWN")
+        body = error.read(4096)
+    try:
+        detail = json.loads(body)
+    except ValueError:
+        detail = {}
+    owner = isinstance(detail, dict) and detail.get("detail") == "Owner authorization denied"
+    print("HUMAN_READ_MISSING_ID_HTTP=" + str(status) + " MEDIA=" +
+          ("JSON" if "json" in media.lower() else "NON_JSON")
+          + " OWNER_DENIAL_BODY=" + str(owner).lower()
+          + " BODY_EMPTY=" + str(not body).lower())
     print("TOKEN_POLICY_VALUES_NOT_PRINTED=true DB_UNCHANGED=true")
 
 
