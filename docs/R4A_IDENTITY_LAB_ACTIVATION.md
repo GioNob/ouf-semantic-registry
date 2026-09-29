@@ -37,6 +37,16 @@ il container precedente; non ripristina automaticamente il DB. Una prova
 positiva crea l'attestazione desiderata e lascia la versione Onboarding
 `IN_REVIEW` per i successivi gate di approvazione.
 
+**Esito dello switch di prova:** il candidato e il backup verificato
+`/opt/ouf/r4a-stage/udp-before-principal-fix-9pruwm49.dump` sono stati
+preparati; il POST autenticato ha ancora restituito 403. Il rollback runtime
+è `PASS`, il dump rimane conservato e il database non è stato ripristinato
+automaticamente. La sequenza dei filtri era una causa possibile nel codice,
+ma la prova live mostra che la diagnosi non era sufficiente. Prima di ogni
+altro switch, `scripts/r4a_udp_authorization_runtime_inventory.py` controlla
+in sola lettura endpoint del registry, stato del bearer workload e risposta
+del bundle senza stampare token o policy. Proseguire in base a questo esito.
+
 ## Stato e confini
 
 **Aggiornamento live 29 settembre 2026:** lo switch UDP è passato con immagine
