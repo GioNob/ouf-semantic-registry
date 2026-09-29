@@ -66,19 +66,23 @@ def check_claims(value):
 
 def gateway(value):
     url = "https://api.ouf-lab.it/api/udp/v1/governance/internal/identity/preflight?" + urlencode(
-        {"sourceId": "r4a-probe", "configurationHash": "r4a-probe"})
-    req = Request(url, headers={"Authorization": "Bearer " + value})
-    try:
-        with HTTP.open(req, timeout=12) as response:
-            code = response.status
-    except HTTPError as error:
-        code = error.code
-    print("SERVICE_GATEWAY_HTTP=" + str(code))
-    if code in (401, 403):
-        raise ValueError("SERVICE_GATEWAY_AUTH_REJECTED")
-    if code not in (200, 404):
-        raise ValueError("SERVICE_GATEWAY_UNEXPECTED_RESPONSE")
-    print("SERVICE_GATEWAY_AUTH_PASSED_OWNER_RESULT_PENDING=true")
+        {"sourceId": "r4a-probe"})
+    # Missing configurationHash is rejected by the owner request binding
+    # after Gateway and UDP bearer authentication. This does not fabricate
+    # or depend on an attestation that has not been prepared by a HUMAN.
+    def status(headers):
+        try:
+            with HTTP.open(Request(url, headers=headers), timeout=12) as response:
+                return response.status
+        except HTTPError as error:
+            return error.code
+    anonymous = status({})
+    authenticated = status({"Authorization": "Bearer " + value})
+    print("SERVICE_GATEWAY_ANONYMOUS_HTTP=" + str(anonymous))
+    print("SERVICE_GATEWAY_AUTHENTICATED_HTTP=" + str(authenticated))
+    if anonymous != 401 or authenticated != 400:
+        raise ValueError("SERVICE_GATEWAY_AUTH_PATH_UNVERIFIED")
+    print("SERVICE_GATEWAY_AUTH_PATH=PASS ATTESTATION_READ_PENDING=true")
 
 
 def main():

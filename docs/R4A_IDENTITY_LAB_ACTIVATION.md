@@ -2,6 +2,23 @@
 
 ## Stato e confini
 
+**Aggiornamento live 29 settembre 2026:** lo switch UDP è passato con immagine
+`3402050b36ee28758e5255a57b0d32bc3983a34f` e Flyway 34. Il dump
+precedente `/opt/ouf/r4a-stage/udp-before-r4a-bx9w8isg.dump` è stato
+validato e conservato; il vecchio container è
+`ouf-udp-rollback-247d81294764`. L'isolated probe aveva prima migrato a
+Flyway 34 un clone del dump senza alterare il live. Restano la prova Gateway
+autenticata HUMAN/SERVICE, il token rinnovabile e l'attivazione Onboarding,
+poi Ingestion e lo smoke end-to-end. Non eliminare il dump o il rollback
+container prima di chiudere questi gate.
+
+Lo smoke SERVICE prima di un'attestazione usa
+`scripts/r4a_service_token_smoke.py`: richiede 401 sulla route senza bearer e
+400 con il bearer SERVICE quando manca intenzionalmente il parametro
+`configurationHash`. Questa coppia verifica Gateway e binding della richiesta
+nel nuovo owner UDP; **non** verifica ancora la lettura positiva di
+un'attestazione valida. Un 404 o 500 non è PASS.
+
 La policy `ouf-lab-authorization:30` contiene le nuove capability e il ruolo
 HUMAN `admin`. Le immagini UDP, Onboarding e Ingestion sono preparate in
 `/opt/ouf/r4a-stage/identity-images.json`; lo staging non sostituisce i
@@ -13,11 +30,11 @@ aggiunge il piano di sola lettura per la proiezione live e la raggiungibilità
 dell'upstream. La CI Gateway e la CI UDP del commit
 `d9626a91b3252b6bc0380f81e4f7a141bda4f3e7` sono verdi.
 
-Questi fatti non equivalgono a una prova end-to-end: servono ancora il
-workload IAM Onboarding con scope
-`ouf.udp.identity.attestation.read`, gli scope HUMAN del preflight/review,
-le route APISIX, la configurazione IAM UDP e il token ruotabile accessibile
-al solo container Onboarding.
+La policy, gli scope/client IAM, le tre route APISIX e UDP live sono stati
+attivati nei passaggi sotto registrati. Questi fatti non equivalgono a una
+prova end-to-end: restano l'accettazione autenticata delle route, il token
+workload ruotabile accessibile solo a Onboarding, il preflight HUMAN della
+configurazione congelata e la filiera di acquisizione fino a UDP.
 
 Il piano live di sola lettura del 28 settembre ha restituito `PASS`,
 installazione `ouf-lab-netcup-01`, audience `ouf-api-gateway`, e raggiungibilità

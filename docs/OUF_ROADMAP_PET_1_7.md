@@ -4,6 +4,19 @@ Data della baseline: 16 settembre 2026. Snapshot operativo R4a: 27 settembre 202
 
 La priorità è completare la catena eseguibile e autorizzata tra i moduli. I repository contengono una parte consistente del dominio e dei test, ma rimangono codice di integrazione, capability, superfici umane e criteri di accettazione da realizzare. Non è corretto descrivere il lavoro residuo come sola configurazione IAM o collaudo di produzione.
 
+## Avanzamento live al 29 settembre 2026
+
+UDP R4a è stato attivato nel laboratorio con immagine `3402050b36ee…` e
+Flyway 34 dopo una prova di migrazione su clone riuscita. Dump e container
+precedente sono conservati per il rollback. Policy `ouf-lab-authorization:30`,
+scope/client IAM e tre route preflight APISIX sono attivi. Restano la prova
+autenticata HUMAN/SERVICE, il token rinnovabile e il rollout Onboarding e
+Ingestion, la configurazione congelata con preflight e decisione HUMAN, e la
+prova di acquisizione fino a UDP. **R-SMOKE OPEN; R-INSTALL OPEN.** Evidenze e
+procedura: [attivazione R4a](R4A_IDENTITY_LAB_ACTIVATION.md). La PR di
+integrazione UDP è [#37](https://github.com/GioNob/ouf-udp-object-resolution/pull/37);
+il rollout live non equivale al merge della PR.
+
 ## Snapshot R4a al 27 settembre 2026
 
 [Handoff cross-module per nuova chat](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/OUF_HANDOFF_2026-09-27_R4A.md). L'upload HUMAN attraverso picker/Gateway ha prodotto l'asset `8ec8ae90-808a-4d9e-907c-d56de119e376`; il profilo è `4462692b-9c85-446b-b6fd-779f01eab64d`. Semantic ha pubblicato con conferma HUMAN la revisione `51706bed-81e4-4306-aca1-70119821727d` nel set `f92a2e17-30c9-456f-bb12-63afa84f41e6`. Il DRAFT Onboarding `managed-cinema-8ec8ae90` non è submitted/ACTIVE e non c'è evidenza di Ingestion → UDP → search per questo asset. **R-SMOKE OPEN**.
