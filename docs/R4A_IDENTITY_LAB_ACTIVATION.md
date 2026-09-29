@@ -144,6 +144,11 @@ Il ripristino successivo ha superato la preparazione di due estensioni, ma
 riporta soltanto la categoria SQL e il tipo di oggetto TOC coinvolto, senza
 mostrare query, nomi di oggetti, dati o credenziali; prima di cambiare
 ulteriormente il ripristino serve questa diagnosi circoscritta.
+La diagnosi ha indicato `PERMISSION_FOR_TABLE`: le tabelle di configurazione
+di un'estensione vengono create dal ruolo amministrativo nel clone, mentre
+il dump ne contiene anche i dati. Lo script concede al solo `ouf_udp` del
+clone i privilegi su queste relazioni di configurazione, che identifica dal
+catalogo `pg_extension.extconfig`. Non tocca i privilegi del database live.
 
 ## Inventario prima delle modifiche
 

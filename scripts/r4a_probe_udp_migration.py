@@ -167,6 +167,25 @@ def main():
                                     "select extversion from pg_extension where extname='" + extension + "'")
             if actual_version != expected_version:
                 raise RuntimeError("EXTENSION_VERSION_MISMATCH")
+        # Extensions are installed by the superuser, so their configuration
+        # relations are owned by that role. pg_dump includes their data and
+        # pg_restore must be able to COPY it as the application role.
+        config_rows = admin_command(
+            "psql", "-U", admin, "-d", database, "-Atc",
+            "select distinct c.relkind||':'||format('%I.%I', n.nspname, c.relname) "
+            "from pg_extension e cross join lateral unnest(e.extconfig) as cfg(config_oid) "
+            "join pg_class c on c.oid=cfg.config_oid "
+            "join pg_namespace n on n.oid=c.relnamespace "
+            "order by 1").splitlines()
+        print("R4A_PROBE_EXTENSION_CONFIG_RELATIONS=" + str(len(config_rows)), flush=True)
+        for row in config_rows:
+            relation_kind, separator, identifier = row.partition(":")
+            if not separator or relation_kind not in {"r", "p", "S"} or not identifier:
+                raise RuntimeError("EXTENSION_CONFIG_RELATION_UNSUPPORTED")
+            relation_type = "sequence" if relation_kind == "S" else "table"
+            admin_command("psql", "-U", admin, "-d", database, "-v", "ON_ERROR_STOP=1",
+                          "-Atc", "grant all privileges on " + relation_type + " " +
+                          identifier + " to ouf_udp")
         print("R4A_PROBE_STAGE=RESTORE_DUMP", flush=True)
         with BACKUP.open("rb") as source:
             restored = subprocess.run(["docker", "exec", "-i", "ouf-postgres", "pg_restore",
