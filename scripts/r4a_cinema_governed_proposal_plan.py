@@ -43,11 +43,20 @@ def plan():
         "join ouf_onboarding.managed_file_asset a on a.asset_id='" + ASSET + "' "
         "where v.source_id='" + SOURCE + "' and v.onboarding_version_id='" + VERSION + "'"))
     config = row["configuration"]
+    existing = json.loads(json.dumps(config))
+    already_applied = bool(config.get("semanticReferenceBindings")
+        or config["extractionProfile"]["runtime"].get("execution")
+        or config["extractionProfile"]["runtime"].get("udp"))
+    if already_applied:
+        config = json.loads(json.dumps(existing))
+        config.pop("semanticReferenceBindings", None)
+        config["extractionProfile"]["runtime"].pop("execution", None)
+        config["extractionProfile"]["runtime"].pop("udp", None)
     ex = config["extractionProfile"]
     rt = ex["runtime"]
     semantic = config["semanticMapping"]
     mappings = semantic["propertyMappings"]
-    if (row["state"] != "DRAFT" or row["lock"] != 0
+    if (row["state"] != "DRAFT" or row["lock"] != (1 if already_applied else 0)
         or ex["selection"] != {"assetId": ASSET, "fileProfileId": PROFILE}
         or rt.get("assetId") != ASSET or rt.get("fileProfileId") != PROFILE
         or rt.get("mode") != "MANAGED" or rt.get("recordModel") != "ONE_ROW_ONE_SOURCE_OBJECT"
@@ -105,8 +114,10 @@ def plan():
         "resolution": resolution, "materialization": materialization}
     digest = hashlib.sha256(json.dumps(proposed, sort_keys=True,
         separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+    if already_applied and existing != proposed:
+        raise RuntimeError("APPLIED_PROPOSAL_DRIFT")
     print("R4A_GOVERNED_PROPOSAL=PLAN READ_ONLY=true")
-    print("SOURCE=" + SOURCE + " VERSION=" + VERSION + " LOCK=0")
+    print("SOURCE=" + SOURCE + " VERSION=" + VERSION + " LOCK=" + str(row["lock"]))
     print("SEMANTIC_BINDING=" + SEMANTIC + "@1.0.0 REVISION=" + REVISION
           + " PUBLICATION_SET=" + PUBLICATION_SET)
     print("ASSET_BYTES=509 MAPPED_FIELDS=2 CANONICAL_CLASS=" + CLASS)
@@ -116,8 +127,9 @@ def plan():
     print("CANDIDATE_LIMIT=100 AUTO_NEW_WHEN_CERTAIN=true "
           "SIGNALS=indirizzo,nome")
     print("PROPOSAL_SHA256=" + digest)
+    print("CURRENT_PROPOSAL_APPLIED=" + str(already_applied).lower())
     print("CONFIGURATION_VALUES_AND_SECRET_NOT_PRINTED=true DRAFT_UNCHANGED=true")
-    return proposed
+    return proposed, already_applied
 
 
 if __name__ == "__main__":

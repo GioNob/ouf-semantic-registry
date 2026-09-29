@@ -308,6 +308,13 @@ il profilo `runtime.execution` né `runtime.udp`. Il piano di sola lettura
 già registrato, controlla asset e lock 0, e propone i profili Ingestion e UDP
 senza scrivere nel database. Il piano non è una validazione, un submit o una
 decisione HUMAN.
+Il piano live ha prodotto hash SHA-256
+`2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891`.
+`scripts/r4a_apply_cinema_governed_proposal.py` ricostruisce la stessa proposta,
+verifica l'hash, ottiene un bearer HUMAN tramite device flow, aggiorna solo
+il DRAFT con ETag `ov:0`, legge il risultato e chiama `/validate`. Se un
+precedente tentativo ha già scritto esattamente la proposta con lock 1, riprende
+la validazione. Non effettua submit, approvazione o attivazione.
 
 Le route di review `resolution.issue.read` e
 `resolution.match.approve`, la card THS e la proiezione chatbot richiedono
