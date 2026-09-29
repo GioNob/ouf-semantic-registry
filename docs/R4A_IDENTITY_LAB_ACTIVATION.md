@@ -301,6 +301,13 @@ UDP restano da provare. L'inventario read-only
 `scripts/r4a_onboarding_post_switch_inventory.py` verifica il nuovo runtime e
 legge solo classe, proprietà, riferimenti semantici e presenza dei profili del
 DRAFT, senza mostrare configurazione completa o credenziali.
+L'inventario live ha confermato DRAFT, classe `cinema#Cinema` e le proprietà
+`#indirizzo` e `#nome`; non sono ancora presenti `semanticReferenceBindings`,
+il profilo `runtime.execution` né `runtime.udp`. Il piano di sola lettura
+`scripts/r4a_cinema_governed_proposal_plan.py` usa il set semantico pubblicato
+già registrato, controlla asset e lock 0, e propone i profili Ingestion e UDP
+senza scrivere nel database. Il piano non è una validazione, un submit o una
+decisione HUMAN.
 
 Le route di review `resolution.issue.read` e
 `resolution.match.approve`, la card THS e la proiezione chatbot richiedono
