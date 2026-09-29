@@ -2,10 +2,12 @@
 """Back up and switch Onboarding to the staged UDP attestation gate image."""
 
 import argparse
+import base64
 import json
 import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import tempfile
 import time
@@ -31,6 +33,26 @@ def flyway():
     return docker("exec", "ouf-postgres", "psql", "-U", "ouf_onboarding", "-d",
                   "ouf_onboarding", "-Atc", "select version from "
                   "ouf_onboarding.flyway_schema_history order by installed_rank desc limit 1")
+
+
+def token_fresh():
+    metadata = TOKEN.lstat()
+    if (not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != 0
+        or metadata.st_gid != 10003 or stat.S_IMODE(metadata.st_mode) != 0o640
+        or time.time() - metadata.st_mtime > 150):
+        return False
+    value = TOKEN.read_text().strip()
+    if len(value) > 16384 or value.count(".") != 2:
+        return False
+    part = value.split(".")[1]
+    claims = json.loads(base64.urlsafe_b64decode(part + "=" * (-len(part) % 4)))
+    return (claims.get("iss") == "https://auth.ouf-lab.it/realms/ouf"
+            and claims.get("ouf_actor_type") == "SERVICE"
+            and claims.get("tenant_id") == "ouf-lab"
+            and "ouf.udp.identity.attestation.read" in
+            str(claims.get("scope", "")).split()
+            and isinstance(claims.get("exp"), int)
+            and claims["exp"] - time.time() > 120)
 
 
 def health(name, attempts=45):
@@ -100,7 +122,7 @@ def main(expected_flyway):
         or new["HostConfig"]["NetworkMode"] != "ouf-backend"
         or not any(mount["Destination"] == "/run/ouf-onboarding-identity"
                    and not mount["RW"] for mount in new.get("Mounts") or [])
-        or not TOKEN.is_file()):
+        or not token_fresh()):
         raise RuntimeError("PINNED_PREFLIGHT_CHANGED")
     timer = subprocess.run(["systemctl", "is-active", "--quiet",
         "ouf-onboarding-identity-token.timer"], capture_output=True, timeout=10)

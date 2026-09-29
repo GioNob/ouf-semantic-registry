@@ -9,11 +9,6 @@ from scripts import r4a_switch_onboarding as switch
 
 
 class OnboardingSwitchTest(unittest.TestCase):
-    class Token:
-        @staticmethod
-        def is_file():
-            return True
-
     def fixtures(self, root, events, failure=False):
         stage = Path(root)
         (stage / "identity-images.json").write_text(json.dumps({"modules": {
@@ -55,7 +50,7 @@ class OnboardingSwitchTest(unittest.TestCase):
             stage, inspected, docker, backup = self.fixtures(root, events)
             with patch.object(switch, "STAGE", stage), \
                  patch.object(switch.os, "geteuid", return_value=0), \
-                 patch.object(switch, "TOKEN", self.Token()), \
+                 patch.object(switch, "token_fresh", return_value=True), \
                  patch.object(switch, "inspect", side_effect=inspected), \
                  patch.object(switch, "docker", side_effect=docker), \
                  patch.object(switch, "health", return_value=True), \
@@ -77,7 +72,7 @@ class OnboardingSwitchTest(unittest.TestCase):
             stage, inspected, docker, backup = self.fixtures(root, events, failure=True)
             with patch.object(switch, "STAGE", stage), \
                  patch.object(switch.os, "geteuid", return_value=0), \
-                 patch.object(switch, "TOKEN", self.Token()), \
+                 patch.object(switch, "token_fresh", return_value=True), \
                  patch.object(switch, "inspect", side_effect=inspected), \
                  patch.object(switch, "docker", side_effect=docker), \
                  patch.object(switch, "health", return_value=True), \
@@ -89,6 +84,20 @@ class OnboardingSwitchTest(unittest.TestCase):
                     switch.main("31")
             self.assertIn(("start", switch.LIVE), events)
             self.assertFalse(any(event[0] == "rename" for event in events))
+
+    def test_stale_token_blocks_before_stop(self):
+        with tempfile.TemporaryDirectory() as root:
+            events = []
+            stage, inspected, docker, backup = self.fixtures(root, events)
+            with patch.object(switch, "STAGE", stage), \
+                 patch.object(switch.os, "geteuid", return_value=0), \
+                 patch.object(switch, "token_fresh", return_value=False), \
+                 patch.object(switch, "inspect", side_effect=inspected), \
+                 patch.object(switch, "docker", side_effect=docker), \
+                 patch.object(switch, "backup", side_effect=backup):
+                with self.assertRaisesRegex(RuntimeError, "PINNED_PREFLIGHT_CHANGED"):
+                    switch.main("31")
+            self.assertFalse(events)
 
 
 if __name__ == "__main__":
