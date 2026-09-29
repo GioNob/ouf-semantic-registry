@@ -64,6 +64,17 @@ del grant esattamente come l'SDK (incluso subject effettivo `ouf_subject` e
 organizationId omessi dall'inventario iniziale), senza stampare identità,
 bearer o policy. Non modificare la policy finché il vincolo fallito non è
 identificato.
+L'inventario con un bearer fresco ha dato `PASS` per ogni vincolo del grant
+versione 30; `ouf_subject` è assente, il subject IAM coincide con quello del
+grant e `organizationId` è assente. La valutazione ricostruita è `ALLOW`,
+mentre UDP nel clone nega: occorre osservare la versione del bundle e il
+`decisionCode` effettivi. Il commit UDP
+`fb31d7f851a79f16405a2fd4a14995014217ff37` aggiunge un endpoint
+diagnostico abilitabile solo con `OUF_UDP_AUTHORIZATION_DIAGNOSTIC_ENABLED=true`;
+resta disabilitato per default e restituisce soltanto metadati della decisione.
+`r4a_stage_udp_auth_diagnostic.py` compila e testa l'immagine senza cambiare il
+live; `r4a_probe_udp_effective_decision.py` abilita l'endpoint solo in un clone
+temporaneo, legge il risultato con bearer HUMAN e ripulisce database/container.
 
 ## Stato e confini
 
