@@ -30,16 +30,19 @@ def inspect(name):
 
 
 def version(database):
-    return docker("exec", "ouf-postgres", "psql", "-U", "ouf_udp", "-d", database,
+    return docker("exec", "ouf-postgres", "psql", "-X", "-v", "ON_ERROR_STOP=1",
+                  "-v", "VERBOSITY=verbose", "-U", "ouf_udp", "-d", database,
                   "-Atc", "select version from ouf_udp.flyway_schema_history "
                   "order by installed_rank desc limit 1")
 
 
 def application_ownership(database):
-    schema_owner = docker("exec", "ouf-postgres", "psql", "-U", "ouf_udp", "-d",
+    schema_owner = docker("exec", "ouf-postgres", "psql", "-X", "-v", "ON_ERROR_STOP=1",
+                          "-v", "VERBOSITY=verbose", "-U", "ouf_udp", "-d",
                           database, "-Atc", "select pg_get_userbyid(nspowner) "
                           "from pg_namespace where nspname='ouf_udp'")
-    objects = docker("exec", "ouf-postgres", "psql", "-U", "ouf_udp", "-d",
+    objects = docker("exec", "ouf-postgres", "psql", "-X", "-v", "ON_ERROR_STOP=1",
+                     "-v", "VERBOSITY=verbose", "-U", "ouf_udp", "-d",
                      database, "-Atc", "select c.relname||':'||c.relkind||':'||"
                      "pg_get_userbyid(c.relowner) from pg_class c "
                      "join pg_namespace n on n.oid=c.relnamespace "
@@ -129,6 +132,63 @@ def restore_error_details(stderr):
     return details[:12]
 
 
+def query_error_class(error):
+    stderr = error.stderr
+    if isinstance(stderr, bytes):
+        stderr = stderr.decode("utf-8", "replace")
+    stderr = stderr or ""
+    sqlstate = re.search(r"(?:ERROR|FATAL):\s+([A-Z0-9]{5}):", stderr)
+    if sqlstate:
+        target = re.search(r"permission denied for (schema|table|database|sequence)|"
+                           r"(relation|column|database) [^\r\n]+ does not exist", stderr.lower())
+        return "SQLSTATE_" + sqlstate.group(1) + ("_" + (target.group(1) or target.group(2)).upper()
+                                                  if target else "")
+    for phrase, label in (("permission denied", "PERMISSION_DENIED"),
+                          ("does not exist", "OBJECT_MISSING"),
+                          ("authentication failed", "AUTH_FAILED"),
+                          ("could not connect", "CONNECTION_FAILED")):
+        if phrase in stderr.lower():
+            return label
+    return "UNCLASSIFIED"
+
+
+def restored_access_snapshot(database, admin):
+    query = (
+        "select has_database_privilege('ouf_udp',current_database(),'CONNECT')::text||'|'||"
+        "(to_regnamespace('ouf_udp') is not null)::text||'|'||"
+        "coalesce((select (pg_get_userbyid(nspowner)='ouf_udp')::text "
+        "from pg_namespace where nspname='ouf_udp'),'missing')||'|'||"
+        "(to_regclass('ouf_udp.flyway_schema_history') is not null)::text||'|'||"
+        "coalesce((select (pg_get_userbyid(relowner)='ouf_udp')::text from pg_class "
+        "where oid=to_regclass('ouf_udp.flyway_schema_history')),'missing')||'|'||"
+        "coalesce(has_schema_privilege('ouf_udp',to_regnamespace('ouf_udp'),'USAGE')::text,"
+        "'missing')||'|'||"
+        "coalesce(has_table_privilege('ouf_udp',to_regclass('ouf_udp.flyway_schema_history'),"
+        "'SELECT')::text,'missing')"
+    )
+    values = admin_command("psql", "-U", admin, "-d", database, "-Atc", query).split("|")
+    if len(values) != 7 or any(value not in {"true", "false", "missing"} for value in values):
+        raise RuntimeError("ACCESS_SNAPSHOT_UNEXPECTED")
+    print("R4A_PROBE_CLONE_ACCESS=" + json.dumps(dict(zip(
+        ("db_connect", "schema_present", "schema_owned_by_app", "flyway_present",
+         "flyway_owned_by_app", "schema_usage", "flyway_select"), values)),
+        separators=(",", ":")), flush=True)
+
+
+def check_query(label, command, diagnose=None):
+    print("R4A_PROBE_CHECK=" + label, flush=True)
+    try:
+        return command()
+    except subprocess.CalledProcessError as error:
+        print("R4A_PROBE_CHECK_FAILED=" + label + " " + query_error_class(error), flush=True)
+        if diagnose:
+            try:
+                diagnose()
+            except (OSError, subprocess.SubprocessError, RuntimeError):
+                print("R4A_PROBE_CLONE_ACCESS=UNAVAILABLE", flush=True)
+        raise RuntimeError("POST_RESTORE_CHECK_FAILED") from error
+
+
 def main():
     if os.geteuid() != 0:
         raise RuntimeError("ROOT_REQUIRED")
@@ -195,9 +255,13 @@ def main():
                   json.dumps(restore_error_details(stderr), separators=(",", ":")),
                   flush=True)
             raise RuntimeError("RESTORE_DUMP_FAILED")
-        if version(database) != "26":
+        if check_query("CLONE_FLYWAY", lambda: version(database),
+                       lambda: restored_access_snapshot(database, admin)) != "26":
             raise RuntimeError("RESTORED_FLYWAY_NOT_26")
-        if application_ownership(database) != application_ownership("ouf_udp"):
+        clone_owner = check_query("CLONE_OWNERSHIP", lambda: application_ownership(database),
+                                  lambda: restored_access_snapshot(database, admin))
+        live_owner = check_query("LIVE_OWNERSHIP", lambda: application_ownership("ouf_udp"))
+        if clone_owner != live_owner:
             raise RuntimeError("RESTORED_APPLICATION_OWNERSHIP_DRIFT")
         print("R4A_PROBE_RESTORED_OWNER_CHECK=PASS", flush=True)
         print("R4A_PROBE_STAGE=PREPARE_CONTAINER", flush=True)
