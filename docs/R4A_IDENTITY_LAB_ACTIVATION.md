@@ -36,6 +36,19 @@ prova end-to-end: restano l'accettazione autenticata delle route, il token
 workload ruotabile accessibile solo a Onboarding, il preflight HUMAN della
 configurazione congelata e la filiera di acquisizione fino a UDP.
 
+Per il token SERVICE di Onboarding, `scripts/r4a_onboarding_token_runtime.py`
+installa un servizio oneshot e un timer che rinnova ogni minuto. Il client
+secret resta in `/var/lib/ouf-r4a-identity/onboarding-client-secret` (0600);
+il bearer viene sostituito atomicamente in
+`/run/ouf-onboarding-identity/token` (root:10003, 0640). Montare **la
+directory** `/run/ouf-onboarding-identity` in sola lettura nel container,
+così il file sostituito diventa visibile senza riavviare Onboarding. La
+regola tmpfiles dedicata ricrea la directory root:10003 (0750) al boot.
+Prima del rollout eseguire `scripts/r4a_onboarding_rollout_inventory.py`:
+legge solo identificativo immagine, impostazioni e nomi delle variabili,
+destinazioni dei mount, versione Flyway e metadati dei file, senza valori
+dei secret o sorgenti dei mount.
+
 Il piano live di sola lettura del 28 settembre ha restituito `PASS`,
 installazione `ouf-lab-netcup-01`, audience `ouf-api-gateway`, e raggiungibilità
 di `ouf-udp:8080` dalla namespace APISIX. Il file preparato è

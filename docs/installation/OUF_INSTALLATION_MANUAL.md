@@ -810,6 +810,25 @@ distinti; un eventuale luogo fisico condiviso si rappresenta con un legame
 governato, senza fare merge fra le due classi. L'indirizzo o un nome simile
 propongono una relazione da verificare, non autorizzano da soli il link.
 
+**Stato lab 29 settembre:** UDP è live con Flyway 34 e il dump e container
+precedenti sono conservati. Per Onboarding, usare prima l'inventario read-only
+[r4a_onboarding_rollout_inventory.py](../../scripts/r4a_onboarding_rollout_inventory.py).
+Il rinnovo del bearer SERVICE è implementato in
+[r4a_onboarding_token_runtime.py](../../scripts/r4a_onboarding_token_runtime.py):
+`install` verifica il secret root-only già esistente, installa servizio e
+timer systemd e scrive il token solo in
+`/run/ouf-onboarding-identity/token` (root:10003, 0640). La directory è
+root:10003 (0750) e viene ricreata da tmpfiles al boot. Il container UID/GID
+10003 deve montare **l'intera directory** in sola lettura e usare
+`OUF_ONB_UDP_IDENTITY_GATEWAY_URL=https://api.ouf-lab.it` e
+`OUF_ONB_UDP_IDENTITY_TOKEN_FILE=/run/ouf-onboarding-identity/token`.
+Il timer rinnova ogni minuto; controllare il TTL prima di avviare il nuovo
+container e verificare la rotazione dopo il deploy. Nessun valore di bearer
+o client secret va inserito in env Docker, unità systemd o log. La lettura
+positiva dell'attestazione richiede un preflight HUMAN valido sulla
+configurazione congelata, come documentato in
+[R4A_IDENTITY_LAB_ACTIVATION.md](../R4A_IDENTITY_LAB_ACTIVATION.md).
+
 #### Policy Authorization R4a: preparazione senza pubblicazione
 
 La policy ACTIVE `ouf-lab-authorization:28` non dichiara ancora
