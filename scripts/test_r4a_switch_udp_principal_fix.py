@@ -4,6 +4,7 @@
 import importlib.util
 from pathlib import Path
 import time
+import tempfile
 from unittest import TestCase, main, mock
 
 
@@ -79,6 +80,49 @@ class SwitchSafetyTest(TestCase):
         self.assertLess(events.index(("preflight",)), len(events))
         self.assertNotIn(("rollback",), events)
         self.assertIn(("docker", ("stop", "--time", "60", switch.LIVE)), events)
+
+    def test_candidate_preserves_live_environment_and_read_only_mounts(self):
+        environment = ["OUF_UDP_IAM_ENABLED=true", "OUF_UDP_IAM_ISSUER=issuer",
+                       "OUF_UDP_IAM_AUDIENCE=audience", "OUF_UDP_DB_PASSWORD=fixture"]
+        binds = [{"Type": "bind", "Source": "/run/auth", "Destination": "/run/auth", "RW": False},
+                 {"Type": "bind", "Source": "/run/key", "Destination": "/run/key", "RW": False}]
+        host = {"NetworkMode": "ouf-backend", "RestartPolicy": {"Name": "unless-stopped"},
+                "LogConfig": {"Type": "json-file", "Config": {}}}
+        config = {"User": "10004:10004", "Env": environment,
+                  "Entrypoint": ["java"], "Cmd": ["-jar", "/app/app.jar"], "WorkingDir": "/app"}
+        old = {"Id": "sha256:old", "Config": {**config,
+               "Labels": {"org.opencontainers.image.revision": switch.PREVIOUS}}}
+        image = {"Id": "sha256:new", "Config": {
+            "Labels": {"org.opencontainers.image.revision": switch.TARGET}}}
+        live = {"Image": old["Id"], "State": {"Running": True}, "HostConfig": host,
+                "Config": config, "Mounts": binds,
+                "NetworkSettings": {"Networks": {"ouf-backend": {}}}}
+        new = {"Image": image["Id"], "State": {"Running": False},
+               "HostConfig": {"NetworkMode": "ouf-backend"}, "Config": config,
+               "Mounts": binds}
+        descriptors = {old["Id"]: old, image["Id"]: image}
+        calls = []
+        def docker(*args):
+            calls.append(args)
+            if args[0] == "create":
+                descriptors[switch.CANDIDATE] = new
+            return ""
+        original_mkstemp = tempfile.mkstemp
+        with (tempfile.TemporaryDirectory(dir=Path(__file__).parent) as temporary,
+              mock.patch.object(switch.tempfile, "mkstemp", side_effect=lambda **kw:
+                                original_mkstemp(prefix=kw["prefix"], dir=temporary)),
+              mock.patch.object(switch, "inspect", side_effect=lambda name:
+                                descriptors[name] if name in descriptors else
+                                (_ for _ in ()).throw(switch.subprocess.CalledProcessError(1, "inspect"))),
+              mock.patch.object(switch, "docker", side_effect=docker)):
+            result = switch.candidate({"commit": switch.TARGET,
+                "previous_commit": switch.PREVIOUS, "previous_live_image_id": old["Id"],
+                "image_id": image["Id"]}, live)
+        self.assertIs(result, new)
+        create = next(args for args in calls if args[0] == "create")
+        self.assertEqual(create.count("type=bind,src=/run/auth,dst=/run/auth,readonly"), 1)
+        self.assertEqual(create.count("type=bind,src=/run/key,dst=/run/key,readonly"), 1)
+        self.assertEqual(create[-1], image["Id"])
 
 
 if __name__ == "__main__":
