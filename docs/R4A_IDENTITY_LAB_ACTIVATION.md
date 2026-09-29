@@ -53,6 +53,15 @@ UID/GID, cinque mount live, env e impostazioni Docker, verifica il token
 rinnovato e crea **spento** `ouf-onboarding-r4a-candidate` con la directory
 del token in bind read-only e le sole due variabili UDP identity. Il readback
 del candidato è obbligatorio; non esegue migrazioni né cambia il live.
+`scripts/r4a_switch_onboarding.py --expected-flyway <versione verificata>`
+richiede che il timer sia attivo e che il candidato sia spento; controlla
+health e Flyway live, ferma Onboarding, crea e valida un dump custom,
+conserva il vecchio container rinominato e avvia il candidato. Dopo l'avvio
+richiede health e la stessa versione Flyway (nessuna migrazione Onboarding
+aggiunta nell'immagine staged). Se il backup fallisce riavvia il vecchio
+container; dopo uno swap fallito tenta rollback del runtime ma conserva il
+dump per il recupero del DB. Non lanciare lo switch prima di esaminare
+l'inventario e il candidato.
 
 Il piano live di sola lettura del 28 settembre ha restituito `PASS`,
 installazione `ouf-lab-netcup-01`, audience `ouf-api-gateway`, e raggiungibilità
