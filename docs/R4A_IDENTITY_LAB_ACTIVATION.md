@@ -46,6 +46,15 @@ ma la prova live mostra che la diagnosi non era sufficiente. Prima di ogni
 altro switch, `scripts/r4a_udp_authorization_runtime_inventory.py` controlla
 in sola lettura endpoint del registry, stato del bearer workload e risposta
 del bundle senza stampare token o policy. Proseguire in base a questo esito.
+L'inventario ha confermato bearer SERVICE fresco, registry HTTP 200, bundle
+versione 30 e hash corrispondente. Una copia isolata del dump con l'immagine
+corretta ha poi restituito, a una GET SERVICE autenticata con identificativo
+assente, `UDP_IDENTITY_PREFLIGHT_NOT_FOUND`: la richiesta raggiunge la logica
+di dominio dopo autenticazione e autorizzazione. Clone e container temporaneo
+sono stati eliminati e il live è invariato. Il successivo script
+`r4a_probe_udp_human_route.py` confronta una GET HUMAN senza scritture,
+con lo stesso bearer, direttamente verso la copia isolata e tramite Gateway
+verso il live. Questa prova separa il percorso HUMAN interno dal route layer.
 
 ## Stato e confini
 
