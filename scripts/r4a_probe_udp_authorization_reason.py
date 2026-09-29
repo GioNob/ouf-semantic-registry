@@ -25,6 +25,7 @@ MANIFEST = Path("/opt/ouf/r4a-stage/udp-principal-fix-image.json")
 TOKEN = Path("/run/ouf-onboarding-identity/token")
 EXPECTED_LIVE = "3402050b36ee28758e5255a57b0d32bc3983a34f"
 EXPECTED_PROBE = "edaba2bff18a2aaf52d1180f21f0e68984cc3437"
+EXTRA_ENV = {}
 
 
 def helper():
@@ -162,6 +163,7 @@ def main():
         env["OUF_UDP_LAKE_MAINTENANCE_INITIAL_DELAY_MS"] = "3600000"
         env["OUF_UDP_LAKE_SHADOW_INITIAL_DELAY_MS"] = "3600000"
         env["SERVER_ERROR_INCLUDE_MESSAGE"] = "always"
+        env.update(EXTRA_ENV)
         os.umask(0o077)
         fd, env_file = tempfile.mkstemp(prefix="ouf-r4a-auth-probe-env-", dir="/run")
         try:
