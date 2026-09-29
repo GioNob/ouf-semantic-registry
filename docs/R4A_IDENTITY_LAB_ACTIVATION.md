@@ -68,6 +68,11 @@ del token in bind read-only e le sole due variabili UDP identity. Il readback
 del candidato è obbligatorio. Riutilizza un candidato già presente solo se
 spento e identico alla configurazione prevista; altrimenti si ferma senza
 rimuoverlo. Non esegue migrazioni né cambia il live.
+Nel caso osservato in lab (differenze `IMAGE,RESTART,MOUNTS,ENV`, con
+`STOPPED,USER,NETWORK,LOG_DRIVER` corretti), l'opzione `--replace-stale`
+ricontrolla ID, stato e differenze, rinomina il candidato precedente con
+suffisso basato sul suo ID e crea quello nuovo. Il vecchio container resta
+conservato; se la creazione fallisce, lo script tenta di ripristinare il nome.
 `scripts/r4a_switch_onboarding.py --expected-flyway <versione verificata>`
 richiede che il timer sia attivo, che il bearer abbia claim corretti,
 scadenza sufficiente e mtime recente, e che il candidato sia spento; controlla

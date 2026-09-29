@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Create a stopped Onboarding candidate with a rotating UDP bearer mount."""
 
+import argparse
 import base64
 import json
 import os
@@ -80,7 +81,7 @@ def candidate_matches(candidate, record, expected_mounts, expected_env):
     return all(candidate_checks(candidate, record, expected_mounts, expected_env).values())
 
 
-def main():
+def main(replace_stale=False):
     if os.geteuid() != 0:
         raise RuntimeError("ROOT_REQUIRED")
     token_preflight()
@@ -122,6 +123,7 @@ def main():
         "OUF_ONB_UDP_IDENTITY_TOKEN_FILE=/run/ouf-onboarding-identity/token"]
     expected_mounts = sorted(old_mounts + [
         ("bind", str(TOKEN_DIR), str(TOKEN_DIR), False)])
+    stale_name = None
     try:
         existing = inspect(NAME)
     except subprocess.CalledProcessError:
@@ -133,17 +135,37 @@ def main():
         if differences:
             print("R4A_ONB_CANDIDATE_DRIFT_FIELDS=" + ",".join(differences)
                   + " VALUES_NOT_PRINTED=true")
-            raise RuntimeError("CANDIDATE_EXISTING_DRIFT")
-        print("R4A_ONB_CANDIDATE_REUSED=true RUNNING=false IMAGE=" + EXPECTED)
-        print("R4A_ONB_MOUNTS=LIVE_PLUS_TOKEN_DIRECTORY TOKEN_NOT_PRINTED=true")
-        print("R4A_ONB_LIVE_UNCHANGED=true DB_UNCHANGED=true")
-        return
+            if (not replace_stale or set(differences) !=
+                {"IMAGE", "RESTART", "MOUNTS", "ENV"}):
+                raise RuntimeError("CANDIDATE_EXISTING_DRIFT")
+            stale_name = NAME + "-stale-" + existing["Id"][:12]
+            try:
+                inspect(stale_name)
+            except subprocess.CalledProcessError:
+                pass
+            else:
+                raise RuntimeError("STALE_RETENTION_NAME_OCCUPIED")
+        else:
+            print("R4A_ONB_CANDIDATE_REUSED=true RUNNING=false IMAGE=" + EXPECTED)
+            print("R4A_ONB_MOUNTS=LIVE_PLUS_TOKEN_DIRECTORY TOKEN_NOT_PRINTED=true")
+            print("R4A_ONB_LIVE_UNCHANGED=true DB_UNCHANGED=true")
+            return
     os.umask(0o077)
     fd, env_path = tempfile.mkstemp(prefix="ouf-r4a-onb-env-", dir="/run")
     created = False
+    renamed = False
     try:
         with os.fdopen(fd, "w") as stream:
             stream.write("\n".join(new_env) + "\n")
+        if stale_name:
+            current = inspect(NAME)
+            if (current["Id"] != existing["Id"] or current["State"]["Running"]
+                or set(key for key, matched in candidate_checks(
+                    current, record, expected_mounts, new_env).items() if not matched)
+                    != {"IMAGE", "RESTART", "MOUNTS", "ENV"}):
+                raise RuntimeError("STALE_CANDIDATE_CHANGED")
+            docker("rename", NAME, stale_name)
+            renamed = True
         command = ["docker", "create", "--name", NAME, "--network", "ouf-backend",
                    "--restart", "unless-stopped", "--user", "10003:10003",
                    "--log-driver", "json-file", "--env-file", env_path]
@@ -162,19 +184,30 @@ def main():
         if not candidate_matches(candidate, record, expected_mounts, new_env):
             raise RuntimeError("CANDIDATE_READBACK_MISMATCH")
         print("R4A_ONB_CANDIDATE_PREPARED=true RUNNING=false IMAGE=" + EXPECTED)
+        if renamed:
+            print("R4A_ONB_STALE_CANDIDATE_RETAINED=" + stale_name)
         print("R4A_ONB_MOUNTS=LIVE_PLUS_TOKEN_DIRECTORY TOKEN_NOT_PRINTED=true")
         print("R4A_ONB_LIVE_UNCHANGED=true DB_UNCHANGED=true")
     except BaseException:
         if created:
             subprocess.run(["docker", "rm", NAME], capture_output=True, text=True)
+        if renamed:
+            try:
+                docker("rename", stale_name, NAME)
+                print("R4A_ONB_STALE_CANDIDATE_RESTORED=true")
+            except subprocess.SubprocessError:
+                print("R4A_ONB_STALE_CANDIDATE_RESTORE=MANUAL_ACTION_REQUIRED")
         raise
     finally:
         Path(env_path).unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--replace-stale", action="store_true")
+    arguments = parser.parse_args()
     try:
-        main()
+        main(arguments.replace_stale)
     except (OSError, ValueError, KeyError, TypeError, IndexError, RuntimeError,
             subprocess.SubprocessError) as error:
         detail = str(error) if isinstance(error, RuntimeError) else "COMMAND_FAILED"
