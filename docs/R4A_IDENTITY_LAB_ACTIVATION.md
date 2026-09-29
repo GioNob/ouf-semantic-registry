@@ -151,6 +151,13 @@ La prova ora usa il ruolo amministrativo per **l'intero restore nel clone**,
 lascia attiva la ricostruzione dei proprietari registrati nel dump, confronta
 proprietario dello schema e di ogni relazione applicativa con il live, e solo
 allora avvia il candidato come `ouf_udp`. Non modifica i privilegi nel live.
+Il tentativo con restore amministrativo ha superato `pg_restore`, ma la
+successiva lettura di `ouf_udp.flyway_schema_history` come `ouf_udp` ha fallito
+prima della verifica dei proprietari. La prova aveva omesso le ACL del dump
+(`--no-acl`); questa è una causa possibile, non ancora verificata. Non ripetere
+il clone finché `scripts/r4a_restore_access_inventory.py` non abbia confrontato
+in sola lettura il proprietario e le voci ACL del dump con i privilegi della
+tabella Flyway live. Lo script non stampa il contenuto del dump o le credenziali.
 
 ## Inventario prima delle modifiche
 
