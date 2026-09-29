@@ -24,6 +24,19 @@ esegue la build con il test e registra l'immagine senza toccare il live o DB.
 Non ripetere la submit della versione già congelata; riprendere il preflight
 solo dopo la verifica del runtime aggiornato.
 
+Lo staging ha restituito `PASS`, con immagine
+`edaba2bff18a2aaf52d1180f21f0e68984cc3437`, tre soli percorsi di diff e
+test del bridge eseguito nella build; il live e il DB sono invariati.
+`scripts/r4a_switch_udp_principal_fix.py` ottiene prima del fermo un bearer
+HUMAN tramite Device Flow e verifica la configurazione cinema congelata.
+Controlla immagine e configurazione live, crea un candidato spento con gli
+stessi env/mount, conserva un dump PostgreSQL verificato, sostituisce UDP,
+richiede health e Flyway 34 e prova il POST preflight reale seguito dalla
+lettura dell'attestazione. Se un controllo fallisce dopo lo swap, ripristina
+il container precedente; non ripristina automaticamente il DB. Una prova
+positiva crea l'attestazione desiderata e lascia la versione Onboarding
+`IN_REVIEW` per i successivi gate di approvazione.
+
 ## Stato e confini
 
 **Aggiornamento live 29 settembre 2026:** lo switch UDP è passato con immagine
