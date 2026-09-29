@@ -48,6 +48,11 @@ Prima del rollout eseguire `scripts/r4a_onboarding_rollout_inventory.py`:
 legge solo identificativo immagine, impostazioni e nomi delle variabili,
 destinazioni dei mount, versione Flyway e metadati dei file, senza valori
 dei secret o sorgenti dei mount.
+`scripts/r4a_prepare_onboarding_candidate.py` confronta immagine, rete,
+UID/GID, cinque mount live, env e impostazioni Docker, verifica il token
+rinnovato e crea **spento** `ouf-onboarding-r4a-candidate` con la directory
+del token in bind read-only e le sole due variabili UDP identity. Il readback
+del candidato è obbligatorio; non esegue migrazioni né cambia il live.
 
 Il piano live di sola lettura del 28 settembre ha restituito `PASS`,
 installazione `ouf-lab-netcup-01`, audience `ouf-api-gateway`, e raggiungibilità
