@@ -4,6 +4,7 @@
 import argparse
 import base64
 from datetime import datetime, timezone
+import ipaddress
 import json
 import os
 import re
@@ -16,6 +17,36 @@ from urllib.request import Request, urlopen
 CAPABILITY = "urban.identity.preflight"
 URL = ("https://api.ouf-lab.it/api/udp/v1/governance/identity/preflight"
        "?id=00000000-0000-0000-0000-000000000000")
+
+
+def probe(url, bearer):
+    request = Request(url, headers={"Accept": "application/json",
+                                    "Authorization": "Bearer " + bearer})
+    try:
+        with urlopen(request, timeout=15) as response:
+            return response.status, response.headers.get("Content-Type", "UNKNOWN"), response.read(4096)
+    except HTTPError as error:
+        return error.code, error.headers.get("Content-Type", "UNKNOWN"), error.read(4096)
+
+
+def summarize(label, result):
+    status, media, body = result
+    try:
+        detail = json.loads(body)
+    except ValueError:
+        detail = {}
+    owner = isinstance(detail, dict) and detail.get("detail") == "Owner authorization denied"
+    keys = sorted(detail) if isinstance(detail, dict) else []
+    print(label + "_HTTP=" + str(status) + " MEDIA=" +
+          ("JSON" if "json" in media.lower() else "NON_JSON")
+          + " OWNER_DENIAL_BODY=" + str(owner).lower()
+          + " BODY_EMPTY=" + str(not body).lower()
+          + " JSON_KEYS=" + json.dumps(keys))
+    if isinstance(detail, dict):
+        for key in ("error", "code", "error_code"):
+            value = detail.get(key)
+            if isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9_.-]{1,80}", value):
+                print(label + "_" + key.upper() + "=" + value)
 
 
 def main(revision):
@@ -89,24 +120,18 @@ def main(revision):
               + str(match).lower() + " ROLE_REF=" + str(role or "NONE")
               + " EFFECT=" + str(constraints.get("effect", "ALLOW")))
     print("APPLICABLE_GRANT_COUNT=" + str(applicable))
-    request = Request(URL, headers={"Accept": "application/json",
-                                    "Authorization": "Bearer " + bearer})
+    summarize("GATEWAY_READ_MISSING_ID", probe(URL, bearer))
+    udp = json.loads(subprocess.run(["docker", "inspect", "ouf-udp"],
+        capture_output=True, text=True, check=True, timeout=20).stdout)[0]
+    ip = udp["NetworkSettings"]["Networks"]["ouf-backend"]["IPAddress"]
+    address = ipaddress.ip_address(ip)
+    if not address.is_private or address.version != 4 or not udp["State"]["Running"]:
+        raise RuntimeError("PRIVATE_UDP_ADDRESS_INVALID")
+    direct = "http://" + ip + ":8080" + URL.removeprefix("https://api.ouf-lab.it")
     try:
-        with urlopen(request, timeout=15) as response:
-            status, media = response.status, response.headers.get("Content-Type", "UNKNOWN")
-            body = response.read(4096)
-    except HTTPError as error:
-        status, media = error.code, error.headers.get("Content-Type", "UNKNOWN")
-        body = error.read(4096)
-    try:
-        detail = json.loads(body)
-    except ValueError:
-        detail = {}
-    owner = isinstance(detail, dict) and detail.get("detail") == "Owner authorization denied"
-    print("HUMAN_READ_MISSING_ID_HTTP=" + str(status) + " MEDIA=" +
-          ("JSON" if "json" in media.lower() else "NON_JSON")
-          + " OWNER_DENIAL_BODY=" + str(owner).lower()
-          + " BODY_EMPTY=" + str(not body).lower())
+        summarize("DIRECT_UDP_READ_MISSING_ID", probe(direct, bearer))
+    except OSError:
+        print("DIRECT_UDP_READ_MISSING_ID=UNREACHABLE")
     print("TOKEN_POLICY_VALUES_NOT_PRINTED=true DB_UNCHANGED=true")
 
 
