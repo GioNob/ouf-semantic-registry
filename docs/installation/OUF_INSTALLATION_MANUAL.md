@@ -811,7 +811,10 @@ governato, senza fare merge fra le due classi. L'indirizzo o un nome simile
 propongono una relazione da verificare, non autorizzano da soli il link.
 
 **Stato lab 29 settembre:** UDP è live con Flyway 34 e il dump e container
-precedenti sono conservati. Per Onboarding, usare prima l'inventario read-only
+precedenti sono conservati. Onboarding live è a Flyway 31, con immagine staged
+`f74c3a9f…`, cinque mount read-only e UID/GID 10003; lo smoke SERVICE della
+route UDP ha dato 401 senza bearer e 400 con bearer e parametro mancante.
+Per Onboarding, usare prima l'inventario read-only
 [r4a_onboarding_rollout_inventory.py](../../scripts/r4a_onboarding_rollout_inventory.py).
 Il rinnovo del bearer SERVICE è implementato in
 [r4a_onboarding_token_runtime.py](../../scripts/r4a_onboarding_token_runtime.py):

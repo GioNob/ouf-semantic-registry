@@ -156,21 +156,36 @@ def install_file(path, content, mode):
 def install():
     if os.geteuid() != 0:
         raise RuntimeError("ROOT_REQUIRED")
+    print("R4A_TOKEN_INSTALL_STAGE=VERIFY_INPUTS", flush=True)
     secret()
     own_source = Path(__file__).read_text()
-    install_file(STAGED, own_source, 0o600)
-    install_file(TMPFILES, TMPFILES_CONTENT, 0o644)
-    install_file(SERVICE, SERVICE_CONTENT, 0o644)
-    install_file(TIMER, TIMER_CONTENT, 0o644)
+    stage_parent = STAGED.parent.lstat()
+    if (not stat.S_ISDIR(stage_parent.st_mode) or stage_parent.st_uid != 0
+        or stat.S_IMODE(stage_parent.st_mode) != 0o700):
+        raise RuntimeError("STAGE_DIRECTORY_UNSAFE")
+    files = ((STAGED, own_source, 0o600), (TMPFILES, TMPFILES_CONTENT, 0o644),
+             (SERVICE, SERVICE_CONTENT, 0o644), (TIMER, TIMER_CONTENT, 0o644))
+    for path, content, mode in files:
+        if path.exists():
+            protected(path, mode)
+            if path.read_text() != content:
+                raise RuntimeError("INSTALLATION_FILE_DRIFT")
+    print("R4A_TOKEN_INSTALL_STAGE=WRITE_UNITS", flush=True)
+    for path, content, mode in files:
+        install_file(path, content, mode)
+    print("R4A_TOKEN_INSTALL_STAGE=PREPARE_DIRECTORY", flush=True)
     subprocess.run(["systemd-tmpfiles", "--create", str(TMPFILES)], check=True,
                    capture_output=True, timeout=15)
     directory()
+    print("R4A_TOKEN_INSTALL_STAGE=START_REFRESH", flush=True)
     subprocess.run(["systemctl", "daemon-reload"], check=True,
                    capture_output=True, timeout=20)
     subprocess.run(["systemctl", "start", SERVICE.name], check=True,
                    capture_output=True, timeout=30)
     subprocess.run(["systemctl", "enable", "--now", TIMER.name], check=True,
                    capture_output=True, timeout=25)
+    subprocess.run(["systemctl", "is-active", "--quiet", TIMER.name], check=True,
+                   capture_output=True, timeout=10)
     protected(TOKEN, 0o640, group=GROUP)
     if claims(TOKEN.read_text().strip()) < 120:
         raise RuntimeError("TOKEN_EXPIRES_TOO_SOON")
@@ -185,6 +200,8 @@ if __name__ == "__main__":
     try:
         {"install": install, "refresh": refresh}[arguments.action]()
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError,
-            RuntimeError):
-        print("R4A_ONBOARDING_TOKEN_RUNTIME=BLOCKED TOKEN_NOT_PRINTED=true")
+            RuntimeError) as error:
+        detail = str(error) if isinstance(error, RuntimeError) else type(error).__name__
+        print("R4A_ONBOARDING_TOKEN_RUNTIME=BLOCKED REASON=" + detail
+              + " TOKEN_NOT_PRINTED=true")
         raise SystemExit(1)

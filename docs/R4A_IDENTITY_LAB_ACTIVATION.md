@@ -18,6 +18,14 @@ Lo smoke SERVICE prima di un'attestazione usa
 `configurationHash`. Questa coppia verifica Gateway e binding della richiesta
 nel nuovo owner UDP; **non** verifica ancora la lettura positiva di
 un'attestazione valida. Un 404 o 500 non è PASS.
+La verifica live del 29 settembre ha restituito tutti i claim SERVICE `PASS`,
+401 senza bearer e 400 con bearer sulla route; la lettura di un'attestazione
+reale resta aperta. L'inventario Onboarding live ha confermato immagine staged
+`f74c3a9f…`, rete `ouf-backend`, UID/GID `10003:10003`, cinque mount read-only,
+restart `unless-stopped`, Flyway **31** e secret client root 0600. La directory
+del token non era ancora presente. L'immagine staged e il live hanno lo
+stesso insieme di migrazioni SQL; lo switch deve quindi richiedere 31 prima e
+dopo, senza affidarsi a una versione supposta.
 
 La policy `ouf-lab-authorization:30` contiene le nuove capability e il ruolo
 HUMAN `admin`. Le immagini UDP, Onboarding e Ingestion sono preparate in

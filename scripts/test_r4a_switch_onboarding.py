@@ -59,11 +59,11 @@ class OnboardingSwitchTest(unittest.TestCase):
                  patch.object(switch, "inspect", side_effect=inspected), \
                  patch.object(switch, "docker", side_effect=docker), \
                  patch.object(switch, "health", return_value=True), \
-                 patch.object(switch, "flyway", return_value="29"), \
+                 patch.object(switch, "flyway", return_value="31"), \
                  patch.object(switch, "backup", side_effect=backup), \
                  patch.object(switch.subprocess, "run",
                               return_value=type("Result", (), {"returncode": 0})()):
-                switch.main("29")
+                switch.main("31")
             self.assertLess(events.index(("stop", "--time", "60", switch.LIVE)),
                             events.index(("backup",)))
             self.assertLess(events.index(("backup",)),
@@ -81,12 +81,12 @@ class OnboardingSwitchTest(unittest.TestCase):
                  patch.object(switch, "inspect", side_effect=inspected), \
                  patch.object(switch, "docker", side_effect=docker), \
                  patch.object(switch, "health", return_value=True), \
-                 patch.object(switch, "flyway", return_value="29"), \
+                 patch.object(switch, "flyway", return_value="31"), \
                  patch.object(switch, "backup", side_effect=backup), \
                  patch.object(switch.subprocess, "run",
                               return_value=type("Result", (), {"returncode": 0})()):
                 with self.assertRaisesRegex(RuntimeError, "BACKUP_FAILED"):
-                    switch.main("29")
+                    switch.main("31")
             self.assertIn(("start", switch.LIVE), events)
             self.assertFalse(any(event[0] == "rename" for event in events))
 
