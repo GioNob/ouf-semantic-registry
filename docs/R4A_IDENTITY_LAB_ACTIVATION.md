@@ -144,11 +144,13 @@ Il ripristino successivo ha superato la preparazione di due estensioni, ma
 riporta soltanto la categoria SQL e il tipo di oggetto TOC coinvolto, senza
 mostrare query, nomi di oggetti, dati o credenziali; prima di cambiare
 ulteriormente il ripristino serve questa diagnosi circoscritta.
-La diagnosi ha indicato `PERMISSION_FOR_TABLE`: le tabelle di configurazione
-di un'estensione vengono create dal ruolo amministrativo nel clone, mentre
-il dump ne contiene anche i dati. Lo script concede al solo `ouf_udp` del
-clone i privilegi su queste relazioni di configurazione, che identifica dal
-catalogo `pg_extension.extconfig`. Non tocca i privilegi del database live.
+La diagnosi ha indicato `PERMISSION_FOR_TABLE`. Un tentativo di concedere
+privilegi alle tabelle di configurazione delle estensioni si è fermato prima
+del ripristino; non è quindi prova che fossero le sole tabelle interessate.
+La prova ora usa il ruolo amministrativo per **l'intero restore nel clone**,
+lascia attiva la ricostruzione dei proprietari registrati nel dump, confronta
+proprietario dello schema e di ogni relazione applicativa con il live, e solo
+allora avvia il candidato come `ouf_udp`. Non modifica i privilegi nel live.
 
 ## Inventario prima delle modifiche
 
