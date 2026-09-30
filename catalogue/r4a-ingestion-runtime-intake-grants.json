@@ -1,0 +1,50 @@
+[
+  {
+    "grantId": "grant-udp-runtime-lake-write-ingestion",
+    "capabilityId": "datalake.write",
+    "tenantId": "ouf-lab",
+    "subjectId": null,
+    "servicePrincipalId": "ouf-ingestion",
+    "organizationId": null,
+    "validFrom": "2026-09-30T00:00:00Z",
+    "validUntil": "2036-09-15T07:13:50.968730Z",
+    "constraints": {
+      "effect": "ALLOW",
+      "externalRoleRef": null,
+      "resourceType": "ingestion-intake",
+      "resourceId": null,
+      "resourceAttributes": {
+        "module": "UDP"
+      },
+      "allowedDataLabels": [],
+      "allowedDetailLevels": [],
+      "requiredAcr": null,
+      "requiredAmr": [],
+      "maxAuthenticationAgeSeconds": null
+    }
+  },
+  {
+    "grantId": "grant-udp-runtime-handoff-write-ingestion",
+    "capabilityId": "udp.candidate.write",
+    "tenantId": "ouf-lab",
+    "subjectId": null,
+    "servicePrincipalId": "ouf-ingestion",
+    "organizationId": null,
+    "validFrom": "2026-09-30T00:00:00Z",
+    "validUntil": "2036-09-15T07:13:50.968730Z",
+    "constraints": {
+      "effect": "ALLOW",
+      "externalRoleRef": null,
+      "resourceType": "ingestion-intake",
+      "resourceId": null,
+      "resourceAttributes": {
+        "module": "UDP"
+      },
+      "allowedDataLabels": [],
+      "allowedDetailLevels": [],
+      "requiredAcr": null,
+      "requiredAmr": [],
+      "maxAuthenticationAgeSeconds": null
+    }
+  }
+]
