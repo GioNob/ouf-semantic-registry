@@ -876,3 +876,48 @@ ripetere la preparazione con il helper corretto, senza build/avvio/switch,
 migrazioni o POST. Risultato richiesto CANDIDATE PASS STOPPED=true; poi backup
 e switch controllato, prova positiva consumer deployato prima dell'attestazione.
 Approval/activation HUMAN THS; R-SMOKE/R-INSTALL OPEN.
+
+## 2026-09-30 — candidato Ingestion preparato PASS; switch plan/apply pronto
+
+Output VPS acquisito: CANDIDATE=PASS STOPPED=true ENV_PRESERVED=true
+TRANSPORT_CONFIG_PREPARED=true; RELEASE_PREPARE=PASS LIVE_UNCHANGED=true
+DB_UNCHANGED=true ATTESTATION_POST=false. Candidato fermo:
+`ouf-ingestion-r4a-compatibility-candidate`; stato privato root0600:
+`/etc/ouf/deploy-snapshots/ingestion-compatibility-release.json`.
+Prodotto candidato **0dfab1e7b2253fd939088259ea61754d6e56706c**, immagine
+immutabile della proof con otto righe PASS. Non ancora live.
+
+Helper Semantic **ca5d44a76b3b8ed6592e3aedb61ad2d386e58507**:
+`scripts/r4a_switch_ingestion_candidate.py`, plan/apply.
+Plan è read-only: richiede stato/ID/revisione/context esatti, immagine/label,
+env/mount/rete/launch contract/limiti memoria coerenti, properties private
+0440 e hash/content identici a copia baseline più trasporto, token fresco
+SERVICE/client/tenant/issuer/audience/scopi Semantic/object-storage/attest,
+storia Flyway 14 tutta successful, versione/hash congelati e readiness.
+
+Apply crea receipt privato, ferma live con restart=no; dump custom completo
+del DB Ingestion, pg_restore in DB temporaneo e confronto dell'intera storia
+Flyway (version/script/checksum/success/type), poi drop scratch con dump
+conservato. Nessun DDL/migrazione previsto nel DB live: stessa storia richiesta
+prima/dopo. Rilegge candidato e properties prima dello swap per ID.
+Conserva vecchio runtime come `ouf-ingestion-compatibility-rollback-<id>`;
+rinomina/avvia solo il candidato verificato, richiede readiness e stesso
+image/env/mount/Memory/MemorySwap, storia Flyway/versione congelata identiche,
+properties baseline intatte e token fresco; poi restart=unless-stopped.
+
+Receipt privato root0600:
+`/etc/ouf/deploy-snapshots/ingestion-compatibility-switch.json`.
+Receipt preesistente blocca doppi switch. In caso di errore, recupero per ID
+del vecchio runtime, nuovo failed e fino a 120 righe di log conservati in file
+privati; nessun DB restore automatico. Un ID estraneo live blocca recupero.
+Non rilanciare alla cieca uno switch con receipt già creato, anche rolled-back.
+
+28 test locali dei preparatori/switch PASS, inclusi 8 nuovi dello switch
+Ingestion: plan senza scritture, sequenza stop/backup/swap, recupero su
+backup/start fallito, drift properties, ID estraneo, cleanup scratch e
+claims/freshness token. CI nuova helper non ancora acquisita.
+Il precedente blocco preparazione è storico ed eseguito. Prossimo gate:
+plan/apply dello switch; dopo PASS occorre sonda della revisione deployata
+con i mount/properties effettivi, distinta dalla sola readiness.
+Nessun POST attestazione/approval/activation nel blocco switch; HUMAN THS
+resta il gate fonte. R-SMOKE/R-INSTALL OPEN.
