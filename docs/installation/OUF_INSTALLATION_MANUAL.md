@@ -1,5 +1,45 @@
 # OUF — Manuale di installazione e bootstrap
 
+## 2026-09-30 — route LIST installata PASS; binding owner/token da completare
+
+Operatore: plan/apply PASS, ID r4a-onboarding-runtime-publications-list.
+Snapshot privato conservato:
+`/etc/ouf/deploy-snapshots/publication-list-route-rre_yv8a/routes-before.json`.
+IAM_UNCHANGED=true, WORKER_ENABLED=false, SOURCE_ACTIVATION=false.
+Receipt `/etc/ouf/deploy-snapshots/runtime-publication-list-route.json`.
+Non rilanciare l'apply e non rimuovere receipt/snapshot alla cieca.
+Fonte APPROVED/hash invariato. JSON tenant mirato standard PRESENT=false/MATCH=false;
+precedente tenant ENV false. Altri property source/alias relaxed non ancora esclusi.
+
+Prossimo helper read-only scripts/r4a_publication_bindings_inventory.py,
+Semantic **36cdfb83f5160cccfb98a3565d282a62abf87a0d**, tre test locali PASS,
+CI non acquisita. Legge tenant JSON flat/nested con alias normalizzati,
+import file .properties dichiarati e flag override command/JVM; stampa solo
+presence/count/match, niente JSON/property values. Import non supportati o
+alias multipli restano diagnostica incompleta, non prova di tenant assente.
+
+Usa binding registry e bearer workload Ingestion live per GET bundle reale;
+stampa HTTP e conteggi configurati della capability
+ouf.onboarding.configuration.read, actor SERVICE/SERVICE_IDENTITY, principal
+diagnostic match e presence resource conditions. Parsing è diagnostico sui
+campi riconosciuti, non ALLOW evaluator: conta anche grant non effettivi, e non
+prova validità/status/tenant/resource/assurance/deny né compatibilità di altri
+layout. Non aggiungere grant se un conteggio zero deriva da layout non riconosciuto.
+Il token continua a mancare dello scope config-read al precedente inventario.
+
+Identifica unit systemd OUF ingestion/token (massimo sei), script Python
+ExecStart e hash installato; legge privatamente il sorgente per due soli flag:
+scope config-read presente nel codice e token host path corrispondente.
+Non stampa ExecStart completo, sorgente, secret o bearer; service/script path
+e hash sono metadata operativi. Questo rende concreta la futura correzione
+del refresher invece di un bearer manuale non rinnovabile.
+Nessuna mutazione scope/client IAM/policy/env/worker/fonte. Dopo output,
+preparare correzioni versionate e rollout per tenant/refresher; eventualmente
+decisione HUMAN per il grant owner se realmente mancante, preservando :31 e
+la fonte già APPROVED. Confermare discovery HTTP200 con workload reale prima
+di abilitare worker e attivare fonte. R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — LIST runtime assente; correzione route pronta
 
 Output VPS: LIST_ROUTE_COUNT=0; ACTIVE/RESOLVE ciascuna una route enabled,
