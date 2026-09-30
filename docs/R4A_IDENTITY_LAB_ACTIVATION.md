@@ -508,7 +508,7 @@ un 401/403/404 richiede correzione governata di IAM/grant/route/owner, mai acces
 diretto allo storage o attestazione sintetica. La versione resta congelata e
 compatibilità non attestata. **R-SMOKE e R-INSTALL OPEN.**
 
-### Comando aggiornato — risultato VPS ancora da acquisire
+### Sonda successivamente eseguita e BLOCKED — usare ora l'inventario in fondo
 
 ```bash
 (
@@ -561,3 +561,35 @@ Java aggiunte e fixture managed corretta; dodici test Python PASS, CI Java 21
 nuova revisione in corso al momento dell'aggiornamento. Il comando aggiornato,
 dove presente, punta alla nuova revisione. Compatibilità live non attestata;
 accesso Gateway/Semantic ancora non provato. R-SMOKE/R-INSTALL OPEN.
+
+### Gate aperto corrente: 403 alla risoluzione Semantic
+
+L'operatore ha eseguito la sonda `dae05e6…`: trasporto PASS, build raggiunto,
+identità superata, `ING_ACTIVATION_GATEWAY_403` durante Semantic preflight,
+prima di lettura asset e validazione righe. Nessuno switch/POST compatibilità.
+La route versionata `r2b-semantic-reference` usa `ouf.semantic.read`; lo scope
+richiesto manca nel token osservato. Assegnazione Keycloak, descriptor SERVICE,
+grant effettivo e route live rimangono evidenze distinte, non dedurre ALLOW.
+
+Inventario read-only in PR #33, commit `e4e1f095c53b7ec4819b8d99fcd79769027330bb`: scope corrente,
+descriptor/grant del PolicyBundle ACTIVE e scope DEFAULT/OPTIONAL del client
+Ingestion nel realm tramite la sessione kcadm esistente. Nessun build, rinnovo
+credenziali, GET dei dati, modifica IAM/policy o attestazione. Una sessione scaduta
+stampa `KCADM_SESSION_EXPIRED`, non i dettagli/credenziali. Tre test locali PASS
+su conteggi senza identità, sessione scaduta e Keycloak solo GET. Prossimo passo:
+acquisire questo inventario e preparare correzione governata del prerequisito
+mancante; eventuale nuova policy si pubblica solo con conferma HUMAN THS.
+R-SMOKE/R-INSTALL OPEN, compatibilità ancora non attestata.
+
+### Prossimo comando operatore — inventario Semantic, nessun build
+
+```bash
+(
+set -e
+cd /opt/ouf/ingestion
+git fetch --no-tags origin codex/r4a-ingestion-frozen-compatibility-probe
+git show e4e1f095c53b7ec4819b8d99fcd79769027330bb:scripts/r4a_prepare_frozen_compatibility_probe.py > /tmp/r4a_prepare_frozen_compatibility_probe.py
+git show e4e1f095c53b7ec4819b8d99fcd79769027330bb:scripts/r4a_semantic_access_inventory.py > /tmp/r4a_semantic_access_inventory.py
+sudo python3 /tmp/r4a_semantic_access_inventory.py --tenant-id ouf-lab --realm ouf
+)
+```
