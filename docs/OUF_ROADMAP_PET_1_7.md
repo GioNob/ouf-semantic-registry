@@ -995,3 +995,35 @@ Java/repository. Nessun nuovo scope/grant/proposal o cambio route autorizzato
 da questa evidenza; eventuali blocchi vanno risolti nel rispettivo owner.
 Solo dopo verifica route e autorità token/capability preparare POST attestazione;
 HUMAN THS mantiene approval/activation. R-SMOKE/R-INSTALL OPEN.
+
+## 2026-09-30 — route attestazione non ancora acquisita; parser APISIX corretto
+
+Output VPS: owner revision match=true, poi BLOCKED
+APISIX_ADMIN_KEY_LAYOUT_UNSUPPORTED prima del GET admin/routes.
+Nessuna evidenza su conteggio/mapping/scopo route da questo tentativo,
+nessun POST o cambio live/IAM/route. La proof consumer deployato otto righe
+PASS resta acquisita; R-SMOKE/R-INSTALL OPEN.
+
+Il parser precedente fermava la lettura quando una lista YAML admin_key era
+allineata alla chiave proprietaria (indentless sequence). Correzione Semantic
+**ea588d84cb7a848fe3bc3e6867b22e4f24043428**: ammette questa forma standard oltre alla lista indentata e
+commenti inline su scalari letterali quotati/non quotati. Arresta il parsing
+alla successiva mapping sibling; richiede sempre una sola key di role=admin
+con formato ristretto. Ambiguità, riferimenti a env e forme non supportate
+restano bloccanti. Nessuna chiave stampata o inserita nell'argv:
+curl config viene passato solo su stdin.
+
+La forma effettiva della configurazione live non è stata stampata/acquisita:
+la correzione copre un limite certo del codice, senza attribuire ancora una
+causa specifica al file live. Sei test locali PASS (incluse indentless,
+commenti, confine sibling, ambiguità/ref, trasmissione privata su stdin e
+formati response Admin API). CI nuova helper non ancora acquisita.
+
+Il helper read-only route attestazione è ora
+`scripts/r4a_ingestion_attestation_route_inventory.py`, con dipendenza
+`scripts/r4a_execution_route_inventory.py` corretta nel repo Semantic;
+il main storico di execution inventory non viene invocato. Il branch prodotto
+Ingestion resta invariato a 0dfab1e7… già deployato. Il blocco precedente è
+storico e bloccato. Prossimo passo: ripetere solo inventario route; eventuale
+nuovo BLOCKED richiede diagnosi del layout senza stampare valori. Ancora nessun
+submit attestation; approval/activation HUMAN THS.
