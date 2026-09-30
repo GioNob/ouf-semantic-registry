@@ -25,6 +25,14 @@ class IntakeRoutesTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError,'UNSUPPORTED'):
             install.scope_for(descriptor,'datalake.write')
 
+    def test_catalogue_operation_is_used_without_invented_write_constraint(self):
+        descriptor=dict(capabilityId='datalake.write',allowedActors=['SERVICE'],requiredScope='lake.scope',operation='INGEST')
+        self.assertEqual(install.scope_for(descriptor,'datalake.write'),'lake.scope')
+
+    def test_missing_descriptor_identifies_capability_before_mutation(self):
+        with self.assertRaisesRegex(RuntimeError,'CAPABILITY=datalake.write_COUNT=0'):
+            install.scope_for({},'datalake.write')
+
     def test_partial_install_rollback_removes_only_owned_matching_route(self):
         desired={'new':{'uri':'/new','methods':['POST']}}
         with patch.object(install.admin,'api',side_effect=[({'value':dict(id='new',**desired['new'])},'200'),({},'200'),({},'404')]) as api:
