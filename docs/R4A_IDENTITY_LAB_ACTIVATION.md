@@ -1,5 +1,66 @@
 # R4a: attivazione controllata dell'identità nel laboratorio
 
+## 2026-09-30 — refresher/discovery live PASS; worker enablement preparato
+
+Operatore: refresher plan/apply PASS, token cambiato con scope config-read,
+discovery effettiva HTTP200/items[]/nextAfter vuoto/owner ALLOW module-level.
+Timer ripristinato attivo; active publications/schedules/unfinished runs0.
+Receipt /etc/ouf/deploy-snapshots/publication-refresher-adoption.json PASS.
+Fonte APPROVED e non attivata, worker disabled. Non ripetere refresher apply,
+owner switch, policy publication o source approval.
+
+Helper scripts/r4a_enable_activation_worker.py Semantic commit
+f7fc08d76c8945aaaffa4738b03e2208f083d354; tre test locali mock PASS:
+backup failure recupera vecchio runtime e blocca retry, recovery failure
+conserva MANUAL_RECOVERY_REQUIRED, schedule ACTIVE legacy blocca enablement.
+CI non acquisita. Mode prepare/plan/apply.
+Candidato ouf-ingestion-r4a-activation-worker-candidate fermo, stessa immagine
+live0dfab1e…/user10002, env/memoria/logging/mount/launch/network preservati;
+sostituisce soltanto il bind della copia privata properties0440/root:10002.
+Properties originali rimangono byte identiche; copia aggiunge un solo flag
+ouf.ingestion.activation.enabled=true. Niente ricompilazione/schema.
+
+Prerequisiti: receipt refresher PASS, fonte/hash APPROVED invariati,
+Flyway14 e image revision esatta, properties hash baseline compatibility,
+worker prima disabled senza overrideENV/JSON/JVM, token fresco con scope
+semantic-read/object-store-read/attest/config-read, discovery200 vuota.
+Code pubblicazioni/unfinished vuote; inoltre TUTTE le ing_schedule stateACTIVE
+devono essere0, incluse legacy senza publication e fuori dai filtri
+publication_enabled/activation_blocked, perché claimDue può prenderle.
+Run/schedule totali acquisiti per rilevare qualsiasi nuova riga, incluse run
+che terminassero tra due osservazioni.
+
+State privato /etc/ouf/deploy-snapshots/ingestion-activation-worker-prepare.json.
+Preparazione idempotente soltanto se candidato/state/props/old runtime esatti.
+Apply receipt root0600 STARTING O_EXCL/fsync prima della mutazione:
+ /etc/ouf/deploy-snapshots/ingestion-activation-worker-switch.json.
+Stop Ingestion, backup completo e restore drill con history14 identica su DB
+scratch, retain backup; ricontrolla queue/fonte/properties/candidato,
+rename vecchio rollback, rename/start candidato, readiness.
+Controlla same image/env/mount/memoria/launch/props/history e token fresh.
+Osservazione16s dopo readiness con check ogni2s: queues/allACTIVE0, conteggi
+TOTALI run/schedule identici, readiness200; cattura stdout+stderr dockerlogs
+privatamente e blocca sui marker discovery/publication/dispatch failure.
+Assenza marker NON è contatore poll: output POLL_COUNT_NOT_MEASURED=true.
+Non abilita nuovi endpoint Actuator. Prova effettiva dispatch/filiera verrà
+dalla run dopo attivazione HUMAN, non dall'assenza dei log.
+
+Fonte deve restareAPPROVED/esatta. Restartunless-stopped finale e runtimeguard.
+Receipt PASS; rollback container e backup conservati. Error/interrupt:
+recupero per ID del vecchio runtime disabilitato, receipt ROLLED_BACK o
+MANUAL_RECOVERY_REQUIRED; DB live mai restaurata automaticamente.
+Receipt esistente blocca retry; non cancellare/ritentare alla cieca.
+Output backup/readiness conservano prefissi ING_COMPAT degli helper riusati.
+Dopo switch properties hash del worker va letto dallo state worker; la vecchia
+release compatibility descrive il bind originale conservato e non deve
+essere sovrascritta per fingere che sia la configurazione corrente.
+
+Enablement sul VPS ancora non eseguito fino a output PASS. Fonte non attiva.
+Prossimo: HUMAN activate della versione APPROVED, readback publication esatta,
+watch run vera fino a handoff/lake/UDP materializzazione/search con evidence.
+R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — owner tenant live PASS; adozione refresher/discovery pronta
 
 Operatore: plan/apply owner PASS, tenantENV match=true, stessa immagine,
