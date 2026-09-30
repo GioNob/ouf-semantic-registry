@@ -1,5 +1,37 @@
 # R4a: attivazione controllata dell'identità nel laboratorio
 
+## 2026-09-30 — code worker vuote; discovery runtime HTTP404
+
+Output VPS: catalogo ACTIVE=0, cinema ACTIVE=0, schedule ACTIVE=0, run non finite=0.
+GET SERVICE /api/onboarding/v1/runtime/publications?limit=20&after= restituisce
+HTTP404. AUTHORIZED=false del helper significa accesso non dimostrato, NON
+diagnosi di diniego IAM/capability. Nessun worker abilitato o fonte attivata.
+Fonte resta APPROVED/hash invariato. Non assumere che worker abilitato possa
+scoprire la fonte finché questo percorso non risponde correttamente.
+
+RuntimePublicationApi del prodotto Onboarding live 6340d5bf… verificato:
+GET root/list, /{sourceId}/active e /resolve sono presenti; page restituisce
+items=[]/nextAfter="" quando non ci sono publication ACTIVE (non 404).
+Owner richiede SERVICE, tenant configurato tramite
+ouf.runtime-publications.tenant-id (default vuoto) e capability
+ouf.onboarding.configuration.read sul ResourceContext published-configuration.
+Per page/resolve controlla anche accesso module-level prima dei singoli source.
+Il 404 può provenire da route assente o instradamento/path errato: prima
+verificare APISIX, senza attribuirlo alla policy né aggiungere grant alla cieca.
+
+Helper scripts/r4a_runtime_publication_route_inventory.py, Semantic
+**54d3889c8ab3a8566d97bed23245b4ee062791a2**, compilazione Python verificata:
+riusa parser admin e matcher route già testati, enumera LIST/ACTIVE/RESOLVE
+con conteggio e flag upstream/OIDC/scope/rewrite/references/host/conditions.
+Nessuna stampa chiave/bearer/policy/bundle; scope names e flag solamente.
+Aggiunge flag espliciti di tenant ENV owner e scope config-read nel bearer
+Ingestion. Questi non sostituiscono GET reale/ALLOW owner e non escludono
+altri property source per il tenant; niente POST o mutazione IAM/route/env.
+Prossimo output richiesto: inventario route; poi correggere il layer realmente
+mancante, riprovare discovery e preparare worker candidate/switch controllato.
+R-SMOKE/R-INSTALL OPEN; approvazione HUMAN non va ripetuta.
+
+
 ## 2026-09-30 — worker activation live disabilitato; preflight prima dell'abilitazione
 
 Inventario VPS COMPLETE: fonte APPROVED, Ingestion running su revisione attesa,
