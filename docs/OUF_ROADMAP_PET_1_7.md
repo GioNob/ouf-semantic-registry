@@ -396,3 +396,22 @@ su conteggi senza identità, sessione scaduta e Keycloak solo GET. Prossimo pass
 acquisire questo inventario e preparare correzione governata del prerequisito
 mancante; eventuale nuova policy si pubblica solo con conferma HUMAN THS.
 R-SMOKE/R-INSTALL OPEN, compatibilità ancora non attestata.
+
+### Inventario Semantic acquisito dall'operatore — 30 settembre
+
+`SEM_TOKEN_SCOPE_PRESENT=false`, TTL 259 secondi alla lettura. Descriptor unico,
+scope corretto e SERVICE ammesso. Un solo grant, SERVICE, zero corrispondenze con
+client/sub di Ingestion e zero subject-grant corrispondenti, nessun constraint
+nel grant esistente. Il bridge Semantic versionato risolve servicePrincipalId da
+client_id/azp: il selector esistente non copre il client Ingestion. Non sostituire
+il grant preesistente, aggiungere la nuova autorizzazione con il percorso HUMAN
+THS preservando il resto del bundle quando la proposta sarà pronta.
+
+Keycloak: `KCADM_SESSION_EXPIRED`; nessuna evidenza ancora su esistenza e binding
+DEFAULT/OPTIONAL dello scope. Il runbook già dispone di
+`scripts/r4a_refresh_kcadm_session.py`, che usa le variabili bootstrap soltanto
+nel container Keycloak senza stamparle. Prossimo intervento: refresh della
+sessione amministrativa e ripetizione dell'inventario esistente; nessuna modifica
+a scope/client/grant/route, nessun build o POST compatibilità. Seguiranno piano
+IAM additivo per lo scope read e proposta di grant SERVICE governata. R-SMOKE e
+R-INSTALL OPEN; versione e hash congelati preservati.

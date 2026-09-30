@@ -180,3 +180,37 @@ git show e4e1f095c53b7ec4819b8d99fcd79769027330bb:scripts/r4a_semantic_access_in
 sudo python3 /tmp/r4a_semantic_access_inventory.py --tenant-id ouf-lab --realm ouf
 )
 ```
+
+### Inventario Semantic acquisito dall'operatore — 30 settembre
+
+`SEM_TOKEN_SCOPE_PRESENT=false`, TTL 259 secondi alla lettura. Descriptor unico,
+scope corretto e SERVICE ammesso. Un solo grant, SERVICE, zero corrispondenze con
+client/sub di Ingestion e zero subject-grant corrispondenti, nessun constraint
+nel grant esistente. Il bridge Semantic versionato risolve servicePrincipalId da
+client_id/azp: il selector esistente non copre il client Ingestion. Non sostituire
+il grant preesistente, aggiungere la nuova autorizzazione con il percorso HUMAN
+THS preservando il resto del bundle quando la proposta sarà pronta.
+
+Keycloak: `KCADM_SESSION_EXPIRED`; nessuna evidenza ancora su esistenza e binding
+DEFAULT/OPTIONAL dello scope. Il runbook già dispone di
+`scripts/r4a_refresh_kcadm_session.py`, che usa le variabili bootstrap soltanto
+nel container Keycloak senza stamparle. Prossimo intervento: refresh della
+sessione amministrativa e ripetizione dell'inventario esistente; nessuna modifica
+a scope/client/grant/route, nessun build o POST compatibilità. Seguiranno piano
+IAM additivo per lo scope read e proposta di grant SERVICE governata. R-SMOKE e
+R-INSTALL OPEN; versione e hash congelati preservati.
+
+### Prossimo comando — sessione kcadm e inventario completo
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+git show 8cd9a67a5a6f084b12b7005216817b4303feafe5:scripts/r4a_refresh_kcadm_session.py > /tmp/ouf-r4a-refresh-kcadm.py
+sudo python3 /tmp/ouf-r4a-refresh-kcadm.py
+sudo python3 /tmp/r4a_semantic_access_inventory.py --tenant-id ouf-lab --realm ouf
+)
+```
+
+Il file inventory in /tmp è quello fissato a e4e1f095c53b7ec4819b8d99fcd79769027330bb ed eseguito dall'operatore nel passo precedente.
