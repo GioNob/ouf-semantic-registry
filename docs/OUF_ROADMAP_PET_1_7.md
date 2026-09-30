@@ -1,5 +1,31 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+## 2026-09-30 — challenge cinema e card create PASS; review ancora da completare
+
+Output VPS: challenge **d56c8e00-de2b-4f47-a940-38b453facf2f**,
+card PASS con configurazione congelata corrispondente, receipt privato
+`/etc/ouf/deploy-snapshots/cinema-approval-challenge.json`.
+Scadenza **2026-09-30T13:13:21.263Z** (15:13:21 Europe/Rome).
+PREPARE=PASS, SOURCE_APPROVAL=false, SOURCE_ACTIVATION=false.
+Non interpretare il device login come decisione di approvazione.
+Il blocco preparazione è ora storico/eseguito: non ricreare la challenge.
+
+Prossimo passo: review effettiva prima della decisione HUMAN.
+Helper `scripts/r4a_review_cinema_approval.py`, Semantic
+**87d8eb17d97b934ee8e9c162a70e5a531fcc4987**, compilazione Python verificata.
+Non fa login, HTTP POST, confirm o activate. Verifica receipt root0600,
+contesto/hash, configurazione della card esattamente uguale all'owner,
+challenge CREATED/non scaduta nel DB in transazione read-only e versione
+IN_REVIEW invariata. Mostra soltanto sezioni decisionali della configurazione:
+mapping/binding semantici, identità sorgente, access labels, modello di record,
+execution e policy UDP resolution/materialization; niente righe CSV/token.
+Non è il collaudo di una UI browser THS; il browser shell resta un gate distinto.
+Se la challenge scade, richiedere recupero esplicito, conservando il receipt;
+non modificare DB/status/expiry per aggirare il TTL. Dopo review segue la
+conferma HUMAN sul backend THS verificato, poi attivazione distinta.
+R-SMOKE e R-INSTALL restano OPEN.
+
+
 ## 2026-09-30 — route review acquisite; preparatore challenge pronto
 
 Output VPS: CREATE/CARD/CONFIRM/ACTIVATE hanno ciascuna una route, enabled=true,
