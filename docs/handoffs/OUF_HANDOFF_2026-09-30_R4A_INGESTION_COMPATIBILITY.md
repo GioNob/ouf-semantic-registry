@@ -1789,3 +1789,49 @@ rimuovere soltanto quel percorso esatto con sudo rm -rf --, niente wildcard.
 Prossimo: acquisire diagnostica precisa/binding Keycloak, eventuale correzione
 scope/grant governata; poi rollout tenant/refresher con rollback e discovery200.
 R-SMOKE/R-INSTALL OPEN.
+
+## 2026-09-30 — scope Ingestion non associato; grant runtime preparato per draft HUMAN
+
+Output VPS: descriptor SERVICE/scope=1; grant flat=1/service-bound=1,
+subject-only=0, organization-bound=0; principal owner match=0.
+Token configuration.read=false. Login interattivo oufadmin nel realm master
+riuscito (nessuna password/token forniti in chat); Keycloak GET PASS:
+scope e client univoci, binding default=0/optional=0.
+Fonte APPROVED, nessuna attivazione, candidati tenant/refresher già PASS e inerti.
+
+Manifest precedente Onboarding catalogue/r4a-udp-published-execution-grants.json
+include grant-onboarding-configuration-read-udp per ouf-udp; non è un grant
+Ingestion. Nuovo manifest Semantic
+catalogue/r4a-ingestion-runtime-publication-grant.json, commit
+20617e48a61b8431a011ff50b237c68d28c1106d:
+grant-onboarding-runtime-publication-read-ingestion,
+capability ouf.onboarding.configuration.read, tenant ouf-lab,
+servicePrincipalId ouf-ingestion, subjectId/organizationId null;
+ALLOW resourceType published-configuration e module ONBOARDING,
+senza vincolo sourceRef perché LIST richiede accesso module-level.
+Validità 2026-09-30T00:00:00Z → 2036-09-15T07:13:50.968730Z,
+allineata alla scadenza del grant workload UDP precedente.
+Manifest validato dal parser lifecycle/plan localmente: un'aggiunta,
+baseline invariata. Nessuna nuova policy attiva o evidenza CI.
+
+Comando operatore successivo usa helper Onboarding pinned alla release
+6340d5bf120e09b47c32177656e2c377a4c03640:
+r4a_keycloak_client_scope_catalogue.py VERIFY (nessuna creazione scope),
+r4a_keycloak_client_scope_binding.py PLAN/APPLY/VERIFY OPTIONAL per
+ouf-ingestion/configuration.read, preservando gli altri binding.
+Scelta OPTIONAL coerente con il refresher già preparato che richiede lo
+scope esplicitamente; token attuale resta invariato finché non rinnovato.
+
+Poi r4a_service_grant_lifecycle.py --draft --device-login sul manifest:
+login HUMAN ouf-human-admin scope authorization.policy.admin, crea solo draft
+e preview add-only (nessuna capability change, preserva grant esistenti).
+State privato root0600
+/etc/ouf/deploy-snapshots/ingestion-runtime-publication-grant-draft.json.
+Il comando rifiuta state già esistente prima di creare il draft; non rilanciare
+POST alla cieca dopo esito incerto. In caso di errore dopo POST e prima dello
+state, riconciliare draft remoto prima di ritentare.
+PUBBLICAZIONE POLICY NON ESEGUITA. Niente source approval/activation/worker.
+Tutti i passi VPS ancora da acquisire; non segnare binding/draft PASS finché
+l'operatore non restituisce output. Dopo anteprima: conferma HUMAN publish,
+readback bundle grant, rollout owner/refresher con backup/rollback,
+discovery200, worker e activate. R-SMOKE/R-INSTALL OPEN.
