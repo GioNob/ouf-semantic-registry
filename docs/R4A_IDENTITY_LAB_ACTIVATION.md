@@ -1613,7 +1613,7 @@ storico e bloccato. Prossimo passo: ripetere solo inventario route; eventuale
 nuovo BLOCKED richiede diagnosi del layout senza stampare valori. Ancora nessun
 submit attestation; approval/activation HUMAN THS.
 
-### Prossimo comando corrente — inventario route con parser YAML corretto
+### Comando storico eseguito — inventario route con parser YAML corretto
 
 ```bash
 (
@@ -1624,5 +1624,78 @@ for script in r4a_prepare_frozen_compatibility_probe r4a_execution_route_invento
   git show ea588d84cb7a848fe3bc3e6867b22e4f24043428:scripts/"$script".py > /tmp/"$script".py
 done
 sudo python3 /tmp/r4a_ingestion_attestation_route_inventory.py
+)
+```
+
+## 2026-09-30 — route attestazione PASS; submitter SERVICE pronto, POST non ancora eseguito
+
+Output VPS read-only acquisito: owner revision match=true; route count=1,
+enabled=true, owner path match=true, upstream Onboarding inline=true,
+upstream reference=false, OIDC presente/abilitato e scope
+ouf.ingestion.configuration.attest conforme. Inventario COMPLETE live invariato,
+ATTESTATION_POST=false. Parser corretto ha permesso la lettura admin/routes;
+nessuna chiave/identità/valore stampato.
+
+Helper Semantic **26366fbdf5ad1c212ccd146888fbaa098b99766f**:
+`scripts/r4a_attest_ingestion_compatibility.py`, plan/apply.
+Ogni modalità rigenera la sonda consumer deployato (JVM separata, immagine e
+mount/properties live) prima di valutare il payload: non usa una proof stantia.
+Plan esegue GET/SQL read-only e salva la proof locale aggiornata, ma non crea
+receipt attestazione e non POSTa. Richiede proof/context/revisione/otto righe,
+live ID/image, token SERVICE fresco, route owner revision/upstream/scope/host/
+path univoci e abilitati e fonte ancora IN_REVIEW/hash congelato.
+Verifica in sola lettura assenza di attestazione INGESTION_RUNTIME già presente
+per versione/hash; se presente richiede riconciliazione, senza duplicare.
+
+Apply ricontrolla runtime/properties/fonte/token e assenza di attestazione;
+riserva atomicamente receipt locale privato root0600:
+`/etc/ouf/deploy-snapshots/ingestion-compatibility-attestation.json`.
+La creazione esclusiva impedisce POST concorrenti di questi submitter.
+Invia una sola richiesta via Gateway con token Ingestion; nessun HUMAN token,
+nessuna scrittura SQL diretta, niente retry/redirect automatici.
+Credenziale e body sono solo su stdin del curl disposable, mai nell'argv/output.
+
+Payload owner sourceId/onboardingVersionId/compatible=true/detail; detail
+contiene schema evidence v1 e proof della revisione deployata: image/container ID,
+versione/hash, hash asset, adapter/versione, binding count/otto righe, hash
+properties, timestamp e modalità separate JVM. L'owner resta autoritativo su
+capability/resource enforcement e hash corrente della versione; plan non
+sostituisce il suo ALLOW. Richiede HTTP201, risposta con ID UUID, consumer,
+versione/hash/compatible/detail esatti e readback SQL read-only del record owner.
+Fonte/hash congelati devono restare identici dopo POST. Stampa solo ID
+attestazione e flag; risposta con eventuale actor_subject resta privata.
+
+Receipt preesistente blocca ogni nuovo POST. Errori dopo riserva conservano
+UNVERIFIED_DO_NOT_REPOST e flag post_attempted; timeout può aver committato
+nell'owner, quindi mai rilanciare/rimuovere receipt alla cieca. Prima di un
+eventuale recupero, riconciliare il record owner e il receipt senza stamparli.
+Sette nuovi test locali PASS: route/context negativi, evidence vincolata,
+plan senza POST/receipt, singolo POST+readback, timeout/no-repost, stdin privato
+e riserva esclusiva. CI nuova helper non ancora acquisita.
+
+Il blocco inventario route precedente è storico ed eseguito. Prossimo comando:
+plan/apply dell'attestazione. **POST ancora non eseguito** dall'operatore.
+Non approva o attiva la fonte, non cambia policy/IAM/route, non ingesta/persiste
+righe/ACK. Dopo PASS attestazione occorre rileggere l'activation gate UDP
+corrente e presentare review HUMAN THS della versione/hash congelati;
+R-SMOKE/R-INSTALL OPEN fino alla catena reale Ingestion→UDP→search e installazione.
+
+### Prossimo comando corrente — attestazione SERVICE plan/apply, nessuna approval/activation
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+for script in r4a_prepare_frozen_compatibility_probe r4a_prepare_ingestion_candidate r4a_switch_ingestion_candidate r4a_probe_deployed_ingestion r4a_execution_route_inventory r4a_attest_ingestion_compatibility; do
+  git show 26366fbdf5ad1c212ccd146888fbaa098b99766f:scripts/"$script".py > /tmp/"$script".py
+done
+for mode in plan apply; do
+  sudo python3 /tmp/r4a_attest_ingestion_compatibility.py "$mode" \
+    --source managed-cinema-8ec8ae90 \
+    --version 68394f42-5c82-4127-a1f3-126516665749 \
+    --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
+    --tenant-id ouf-lab
+done
 )
 ```
