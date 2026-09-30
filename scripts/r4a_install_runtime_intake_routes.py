@@ -51,6 +51,36 @@ def scope_for(policy, capability, report=False):
     return scope
 
 
+def template_report(values):
+    selected = admin.inventory.candidates(values, 'GET', TEMPLATE)
+    print('INTAKE_TEMPLATE_ROUTE_COUNT=' + str(len(selected)), flush=True)
+    for index, route in enumerate(selected, 1):
+        plugins = route.get('plugins', {})
+        oidc = plugins.get('openid-connect', {})
+        upstream = route.get('upstream', {})
+        nodes = upstream.get('nodes')
+        hosts = ([route['host']] if route.get('host') else []) + (route.get('hosts') or [])
+        facts = {
+            'ENABLED': route.get('status', 1) == 1,
+            'UPSTREAM_INLINE_UDP_EXACT': nodes == {'ouf-udp:8080': 1},
+            'NO_UPSTREAM_REFERENCE': 'upstream_id' not in route,
+            'NO_SERVICE_REFERENCE': 'service_id' not in route,
+            'NO_PLUGIN_CONFIG_REFERENCE': 'plugin_config_id' not in route,
+            'NO_EXTRA_MATCH_CONDITIONS': not any(route.get(k) for k in ('vars', 'filter_func', 'remote_addr', 'remote_addrs')),
+            'NO_PROXY_REWRITE': not plugins.get('proxy-rewrite'),
+            'OIDC_PRESENT': bool(oidc),
+            'OIDC_ENABLED': bool(oidc) and not oidc.get('_meta', {}).get('disable', False),
+            'EXPECTED_TEMPLATE_SCOPE': oidc.get('required_scopes') == ['ouf.udp.identity.attestation.read'],
+            'PUBLIC_HOST_SUPPORTED': not hosts or 'api.ouf-lab.it' in hosts,
+        }
+        prefix = 'INTAKE_TEMPLATE_' + str(index) + '_'
+        for name, value in facts.items():
+            print(prefix + name + '=' + str(bool(value)).lower())
+        print(prefix + 'UPSTREAM_NODES_LAYOUT=' + ('OBJECT' if isinstance(nodes, dict) else 'ARRAY' if isinstance(nodes, list) else 'ABSENT_OR_UNSUPPORTED'))
+        print(prefix + 'FAILED_CHECKS=' + (','.join(k for k, v in facts.items() if not v) or 'NONE'))
+    print('R4A_INTAKE_TEMPLATE_DIAGNOSTIC=COMPLETE READ_ONLY=true ROUTES_UNCHANGED=true RUN_RESUME=false SECRETS_NOT_PRINTED=true')
+
+
 def desired_routes(values, scopes):
     selected = admin.inventory.candidates(values,'GET',TEMPLATE)
     if len(selected) != 1:
@@ -200,6 +230,14 @@ def main(mode,smoke_cinema=False):
         raise RuntimeError('UDP_OWNER_REVISION_DRIFT')
     if smoke_cinema:
         smoke_preflight()
+    if mode == 'template':
+        apisix = helper.inspect('ouf-apisix')
+        if not apisix['State']['Running']:
+            raise RuntimeError('APISIX_NOT_RUNNING')
+        key = admin.inventory.routes.admin_key(admin.inventory.routes.mounted_config(apisix).read_text())
+        raw, _ = admin.api(key, 'GET', 'routes')
+        template_report(admin.inventory.routes.route_values(raw))
+        return
     ing = helper.inspect('ouf-ingestion')
     if mode == 'catalogue':
         policy(ing,diagnostic=True)
@@ -268,7 +306,7 @@ def main(mode,smoke_cinema=False):
 
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('mode',choices=('catalogue','plan','apply'))
+    parser.add_argument('mode',choices=('template','catalogue','plan','apply'))
     parser.add_argument('--smoke-cinema',action='store_true',help='Optional lab checkpoint; never used to scope routes or grants')
     try:
         args=parser.parse_args()
