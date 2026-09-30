@@ -2041,3 +2041,58 @@ Enablement sul VPS ancora non eseguito fino a output PASS. Fonte non attiva.
 Prossimo: HUMAN activate della versione APPROVED, readback publication esatta,
 watch run vera fino a handoff/lake/UDP materializzazione/search con evidence.
 R-SMOKE/R-INSTALL OPEN.
+
+## 2026-09-30 — activation worker live PASS; verificare execution loop separato prima di activate
+
+Operatore: prepare/plan/apply activation worker PASS, stessa immagine
+0dfab1e…, enabled=true, Flyway14 invariato, nessuna nuova run/schedule.
+Backup con restore drill PASS conservato:
+ /etc/ouf/deploy-snapshots/ingestion-before-compatibility-1sa6j7hd.dump.
+Rollback container:
+ ouf-ingestion-activation-worker-rollback-5ee98a4a7cb3.
+Receipt /etc/ouf/deploy-snapshots/ingestion-activation-worker-switch.json PASS.
+Osservazione16s, failure markers assenti; poll count NON misurato.
+Fonte sempre APPROVED, NON ACTIVE. Non ripetere worker switch.
+
+Verifica primaria nel codice release Ingestion:
+ActivationLoop/RunCoordinator/PublicationGatewayClient sono condizionati da
+ouf.ingestion.activation.enabled=true; ExecutionLoop/ExecutionGatewayClient/
+ExecutionRuntimeConfiguration hanno un SECONDO flag distinto
+ouf.ingestion.execution.enabled=true, senza matchIfMissing.
+ExecutionLoop è quello che acquisisce ed esegue outbox dispatch ogni1000ms.
+Il worker switch appena completato aggiungeva soltanto activation.enabled.
+Non assumere che execution.enabled sia già attivo perché discovery dà200,
+readiness è200 o perché il consumer standalone ha validato8righe.
+L'effettivo flag execution live NON ancora osservato in output operatore.
+Prima di attivare serve questa lettura mirata; niente altra source approval.
+
+Helper read-only scripts/r4a_execution_loop_inventory.py, Semantic commit
+2491573dd110e7068f6c1d7ff857b6a6df0bda39. Parsing sintattico Python PASS;
+nessun nuovo test unit speculare per questa sola diagnostica, CI non acquisita.
+Legge receipt worker PASS, state preparazione, ID/Image/revision esatti,
+bind properties/hash uguali allo state worker, env esatto rispetto al baseline
+conservato. Stampa soltanto count/property/env boolean/override presence per
+activation/execution, JSON presence e effective diagnostic.
+Property assente equivale FALSE in questi ConditionalOnProperty.
+Priorità diagnostica ENV sopra file properties; command/JVM override o JSON
+presente o valori duplicati/unsupported impediscono concludere readiness.
+Non enumera tutti i possibili property source Spring e non ispeziona bean live:
+SWITCHES_READY è diagnostico, non prova di esecuzione.
+Readonly completo: nessuna modifica flag/env/DB/IAM/worker/source activation.
+
+Se execution èFALSE/ABSENT: preparare/adottare candidata stessa immagine che
+aggiunga solo execution.enabled, preservando il flag activation giàTRUE,
+con backup/rollback e code vuote. SeTRUE: procedere a HUMAN activate con
+gate UDP corrente/readback frozenconfig/compatibilità/hash e receipt univoca.
+
+Codice Owner TrustedHumanApi.activate usa la challenge confermata
+4f7a8248-ef40-4dc4-8a64-8a6101c98511 per risolvere source/version, poi
+OnboardingService.activate richiede versione APPROVED, compatibilità
+INGESTION_RUNTIME corrente sullo stesso hash, surveillance e UDP gate.
+Non usa la vecchia challenge CREATED scaduta né richiede nuova conferma:
+non richiamare check_card(CREATED/expiry), non ripetere source approval.
+Activate genera pubblicazione, statoACTIVE e audit; worker giàenabled inizierà
+automaticamente la run dopo discovery. Preparare conferma terminale HUMAN
+sul concreto source/version/hash e osservazione run, senza automatizzare una
+decisione HUMAN come SERVICE.
+R-SMOKE/R-INSTALL OPEN; source activation ancora non eseguita.
