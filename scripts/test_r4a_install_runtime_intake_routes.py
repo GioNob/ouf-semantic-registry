@@ -31,6 +31,26 @@ class IntakeRoutesTests(unittest.TestCase):
         self.assertNotIn('unexpected.scope', text)
         self.assertIn('ROUTES_UNCHANGED=true', text)
 
+    def test_preflight_rewrite_is_excluded_from_intake_without_mutating_template(self):
+        template = self.template()
+        rewrite = {'uri':'/preflight-only', 'method':'GET', 'host':'preflight-host',
+                   'headers':{'set':{'X-Preflight-Only':'value'}}}
+        template['plugins']['proxy-rewrite'] = rewrite
+        desired = install.desired_routes([template], {'datalake.write':'lake.scope','udp.candidate.write':'handoff.scope'})
+        self.assertEqual(template['plugins']['proxy-rewrite'], rewrite)
+        for route in desired.values():
+            self.assertNotIn('proxy-rewrite', route['plugins'])
+            self.assertTrue(route['plugins']['openid-connect']['bearer_only'])
+            self.assertEqual(route['upstream'], template['upstream'])
+        self.assertEqual({v['uri'] for v in desired.values()}, {'/api/internal/v1/lake/objects','/api/internal/v1/handoffs'})
+
+    def test_external_upstream_still_rejected_with_rewrite(self):
+        template = self.template()
+        template['upstream_id'] = 'external'
+        template['plugins']['proxy-rewrite'] = {'uri':'/preflight-only'}
+        with self.assertRaisesRegex(RuntimeError,'TEMPLATE_UNSUPPORTED'):
+            install.desired_routes([template], {})
+
     def test_duplicate_template_blocks_mutation(self):
         with self.assertRaisesRegex(RuntimeError,'NOT_UNIQUE'):
             install.desired_routes([self.template(),self.template()],{})
