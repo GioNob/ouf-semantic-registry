@@ -1539,3 +1539,23 @@ Il blocco inventario precedente è storico ed eseguito. Prossimo gate:
 CANDIDATE PASS STOPPED=true, prima di predisporre backup/switch Ingestion.
 Nessun live switch, migrazione, attestazione, approval/activation in questo
 blocco. R-SMOKE/R-INSTALL OPEN.
+
+## 2026-09-30 — preparazione Ingestion bloccata dal contratto runtime
+
+Output VPS acquisito:
+R4A_ING_COMPAT_RELEASE_PREPARE=BLOCKED CODE=ING_RUNTIME_SETTINGS_UNSUPPORTED.
+Il guard precede la creazione di directory/file del candidato e docker create:
+questo tentativo non ha creato o avviato il candidato né modificato live/DB.
+La proof isolata otto righe PASS a 0dfab1e7… resta valida come evidenza del
+consumer isolato; nessun POST attestazione.
+
+Il codice aggrega campi HostConfig non supportati, Healthcheck, restart/log
+driver e tipo/readonly/formato dei mount. L'output non identifica quale
+condizione abbia bloccato: causa specifica ancora da acquisire.
+Nessun allentamento del guard e nessuna copia indiscriminata di HostConfig.
+Il blocco preparazione precedente è storico (tentativo bloccato);
+prossimo passo inventario read-only dei soli nomi dei campi non vuoti e flag
+di conformità, senza stampare valori, env o mount path.
+La correzione deve preservare il contratto reale rilevato; poi ripetere
+preparazione fermo, backup/switch e prova consumer deployato prima del POST.
+R-SMOKE/R-INSTALL OPEN.

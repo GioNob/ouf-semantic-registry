@@ -1222,7 +1222,7 @@ CANDIDATE PASS STOPPED=true, prima di predisporre backup/switch Ingestion.
 Nessun live switch, migrazione, attestazione, approval/activation in questo
 blocco. R-SMOKE/R-INSTALL OPEN.
 
-### Prossimo comando corrente — preparazione candidato Ingestion fermo
+### Comando storico tentato e bloccato — preparazione candidato Ingestion fermo
 
 ```bash
 (
@@ -1237,4 +1237,65 @@ sudo python3 /tmp/r4a_prepare_ingestion_candidate.py \
   --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
   --tenant-id ouf-lab
 )
+```
+
+## 2026-09-30 — preparazione Ingestion bloccata dal contratto runtime
+
+Output VPS acquisito:
+R4A_ING_COMPAT_RELEASE_PREPARE=BLOCKED CODE=ING_RUNTIME_SETTINGS_UNSUPPORTED.
+Il guard precede la creazione di directory/file del candidato e docker create:
+questo tentativo non ha creato o avviato il candidato né modificato live/DB.
+La proof isolata otto righe PASS a 0dfab1e7… resta valida come evidenza del
+consumer isolato; nessun POST attestazione.
+
+Il codice aggrega campi HostConfig non supportati, Healthcheck, restart/log
+driver e tipo/readonly/formato dei mount. L'output non identifica quale
+condizione abbia bloccato: causa specifica ancora da acquisire.
+Nessun allentamento del guard e nessuna copia indiscriminata di HostConfig.
+Il blocco preparazione precedente è storico (tentativo bloccato);
+prossimo passo inventario read-only dei soli nomi dei campi non vuoti e flag
+di conformità, senza stampare valori, env o mount path.
+La correzione deve preservare il contratto reale rilevato; poi ripetere
+preparazione fermo, backup/switch e prova consumer deployato prima del POST.
+R-SMOKE/R-INSTALL OPEN.
+
+### Prossimo comando corrente — diagnosi contratto runtime Ingestion
+
+```bash
+sudo python3 - <<'PY'
+import json, subprocess
+print("R4A_ING_RUNTIME_CONTRACT_INVENTORY=READ_ONLY", flush=True)
+try:
+    result = subprocess.run(
+        ["docker", "inspect", "--type", "container", "ouf-ingestion"],
+        check=True, capture_output=True, text=True, timeout=30)
+    live = json.loads(result.stdout)[0]
+    host, config = live["HostConfig"], live["Config"]
+    keys = ("PortBindings", "Binds", "VolumesFrom", "Privileged", "ReadonlyRootfs",
+            "ExtraHosts", "Dns", "DnsSearch", "CapAdd", "SecurityOpt", "Devices",
+            "Tmpfs", "AutoRemove", "GroupAdd", "UsernsMode", "Init", "Ulimits",
+            "CapDrop", "Memory", "MemorySwap", "NanoCpus", "CpuShares", "PidsLimit",
+            "OomKillDisable", "CpusetCpus", "CpusetMems", "PidMode", "Sysctls")
+    active = [key for key in keys if host.get(key)]
+    print("ING_RUNTIME_UNSUPPORTED_FIELD_COUNT=" + str(len(active)))
+    for key in active:
+        print("ING_RUNTIME_FIELD=" + key + " NONEMPTY=true")
+    def flag(key, value):
+        print(key + "=" + str(bool(value)).lower())
+    flag("ING_RUNTIME_HEALTHCHECK_PRESENT", config.get("Healthcheck"))
+    flag("ING_RUNTIME_RESTART_POLICY_MATCH",
+         host.get("RestartPolicy", {}).get("Name") == "unless-stopped")
+    flag("ING_RUNTIME_LOG_DRIVER_MATCH",
+         host.get("LogConfig", {}).get("Type") == "json-file")
+    flag("ING_RUNTIME_ALL_MOUNTS_BIND", all(m["Type"] == "bind" for m in live["Mounts"]))
+    flag("ING_RUNTIME_ALL_MOUNTS_READ_ONLY", all(m["RW"] is False for m in live["Mounts"]))
+    flag("ING_RUNTIME_MOUNT_PATH_FORMAT_MATCH",
+         all(not any(c in m["Source"] + m["Destination"] for c in ",\n\r")
+             for m in live["Mounts"]))
+    print("R4A_ING_RUNTIME_CONTRACT_INVENTORY=COMPLETE LIVE_UNCHANGED=true VALUES_NOT_PRINTED=true")
+except Exception as error:
+    print("R4A_ING_RUNTIME_CONTRACT_INVENTORY=BLOCKED CODE="
+          + type(error).__name__ + " SECRETS_NOT_PRINTED=true")
+    raise SystemExit(1)
+PY
 ```
