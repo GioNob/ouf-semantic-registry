@@ -3,6 +3,7 @@ import copy
 import io
 import json
 from pathlib import Path
+import stat
 import sys
 import tempfile
 from types import SimpleNamespace
@@ -37,6 +38,18 @@ def candidate():
 
 
 class PrepareManagedIdentityCandidateTests(unittest.TestCase):
+    def test_unsafe_root_blocks_before_inventory_build_or_container_operations(self):
+        for mode, owner in ((stat.S_IFDIR | 0o755, 0), (stat.S_IFDIR | 0o700, 1000),
+                            (stat.S_IFLNK | 0o700, 0)):
+            with patch.object(Path, "lstat", return_value=SimpleNamespace(st_mode=mode, st_uid=owner)), \
+                 patch.object(prepare.os, "geteuid", return_value=0), \
+                 patch.object(prepare.inventory, "inspect") as inspect, \
+                 patch.object(prepare, "build") as build:
+                with self.assertRaisesRegex(RuntimeError, "OWNER_STAGE_DIRECTORY_UNSAFE"):
+                    prepare.main(SimpleNamespace(repo=Path("/unused")))
+                inspect.assert_not_called()
+                build.assert_not_called()
+
     def test_complete_prepare_keeps_env_in_private_file_and_never_starts_runtime(self):
         output = io.StringIO()
         with tempfile.TemporaryDirectory() as folder:

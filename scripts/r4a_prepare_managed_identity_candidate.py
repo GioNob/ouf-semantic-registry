@@ -12,7 +12,7 @@ import r4a_managed_identity_release_inventory as inventory
 REVISION = "6340d5bf120e09b47c32177656e2c377a4c03640"
 NAME = "ouf-onboarding-r4a-managed-identity-candidate"
 TAG = "ouf-onboarding:managed-identity-" + REVISION[:7]
-ROOT = Path("/opt/ouf/r4a-stage")
+ROOT = Path("/etc/ouf/deploy-snapshots")
 STATE = ROOT / "onboarding-managed-identity-release.json"
 
 
@@ -91,8 +91,9 @@ def main(args):
     if os.geteuid() != 0:
         raise RuntimeError("ROOT_REQUIRED")
     os.umask(0o077)
-    meta = ROOT.stat()
-    if not stat.S_ISDIR(meta.st_mode) or meta.st_uid != 0 or meta.st_mode & 0o022:
+    meta = ROOT.lstat()
+    if (not stat.S_ISDIR(meta.st_mode) or meta.st_uid != 0
+            or stat.S_IMODE(meta.st_mode) != 0o700):
         raise RuntimeError("OWNER_STAGE_DIRECTORY_UNSAFE")
     args.revision = REVISION
     old = inventory.inspect("ouf-onboarding")
