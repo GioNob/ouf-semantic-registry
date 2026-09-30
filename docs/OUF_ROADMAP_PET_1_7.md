@@ -342,3 +342,19 @@ presente nell'output. Il consumer deve attraversare Gateway con owner enforcemen
 un 401/403/404 richiede correzione governata di IAM/grant/route/owner, mai accesso
 diretto allo storage o attestazione sintetica. La versione resta congelata e
 compatibilità non attestata. **R-SMOKE e R-INSTALL OPEN.**
+
+### Correzione dell'ordine di preparazione — 30 settembre
+
+Il tentativo operatore su `160e339…` ha superato il controllo trasporto iniziale,
+poi si è fermato con `UnboundLocalError`: la creazione del file temporaneo usava
+`current` prima della sua assegnazione. Stop prima del build, del file trasporto
+e dei GET consumer; nessuno switch/POST. Le CI precedenti erano tutte verdi,
+ma non esercitavano il main del preparatore.
+
+Correzione attuale Ingestion `1eb70c4c3aa6de7e3c3f1ffc4f78ca7b63331872`: il file temporaneo viene creato
+solo dopo build, snapshot live verificato e rilettura della versione congelata.
+Dodici test Python locali PASS, inclusi due nuovi test del main completo con
+operazioni VPS simulate (successo/proof e diniego/cleanup). CI nuova revisione
+avviata; il risultato VPS resta da acquisire. Il comando aggiornato, dove presente,
+fissa questa revisione e mantiene `--tenant-id ouf-lab`. Non rieseguire i comandi
+storici su `160e339…`. R-SMOKE/R-INSTALL restano OPEN e nessuna attestazione positiva.

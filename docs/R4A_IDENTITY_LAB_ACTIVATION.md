@@ -515,9 +515,9 @@ compatibilità non attestata. **R-SMOKE e R-INSTALL OPEN.**
 set -e
 cd /opt/ouf/ingestion
 git fetch --no-tags origin codex/r4a-ingestion-frozen-compatibility-probe
-git show 160e3391862083bd8779aed69493484f5d2b086d:scripts/r4a_prepare_frozen_compatibility_probe.py > /tmp/ouf-r4a-ingestion-frozen-probe.py
+git show 1eb70c4c3aa6de7e3c3f1ffc4f78ca7b63331872:scripts/r4a_prepare_frozen_compatibility_probe.py > /tmp/ouf-r4a-ingestion-frozen-probe.py
 sudo python3 /tmp/ouf-r4a-ingestion-frozen-probe.py \
-  --revision 160e3391862083bd8779aed69493484f5d2b086d \
+  --revision 1eb70c4c3aa6de7e3c3f1ffc4f78ca7b63331872 \
   --source managed-cinema-8ec8ae90 \
   --version 68394f42-5c82-4127-a1f3-126516665749 \
   --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
@@ -526,3 +526,19 @@ sudo python3 /tmp/ouf-r4a-ingestion-frozen-probe.py \
 ```
 
 Il comando è una prova candidata isolata, non un rollout. I gate successivi restano quelli indicati sopra.
+
+### Correzione dell'ordine di preparazione — 30 settembre
+
+Il tentativo operatore su `160e339…` ha superato il controllo trasporto iniziale,
+poi si è fermato con `UnboundLocalError`: la creazione del file temporaneo usava
+`current` prima della sua assegnazione. Stop prima del build, del file trasporto
+e dei GET consumer; nessuno switch/POST. Le CI precedenti erano tutte verdi,
+ma non esercitavano il main del preparatore.
+
+Correzione attuale Ingestion `1eb70c4c3aa6de7e3c3f1ffc4f78ca7b63331872`: il file temporaneo viene creato
+solo dopo build, snapshot live verificato e rilettura della versione congelata.
+Dodici test Python locali PASS, inclusi due nuovi test del main completo con
+operazioni VPS simulate (successo/proof e diniego/cleanup). CI nuova revisione
+avviata; il risultato VPS resta da acquisire. Il comando aggiornato, dove presente,
+fissa questa revisione e mantiene `--tenant-id ouf-lab`. Non rieseguire i comandi
+storici su `160e339…`. R-SMOKE/R-INSTALL restano OPEN e nessuna attestazione positiva.
