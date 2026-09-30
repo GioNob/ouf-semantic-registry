@@ -88,9 +88,9 @@ def guard(live, image):
         raise RuntimeError("ING_ACTIVATION_ENV_ALREADY_PRESENT")
 
 
-def optional():
+def optional(name=NAME):
     names = probe.run(["docker", "container", "ls", "--all", "--format", "{{.Names}}"])
-    return probe.inspect(NAME) if NAME in names.splitlines() else None
+    return probe.inspect(name) if name in names.splitlines() else None
 
 
 def private(path, mode):
