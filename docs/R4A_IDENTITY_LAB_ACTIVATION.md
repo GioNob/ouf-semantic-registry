@@ -1,6 +1,16 @@
 # R4a: attivazione controllata dell'identità nel laboratorio
 
 
+### Profilo lake live PASS; recupero del run richiede correzione Ingestion
+
+Readback operativo: prepare/plan/apply lake profile PASS, stessa immagine, profile match 90/OPERATIONAL/RESTRICTED, IAM/S3 preservati, Flyway invariato, code/pubblicazioni invariati. Backup `/etc/ouf/deploy-snapshots/udp-before-lake-profile-y_fx48s_.dump` root-private, restore reale scratch PASS; receipt `/etc/ouf/deploy-snapshots/udp-lake-profile-switch.json`, rollback container `ouf-udp-lake-profile-rollback-82c813b86bfa`. Inventario successivo: tutti i binding lake/IAM validi, nessun override, LAKE_BINDINGS_READY_DIAGNOSTIC=true/invalid checks NONE. Nessun POST intake/resume; permessi S3 e owner intake ancora non provati.
+
+Prima della ripresa verificato il codice esatto della release Ingestion `0dfab1e7b2253fd939088259ea61754d6e56706c` nel repository GioNob/ouf-ingestion-runtime. RunExecutionWorker passa sempre attemptNo=1 a CanonicalRecordPipeline.Command. V1 impone UNIQUE(run_id,source_object_id,attempt_no) e i tentativi sono append-only: il primo record già fallito collide con il nuovo tentativo dopo resume. Inoltre RunExecutionRepository.completeDrained blocca SUCCEEDED finché quarantene blocking sono OPEN/RETRY_READY/REPROCESSING; un retry/resume ordinario non le risolve. QuarantineService.markRetryReady modifica soltanto lifecycle_state; la risoluzione è attualmente nel percorso ReplayRepository.succeeded. ReplayWorker è condizionato alla presenza di ReplayExecutionPort: non assumere esecutore/bean vivo o raw lake durevole dalla sola presenza di payload_ref. Non inviare resume/replay né dismiss artificiale della quarantena, non cancellare il tentativo fallito, non creare una nuova attivazione per aggirare il problema.
+
+Nuovo script source-independent `r4a_run_recovery_inventory.py --run <uuid> --quarantine <uuid>`: sola lettura SQL metadata (versioni controllo/lifecycle, motivo, tentativo fallito n.1, conteggi handoff/replay, tipo riferimento senza payload) e inventario route HUMAN run read/resume, quarantine read/retry/reprocess; nessuna mutazione. CLI/import check PASS, nessun test runtime/live nuovo. Il prossimo gate comprende correzione generica del retry (numero tentativo nuovo, fencing/idempotenza, lifecycle quarantena/issue con evidence durevole e audit, HUMAN expectedVersion) e test di regressione prima di nuova release/switch. Nessuna correzione Java già implementata o rilasciata. R-SMOKE/R-INSTALL e search restano aperti; possibile lavoro di codice, non solo bootstrap configurazione.
+
+
+
 ### Profilo lake lab approvato: 90 / OPERATIONAL / RESTRICTED; rollout preparato
 
 Il 2026-09-30 l'utente ha approvato il profilo iniziale `ouf-lab`: 90 giorni, classe OPERATIONAL, access label RESTRICTED, per uso operativo/debug/replay della pipeline. Non è una durata prescritta dai PET o una policy universale di produzione. La proposta riguarda il lake, non durata/storico degli oggetti UDP. Restano da implementare policy lake governate per fonte e zona, definite in onboarding e approvate/versionate; l'attuale release usa un profilo runtime globale per RAW/NORMALIZED/CURATED. Non dichiarare tale evoluzione già implementata.
