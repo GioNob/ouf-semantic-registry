@@ -515,9 +515,9 @@ compatibilità non attestata. **R-SMOKE e R-INSTALL OPEN.**
 set -e
 cd /opt/ouf/ingestion
 git fetch --no-tags origin codex/r4a-ingestion-frozen-compatibility-probe
-git show 1eb70c4c3aa6de7e3c3f1ffc4f78ca7b63331872:scripts/r4a_prepare_frozen_compatibility_probe.py > /tmp/ouf-r4a-ingestion-frozen-probe.py
+git show dae05e6d4e8aa5dcd2f1ff2b6642b1ff4356dd37:scripts/r4a_prepare_frozen_compatibility_probe.py > /tmp/ouf-r4a-ingestion-frozen-probe.py
 sudo python3 /tmp/ouf-r4a-ingestion-frozen-probe.py \
-  --revision 1eb70c4c3aa6de7e3c3f1ffc4f78ca7b63331872 \
+  --revision dae05e6d4e8aa5dcd2f1ff2b6642b1ff4356dd37 \
   --source managed-cinema-8ec8ae90 \
   --version 68394f42-5c82-4127-a1f3-126516665749 \
   --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
@@ -542,3 +542,22 @@ operazioni VPS simulate (successo/proof e diniego/cleanup). CI nuova revisione
 avviata; il risultato VPS resta da acquisire. Il comando aggiornato, dove presente,
 fissa questa revisione e mantiene `--tenant-id ouf-lab`. Non rieseguire i comandi
 storici su `160e339…`. R-SMOKE/R-INSTALL restano OPEN e nessuna attestazione positiva.
+
+### Sonda VPS — correzione del contratto d'identità sorgente
+
+Tentativo su `1eb70c4…`: trasporto PASS, build raggiunto, poi
+`ING_COMPAT_IDENTITY_POLICY_UNSUPPORTED`. Nessun switch/attestazione;
+stop prima dei GET Semantic/asset. Il probe confondeva
+`extractionProfile.runtime.rowIdentityBasis=ASSET_AND_ROW_ORDINAL` con
+`sourceObjectIdentityPolicy.strategy`, il cui valore normativo è
+`MANAGED_DETERMINISTIC` per questa policy. Contratto owner e
+`ManagedFileService` Onboarding confermano campi `[$managedRowOrdinal]` e
+normalizzazione `normalization://managed-file/asset-row-ordinal-v1`.
+
+Correzione Ingestion `dae05e6d4e8aa5dcd2f1ff2b6642b1ff4356dd37` (PR #33): verifica quella combinazione
+esatta, supporta anche NATIVE_KEY/COMPOSITE_NATIVE_KEY con cardinalità/campi
+validi; non modifica la configurazione congelata o l'hash. Quattro regressioni
+Java aggiunte e fixture managed corretta; dodici test Python PASS, CI Java 21
+nuova revisione in corso al momento dell'aggiornamento. Il comando aggiornato,
+dove presente, punta alla nuova revisione. Compatibilità live non attestata;
+accesso Gateway/Semantic ancora non provato. R-SMOKE/R-INSTALL OPEN.
