@@ -30,7 +30,7 @@ class RecoveryRoutesTest(unittest.TestCase):
             for invalid in ['not-uuid','00000000-0000-0000-0000-000000000001/abort','00000000-0000-0000-0000-000000000001/reprocess']:
                 self.assertIsNone(re.search(rule[2],routes.BASE+resource+'/'+invalid))
     def test_unknown_transforming_plugin_blocks(self):
-        self.template['plugins']['serverless-pre-function']={}
+        self.template['plugins']['body-transformer']={}
         with self.assertRaisesRegex(RuntimeError,'TEMPLATE_UNSUPPORTED'):routes.desired_routes([self.template],self.scopes)
     def test_reference_template_blocks(self):
         self.template['plugin_config_id']='reference'
@@ -55,8 +55,22 @@ class RecoveryRoutesTest(unittest.TestCase):
         with contextlib.redirect_stdout(output):routes.template_report([self.template])
         text=output.getvalue()
         self.assertIn('BEARER_ONLY_LAYOUT=BOOLEAN_FALSE',text)
-        self.assertIn('FAILED_CHECKS=OIDC_BEARER_ONLY_TRUE,KNOWN_PLUGIN_SET',text)
+        self.assertIn('FAILED_CHECKS=OIDC_BEARER_ONLY_TRUE',text)
         self.assertNotIn('DO_NOT_PRINT_TEST_SECRET',text)
         self.assertNotIn('DO_NOT_PRINT_TEST_CODE',text)
+
+    def test_template_functions_replaced_rate_limit_preserved(self):
+        self.template['plugins']['limit-count']={'count':20,'time_window':60}
+        self.template['plugins']['serverless-pre-function']={'phase':'rewrite','functions':['DO_NOT_COPY_OTHER_OWNER']}
+        self.template['plugins']['serverless-post-function']={'phase':'access','functions':['DO_NOT_COPY_SERVICE_GUARD']}
+        desired=routes.desired_routes([self.template],self.scopes)
+        for route in desired.values():
+            self.assertEqual(route['plugins']['limit-count'],{'count':20,'time_window':60})
+            pre=route['plugins']['serverless-pre-function']['functions'][0]
+            post=route['plugins']['serverless-post-function']['functions'][0]
+            self.assertNotIn('DO_NOT_COPY',pre+post)
+            self.assertIn("'x-ouf-'",pre)
+            self.assertIn("actor~='HUMAN'",post)
+            self.assertNotIn("clear_header('Authorization')",pre+post)
 
 if __name__=='__main__':unittest.main()

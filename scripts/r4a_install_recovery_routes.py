@@ -55,6 +55,32 @@ def published(live,tenant):
     return json.loads(body)
 
 
+def strip_identity_headers():
+    # Never trust identity/capability headers supplied by a client. Keep Authorization.
+    return ("return function(conf, ctx) "
+            "local headers=ngx.req.get_headers(0,true); "
+            "for name,_ in pairs(headers) do "
+            "if string.lower(name):sub(1,6)=='x-ouf-' then ngx.req.clear_header(name) end "
+            "end end")
+
+
+def human_guard():
+    # This runs in access after OIDC verification; decoding is an additional actor check.
+    # Preserve the bearer token for the independent owner principal adapter.
+    return ("return function(conf, ctx) "
+            "local cjson=require('cjson.safe'); local auth=ngx.var.http_authorization; "
+            "local token=auth and auth:match('^[Bb]earer%s+(.+)$'); "
+            "local part=token and token:match('^[^.]+%.([^.]+)%.[^.]+$'); "
+            "if not part then return ngx.exit(401) end; "
+            "part=part:gsub('-','+'):gsub('_','/'); "
+            "local rem=#part%4; if rem>0 then part=part..string.rep('=',4-rem) end; "
+            "local raw=ngx.decode_base64(part); local claims=raw and cjson.decode(raw); "
+            "if type(claims)~='table' then return ngx.exit(401) end; "
+            "local actor=claims['ouf_actor_type']; "
+            "if actor~='HUMAN' and actor~='HUMAN_USER' then return ngx.exit(403) end; "
+            "end")
+
+
 def template_facts(template):
     plugins=template.get('plugins',{})
     oidc=plugins.get('openid-connect',{})
@@ -68,7 +94,7 @@ def template_facts(template):
         'OIDC_ENABLED':bool(oidc) and not oidc.get('_meta',{}).get('disable',False),
         'OIDC_BEARER_ONLY_TRUE':oidc.get('bearer_only') is True,
         'EXPECTED_TEMPLATE_SCOPE':oidc.get('required_scopes')==['ouf.onboarding.configuration.read'],
-        'KNOWN_PLUGIN_SET':not bool(set(plugins)-{'openid-connect','proxy-rewrite','cors','request-id','prometheus'}),
+        'KNOWN_PLUGIN_SET':not bool(set(plugins)-{'openid-connect','proxy-rewrite','cors','request-id','prometheus','limit-count','serverless-pre-function','serverless-post-function'}),
         'PUBLIC_HOST_SUPPORTED':not hosts or hosts==['api.ouf-lab.it'],
     }
 
@@ -111,6 +137,9 @@ def desired_routes(values,required):
                    plugins=copy.deepcopy(plugins),
                    upstream={'type':'roundrobin','scheme':'http','nodes':{'ouf-ingestion:8080':1}})
         route['plugins'].pop('proxy-rewrite',None)
+        # Never copy template Lua, which can carry another actor/owner contract.
+        route['plugins']['serverless-pre-function']={'phase':'rewrite','functions':[strip_identity_headers()]}
+        route['plugins']['serverless-post-function']={'phase':'access','functions':[human_guard()]}
         route['plugins']['openid-connect']['required_scopes']=[required[cap]]
         for key in ('host','hosts'):
             if key in template:route[key]=copy.deepcopy(template[key])
