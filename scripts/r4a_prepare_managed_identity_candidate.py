@@ -50,12 +50,15 @@ def runtime_guard(old, new_image=None):
 
 
 def optional(name):
-    result = subprocess.run(["docker", "inspect", name], capture_output=True, text=True, timeout=30)
-    if result.returncode:
-        if "No such object" in result.stderr or "No such image" in result.stderr:
+    # Listing an absent container succeeds with no matching name. Do not infer
+    # absence from version-dependent Docker inspect error messages.
+    try:
+        names = inventory.run(["docker", "container", "ls", "--all", "--format", "{{.Names}}"])
+        if name not in names.splitlines():
             return None
-        raise RuntimeError("OWNER_DOCKER_INSPECT_FAILED")
-    return json.loads(result.stdout)[0]
+        return inventory.inspect(name)
+    except subprocess.CalledProcessError:
+        raise RuntimeError("OWNER_DOCKER_INSPECT_FAILED") from None
 
 
 def candidate_matches(candidate, old, image):

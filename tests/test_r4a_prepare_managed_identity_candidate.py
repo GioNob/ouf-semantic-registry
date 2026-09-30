@@ -4,6 +4,7 @@ import io
 import json
 from pathlib import Path
 import stat
+import subprocess
 import sys
 import tempfile
 from types import SimpleNamespace
@@ -38,6 +39,22 @@ def candidate():
 
 
 class PrepareManagedIdentityCandidateTests(unittest.TestCase):
+    def test_optional_lookup_uses_exact_names_and_rejects_daemon_failure(self):
+        for names in ("", "candidate-old\nother\n"):
+            with patch.object(prepare.inventory, "run", return_value=names) as run, \
+                 patch.object(prepare.inventory, "inspect") as inspect:
+                self.assertIsNone(prepare.optional("candidate"))
+                self.assertEqual(run.call_args.args[0], ["docker", "container", "ls", "--all", "--format", "{{.Names}}"])
+                inspect.assert_not_called()
+        with patch.object(prepare.inventory, "run", return_value="other\ncandidate\n"), \
+             patch.object(prepare.inventory, "inspect", return_value={"Id": "existing"}) as inspect:
+            self.assertEqual(prepare.optional("candidate"), {"Id": "existing"})
+            inspect.assert_called_once_with("candidate")
+        error = subprocess.CalledProcessError(1, ["docker"], stderr="private-detail")
+        with patch.object(prepare.inventory, "run", side_effect=error):
+            with self.assertRaisesRegex(RuntimeError, "^OWNER_DOCKER_INSPECT_FAILED$"):
+                prepare.optional("candidate")
+
     def test_unsafe_root_blocks_before_inventory_build_or_container_operations(self):
         for mode, owner in ((stat.S_IFDIR | 0o755, 0), (stat.S_IFDIR | 0o700, 1000),
                             (stat.S_IFLNK | 0o700, 0)):
