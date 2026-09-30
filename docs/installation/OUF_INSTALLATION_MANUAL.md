@@ -1,5 +1,37 @@
 # OUF — Manuale di installazione e bootstrap
 
+## 2026-09-30 — approvazione HUMAN acquisita PASS; attivazione ancora da eseguire
+
+Output VPS: HUMAN_APPROVAL=PASS challenge **4f7a8248-ef40-4dc4-8a64-8a6101c98511**,
+owner readback PASS **STATE=APPROVED**, hash congelato invariato.
+Receipt privato `/etc/ouf/deploy-snapshots/cinema-approval-confirmation.json`.
+SOURCE_ACTIVATION=false. Non rilanciare conferma/rinnovo; conservare receipt
+corrente, archive della challenge scaduta e receipt renewal.
+La nuova challenge sostituisce quella scaduta nel workflow locale; nessun
+cambio retroattivo del record storico scaduto. Compatibilità SERVICE e UDP
+corrente restano evidenze acquisite; Onboarding ricontrolla i gate all'activation.
+
+Contratto owner 6340d5bf… verificato: activate richiede HUMAN e versione APPROVED,
+latest INGESTION_RUNTIME compatible=true sullo stesso hash, surveillance e gate
+UDP; compila/persistisce bundle ACTIVE e proiezioni atomiche e porta versione
+ACTIVE. La THS activate legge la challenge e delega all'owner; il TTL della
+challenge già CONFIRMED non viene usato come nuovo gate di conferma.
+Non confondere publication ACTIVE con run Ingestion o materializzazione PASS.
+
+Prima del POST activate: controllare anche abilitazione worker live. La prova
+precedente era JVM separata e non certifica ActivationLoop/RunCoordinator.
+Helper `scripts/r4a_activation_worker_inventory.py`, Semantic
+**9c65cddf8f563b0413d11b883a03ed8202989aef**, compilazione Python verificata.
+READ_ONLY: verifica stato APPROVED/hash, container/revisione Ingestion, mount
+properties, hash corrispondente al release receipt; mostra esclusivamente
+TRUE/FALSE/ABSENT/UNSUPPORTED per activation.enabled property/env e flag su
+Spring JSON/command/JVM override. Non dichiara valore effettivo quando potrebbe
+esserci precedenza di altri property source; COMPLETE non equivale a worker
+abilitato o ALLOW. Nessun cambio properties/runtime/DB o POST.
+Acquisire inventario worker, poi preparare decisione HUMAN di activation e
+osservazione run→CDE→handoff→ACK→materializzazione→ricerca. R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — conferma bloccata per expiry; rinnovo esplicito pronto
 
 Operatore alle 15:14 Europe/Rome: HUMAN_APPROVAL=BLOCKED
