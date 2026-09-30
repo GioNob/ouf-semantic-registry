@@ -1,3 +1,5 @@
+import io
+import contextlib
 import unittest
 from unittest.mock import patch
 import r4a_install_runtime_intake_routes as install
@@ -15,6 +17,19 @@ class IntakeRoutesTests(unittest.TestCase):
             self.assertEqual(value['methods'],['POST'])
             self.assertTrue(value['plugins']['openid-connect']['bearer_only'])
             self.assertEqual(value['upstream']['nodes'],{'ouf-udp:8080':1})
+
+    def test_template_diagnostic_identifies_failed_check_without_secrets(self):
+        route = self.template()
+        route['plugins']['openid-connect']['client_secret'] = 'DO_NOT_PRINT_PRIVATE'
+        route['plugins']['openid-connect']['required_scopes'] = ['unexpected.scope']
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            install.template_report([route])
+        text = output.getvalue()
+        self.assertIn('FAILED_CHECKS=EXPECTED_TEMPLATE_SCOPE', text)
+        self.assertNotIn('DO_NOT_PRINT_PRIVATE', text)
+        self.assertNotIn('unexpected.scope', text)
+        self.assertIn('ROUTES_UNCHANGED=true', text)
 
     def test_duplicate_template_blocks_mutation(self):
         with self.assertRaisesRegex(RuntimeError,'NOT_UNIQUE'):
