@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 import r4a_prepare_frozen_compatibility_probe as helper
 import r4a_publication_bindings_inventory as bindings
 
@@ -28,7 +29,7 @@ def valid_now(grant, now):
         return result
     try:
         start, end = grant.get('validFrom'), grant.get('validUntil')
-        return (start is None or instant(start) <= now) and (end is None or now < instant(end))
+        return instant(start) <= now < instant(end)
     except (ValueError, TypeError):
         return False
 
@@ -37,16 +38,25 @@ def policy_counts(bundle, claims, now):
     relevant = [x for x in bindings.objects(bundle) if x.get('capabilityId') == CAP]
     descriptors = [x for x in relevant if 'allowedActors' in x and 'requiredScope' in x]
     grants = [x for x in relevant if 'grantId' in x and 'servicePrincipalId' in x]
-    identities = {claims.get(k) for k in ('sub', 'azp', 'client_id', 'service_principal_id', 'servicePrincipalId')
-                  if isinstance(claims.get(k), str) and claims.get(k)}
-    matching = [x for x in grants if x.get('servicePrincipalId') in identities]
-    subject = [x for x in matching if x.get('subjectId') is None or x.get('subjectId') == claims.get('sub')]
-    tenant = [x for x in subject if x.get('tenantId') == 'ouf-lab']
+    # Pinned owner IamSecurityConfiguration: text/trim, client_id then azp,
+    # ouf_subject then sub. No arbitrary service_principal_id alias.
+    def text(value):
+        return str(value).strip() if value is not None and str(value).strip() else None
+    principal = text(claims.get('client_id')) or text(claims.get('azp'))
+    subject_id = text(claims.get('ouf_subject')) or text(claims.get('sub'))
+    actor = text(claims.get('ouf_actor_type'))
+    matching = [x for x in grants if actor == 'SERVICE' and principal and
+                text(x.get('servicePrincipalId')) == principal]
+    subject = [x for x in matching if not text(x.get('subjectId')) or x.get('subjectId') == subject_id]
+    tenant = [x for x in subject if x.get('tenantId') == claims.get('tenant_id') == 'ouf-lab']
     return {
         'FLAT_DESCRIPTOR_COUNT': len(descriptors),
         'FLAT_DESCRIPTOR_SERVICE_SCOPE_COUNT': sum(isinstance(x['allowedActors'], list) and
             'SERVICE' in x['allowedActors'] and x['requiredScope'] == CAP for x in descriptors),
         'FLAT_GRANT_COUNT': len(grants),
+        'SUBJECT_ONLY_GRANT_COUNT': sum(bool(x.get('subjectId')) and not x.get('servicePrincipalId') for x in grants),
+        'SERVICE_PRINCIPAL_BOUND_GRANT_COUNT': sum(bool(x.get('servicePrincipalId')) for x in grants),
+        'ORGANIZATION_BOUND_GRANT_COUNT': sum(bool(x.get('organizationId')) for x in grants),
         'SERVICE_PRINCIPAL_CLAIM_DIAGNOSTIC_MATCH_COUNT': len(matching),
         'SUBJECT_CLAIM_DIAGNOSTIC_MATCH_COUNT': len(subject),
         'TENANT_DIAGNOSTIC_MATCH_COUNT': len(tenant),
@@ -63,6 +73,7 @@ def kc(container, realm, resource, extra=()):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--keycloak-container', default='ouf-keycloak')
+    parser.add_argument('--login-keycloak', action='store_true', help='Renew admin session interactively only if the read fails')
     args = parser.parse_args()
     if os.geteuid() != 0:
         raise RuntimeError('ROOT_REQUIRED')
@@ -97,7 +108,38 @@ def main():
     if not match:
         raise RuntimeError('TOKEN_REALM_UNSUPPORTED')
     try:
-        scopes = kc(args.keycloak_container, match[1], 'client-scopes', ('--fields', 'id,name'))
+        try:
+            container = helper.inspect(args.keycloak_container)
+        except subprocess.SubprocessError:
+            raise RuntimeError('KEYCLOAK_CONTAINER_NOT_FOUND')
+        if not container['State']['Running']:
+            raise RuntimeError('KEYCLOAK_CONTAINER_NOT_RUNNING')
+        try:
+            helper.run(['docker', 'exec', args.keycloak_container, 'test', '-x', '/opt/keycloak/bin/kcadm.sh'])
+        except subprocess.SubprocessError:
+            raise RuntimeError('KEYCLOAK_KCADM_NOT_EXECUTABLE')
+        try:
+            scopes = kc(args.keycloak_container, match[1], 'client-scopes', ('--fields', 'id,name'))
+        except subprocess.CalledProcessError as error:
+            diagnostic = (error.stderr or '').lower()
+            auth_missing = any(x in diagnostic for x in ('no server specified', 'session has expired',
+                               'invalid_grant', 'unauthorized', '401', 'failed to refresh token'))
+            if not args.login_keycloak or not auth_missing:
+                print('PUBLICATION_KEYCLOAK_SESSION_RENEWAL_INDICATED=' + str(auth_missing).lower())
+                raise
+            if not sys.stdin.isatty() or not sys.stdout.isatty():
+                raise RuntimeError('KEYCLOAK_LOGIN_TERMINAL_REQUIRED')
+            username = input('Account amministratore Keycloak (realm master): ').strip()
+            if not username or username.startswith('-') or any(ord(c) < 32 for c in username):
+                raise RuntimeError('KEYCLOAK_ADMIN_USERNAME_INVALID')
+            # Password is prompted by kcadm on the terminal, never passed on argv
+            # or read/captured by Python. No environment credentials are read.
+            result = subprocess.run(['docker', 'exec', '-it', args.keycloak_container,
+                '/opt/keycloak/bin/kcadm.sh', 'config', 'credentials',
+                '--server', 'http://localhost:8080', '--realm', 'master', '--user', username], timeout=120)
+            if result.returncode:
+                raise RuntimeError('KEYCLOAK_INTERACTIVE_LOGIN_FAILED')
+            scopes = kc(args.keycloak_container, match[1], 'client-scopes', ('--fields', 'id,name'))
         clients = kc(args.keycloak_container, match[1], 'clients', ('-q', 'clientId=ouf-ingestion', '--fields', 'id,clientId'))
         if not isinstance(scopes, list) or not isinstance(clients, list):
             raise RuntimeError('KEYCLOAK_RESPONSE_LAYOUT_UNSUPPORTED')
@@ -115,7 +157,9 @@ def main():
             print('PUBLICATION_KEYCLOAK_' + kind.upper() + '_SCOPE_MATCH_COUNT=' + str(sum(x.get('name') == CAP for x in values)))
         print('PUBLICATION_KEYCLOAK_READ=PASS')
     except subprocess.SubprocessError:
-        print('PUBLICATION_KEYCLOAK_READ=UNAVAILABLE ADMIN_SESSION_OR_CONTAINER_CHECK_REQUIRED=true')
+        print('PUBLICATION_KEYCLOAK_READ=UNAVAILABLE KCADM_GET_FAILED=true')
+    except RuntimeError as error:
+        print('PUBLICATION_KEYCLOAK_READ=UNAVAILABLE CODE=' + str(error))
     if helper.inspect('ouf-ingestion')['Id'] != live['Id']:
         raise RuntimeError('ING_RUNTIME_DRIFT')
     print('R4A_PUBLICATION_ACCESS_INVENTORY=COMPLETE LIVE_UNCHANGED=true IAM_UNCHANGED=true SOURCE_ACTIVATION=false SECRETS_NOT_PRINTED=true')
