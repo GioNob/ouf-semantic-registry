@@ -36,7 +36,7 @@ Pacchetto allegato v1.7: 323 checksum validi; L0 Blueprint v0.3, Matrix v1.7 e S
 
 Sei test Python PASS localmente. CI dedicata: 12 test della sonda, 11 regressioni adapter/mapper/contracts, sei test Python e prova del main nel jar confezionato. Sul commit aggiornato sono PASS la CI dedicata, la suite completa Ingestion con PostgreSQL, il restore drill e supply-chain/deployment con Trivy e Helm. La prima revisione era bloccata dalla CVE-2026-68497 nella dipendenza ereditata jackson-databind 2.21.4: BOM aggiornata a 2.21.6, mantenendo il gate HIGH/CRITICAL. Run modulo aggiornata: [36680659183](https://github.com/GioNob/ouf-ingestion-runtime/actions/runs/36680659183). Le suite pairwise/cross-module e l’evidence operatore rimangono evidenze distinte.
 
-## Prossimo intervento operatore — non ancora eseguito
+## Primo tentativo operatore — eseguito e BLOCKED; superato dal comando aggiornato sotto
 
 ```bash
 (
@@ -65,3 +65,51 @@ Le proprietà Gateway/token-file/tenant-id del mount esistente devono essere esp
 
 **R-SMOKE e R-INSTALL OPEN.** Conservare tutti i backup, rollback container e route snapshot del 29/09. Nessun restore DB automatico, nessuna pulizia indiscriminata. Roadmap, procedura e manuale sono aggiornati insieme; IAM/policy non sono stati modificati.
 
+
+## Aggiornamento operatore — 30 settembre: trasporto della sonda
+
+Il primo tentativo su `da941666…` è arrivato al build e poi si è fermato con
+`ING_COMPAT_TRANSPORT_CONFIG_REQUIRED`: tutte le tre proprietà activation erano
+assenti dal file summary live. Nessuno switch o POST attestazione. Il successivo
+`docker exec cat` è una diagnostica non adatta all'immagine distroless, non prova
+assenza del token. La lettura del bind mount sul VPS ha confermato file presente,
+SERVICE/client Ingestion/tenant/issuer/audience corrispondenti, TTL 277 secondi
+all'osservazione e scope `authorization.bundle.read`,
+`ouf.ingestion.configuration.attest`, `ouf.internal.object-storage.read`,
+`email`, `profile`. Claim decodificati: diagnostica, non autenticazione.
+
+La correzione Ingestion è `160e3391862083bd8779aed69493484f5d2b086d` sulla PR #33. Dieci test Python locali PASS;
+CI sulla nuova revisione avviata, risultato non ancora acquisito in questo aggiornamento.
+Nessuna modifica Java, DB, IAM/policy o configurazione live.
+Il preparatore legge i riferimenti registry HTTPS/token già presenti, controlla
+le dipendenze prima del build e crea un file temporaneo solo per la sonda con
+Gateway origin, token-file e tenant esplicito (`--tenant-id ouf-lab`). File root:10002,
+0440, montato read-only al posto delle proprietà solo nel container usa-e-getta;
+nessun token copiato, file rimosso anche in caso di errore della sonda. Directory
+auth esistente in sola lettura, rinnovo token conservato. Non aggiungere le
+proprietà al summary live né abilitare activation/execution durante questa prova.
+
+L'accesso Semantic esatto resta da provare: nessuno scope Semantic esplicito è
+presente nell'output. Il consumer deve attraversare Gateway con owner enforcement;
+un 401/403/404 richiede correzione governata di IAM/grant/route/owner, mai accesso
+diretto allo storage o attestazione sintetica. La versione resta congelata e
+compatibilità non attestata. **R-SMOKE e R-INSTALL OPEN.**
+
+### Comando aggiornato — risultato VPS ancora da acquisire
+
+```bash
+(
+set -e
+cd /opt/ouf/ingestion
+git fetch --no-tags origin codex/r4a-ingestion-frozen-compatibility-probe
+git show 160e3391862083bd8779aed69493484f5d2b086d:scripts/r4a_prepare_frozen_compatibility_probe.py > /tmp/ouf-r4a-ingestion-frozen-probe.py
+sudo python3 /tmp/ouf-r4a-ingestion-frozen-probe.py \
+  --revision 160e3391862083bd8779aed69493484f5d2b086d \
+  --source managed-cinema-8ec8ae90 \
+  --version 68394f42-5c82-4127-a1f3-126516665749 \
+  --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
+  --tenant-id ouf-lab
+)
+```
+
+Il comando è una prova candidata isolata, non un rollout. I gate successivi restano quelli indicati sopra.

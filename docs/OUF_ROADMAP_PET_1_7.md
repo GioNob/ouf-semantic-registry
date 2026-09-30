@@ -313,3 +313,32 @@ alla ricerca UDP. **R-SMOKE e R-INSTALL restano OPEN**.
 
 Contratto, parametri, limiti e procedura:
 [R4A_FROZEN_CONFIGURATION_COMPATIBILITY.md](https://github.com/GioNob/ouf-ingestion-runtime/blob/da941666643d83f9f417da85be91fb3b10d4db01/docs/R4A_FROZEN_CONFIGURATION_COMPATIBILITY.md).
+
+## Aggiornamento operatore — 30 settembre: trasporto della sonda
+
+Il primo tentativo su `da941666…` è arrivato al build e poi si è fermato con
+`ING_COMPAT_TRANSPORT_CONFIG_REQUIRED`: tutte le tre proprietà activation erano
+assenti dal file summary live. Nessuno switch o POST attestazione. Il successivo
+`docker exec cat` è una diagnostica non adatta all'immagine distroless, non prova
+assenza del token. La lettura del bind mount sul VPS ha confermato file presente,
+SERVICE/client Ingestion/tenant/issuer/audience corrispondenti, TTL 277 secondi
+all'osservazione e scope `authorization.bundle.read`,
+`ouf.ingestion.configuration.attest`, `ouf.internal.object-storage.read`,
+`email`, `profile`. Claim decodificati: diagnostica, non autenticazione.
+
+La correzione Ingestion è `160e3391862083bd8779aed69493484f5d2b086d` sulla PR #33. Dieci test Python locali PASS;
+CI sulla nuova revisione avviata, risultato non ancora acquisito in questo aggiornamento.
+Nessuna modifica Java, DB, IAM/policy o configurazione live.
+Il preparatore legge i riferimenti registry HTTPS/token già presenti, controlla
+le dipendenze prima del build e crea un file temporaneo solo per la sonda con
+Gateway origin, token-file e tenant esplicito (`--tenant-id ouf-lab`). File root:10002,
+0440, montato read-only al posto delle proprietà solo nel container usa-e-getta;
+nessun token copiato, file rimosso anche in caso di errore della sonda. Directory
+auth esistente in sola lettura, rinnovo token conservato. Non aggiungere le
+proprietà al summary live né abilitare activation/execution durante questa prova.
+
+L'accesso Semantic esatto resta da provare: nessuno scope Semantic esplicito è
+presente nell'output. Il consumer deve attraversare Gateway con owner enforcement;
+un 401/403/404 richiede correzione governata di IAM/grant/route/owner, mai accesso
+diretto allo storage o attestazione sintetica. La versione resta congelata e
+compatibilità non attestata. **R-SMOKE e R-INSTALL OPEN.**
