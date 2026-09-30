@@ -1599,3 +1599,43 @@ altri property source per il tenant; niente POST o mutazione IAM/route/env.
 Prossimo output richiesto: inventario route; poi correggere il layer realmente
 mancante, riprovare discovery e preparare worker candidate/switch controllato.
 R-SMOKE/R-INSTALL OPEN; approvazione HUMAN non va ripetuta.
+
+## 2026-09-30 — LIST runtime assente; correzione route pronta
+
+Output VPS: LIST_ROUTE_COUNT=0; ACTIVE/RESOLVE ciascuna una route enabled,
+upstream Onboarding inline, OIDC abilitato, owner path preservato, nessun
+rewrite/reference/extra condition; required scope ouf.onboarding.configuration.read.
+Bearer Ingestion CONFIG_READ_SCOPE_PRESENT=false. Owner TENANT_ENV_PRESENT=false
+ma SPRING_APPLICATION_JSON_PRESENT=true: tenant effettivo NON ancora diagnosticato.
+Questi sono layer distinti; il 404 LIST è coerente con route mancante, non prova
+di policy deny. Fonte resta APPROVED, worker disabilitato, nessuna fonte ACTIVE.
+
+Helper scripts/r4a_install_runtime_publication_list_route.py, Semantic
+**78b41071beae7c613e8eedc856865f68a3a6124b**, plan/apply; sei test locali PASS,
+CI non acquisita. Plan GET admin solamente, nessun snapshot/receipt/PUT.
+Richiede owner live 6340d5bf…/APPROVED/hash, template ACTIVE univoco/upstream/
+OIDC/scope esatti, assenza route GET root e assenza del nuovo ID.
+La nuova route è GET esatta /api/onboarding/v1/runtime/publications, ID
+r4a-onboarding-runtime-publications-list, clone di upstream/plugins/host/
+security del template ACTIVE; non modifica ACTIVE/RESOLVE né IAM/grant.
+Legge solo il tenant mirato da Spring JSON (flat/nested) e stampa presence/match
+bool; nessuna stampa JSON/env/credenziale.
+
+Apply conserva admin route snapshot completo privato root0600 in directory
+privata /etc/ouf/deploy-snapshots/publication-list-route-*/routes-before.json,
+riserva receipt runtime-publication-list-route.json root0600
+UNVERIFIED_DO_NOT_REPUT, singolo PUT nuovo ID e GET readback univoco/contenuto
+esatto; fonte/hash devono restare invariati. Admin key/body sono su stdin curl,
+niente redirect/retry e nessuna stampa route body o secret. Receipt PASS o
+incerto blocca un secondo PUT automatico: riconciliare, non cancellare alla cieca.
+Nessuna modifica worker/Onboarding env/DB, nessuna approval/activation.
+
+Blocchi successivi: token Ingestion deve acquisire lo scope configuration.read
+tramite configurazione IAM/refresher corretta e owner policy SERVICE adeguata;
+verificare GET effettiva (non inventario scope soltanto), incluso module-level
+per list e source-level quando esisterà la pubblicazione. Se JSON tenant non
+corrisponde, correggere binding owner con rollout governato, non inferire da
+assenza ENV. Solo dopo discovery HTTP200 e scope/tenant/owner ALLOW: candidato
+worker enabled=true, switch/prova, HUMAN activate e prima run fino a UDP/search.
+Route correction ancora non eseguita sul VPS fino a output PASS.
+R-SMOKE/R-INSTALL OPEN; approvazione acquisita non va ripetuta.
