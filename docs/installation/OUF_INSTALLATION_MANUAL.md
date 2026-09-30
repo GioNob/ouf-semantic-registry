@@ -1,5 +1,37 @@
 # OUF — Manuale di installazione e bootstrap
 
+## 2026-09-30 — conferma bloccata per expiry; rinnovo esplicito pronto
+
+Operatore alle 15:14 Europe/Rome: HUMAN_APPROVAL=BLOCKED
+APPROVAL_CHALLENGE_EXPIRED_OR_TOO_SHORT, SOURCE_ACTIVATION=false.
+Il codice si è arrestato in review.main prima di login/riserva receipt di
+conferma/POST confirm. Non dedurre APPROVED: versione attesa ancora IN_REVIEW,
+da ricontrollare nel rinnovo. Challenge d56c8e00-de2b-4f47-a940-38b453facf2f
+scaduta alle 15:13:21 italiane; non modificare status/expiry via SQL.
+
+Helper scripts/r4a_renew_cinema_approval.py, Semantic
+**1bea4f9d68a3062f2d0ea002cf11144496bc024e**, quattro test locali PASS,
+CI non acquisita. Rinnovo esplicito con --expired-challenge; verifica vecchio
+receipt PASS root0600, card/config/hash esatti, versione IN_REVIEW, challenge
+expired e CREATED/EXPIRED, zero decisioni sulla versione, zero altre challenge
+CREATED non scadute e assenza receipt di conferma. Ripete i controlli dopo
+Device Flow e verifica route/runtime/hash invariati.
+Riserva file renewal-{expiredId}.json root0600 prima del POST; archivia senza
+sovrascrittura il vecchio receipt in cinema-approval-challenge-expired-{id}.json.
+Salva nel receipt corrente UNVERIFIED_DO_NOT_REPOST, poi singolo POST create,
+GET card e proof di nuova challenge/config/hash/expiry. A PASS aggiorna anche
+il receipt di rinnovo con nuovo ID. Vecchia challenge nel DB rimane immutata.
+Timeout o receipt incerto richiedono riconciliazione, niente secondo POST.
+
+Con --review-and-confirm prosegue nella stessa sessione HUMAN (token solo in
+memoria) al preparatore di conferma già testato: card riletta, sezioni
+decisionali mostrate, richiesta di digitare APPROVO seguito dal NUOVO UUID.
+Nessuna conferma automatica dal rinnovo/device login; rifiuto annulla.
+Riduce i passaggi fra creazione e decisione senza cambiare TTL o policy.
+Non chiama activate e non avvia ingestion. Rinnovo/conferma ancora da eseguire
+sul VPS fino a output PASS; R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — review card acquisita PASS; conferma HUMAN pronta, non eseguita
 
 Operatore: REVIEW=PASS CARD_AND_OWNER_MATCH=true, hash invariato,
