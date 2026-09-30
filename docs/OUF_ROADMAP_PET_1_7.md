@@ -1,5 +1,51 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+## 2026-09-30 — draft grant Ingestion acquisito; pubblicazione HUMAN preparata
+
+Operatore: ACTIVE_POLICY_REF=ouf-lab-authorization:32, 36 capability/76 grant.
+DRAFT_ID=c957ad91-95f3-43fe-8a43-808e0566f977, revision=0.
+Preview una sola aggiunta grant-onboarding-runtime-publication-read-ingestion,
+capability change=0, existing grants preserved=true, policy NOT PUBLISHED.
+State privato
+/etc/ouf/deploy-snapshots/ingestion-runtime-publication-grant-draft.json.
+Output specifico Keycloak apply/verify non allegato in questo messaggio;
+se eseguita l'intera sequenza precedente, il raggiungimento del draft implica
+che i passi precedenti abbiano superato set -e. Non sostituisce readback scope
+nel nuovo bearer: attualmente ultimo token osservato config-read=false.
+Non creare un altro draft e non ripetere source approval.
+
+Nuovo helper Semantic scripts/r4a_publish_publication_grant.py, commit
+cf24008501ea6ba084fb4f46ccf1adc8af587a62; tre test locali con HTTP simulado PASS
+(baseline drift blocca POST, timeout conserva receipt e blocca repost,
+success verifica grant e baseline), CI non acquisita.
+Importa il lifecycle Onboarding pinned 6340d5bf120e09b47c32177656e2c377a4c03640
+e il manifest Semantic pinned 20617e48a61b8431a011ff50b237c68d28c1106d.
+Verifica hash manifest, state root0600, exact draftId/revision0/desired grant,
+target ouf-lab-authorization:33. Login Device Flow HUMAN, legge active32
+e verifica 36 capability/76 grant con hash baseline dello state; preview
+add-only con zero capability change. Stampa oggetto della decisione:
+SERVICE ouf-ingestion, tenant ouf-lab, published-configuration/module ONBOARDING,
+validUntil 2036-09-15T07:13:50.968730Z.
+Conferma terminale esatta PUBBLICO ouf-lab-authorization:33.
+
+Dopo conferma rilegge active/base/state e preview. Riserva receipt root0600
+/etc/ouf/deploy-snapshots/ingestion-runtime-publication-grant-publication.json,
+UNVERIFIED_DO_NOT_REPOST, fsync file+directory prima dell'unico POST publish
+con If-Match 0. Nessun retry/secondo POST automatico. Se receipt già esiste,
+anche PASS o incerto, blocca: prima riconciliare con GET.
+Dopo risposta200/PUBLISHED richiede active33, hash capability immutato,
+desired grant esatto, hash tutti i grant precedenti invariato; receipt PASS.
+Risultato atteso36 capability/77 grant. Nessun token/HUMAN credential in output.
+Non modifica worker/tenant/refresher e non attiva la fonte.
+Pubblicazione sul VPS ancora NON eseguita fino a output operatore PASS.
+
+Successivamente leggere bundle usando workload, adottare i candidati owner
+tenant/refresher con backup/rollback, verificare tokenconfig-read e discovery200,
+quindi worker enablement/HUMAN activate/smoke UDP/search. Grant policy publication
+e source approval/activation sono decisioni distinte; fonte già APPROVED.
+R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — scope Ingestion non associato; grant runtime preparato per draft HUMAN
 
 Output VPS: descriptor SERVICE/scope=1; grant flat=1/service-bound=1,
