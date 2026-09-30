@@ -1,5 +1,15 @@
 # OUF — Manuale di installazione e bootstrap
 
+## 2026-09-30 — SSH disconnected; recovery route installation success unverified
+
+Operator reports SSH disconnected and output unavailable; recalls PASS markers. Treat installation as UNKNOWN until readback; do not claim four routes installed or rerun plan/apply. The existing exclusive receipt intentionally prevents blind repeats after uncertain results. No evidence of retry/resume; installer never calls recovery APIs.
+
+Generic installer now exposes READ_ONLY `verify` mode. It reads root-owned 0600 `/etc/ouf/deploy-snapshots/ingestion-recovery-routes.json`, reports sanitized receipt status, validates snapshot path under the private root and root-owned 0700 parent/0600 snapshot, verifies receipt PASS and exact four expected bodies/attempted IDs, compares current route bodies and all pre-existing routes against saved snapshot, checks unchanged Ingestion container context and expected active policy/descriptors. It never writes a receipt or marks an ambiguous result successful. Missing/unverified/rolled-back/manual-recovery receipt or drift blocks for reconciliation; no PUT/DELETE/POST/retry/resume in verify path. Template mode can also read after receipt exists; plan/apply retain the exclusive receipt guard.
+
+Thirteen local unit tests PASS, including saved PASS acceptance, unverified receipt rejection, route-body drift and prior-route drift; server readback not yet executed. Proposed next: download installer and four helper scripts pinned together, run `verify --tenant ouf-lab --expected-policy ouf-lab-authorization:35`. Output contains no complete receipts, OIDC config, snapshot contents, Lua or tokens. A verify PASS proves route control-plane state and receipt matching only, not live HTTP routing or HUMAN owner authorization.
+
+Production principal adapter work in Ingestion remains blocking before retry/resume (see preceding source review); CI-green retry commit `759d916cc9a45a39e9be0156f54677225a172e1f` alone is insufficient. Preserve both loops and existing frozen activation/run history; no source reactivation, once-schedule reset or lifecycle SQL mutations. S3/intake durability and authorization, eight-row smoke/materialization/search, RAW replay SPI, governed per-source/per-zone lake policies and prior PET/RSMOKE/RINSTALL gaps remain open.
+
 ## 2026-09-30 — Template failure identified; explicit HUMAN route guards prepared; owner principal adapter gap found
 
 Operator diagnostic proves exactly KNOWN_PLUGIN_SET=false; every other predicate true. Actual plugins: limit-count, openid-connect, request-id, serverless-post-function, serverless-pre-function; no proxy-rewrite. OIDC enabled/bearer-only and expected config.read scope; exact inline Onboarding and supported public host. Do not drop security functions or permit arbitrary Lua cloning based solely on plugin names.

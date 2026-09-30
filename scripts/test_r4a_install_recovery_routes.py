@@ -73,4 +73,26 @@ class RecoveryRoutesTest(unittest.TestCase):
             self.assertIn("actor~='HUMAN'",post)
             self.assertNotIn("clear_header('Authorization')",pre+post)
 
+    def evidence(self):
+        desired=routes.desired_routes([self.template],self.scopes)
+        receipt={'status':'PASS','desired':desired,'attempted':list(desired)}
+        current=[self.template]+[{**value,'id':ident} for ident,value in desired.items()]
+        return desired,receipt,current
+    def test_saved_success_verified_without_reinstall(self):
+        desired,receipt,current=self.evidence()
+        routes.verify_saved(current,desired,receipt,[self.template])
+    def test_unverified_receipt_rejected(self):
+        desired,receipt,current=self.evidence();receipt['status']='UNVERIFIED_DO_NOT_REPUT'
+        with self.assertRaisesRegex(RuntimeError,'RECEIPT_NOT_PASS'):
+            routes.verify_saved(current,desired,receipt,[self.template])
+    def test_saved_route_drift_rejected(self):
+        desired,receipt,current=self.evidence();current[-1]=copy.deepcopy(current[-1])
+        current[-1]['plugins']['openid-connect']['required_scopes']=['wrong']
+        with self.assertRaisesRegex(RuntimeError,'READBACK_MISMATCH'):
+            routes.verify_saved(current,desired,receipt,[self.template])
+    def test_prior_route_drift_rejected(self):
+        desired,receipt,current=self.evidence();current[0]=copy.deepcopy(current[0]);current[0]['status']=0
+        with self.assertRaisesRegex(RuntimeError,'EXISTING_ROUTES_DRIFT'):
+            routes.verify_saved(current,desired,receipt,[self.template])
+
 if __name__=='__main__':unittest.main()

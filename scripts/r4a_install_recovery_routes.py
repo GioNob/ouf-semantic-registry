@@ -187,12 +187,32 @@ def rollback(key,desired,attempted):
         if status!='404':raise RuntimeError('RECOVERY_ROLLBACK_NOT_VERIFIED')
 
 
+def private_json(path):
+    meta=path.lstat()
+    if not stat.S_ISREG(meta.st_mode) or meta.st_uid!=0 or stat.S_IMODE(meta.st_mode)!=0o600:
+        raise RuntimeError('RECOVERY_PRIVATE_EVIDENCE_UNSAFE')
+    return json.loads(path.read_text())
+
+
+def verify_saved(values,desired,receipt,before):
+    if receipt.get('status')!='PASS':raise RuntimeError('RECOVERY_RECEIPT_NOT_PASS_RECONCILE_DO_NOT_REPUT')
+    if receipt.get('desired')!=desired or set(receipt.get('attempted',[]))!=set(desired):
+        raise RuntimeError('RECOVERY_RECEIPT_ROUTE_SET_MISMATCH')
+    if len(receipt.get('attempted',[]))!=len(desired):raise RuntimeError('RECOVERY_RECEIPT_DUPLICATE_ATTEMPT')
+    for ident in desired:
+        found=[r for r in values if str(r['id'])==ident]
+        if len(found)!=1 or admin.comparable(found[0])!=desired[ident]:
+            raise RuntimeError('RECOVERY_SAVED_ROUTE_READBACK_MISMATCH')
+    if existing([r for r in values if str(r['id']) not in desired])!=existing(before):
+        raise RuntimeError('RECOVERY_EXISTING_ROUTES_DRIFT_SINCE_SNAPSHOT')
+
+
 def main(args):
     if os.geteuid()!=0:raise RuntimeError('ROOT_REQUIRED')
     os.umask(0o077)
     meta=ROOT.lstat()
     if not stat.S_ISDIR(meta.st_mode) or meta.st_uid!=0 or stat.S_IMODE(meta.st_mode)!=0o700:raise RuntimeError('PRIVATE_ROOT_UNSAFE')
-    if RECEIPT.exists() or RECEIPT.is_symlink():raise RuntimeError('RECOVERY_ROUTE_RECEIPT_EXISTS_RECONCILE_DO_NOT_REPUT')
+    if args.mode not in ('verify','template') and (RECEIPT.exists() or RECEIPT.is_symlink()):raise RuntimeError('RECOVERY_ROUTE_RECEIPT_EXISTS_RECONCILE_DO_NOT_REPUT')
     helper=admin.inventory.routes.helper
     live=helper.inspect('ouf-ingestion')
     if not live['State']['Running']:raise RuntimeError('INGESTION_NOT_RUNNING')
@@ -212,6 +232,27 @@ def main(args):
     key=admin.inventory.routes.admin_key(admin.inventory.routes.mounted_config(apisix).read_text())
     raw,_=admin.api(key,'GET','routes');values=admin.inventory.routes.route_values(raw)
     desired=desired_routes(values,required)
+    if args.mode=='verify':
+        if not RECEIPT.exists():raise RuntimeError('RECOVERY_RECEIPT_ABSENT_DO_NOT_ASSUME_SUCCESS')
+        receipt=private_json(RECEIPT)
+        status=receipt.get('status')
+        if status not in ('PASS','UNVERIFIED_DO_NOT_REPUT','ROLLED_BACK','MANUAL_RECOVERY_REQUIRED'):
+            raise RuntimeError('RECOVERY_RECEIPT_STATUS_UNSUPPORTED')
+        print('RECOVERY_SAVED_RECEIPT_STATUS='+status,flush=True)
+        snapshot=Path(receipt['beforeSnapshot'])
+        if snapshot.name!='routes-before.json' or snapshot.parent.parent!=ROOT:
+            raise RuntimeError('RECOVERY_SNAPSHOT_PATH_UNSUPPORTED')
+        parent=snapshot.parent.lstat()
+        if not stat.S_ISDIR(parent.st_mode) or parent.st_uid!=0 or stat.S_IMODE(parent.st_mode)!=0o700:
+            raise RuntimeError('RECOVERY_SNAPSHOT_DIRECTORY_UNSAFE')
+        before=admin.inventory.routes.route_values(private_json(snapshot))
+        verify_saved(values,desired,receipt,before)
+        now=helper.inspect('ouf-ingestion')
+        if any(now[k]!=live[k] for k in ('Id','Image','Config','HostConfig','Mounts')):
+            raise RuntimeError('INGESTION_CHANGED_DURING_ROUTE_VERIFY')
+        print('R4A_RECOVERY_ROUTES_READBACK=PASS RECEIPT_MATCH=true ROUTE_COUNT=4 EXISTING_ROUTES_PRESERVED=true')
+        print('R4A_RECOVERY_ROUTES_VERIFY=COMPLETE READ_ONLY=true ROUTES_UNCHANGED=true IAM_UNCHANGED=true RETRY=false RUN_RESUME=false OWNER_AUTHORIZATION_NOT_PROVEN=true SECRETS_NOT_PRINTED=true')
+        return
     collision(values,desired)
     for ident,method,resource,action,cap in TARGETS:
         _,status=admin.api(key,'GET','routes/'+ident,accepted=('200','404'))
@@ -255,7 +296,7 @@ def main(args):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('mode',choices=('template','plan','apply'))
+    p.add_argument('mode',choices=('template','plan','apply','verify'))
     p.add_argument('--tenant',required=True)
     p.add_argument('--expected-policy',required=True)
     try:main(p.parse_args())
