@@ -1,5 +1,61 @@
 # OUF — Manuale di installazione e bootstrap
 
+## 2026-09-30 — owner tenant live PASS; adozione refresher/discovery pronta
+
+Operatore: plan/apply owner PASS, tenantENV match=true, stessa immagine,
+Flyway invariato31, fonte ancora APPROVED e non attivata.
+Backup completo con restore drill PASS conservato:
+ /etc/ouf/deploy-snapshots/onboarding-before-managed-identity-jshhzuxc.dump.
+Rollback container:
+ ouf-onboarding-runtime-tenant-rollback-c0bd1523b4fb.
+Receipt /etc/ouf/deploy-snapshots/publication-owner-switch.json PASS.
+Refresher/token/worker invariati. Non ripetere owner apply o approval.
+
+Nuovo helper scripts/r4a_adopt_publication_refresher.py, Semantic commit
+f48fc39402f0166ff54b8e1cb1f87a8c95d4ae3a; quattro test locali PASS
+(installazione atomica mantiene owner/mode e ripristina contenuto originale,
+rollback dopo validation failure, failure restore segnala manual e tenta timer,
+discovery richiede200 e catalogo vuoto). HTTP nei test simulato,
+nessuna prova HTTP live aggiuntiva/CI acquisita fino a output VPS.
+
+PLAN/APPLY legge state preparazione, receipt owner/grant PASS e runtime owner
+esatto candidato tenant; richiede fonte/hash APPROVED e code Ingestion
+0dfab1e…/properties hash uguale release compatibilità.
+Worker flag deve essere assente/false, JSON/command override non accettati.
+Code queue/catologo devono essere vuote (publications/schedules/unfinished runs0).
+Refresher installato root regular non scrivibile da group/other,
+hash esatto af427550…; candidato private root0600 interno snapshots,
+hash stato e scope_patch(original) esatti. Unico Python ExecStart deve essere
+/opt/ouf/ops/refresh-ingestion-policy-token.py; service Type oneshot,
+TriggeredBy timer OUF univoci/attivi. Contratti differenti bloccano prima
+dell'installazione e richiedono inventario mirato, non cambio alla cieca.
+
+Apply conserva backup script privato0600 e receipt root0600 STARTING fsync,
+sospende timer e service, sostituisce solo script atomicamente con owner/gid/mode
+originali, reset-failed/start service e ExecMainStatus0.
+Verifica che il token realmente montato sia nuovo e includa config-read,
+riusa transport validation per identità/audience/tenant/expiry e scope
+object-store preesistente. Nessun bearer/secret/ExecStart completo stampato.
+GET effettiva via Gateway LIST deve dare200/items[]/nextAfter vuoto:
+prova owner ALLOW module-level, non ancora source-level (catalogo vuoto).
+Ripete queue/runtimes/properties/fonte invariati e worker disabled,
+ripristina tutti i timer attivi, receipt PASS.
+
+Errore/interrupt dopo riserva: tenta stop timer/service, reinstalla byte
+originali con metadata originali, rinnova bearer col vecchio refresher e
+valida transport; ripristina timer. Receipt ROLLED_BACK o
+MANUAL_RECOVERY_REQUIRED. Se recupero fallisce tenta comunque avvio timer.
+Receipt publication-refresher-adoption.json esistente blocca nuova apply:
+non cancellarla o ritentare ciecamente. Il token precedente non viene
+copiato/restaurato: il bearer di rollback è rinnovato, evitando token scaduti.
+Non modifica unit systemd/IAM/DB/worker/source activation.
+Adozione VPS ancora non eseguita fino a output operatore PASS.
+
+Dopo discovery200: preparazione/switch worker enabled=true con contesto code
+vuote verificato, HUMAN source activate già APPROVED, run reale e
+materializzazione UDP/search. R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — policy33 pubblicata PASS; rollout tenant owner pronto
 
 Operatore: conferma HUMAN PUBBLICO ouf-lab-authorization:33 acquisita.
