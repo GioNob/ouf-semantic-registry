@@ -1390,7 +1390,7 @@ con i mount/properties effettivi, distinta dalla sola readiness.
 Nessun POST attestazione/approval/activation nel blocco switch; HUMAN THS
 resta il gate fonte. R-SMOKE/R-INSTALL OPEN.
 
-### Prossimo comando corrente — switch Ingestion con backup, nessuna attestazione
+### Comando storico eseguito — switch Ingestion con backup, nessuna attestazione
 
 ```bash
 (
@@ -1407,5 +1407,68 @@ for mode in plan apply; do
     --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
     --tenant-id ouf-lab
 done
+)
+```
+
+## 2026-09-30 — switch Ingestion eseguito PASS; sonda deployata pronta
+
+Output VPS plan/apply acquisito: SWITCH=PASS live
+**0dfab1e7b2253fd939088259ea61754d6e56706c**, Flyway **14**,
+versione e hash congelati invariati. Dump completo verificato tramite restore
+in DB temporaneo e conservato:
+`/etc/ouf/deploy-snapshots/ingestion-before-compatibility-2weff4yv.dump`.
+Vecchio runtime conservato:
+`ouf-ingestion-compatibility-rollback-f55cbf453460`.
+Receipt privato `/etc/ouf/deploy-snapshots/ingestion-compatibility-switch.json`.
+Onboarding resta live 6340d5bf… Flyway31, UDP edaba2bf… Flyway34.
+ATTESTATION_POST=false; DEPLOYED_CONSUMER_PROBE_PENDING=true.
+Non stampare stato/receipt/dump/env/token; non rilanciare il blocco switch
+già eseguito, perché il receipt blocca doppi switch.
+
+Helper Semantic **974f5eff2e80fa1224cd5581b89fb312e9b4ceef**:
+`scripts/r4a_probe_deployed_ingestion.py`.
+Richiede receipt PASS, ID/image/revisione/label/context esatti, contratto
+runtime/env/mount/memoria e properties hash invariati, trasporto conforme
+alle tre properties effettivamente montate, token SERVICE fresco con issuer/
+audience/scopi e Flyway identico al receipt; verifica readiness.
+
+Esegue il consumer reale **in una JVM separata**, immagine ID del container
+live e stessi mount AUTH/properties read-only, rete ouf-backend. Nessuna copia
+temporanea del trasporto: le properties sono quelle effettivamente deployate.
+Nessun endpoint del processo applicativo live viene invocato per la
+compatibilità: questa è prova del consumer della revisione deployata con
+configurazione effettiva, distinta dalla sola readiness. Non avvia Spring,
+Flyway/scheduler/worker, non fornisce DB o persistenza, non POSTa attestazioni.
+
+Richiede otto righe, stesso hash asset/adapter/runtime/binding della proof
+predeploy, versione/hash congelati e snapshot live/Flyway/properties
+invariati dopo lettura e validazione. Cleanup del solo probe disposable
+anche in timeout/diniego. Salva solo dopo PASS proof privata root0600:
+`/etc/ouf/deploy-snapshots/ingestion-deployed-compatibility-probe.json`,
+con timestamp, image/container ID, candidateDeployed=true e modalità
+SEPARATE_JVM_DEPLOYED_IMAGE_AND_LIVE_MOUNTS; attestationSubmitted=false.
+
+Quattro nuovi test locali PASS (flusso completo immagine/mount reali,
+diniego, timeout, drift); 28 test preparatori/switch già PASS. CI nuova helper
+non ancora acquisita. Prossimo risultato richiesto DEPLOYED_COMPAT_PROBE PASS;
+solo dopo questa evidenza predisporre attestazione vincolata a proof/context
+e consumer deployato. Approval/activation restano HUMAN THS; fonte congelata
+e R-SMOKE/R-INSTALL OPEN. Nessuna attestazione inviata dal blocco corrente.
+
+### Prossimo comando corrente — sonda immagine deployata e mount effettivi
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+for script in r4a_prepare_frozen_compatibility_probe r4a_prepare_ingestion_candidate r4a_switch_ingestion_candidate r4a_probe_deployed_ingestion; do
+  git show 974f5eff2e80fa1224cd5581b89fb312e9b4ceef:scripts/"$script".py > /tmp/"$script".py
+done
+sudo python3 /tmp/r4a_probe_deployed_ingestion.py \
+  --source managed-cinema-8ec8ae90 \
+  --version 68394f42-5c82-4127-a1f3-126516665749 \
+  --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
+  --tenant-id ouf-lab
 )
 ```
