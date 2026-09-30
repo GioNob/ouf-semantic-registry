@@ -95,7 +95,8 @@ def policy_layout():
         raise RuntimeError('POLICY_BUNDLE_ROOT_UNSUPPORTED')
     safe = lambda keys: ','.join(sorted(k for k in keys if re.fullmatch(r'[A-Za-z0-9_.-]{1,80}', k)))
     print('PUBLICATION_POLICY_ROOT_FIELDS=' + safe(bundle.keys()))
-    matches = [item for item in bindings.objects(bundle) if any(value == CAP for value in item.values())]
+    print('PUBLICATION_POLICY_CAPABILITY_TEXT_PRESENT=' + str(CAP in raw).lower())
+    matches = [item for item in bindings.objects(bundle) if CAP in item or any(value == CAP for value in item.values())]
     print('PUBLICATION_POLICY_CAPABILITY_STRING_PARENT_COUNT=' + str(len(matches)))
     for index, item in enumerate(matches[:8], 1):
         print('PUBLICATION_POLICY_CAPABILITY_PARENT_' + str(index) + '_FIELDS=' + safe(item.keys()))
