@@ -10,9 +10,8 @@ import re
 import stat
 import tempfile
 import r4a_install_runtime_publication_list_route as admin
-import r4a_cinema_execution_readback as readback
 
-ROOT = readback.ROOT
+ROOT = Path('/etc/ouf/deploy-snapshots')
 RECEIPT = ROOT / 'runtime-intake-routes.json'
 TEMPLATE = '/api/udp/v1/governance/internal/identity/preflight'
 TARGETS = [('r4a-udp-runtime-lake-write','/api/internal/v1/lake/objects','datalake.write'),
@@ -173,7 +172,19 @@ def rollback(key,desired,attempted):
             raise RuntimeError('INTAKE_ROLLBACK_DELETE_NOT_VERIFIED')
 
 
-def main(mode):
+def smoke_preflight():
+    import r4a_cinema_execution_readback as readback
+    activation = readback.private(ROOT/'cinema-source-activation.json')
+    if (activation.get('status') != 'PASS' or activation.get('sourceId') != readback.SOURCE or
+        activation.get('versionId') != readback.VERSION or activation.get('configurationHash') != readback.HASH or
+        activation.get('publicationId') != readback.PUBLICATION):
+        raise RuntimeError('ACTIVATION_RECEIPT_MISMATCH')
+    run = readback.sql('ouf_ingestion',"select json_build_object('state',state,'failure',failure_code,'outbox',(select count(*) from ouf_ingestion.handoff_outbox where run_id=r.run_id)) from ouf_ingestion.ing_run r where run_id='86809c17-3354-45ca-a7e6-57e903944b24' and source_id='"+readback.SOURCE+"'")
+    if run != {'state':'PAUSED','failure':'ING_RECORD_QUARANTINED','outbox':0}:
+        raise RuntimeError('PAUSED_RUN_BASELINE_DRIFT')
+
+
+def main(mode,smoke_cinema=False):
     if os.geteuid() != 0:
         raise RuntimeError('ROOT_REQUIRED')
     os.umask(0o077)
@@ -182,19 +193,13 @@ def main(mode):
         raise RuntimeError('PRIVATE_SNAPSHOT_ROOT_UNSAFE')
     if RECEIPT.exists() or RECEIPT.is_symlink():
         raise RuntimeError('INTAKE_ROUTE_RECEIPT_EXISTS_RECONCILE_DO_NOT_REPUT')
-    activation = readback.private(ROOT/'cinema-source-activation.json')
-    if (activation.get('status') != 'PASS' or activation.get('sourceId') != readback.SOURCE or
-        activation.get('versionId') != readback.VERSION or activation.get('configurationHash') != readback.HASH or
-        activation.get('publicationId') != readback.PUBLICATION):
-        raise RuntimeError('ACTIVATION_RECEIPT_MISMATCH')
     helper = admin.inventory.routes.helper
     udp = helper.inspect('ouf-udp')
     image = helper.inspect(udp['Image'],'image')
     if not udp['State']['Running'] or image['Config'].get('Labels',{}).get('org.opencontainers.image.revision') != 'edaba2bff18a2aaf52d1180f21f0e68984cc3437':
         raise RuntimeError('UDP_OWNER_REVISION_DRIFT')
-    run = readback.sql('ouf_ingestion',"select json_build_object('state',state,'failure',failure_code,'outbox',(select count(*) from ouf_ingestion.handoff_outbox where run_id=r.run_id)) from ouf_ingestion.ing_run r where run_id='86809c17-3354-45ca-a7e6-57e903944b24' and source_id='"+readback.SOURCE+"'")
-    if run != {'state':'PAUSED','failure':'ING_RECORD_QUARANTINED','outbox':0}:
-        raise RuntimeError('PAUSED_RUN_BASELINE_DRIFT')
+    if smoke_cinema:
+        smoke_preflight()
     ing = helper.inspect('ouf-ingestion')
     if mode == 'catalogue':
         policy(ing,diagnostic=True)
@@ -264,8 +269,10 @@ def main(mode):
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('mode',choices=('catalogue','plan','apply'))
+    parser.add_argument('--smoke-cinema',action='store_true',help='Optional lab checkpoint; never used to scope routes or grants')
     try:
-        main(parser.parse_args().mode)
+        args=parser.parse_args()
+        main(args.mode,args.smoke_cinema)
     except Exception as error:
         code=str(error) if isinstance(error,RuntimeError) else type(error).__name__
         print('R4A_RUNTIME_INTAKE_ROUTES=BLOCKED CODE='+code+' RUN_RESUME=false SECRETS_NOT_PRINTED=true')
