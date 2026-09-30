@@ -286,3 +286,49 @@ conferma; dopo la decisione leggere la ricevuta con `authorization.proposal.read
 non usare il link come conferma valida: preparare una nuova proposta sullo stato
 ACTIVE corrente. Compatibilità, prova Semantic/asset e rollout ancora aperti;
 R-SMOKE/R-INSTALL OPEN. Nessuna attestazione o attivazione della fonte.
+
+### Conferma HUMAN verificata: policy :32 pubblicata
+
+L'utente ha confermato la proposta nel THS. L'assistente ha letto la ricevuta
+attraverso OUF MCP (account ouf-admin): proposta
+`44817d9d-e66c-4c02-8ef5-53ca2b2548e9`, revision **1**, **PUBLISHED**,
+finalPolicyRef **ouf-lab-authorization:32**. Non ricreare o riconfermare la proposta.
+Lo scope DEFAULT resta quello applicato/verificato dall'operatore. Questo chiude
+la pubblicazione governata del grant Semantic Ingestion, non la prova consumer.
+
+La candidata corrente PR #33 è `e4e1f095c53b7ec4819b8d99fcd79769027330bb`: tutte le 14 run CI
+push/PR risultano completed/success alla verifica, comprese suite consumer,
+module/security/recovery e pairwise. Nessun deploy live né attestazione positiva.
+Prossimo passo VPS: rileggere inventario, richiedere scope Semantic presente nel
+bearer ruotato prima del build e rieseguire la sonda sulla revisione corrente.
+L'inventario non equivale a decisione ALLOW: la sonda deve risolvere riferimenti,
+leggere l'asset e validare tutte le righe. La sessione amministrativa kcadm non
+serve a quelle letture; un suo eventuale expiry nell'inventario resta separato
+quando il token e il grant sono già verificati. Conservare versione/hash congelati,
+backup e rollback. R-SMOKE/R-INSTALL OPEN.
+
+### Prossimo comando — controllo bearer e prova candidata, non rollout
+
+```bash
+(
+set -e
+cd /opt/ouf/ingestion
+git fetch --no-tags origin codex/r4a-ingestion-frozen-compatibility-probe
+git show e4e1f095c53b7ec4819b8d99fcd79769027330bb:scripts/r4a_prepare_frozen_compatibility_probe.py > /tmp/r4a_prepare_frozen_compatibility_probe.py
+git show e4e1f095c53b7ec4819b8d99fcd79769027330bb:scripts/r4a_semantic_access_inventory.py > /tmp/r4a_semantic_access_inventory.py
+ouf_sem_inventory="$(sudo python3 /tmp/r4a_semantic_access_inventory.py --tenant-id ouf-lab --realm ouf)"
+printf '%s\n' "$ouf_sem_inventory"
+case "$ouf_sem_inventory" in
+  *SEM_TOKEN_SCOPE_PRESENT=true*) ;;
+  *) echo 'R4A_ING_COMPAT_RESUME=BLOCKED CODE=SEMANTIC_SCOPE_NOT_IN_ROTATED_TOKEN'; exit 1 ;;
+esac
+sudo python3 /tmp/r4a_prepare_frozen_compatibility_probe.py \
+  --revision e4e1f095c53b7ec4819b8d99fcd79769027330bb \
+  --source managed-cinema-8ec8ae90 \
+  --version 68394f42-5c82-4127-a1f3-126516665749 \
+  --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
+  --tenant-id ouf-lab
+)
+```
+
+Risultato VPS ancora da acquisire. Lo switch controllato e la prova sull'immagine live precederanno la POST attestazione; approval/activation della fonte restano HUMAN.
