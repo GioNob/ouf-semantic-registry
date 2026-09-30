@@ -966,3 +966,32 @@ non ancora acquisita. Prossimo risultato richiesto DEPLOYED_COMPAT_PROBE PASS;
 solo dopo questa evidenza predisporre attestazione vincolata a proof/context
 e consumer deployato. Approval/activation restano HUMAN THS; fonte congelata
 e R-SMOKE/R-INSTALL OPEN. Nessuna attestazione inviata dal blocco corrente.
+
+## 2026-09-30 — consumer deployato PASS su otto righe, nessuna attestazione
+
+Output VPS acquisito: DEPLOYED_COMPAT_PROBE=PASS VALIDATED_ROWS=8,
+revisione live **0dfab1e7b2253fd939088259ea61754d6e56706c**;
+COMPLETE=PASS SEPARATE_JVM=true LIVE_CONFIG_CHANGED=false ATTESTATION_POST=false.
+Proof privata:
+`/etc/ouf/deploy-snapshots/ingestion-deployed-compatibility-probe.json`.
+Consumer reale eseguito in JVM separata con immagine deployata e mount/properties
+live; nessuna invocation dell'endpoint applicativo live per la compatibilità,
+nessun avvio Spring/scheduler/persistenza nella sonda. Otto righe validate,
+immagine/configurazione/Flyway/versione/hash vincolati e ricontrollati.
+
+Contratto owner alla revisione Onboarding 6340d5bf… verificato:
+POST `/api/internal/v1/onboarding/compatibility/ingestion-runtime`;
+body sourceId/onboardingVersionId/compatible/detail; autorità SERVICE con
+capability ouf.ingestion.configuration.attest. L'owner accetta solo
+IN_REVIEW/APPROVED e registra l'hash corrente della versione nel proprio
+consumer_compatibility_attestation; non approva/attiva. Il futuro submitter
+deve vincolare detail alla proof, image ID/revisione/versione/hash esatti e
+verificare response/readback owner; nessuna scrittura SQL diretta.
+
+Il blocco sonda precedente è storico ed eseguito. Prossimo passo ancora
+read-only: inventario route APISIX per POST attestation (owner path, upstream,
+OIDC e required scope); non assumere esistenza o mapping dal solo contratto
+Java/repository. Nessun nuovo scope/grant/proposal o cambio route autorizzato
+da questa evidenza; eventuali blocchi vanno risolti nel rispettivo owner.
+Solo dopo verifica route e autorità token/capability preparare POST attestazione;
+HUMAN THS mantiene approval/activation. R-SMOKE/R-INSTALL OPEN.
