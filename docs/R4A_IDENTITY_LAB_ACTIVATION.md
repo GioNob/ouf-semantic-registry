@@ -1,5 +1,17 @@
 # R4a: attivazione controllata dell'identità nel laboratorio
 
+## 2026-09-30 — Recovery HUMAN catalogue missing; generic draft preparation ready
+
+Operator evidence: READ_ONLY HTTP 200 on `ouf-lab-authorization:34`; descriptors and grants are zero for `ingestion.run.read`, `ingestion.run.resume`, `ingestion.quarantine.read`, `ouf.ingestion.quarantine.retry`. Human token and owner recovery authorization are not proven. Run remains PAUSED, quarantine OPEN; no retry/resume occurred.
+
+`scripts/r4a_prepare_recovery_policy.py` prepares four READ/WRITE descriptors, HUMAN only, owner `ingestion`, and four subject-bound tenant grants for all tenant sources. Tenant, administrator subject, validity and expected active baseline are explicit CLI inputs. Authentication uses the existing installation OIDC device flow; its endpoints/client are deployment defaults, not a portable installation config abstraction. No cinema/source/run IDs are built into policy logic. Grants have null resource constraints; capability plus subject and tenant define access across the tenant. Grant validity is explicitly reviewed; laboratory command uses the existing lab authorization horizon 2036-09-15T07:13:50.968730Z, not a mandatory production duration.
+
+Private exclusive pre-POST state `/etc/ouf/deploy-snapshots/ingestion-recovery-policy-draft.json` prevents blind repost after ambiguous responses. The script preserves all existing entries, verifies exact add-only preview and baseline stability, registers missing catalogue descriptors and creates a DRAFT only. It never publishes, modifies Keycloak/routes/workload token or resumes/retries. Existing descriptors or grants in ACTIVE require reconciliation. Six local unit tests pass, including a different tenant, preservation, drift and preview rejection; CLI/import validated with exact current repository helpers. This is local automation validation, not server execution evidence.
+
+Next operator step: download this script plus `r4a_authorization_lifecycle.py` and `r4a_register_capabilities.py` at one pinned commit; execute with `--expected-base ouf-lab-authorization:34 --tenant ouf-lab --subject b93d8cf6-cd14-4ee6-91d7-84cd76c4f500 --valid-until 2036-09-15T07:13:50.968730Z`. Publication remains separate and reviewed. Thereafter reconcile four HUMAN scopes/bindings and shared routes, prove read access, adopt tested ingestion commit `759d916cc9a45a39e9be0156f54677225a172e1f` preserving activation/execution loops, then authorize quarantine retry and resume via versioned APIs. Never retry on the old deployed ingestion release, reactivate the source, re-enable consumed once schedules, delete attempts, or manipulate lifecycle rows by SQL.
+
+Open evidence remains: actual S3 write durability and UDP intake owner authorization; eight-row delivery/materialization/search; RAW replay SPI readiness; governed per-source/per-zone retention and access policies; broader PET/RSMOKE/RINSTALL issues already listed below. Source ACTIVE is not smoke completion.
+
 
 ### CI esatta verde della correzione retry (non ancora live)
 
