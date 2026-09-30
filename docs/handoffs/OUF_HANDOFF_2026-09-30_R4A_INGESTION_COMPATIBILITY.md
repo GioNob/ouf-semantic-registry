@@ -1267,7 +1267,7 @@ righe/ACK. Dopo PASS attestazione occorre rileggere l'activation gate UDP
 corrente e presentare review HUMAN THS della versione/hash congelati;
 R-SMOKE/R-INSTALL OPEN fino alla catena reale Ingestion→UDP→search e installazione.
 
-### Prossimo comando corrente — attestazione SERVICE plan/apply, nessuna approval/activation
+### Comando storico eseguito — attestazione SERVICE plan/apply, nessuna approval/activation
 
 ```bash
 (
@@ -1284,5 +1284,63 @@ for mode in plan apply; do
     --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
     --tenant-id ouf-lab
 done
+)
+```
+
+## 2026-09-30 — attestazione Ingestion owner PASS; UDP corrente da verificare
+
+Output VPS acquisito: plan PASS senza POST, nuova sonda deployata PASS otto
+righe in apply, ATTESTATION=PASS, READBACK=PASS, fonte/hash congelati invariati.
+**Attestazione Ingestion acquisita: 00006776-5970-4f5c-acf0-145171a6f944**,
+consumer INGESTION_RUNTIME, revisione deployata 0dfab1e7b2253fd939088259ea61754d6e56706c.
+ATTESTATION_POST=true, SOURCE_APPROVAL=false, SOURCE_ACTIVATION=false.
+Receipt privato conservato:
+`/etc/ouf/deploy-snapshots/ingestion-compatibility-attestation.json`.
+Il blocco attestazione è storico ed eseguito: non rilanciarlo o rimuovere il
+receipt. Nessuna duplicazione dell'attestazione, nessun nuovo cambio live/DB
+schema/route/IAM; backup e rollback restano conservati.
+
+Prossimo gate prima della review HUMAN: rileggere coverage UDP corrente per
+fonte/hash esatti. Helper Semantic **0a8ebe92d0f8628f9c2f5458cbb5647b58fcb210**:
+`scripts/r4a_current_udp_activation_gate.py`, solo GET/SQL read-only.
+Legge configurazione congelata e governedIdentity, verifica source/tenant/
+policyRef/strategyVersion e Onboarding live 6340d5bf…; usa solo il binding
+live OUF_ONB_UDP_IDENTITY_GATEWAY_URL/TOKEN_FILE e token SERVICE
+ouf-source-onboarding fresco con scope ouf.udp.identity.attestation.read,
+issuer/audience/tenant esatti. Token privato root:10003 e montato read-only;
+non stampato, trasmesso al curl disposable esclusivamente su stdin.
+
+GET dello stesso endpoint usato da UdpIdentityActivationVerifier:
+`/api/udp/v1/governance/internal/identity/preflight`, sourceId e
+configurationHash esatti. Richiede HTTP200, valid=true, source/hash/tenant/
+canonicalClass/policyRef/policyVersion corrispondenti e coverageRef coverage://,
+poi owner runtime e versione congelata invariati. Stampa solo status/booleani.
+Due test locali PASS con tutte le corrispondenze/negativi/attestazione assente;
+CI nuova helper non ancora acquisita. Un PASS resta una lettura puntuale:
+Onboarding ricontrolla comunque il gate all'attivazione; mutazioni UDP possono
+invalidarlo. Non rigenera copertura/backfill e non POSTa alcun preflight.
+
+UDP preflight storico 57499699-dbc5-419d-a14b-27cd3604ec6f non sostituisce questa
+verifica corrente. Fonte resta congelata IN_REVIEW, versione
+68394f42-5c82-4127-a1f3-126516665749/hash invariati.
+Dopo UDP corrente PASS predisporre card/challenge di review nella THS,
+con decisione approval/activation esclusivamente HUMAN. Catena reale
+Ingestion→UDP→search ancora da eseguire; R-SMOKE/R-INSTALL OPEN.
+
+### Prossimo comando corrente — verifica UDP corrente, sola lettura
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+for script in r4a_prepare_frozen_compatibility_probe r4a_managed_identity_release_inventory r4a_current_udp_activation_gate; do
+  git show 0a8ebe92d0f8628f9c2f5458cbb5647b58fcb210:scripts/"$script".py > /tmp/"$script".py
+done
+sudo python3 /tmp/r4a_current_udp_activation_gate.py \
+  --source managed-cinema-8ec8ae90 \
+  --version 68394f42-5c82-4127-a1f3-126516665749 \
+  --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
+  --tenant-id ouf-lab
 )
 ```
