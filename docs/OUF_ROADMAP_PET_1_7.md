@@ -1,5 +1,44 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+## 2026-09-30 — access inventory acquisito; claim owner verificati e sessione Keycloak da ripristinare
+
+Output VPS: token configuration.read=false; descriptor flat=1 e
+descriptor SERVICE/scope=1; grant flat=1, tutti i match diagnostici=0.
+Keycloak GET UNAVAILABLE. IAM/live/fonte invariati.
+Non è una prova che manchi un grant SERVICE: la diagnostica precedente
+confrontava alias multipli e non la precisa precedenza dell'owner.
+
+Verificati i sorgenti della release Onboarding 6340d5bf120e09b47c32177656e2c377a4c03640:
+IamSecurityConfiguration usa client_id (trim), fallback azp per SERVICE;
+subject usa ouf_subject (trim), fallback sub. AuthorizationPolicy.Grant
+accetta subject/principal null o blank come non vincolati; validFrom/validUntil
+sono obbligatori, start incluso/end escluso; organizationId se presente
+deve corrispondere alla risorsa. Nessuna normalizzazione service principal
+ulteriore in questi sorgenti. IAM deployment/claim authenticity e ALLOW
+effettivo restano da verificare con la richiesta reale.
+
+Helper aggiornato scripts/r4a_publication_access_inventory.py, commit
+a942c81caeaa0b789ad1916d6f98d91be52808cf: precedenza claim conforme,
+conteggi separati subject-only/service-bound/organization-bound,
+validità obbligatoria. Tre test locali PASS, CI non acquisita.
+Keycloak diagnostica container assente/fermo, executable assente,
+GET fallito; flag di session renewal quando stderr riconosce errore auth.
+--login-keycloak opzionale: solo dopo errore auth riconosciuto e con TTY,
+chiede username admin e kcadm config credentials chiede password direttamente
+nel terminale. Server interno http://localhost:8080, realm master; non legge
+password/env secret e non cambia client/scope/policy. Aggiorna soltanto
+la sessione amministrativa locale. Nessun login in assenza del flag.
+Fonte sempre APPROVED, candidati binding inerti già PASS; worker disabled.
+
+Correzione comando operatore: sudo python3 -B per evitare __pycache__ root
+nella directory temporanea creata dall'utente. La precedente pulizia ha
+lasciato /tmp/r4a-publication-access.KjQTkK con sole cache root non rimosse;
+rimuovere soltanto quel percorso esatto con sudo rm -rf --, niente wildcard.
+Prossimo: acquisire diagnostica precisa/binding Keycloak, eventuale correzione
+scope/grant governata; poi rollout tenant/refresher con rollback e discovery200.
+R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — candidati binding PASS; verifica accesso prima del rollout
 
 Output VPS: owner candidate fermo/stessa immagine/tenant ENV preparato PASS,
