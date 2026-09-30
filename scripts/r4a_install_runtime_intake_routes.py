@@ -29,12 +29,27 @@ def objects(value):
             yield from objects(child)
 
 
-def scope_for(policy, capability):
+def scope_for(policy, capability, report=False):
     found = [x for x in objects(policy) if x.get('capabilityId') == capability and 'allowedActors' in x and 'requiredScope' in x]
-    if (len(found) != 1 or 'SERVICE' not in found[0]['allowedActors'] or found[0].get('operation') != 'WRITE' or
-        not isinstance(found[0]['requiredScope'],str) or not re.fullmatch(r'[A-Za-z0-9._:-]{1,160}',found[0]['requiredScope'])):
-        raise RuntimeError('INTAKE_CAPABILITY_DESCRIPTOR_UNSUPPORTED')
-    return found[0]['requiredScope']
+    if report:
+        print('INTAKE_DESCRIPTOR_CAPABILITY=' + capability + ' COUNT=' + str(len(found)), flush=True)
+    if len(found) != 1:
+        raise RuntimeError('INTAKE_DESCRIPTOR_NOT_UNIQUE_CAPABILITY=' + capability + '_COUNT=' + str(len(found)))
+    descriptor = found[0]
+    actors = descriptor.get('allowedActors')
+    operation = descriptor.get('operation')
+    scope = descriptor.get('requiredScope')
+    if not isinstance(actors,(list,tuple,set)) or 'SERVICE' not in actors:
+        raise RuntimeError('INTAKE_DESCRIPTOR_SERVICE_UNSUPPORTED_CAPABILITY=' + capability)
+    # OwnerAuthorization.decide uses the descriptor's declared operation.
+    # Do not impose a CRUD operation inferred from the HTTP method.
+    if not isinstance(operation,str) or not re.fullmatch(r'[A-Za-z0-9._:-]{1,160}',operation):
+        raise RuntimeError('INTAKE_DESCRIPTOR_OPERATION_UNSUPPORTED_CAPABILITY=' + capability)
+    if not isinstance(scope,str) or not re.fullmatch(r'[A-Za-z0-9._:-]{1,160}',scope):
+        raise RuntimeError('INTAKE_DESCRIPTOR_SCOPE_UNSUPPORTED_CAPABILITY=' + capability)
+    if report:
+        print('INTAKE_DESCRIPTOR_OPERATION=' + operation + ' REQUIRED_SCOPE=' + scope + ' SERVICE_ALLOWED=true', flush=True)
+    return scope
 
 
 def desired_routes(values, scopes):
@@ -102,7 +117,7 @@ def policy(live):
     if code != '200':
         raise RuntimeError('INTAKE_POLICY_READ_NOT_200')
     document = json.loads(body)
-    scopes = {cap:scope_for(document,cap) for _,_,cap in TARGETS}
+    scopes = {cap:scope_for(document,cap,report=True) for _,_,cap in TARGETS}
     if not set(scopes.values()) <= set(str(claims.get('scope','')).split()):
         raise RuntimeError('INTAKE_TOKEN_REQUIRED_SCOPE_MISSING_NO_IAM_CHANGED')
     return document,scopes
