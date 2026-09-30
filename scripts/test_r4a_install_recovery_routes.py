@@ -1,4 +1,6 @@
 import copy
+import contextlib
+import io
 import re
 import unittest
 import r4a_install_recovery_routes as routes
@@ -44,5 +46,17 @@ class RecoveryRoutesTest(unittest.TestCase):
         with self.assertRaises(RuntimeError):routes.scopes(document)
     def test_duplicate_template_blocks(self):
         with self.assertRaises(RuntimeError):routes.desired_routes([self.template,self.template],self.scopes)
+
+    def test_diagnostic_reports_failure_without_credentials(self):
+        self.template['plugins']['openid-connect']['client_secret']='DO_NOT_PRINT_TEST_SECRET'
+        self.template['plugins']['openid-connect']['bearer_only']=False
+        self.template['plugins']['serverless-pre-function']={'functions':['DO_NOT_PRINT_TEST_CODE']}
+        output=io.StringIO()
+        with contextlib.redirect_stdout(output):routes.template_report([self.template])
+        text=output.getvalue()
+        self.assertIn('BEARER_ONLY_LAYOUT=BOOLEAN_FALSE',text)
+        self.assertIn('FAILED_CHECKS=OIDC_BEARER_ONLY_TRUE,KNOWN_PLUGIN_SET',text)
+        self.assertNotIn('DO_NOT_PRINT_TEST_SECRET',text)
+        self.assertNotIn('DO_NOT_PRINT_TEST_CODE',text)
 
 if __name__=='__main__':unittest.main()

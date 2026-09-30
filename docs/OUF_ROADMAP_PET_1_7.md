@@ -1,5 +1,13 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+## 2026-09-30 — Recovery route plan blocked; targeted read-only template diagnostics ready
+
+Operator reports `R4A_RECOVERY_ROUTES=BLOCKED CODE=RECOVERY_OIDC_TEMPLATE_UNSUPPORTED RETRY=false RUN_RESUME=false`. In installer control flow this is before snapshot/receipt creation and before any route PUT, so the attempt did not install routes. The exact failed template requirement is not yet known; do not guess that bearer mode, plugins or host caused it. Recovery policy35 and verified HUMAN OPTIONAL scopes remain unchanged; source ACTIVE/run PAUSED/quarantine OPEN; live ingestion still old release. No retry/resume evidence.
+
+Installer now has `template` mode, strictly read-only. It selects the actual Onboarding runtime-publication GET OIDC template and prints the same predicates used by installation: enabled, exact inline owner, no references/extra match conditions, OIDC present/enabled/bearer-only, expected scope, known plugin set, host support, plus sanitized plugin names, scope names, bearer-only value type and exact FAILED_CHECKS list. It never prints route bodies, client credentials, serverless plugin code or tokens. Conditions were centralized with no guard weakening. Template mode does not require a published bundle fetch and never calls helper source-specific mains. Eight local tests PASS including failure reporting and secret/code exclusion; local evidence only.
+
+Next operator: download updated `r4a_install_recovery_routes.py` and its four helper scripts pinned together, then run `template --tenant ouf-lab --expected-policy ouf-lab-authorization:35`. No plan/apply retry until diagnostic has been reviewed. Route installation, authorized HUMAN GETs, adoption of CI-tested ingestion `759d916cc9a45a39e9be0156f54677225a172e1f` preserving both loops and backups/rollback, then governed versioned retry/resume remain the sequence. Do not reactivate the source or mutate lifecycle SQL. All prior open evidence remains: S3 durability and intake owner authorization, eight-row delivery/materialization/search, raw replay SPI, per-source/per-zone lake policies, PET/RSMOKE/RINSTALL gaps.
+
 ## 2026-09-30 — No inline Ingestion template; generic bounded recovery routes ready
 
 Actual READ_ONLY template inventory: Ingestion running; APISIX HTTP router `NOT_EXPLICIT_OR_UNSUPPORTED`; zero inline Ingestion routes and zero URI candidates for run read/resume and quarantine read/retry. This does not identify the effective router default. No routes, IAM, retry/resume changed.

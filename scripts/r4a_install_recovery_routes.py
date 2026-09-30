@@ -55,6 +55,45 @@ def published(live,tenant):
     return json.loads(body)
 
 
+def template_facts(template):
+    plugins=template.get('plugins',{})
+    oidc=plugins.get('openid-connect',{})
+    hosts=([template['host']] if template.get('host') else [])+(template.get('hosts') or [])
+    return {
+        'ENABLED':template.get('status',1)==1,
+        'UPSTREAM_INLINE_ONBOARDING_EXACT':template.get('upstream',{}).get('nodes')=={'ouf-onboarding:8080':1},
+        'NO_REFERENCES':not any(k in template for k in ('upstream_id','service_id','plugin_config_id')),
+        'NO_EXTRA_MATCH_CONDITIONS':not any(template.get(k) for k in ('vars','filter_func','remote_addr','remote_addrs')),
+        'OIDC_PRESENT':bool(oidc),
+        'OIDC_ENABLED':bool(oidc) and not oidc.get('_meta',{}).get('disable',False),
+        'OIDC_BEARER_ONLY_TRUE':oidc.get('bearer_only') is True,
+        'EXPECTED_TEMPLATE_SCOPE':oidc.get('required_scopes')==['ouf.onboarding.configuration.read'],
+        'KNOWN_PLUGIN_SET':not bool(set(plugins)-{'openid-connect','proxy-rewrite','cors','request-id','prometheus'}),
+        'PUBLIC_HOST_SUPPORTED':not hosts or hosts==['api.ouf-lab.it'],
+    }
+
+
+def template_report(values):
+    found=admin.inventory.candidates(values,'GET',TEMPLATE)
+    print('RECOVERY_OIDC_TEMPLATE_ROUTE_COUNT='+str(len(found)))
+    for index,template in enumerate(found,1):
+        prefix='RECOVERY_OIDC_TEMPLATE_'+str(index)+'_'
+        facts=template_facts(template)
+        for name,value in facts.items():print(prefix+name+'='+str(bool(value)).lower())
+        plugins=template.get('plugins',{})
+        names=sorted(plugins)
+        if any(not re.fullmatch(r'[a-z0-9_-]{1,80}',name) for name in names):raise RuntimeError('RECOVERY_PLUGIN_NAME_UNSUPPORTED')
+        print(prefix+'PLUGIN_NAMES='+','.join(names))
+        scopes=plugins.get('openid-connect',{}).get('required_scopes') or []
+        if not isinstance(scopes,list) or any(not isinstance(x,str) or not re.fullmatch(r'[A-Za-z0-9._:-]{1,160}',x) for x in scopes):raise RuntimeError('RECOVERY_TEMPLATE_SCOPE_UNSUPPORTED')
+        print(prefix+'REQUIRED_SCOPES='+(','.join(scopes) or 'NONE_INLINE'))
+        bearer=plugins.get('openid-connect',{}).get('bearer_only')
+        print(prefix+'BEARER_ONLY_LAYOUT='+('ABSENT' if bearer is None else 'BOOLEAN_TRUE' if bearer is True else 'BOOLEAN_FALSE' if bearer is False else 'UNSUPPORTED_TYPE'))
+        print(prefix+'PROXY_REWRITE_PRESENT='+str(bool(plugins.get('proxy-rewrite'))).lower())
+        print(prefix+'FAILED_CHECKS='+(','.join(name for name,value in facts.items() if not value) or 'NONE'))
+    print('R4A_RECOVERY_OIDC_TEMPLATE_DIAGNOSTIC=COMPLETE READ_ONLY=true ROUTES_UNCHANGED=true IAM_UNCHANGED=true RETRY=false RUN_RESUME=false SECRETS_NOT_PRINTED=true')
+
+
 def desired_routes(values,required):
     found=admin.inventory.candidates(values,'GET',TEMPLATE)
     if len(found)!=1:raise RuntimeError('RECOVERY_OIDC_TEMPLATE_NOT_UNIQUE')
@@ -62,14 +101,7 @@ def desired_routes(values,required):
     plugins=template.get('plugins',{})
     oidc=plugins.get('openid-connect',{})
     hosts=([template['host']] if template.get('host') else [])+(template.get('hosts') or [])
-    if (template.get('status',1)!=1 or template.get('upstream',{}).get('nodes')!={'ouf-onboarding:8080':1}
-        or any(k in template for k in ('upstream_id','service_id','plugin_config_id'))
-        or any(template.get(k) for k in ('vars','filter_func','remote_addr','remote_addrs'))
-        or not oidc or oidc.get('_meta',{}).get('disable',False)
-        or oidc.get('bearer_only') is not True
-        or oidc.get('required_scopes')!=['ouf.onboarding.configuration.read']
-        or set(plugins)-{'openid-connect','proxy-rewrite','cors','request-id','prometheus'}
-        or (hosts and hosts!=['api.ouf-lab.it'])):
+    if not all(template_facts(template).values()):
         raise RuntimeError('RECOVERY_OIDC_TEMPLATE_UNSUPPORTED')
     result={}
     for ident,method,resource,action,cap in TARGETS:
@@ -135,6 +167,13 @@ def main(args):
     helper=admin.inventory.routes.helper
     live=helper.inspect('ouf-ingestion')
     if not live['State']['Running']:raise RuntimeError('INGESTION_NOT_RUNNING')
+    if args.mode=='template':
+        apisix=helper.inspect('ouf-apisix')
+        if not apisix['State']['Running']:raise RuntimeError('APISIX_NOT_RUNNING')
+        key=admin.inventory.routes.admin_key(admin.inventory.routes.mounted_config(apisix).read_text())
+        raw,_=admin.api(key,'GET','routes')
+        template_report(admin.inventory.routes.route_values(raw))
+        return
     document=published(live,args.tenant)
     if document.get('bundleId')+':'+str(document.get('bundleVersion'))!=args.expected_policy:
         raise RuntimeError('RECOVERY_ACTIVE_POLICY_DRIFT')
@@ -187,7 +226,7 @@ def main(args):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('mode',choices=('plan','apply'))
+    p.add_argument('mode',choices=('template','plan','apply'))
     p.add_argument('--tenant',required=True)
     p.add_argument('--expected-policy',required=True)
     try:main(p.parse_args())
