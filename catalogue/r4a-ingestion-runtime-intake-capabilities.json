@@ -1,0 +1,24 @@
+[
+  {
+    "ownerRef": "udp",
+    "descriptor": {
+      "capabilityId": "datalake.write",
+      "operation": "WRITE",
+      "requiredScope": "datalake.write",
+      "allowedActors": [
+        "SERVICE"
+      ]
+    }
+  },
+  {
+    "ownerRef": "udp",
+    "descriptor": {
+      "capabilityId": "udp.candidate.write",
+      "operation": "WRITE",
+      "requiredScope": "udp.candidate.write",
+      "allowedActors": [
+        "SERVICE"
+      ]
+    }
+  }
+]
