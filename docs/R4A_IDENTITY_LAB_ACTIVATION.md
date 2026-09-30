@@ -627,3 +627,47 @@ sudo python3 /tmp/r4a_semantic_access_inventory.py --tenant-id ouf-lab --realm o
 ```
 
 Il file inventory in /tmp è quello fissato a e4e1f095c53b7ec4819b8d99fcd79769027330bb ed eseguito dall'operatore nel passo precedente.
+
+### Sessione kcadm ripristinata e piano scope Ingestion
+
+Output operatore: refresh PASS e inventario Keycloak PASS; un solo scope
+`ouf.semantic.read`, un solo client `ouf-ingestion`, assegnazioni DEFAULT e
+OPTIONAL entrambe false. Token senza scope, TTL 254 secondi all'osservazione;
+descriptor SERVICE valido, grant con selector non corrispondente come sopra.
+Nessun cambio IAM/policy è stato eseguito da questo inventario.
+
+Prossimo intervento: reconciler scope esistente in sequenza plan/apply/verify,
+solo `ouf.semantic.read` come DEFAULT di Ingestion. Preserva le assegnazioni
+agli altri scope; non ricrea scope/client, mapper o secret. Nel lab il client
+credentials usa gli scope default e il token esistente rimane invariato fino
+al normale rinnovo: DEFAULT=true non implica immediatamente token scope=true.
+Ripetere l'inventario senza build; non inviare attestazioni o attivare la fonte.
+
+Il grant va aggiunto separatamente, preservando quello esistente: capability
+`ouf.semantic.read`, tenant `ouf-lab`, servicePrincipalId `ouf-ingestion`.
+La API PermissionProposal supporta UPSERT di un grant e conserva il resto del
+PolicyBundle; nessuna proposta è ancora creata. Verificare scadenza, hash,
+base ACTIVE e accesso Gateway/delegation prima di proporla; pubblicazione
+richiede conferma HUMAN THS, mai SQL o script storico di publish diretto.
+R-SMOKE/R-INSTALL OPEN.
+
+### Prossimo comando — assegnazione DEFAULT Semantic a Ingestion
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+git show 5e60be53aa50a76e48bfe39c870102ad67a07bcb:scripts/reconcile-keycloak-client-scope.py > /tmp/ouf-reconcile-ingestion-semantic-scope.py
+for mode in plan apply verify; do
+  sudo python3 /tmp/ouf-reconcile-ingestion-semantic-scope.py "$mode" \
+    --realm ouf \
+    --client-id ouf-ingestion \
+    --scope ouf.semantic.read \
+    --assignment default
+done
+sudo python3 /tmp/r4a_semantic_access_inventory.py --tenant-id ouf-lab --realm ouf
+)
+```
+
+Risultato apply/verify ancora da acquisire. Il file inventory è quello già fissato a e4e1f095…; la sessione kcadm deve essere ancora valida.

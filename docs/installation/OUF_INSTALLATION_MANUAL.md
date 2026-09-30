@@ -1126,3 +1126,26 @@ sessione amministrativa e ripetizione dell'inventario esistente; nessuna modific
 a scope/client/grant/route, nessun build o POST compatibilità. Seguiranno piano
 IAM additivo per lo scope read e proposta di grant SERVICE governata. R-SMOKE e
 R-INSTALL OPEN; versione e hash congelati preservati.
+
+### Sessione kcadm ripristinata e piano scope Ingestion
+
+Output operatore: refresh PASS e inventario Keycloak PASS; un solo scope
+`ouf.semantic.read`, un solo client `ouf-ingestion`, assegnazioni DEFAULT e
+OPTIONAL entrambe false. Token senza scope, TTL 254 secondi all'osservazione;
+descriptor SERVICE valido, grant con selector non corrispondente come sopra.
+Nessun cambio IAM/policy è stato eseguito da questo inventario.
+
+Prossimo intervento: reconciler scope esistente in sequenza plan/apply/verify,
+solo `ouf.semantic.read` come DEFAULT di Ingestion. Preserva le assegnazioni
+agli altri scope; non ricrea scope/client, mapper o secret. Nel lab il client
+credentials usa gli scope default e il token esistente rimane invariato fino
+al normale rinnovo: DEFAULT=true non implica immediatamente token scope=true.
+Ripetere l'inventario senza build; non inviare attestazioni o attivare la fonte.
+
+Il grant va aggiunto separatamente, preservando quello esistente: capability
+`ouf.semantic.read`, tenant `ouf-lab`, servicePrincipalId `ouf-ingestion`.
+La API PermissionProposal supporta UPSERT di un grant e conserva il resto del
+PolicyBundle; nessuna proposta è ancora creata. Verificare scadenza, hash,
+base ACTIVE e accesso Gateway/delegation prima di proporla; pubblicazione
+richiede conferma HUMAN THS, mai SQL o script storico di publish diretto.
+R-SMOKE/R-INSTALL OPEN.
