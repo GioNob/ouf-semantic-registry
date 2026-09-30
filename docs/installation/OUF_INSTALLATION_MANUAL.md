@@ -974,3 +974,53 @@ per il probe delle route, dichiarazione owner-key preservata, picker URL
 proiettato dall'installazione, snapshot/rollback e sessione IAM gestita
 senza inviare secret alla chat. Un output PASS dell'inventario container o
 del rollout picker non chiude R-INSTALL né R-SMOKE.
+
+## Ripresa R4a — 30 settembre: inventario Ingestion e sonda candidata
+
+L’operatore ha eseguito l’inventario rimasto sospeso: **PASS**. Flyway live/staged
+è 14/14; lo staged `e3f04f1…` differisce dal live. Policy
+`ouf-lab-authorization:31`: un descriptor SERVICE e un grant SERVICE per
+`ouf.ingestion.configuration.attest`, zero altri grant. I conteggi non provano
+che il bearer effettivo sia il principal destinatario del grant né che la route
+risponda; la compatibilità della versione resta non attestata.
+
+La [PR Ingestion #33](https://github.com/GioNob/ouf-ingestion-runtime/pull/33),
+commit `da941666643d83f9f417da85be91fb3b10d4db01`, aggiunge una sonda nel jar
+che usa mapper, adapter e validator dei contratti CDE/lineage/handoff di
+produzione. Verifica hash/stato congelato, riferimenti Semantic esatti, integrità
+dell’asset, identità sorgente e tutte le righe. Lo script versionato costruisce
+una candidata isolata, senza avviare Spring/Flyway/worker o scrivere run,
+materializzazioni e attestazioni. Il PASS della sonda avrà
+`candidateDeployed=false` e `attestationSubmitted=false`.
+
+La prima revisione passa i sei test Python, i 23 test consumer/regressione Java,
+la suite funzionale con PostgreSQL e il restore drill. Trivy ha rilevato
+CVE-2026-68497 nella dipendenza Jackson Databind 2.21.4 ereditata dal ramo: la BOM
+è stata aggiornata a 2.21.6, senza abbassare il gate HIGH/CRITICAL. Sul commit aggiornato sono PASS la CI dedicata, la suite completa Ingestion
+con PostgreSQL, il restore drill e il gate supply-chain (Trivy e chart).
+Il risultato VPS rimane da acquisire, distinto dalle prove CI. Il prossimo
+intervento dell’operatore è la preparazione/prova candidata; seguono backup
+verificato, switch/rollback, prova contro l’immagine effettivamente live e POST
+SERVICE governata. Poi approvazione HUMAN in THS, attivazione e filiera fino
+alla ricerca UDP. **R-SMOKE e R-INSTALL restano OPEN**.
+
+Contratto, parametri, limiti e procedura:
+[R4A_FROZEN_CONFIGURATION_COMPATIBILITY.md](https://github.com/GioNob/ouf-ingestion-runtime/blob/da941666643d83f9f417da85be91fb3b10d4db01/docs/R4A_FROZEN_CONFIGURATION_COMPATIBILITY.md).
+
+### Configurazione e IAM di questo incremento
+
+La sonda usa i mount esistenti `/run/ouf-ingestion-auth` e
+`/run/secrets/ingestion-summary.properties` in sola lettura. Le proprietà
+`ouf.ingestion.activation.gateway-url`, `token-file` e `tenant-id` devono essere
+esplicite e risolvibili. Il token deve poter leggere l’asset e le pubblicazioni
+Semantic esatte attraverso Gateway; un 401/403 o una proprietà mancante blocca
+la prova. Non viene creato un nuovo client, scope, grant o route Keycloak/APISIX.
+Il descriptor/grant di attestazione già censito non implica scope presente nel
+bearer: verificarlo con il percorso SERVICE prima del futuro POST. Qualsiasi
+variazione IAM/policy resta governata e documentata nel runbook, con decisione
+HUMAN per pubblicazione policy. Il build log resta privato nel percorso di stage;
+non inviare contenuti delle proprietà o credenziali in chat.
+
+La preparazione non richiede restore: non effettua switch o DDL. Conservare gli
+snapshot e i rollback esistenti. Lo switch successivo richiede backup verificato
+e rollback applicativo; niente restore DB automatico.
