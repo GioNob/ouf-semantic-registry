@@ -378,7 +378,7 @@ nuova revisione in corso al momento dell'aggiornamento. Il comando aggiornato,
 dove presente, punta alla nuova revisione. Compatibilità live non attestata;
 accesso Gateway/Semantic ancora non provato. R-SMOKE/R-INSTALL OPEN.
 
-### Gate aperto corrente: 403 alla risoluzione Semantic
+### Gate storico: 403 alla risoluzione Semantic
 
 L'operatore ha eseguito la sonda `dae05e6…`: trasporto PASS, build raggiunto,
 identità superata, `ING_ACTIVATION_GATEWAY_403` durante Semantic preflight,
@@ -486,3 +486,35 @@ leggere l'asset e validare tutte le righe. La sessione amministrativa kcadm non
 serve a quelle letture; un suo eventuale expiry nell'inventario resta separato
 quando il token e il grant sono già verificati. Conservare versione/hash congelati,
 backup e rollback. R-SMOKE/R-INSTALL OPEN.
+
+### Stato corrente — Semantic superato, lettura asset bloccata da 404
+
+Ultimo output VPS: scope Semantic presente nel token ruotato (TTL 296s),
+DEFAULT=true, OPTIONAL=false; due grant SERVICE e un selector client corrispondente.
+Policy :32 già pubblicata via conferma HUMAN. Sonda e4e1f095…: trasporto PASS,
+preflight Semantic superato, poi **ING_EXECUTION_GATEWAY_404** alla lettura
+Gateway dell'asset. Nessuna validazione completa delle otto righe, attestazione,
+attivazione o switch. R-SMOKE/R-INSTALL restano OPEN; versione/hash congelati
+e backup/rollback restano preservati.
+
+Riscontro statico, da confrontare con il runtime: ExecutionGatewayClient legge
+GET `/internal/object-storage/v1/content?ref=…`; il binding Gateway
+`onboarding-managed-file-read` a 3014f3c… punta a
+`/api/internal/v1/onboarding/managed-files/content` su Onboarding. Quel controller
+non è nel tree della baseline Onboarding f74c3a9…; il relativo scope del vecchio
+controller è inoltre diverso da `ouf.internal.object-storage.read` del bearer.
+Questo non dimostra che la route live coincida con quel binding, né che
+l'asset manchi. Non ricaricare il file, cambiare hash o introdurre accesso diretto
+allo storage per aggirare il 404.
+
+PR #33 aggiornata a **0dfab1e7b2253fd939088259ea61754d6e56706c**: aggiunto
+`scripts/r4a_execution_route_inventory.py`, solo Docker inspect e GET
+dell'Admin API APISIX; nessun GET del contenuto asset, build, cambio IAM/route,
+deploy o POST attestazione. Stampa conteggi/booleani su route esatta, rewrite,
+upstream, scope e revisione owner. Chiave Admin letta dal bind config.yaml
+(oppure file esplicito), passata al curl via stdin, mai argv/output o file temporanei.
+Layout chiave non letterale/ambiguo blocca senza stampare il valore.
+Diciannove test Python locali PASS, inclusi parser fail-closed, GET esatto,
+formati Admin API e assenza chiave da argv/output. CI nuova revisione avviata,
+non ancora acquisita. Prossimo passo: inventario live, poi correzione governata
+del binding/owner effettivamente osservato.
