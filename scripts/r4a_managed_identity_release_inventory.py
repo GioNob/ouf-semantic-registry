@@ -138,6 +138,7 @@ def main(args):
     print("R4A_MANAGED_IDENTITY_RELEASE_INVENTORY=COMPLETE RELEASE_PREREQUISITES="
           + ("PASS" if all(facts.values()) else "BLOCKED")
           + " LIVE_UNCHANGED=true VALUES_NOT_PRINTED=true")
+    return all(facts.values())
 
 
 if __name__ == "__main__":
