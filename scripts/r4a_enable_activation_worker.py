@@ -20,10 +20,14 @@ NAME = 'ouf-ingestion-r4a-activation-worker-candidate'
 STATE = ROOT / 'ingestion-activation-worker-prepare.json'
 RECEIPT = ROOT / 'ingestion-activation-worker-switch.json'
 KEY = 'ouf.ingestion.activation.enabled'
+STAGE_PREFIX = 'activation-worker-'
+ROLLBACK_PREFIX = 'ouf-ingestion-activation-worker-rollback-'
+FAILED_PREFIX = 'ouf-ingestion-activation-worker-failed-'
+FAILURE_MARKERS = ('ING_ACTIVATION_DISCOVERY_UNAVAILABLE', 'ING_ACTIVATION_PUBLICATION_REJECTED', 'ING_ACTIVATION_DISPATCH_FAILED')
 
 
 def save(value):
-    fd, name = tempfile.mkstemp(prefix='activation-worker-receipt-', dir=ROOT)
+    fd, name = tempfile.mkstemp(prefix=STAGE_PREFIX + 'receipt-', dir=ROOT)
     try:
         with os.fdopen(fd, 'w') as stream:
             json.dump(value, stream, sort_keys=True)
@@ -115,7 +119,7 @@ def prepare_candidate(live, image, original):
         return state
     if existing is not None:
         raise RuntimeError('WORKER_UNOWNED_CANDIDATE')
-    folder = Path(tempfile.mkdtemp(prefix='activation-worker-', dir=ROOT))
+    folder = Path(tempfile.mkdtemp(prefix=STAGE_PREFIX, dir=ROOT))
     properties = folder / 'ingestion-summary.properties'
     properties.write_bytes(desired)
     os.chown(properties, 0, 10002)
@@ -192,8 +196,8 @@ def main(mode):
         hashlib.sha256(properties.read_bytes()).hexdigest() != state.get('propertiesSha256') or
         not prepare.matches(candidate, live, image, properties)):
         raise RuntimeError('WORKER_PINNED_CANDIDATE_DRIFT')
-    previous = 'ouf-ingestion-activation-worker-rollback-' + live['Id'][:12]
-    failed = 'ouf-ingestion-activation-worker-failed-' + candidate['Id'][:12]
+    previous = ROLLBACK_PREFIX + live['Id'][:12]
+    failed = FAILED_PREFIX + candidate['Id'][:12]
     if prepare.optional(previous) is not None or prepare.optional(failed) is not None:
         raise RuntimeError('WORKER_RETENTION_NAME_OCCUPIED')
     print('R4A_ACTIVATION_WORKER_SWITCH_PLAN=PASS MODE=' + mode + ' SAME_IMAGE=true FLYWAY=14 EMPTY_CATALOG=true', flush=True)
@@ -245,8 +249,7 @@ def main(mode):
             if number in (3, 7):
                 print('R4A_ACTIVATION_WORKER_OBSERVATION_WAIT_SECONDS=' + str((number + 1) * 2), flush=True)
             logs = logs_safe()
-            if any(marker in logs for marker in ('ING_ACTIVATION_DISCOVERY_UNAVAILABLE',
-                   'ING_ACTIVATION_PUBLICATION_REJECTED', 'ING_ACTIVATION_DISPATCH_FAILED')):
+            if any(marker in logs for marker in FAILURE_MARKERS):
                 raise RuntimeError('WORKER_ACTIVATION_FAILURE_MARKER_OBSERVED')
         if prepare.probe.candidate_row(access.prepare.SOURCE, access.prepare.VERSION, access.prepare.HASH) != row:
             raise RuntimeError('SOURCE_CHANGED_DURING_WORKER_OBSERVATION')
