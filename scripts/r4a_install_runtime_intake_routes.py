@@ -76,8 +76,9 @@ def template_report(values):
         prefix = 'INTAKE_TEMPLATE_' + str(index) + '_'
         for name, value in facts.items():
             print(prefix + name + '=' + str(bool(value)).lower())
+        print(prefix + 'PROXY_REWRITE_EXCLUDED_FROM_INTAKE=true')
         print(prefix + 'UPSTREAM_NODES_LAYOUT=' + ('OBJECT' if isinstance(nodes, dict) else 'ARRAY' if isinstance(nodes, list) else 'ABSENT_OR_UNSUPPORTED'))
-        print(prefix + 'FAILED_CHECKS=' + (','.join(k for k, v in facts.items() if not v) or 'NONE'))
+        print(prefix + 'FAILED_CHECKS=' + (','.join(k for k, v in facts.items() if not v and k != 'NO_PROXY_REWRITE') or 'NONE'))
     print('R4A_INTAKE_TEMPLATE_DIAGNOSTIC=COMPLETE READ_ONLY=true ROUTES_UNCHANGED=true RUN_RESUME=false SECRETS_NOT_PRINTED=true')
 
 
@@ -91,7 +92,7 @@ def desired_routes(values, scopes):
     if (route.get('status',1) != 1 or route.get('upstream',{}).get('nodes') != {'ouf-udp:8080':1} or
         any(k in route for k in ('upstream_id','service_id','plugin_config_id')) or
         any(route.get(k) for k in ('vars','filter_func','remote_addr','remote_addrs')) or
-        route.get('plugins',{}).get('proxy-rewrite') or not oidc or oidc.get('_meta',{}).get('disable',False) or
+        not oidc or oidc.get('_meta',{}).get('disable',False) or
         oidc.get('required_scopes') != ['ouf.udp.identity.attestation.read'] or
         (hosts and 'api.ouf-lab.it' not in hosts)):
         raise RuntimeError('UDP_OIDC_TEMPLATE_UNSUPPORTED')
@@ -101,6 +102,9 @@ def desired_routes(values, scopes):
         for key in ('id','create_time','update_time','uri','uris','name','desc'):
             value.pop(key,None)
         value.update(uri=path,methods=['POST'],name=route_id,desc='Exact authenticated UDP runtime intake; owner SERVICE authorization retained')
+        # The preflight transformation belongs to its route. Intake uses exact owner paths.
+        # Drop the entire plugin (including method/host/header transformations), not just URI.
+        value['plugins'].pop('proxy-rewrite', None)
         value['plugins']['openid-connect']['required_scopes'] = [scopes[capability]]
         result[route_id] = value
     return result
@@ -256,7 +260,7 @@ def main(mode,smoke_cinema=False):
         _,status = admin.api(key,'GET','routes/'+route_id,accepted=('200','404'))
         if status != '404':
             raise RuntimeError('INTAKE_ROUTE_ID_ALREADY_OWNED')
-        print('INTAKE_ROUTE_PLANNED='+route_id+' REQUIRED_SCOPE='+scopes[cap])
+        print('INTAKE_ROUTE_PLANNED='+route_id+' REQUIRED_SCOPE='+scopes[cap]+' OWNER_PATH_PRESERVED=true PROXY_REWRITE_ABSENT=true')
     print('R4A_RUNTIME_INTAKE_ROUTES_PLAN=PASS MODE='+mode+' OWNER_UDP=true TOKEN_SCOPES_PRESENT=true',flush=True)
     if mode == 'plan':
         print('R4A_RUNTIME_INTAKE_ROUTES=PLANNED LIVE_UNCHANGED=true RUN_RESUME=false')
