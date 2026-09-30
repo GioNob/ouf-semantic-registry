@@ -1377,3 +1377,43 @@ ID pratica può produrre revisioni/evidenze senza duplicazione dell'oggetto.
 Questa è una regola di modellazione concordata, non prova di un deploy aggiuntivo.
 Dopo approvazione e attivazione seguono run managed reale, CDE/handoff/ACK,
 materializzazione e ricerca. R-SMOKE e R-INSTALL restano OPEN.
+
+## 2026-09-30 — route review acquisite; preparatore challenge pronto
+
+Output VPS: CREATE/CARD/CONFIRM/ACTIVATE hanno ciascuna una route, enabled=true,
+upstream Onboarding inline, OIDC abilitato, owner path preservato, nessun rewrite,
+riferimento upstream/service/plugin config o ulteriore condizione di match.
+Host pubblico ammesso e required scope inline ouf.onboarding.configuration.write.
+Fonte ancora IN_REVIEW; inventory COMPLETE senza POST/approval/activation.
+Questo inventario non prova ALLOW owner né sessione/assurance HUMAN o browser THS.
+
+Helper scripts/r4a_prepare_cinema_approval.py, commit Semantic
+ba99054c1652cd7648f44962086d2077b17f8447 (include sei nuovi test locali PASS;
+CI non ancora acquisita). Riutilizza il device flow già versionato, con solo
+scope ouf.onboarding.configuration.write, stessa identità amministrativa attesa;
+token soltanto in memoria e su stdin curl, niente redirect automatici.
+Ricontrolla route dopo login, runtime owner e versione/hash congelati.
+Non usa credenziali SERVICE per simulare l'approvazione umana.
+
+Crea esclusivamente POST /api/onboarding/v1/sources/managed-cinema-8ec8ae90/
+onboarding-versions/68394f42-5c82-4127-a1f3-126516665749/approval-challenges.
+Riserva prima del POST un receipt root0600 in directory root0700:
+`/etc/ouf/deploy-snapshots/cinema-approval-challenge.json`.
+Richiede HTTP201, challenge UUID, CREATED, contesto/hash/ref ed expiry coerenti;
+poi GET card /api/trusted-human/v1/approval-challenges/{id}, HTTP200,
+configurazione esattamente uguale alla versione congelata.
+Card/risposta salvate privatamente, token mai persistito. Stampa solo ID/ref/
+expiry e flag, non la configurazione integrale o actor_subject.
+
+Receipt PASS riutilizzabile: nuovo login e GET della stessa card, nessun POST.
+Receipt incerto, challenge preesistente senza receipt o challenge scaduta
+richiedono riconciliazione; non cancellare il receipt e non rilanciare per
+creare doppioni. Un timeout può avere già creato la challenge nell'owner.
+Il receipt conservato impedisce un secondo POST automatico di questo helper.
+
+Nessuna challenge è ancora dichiarata creata: attendere output VPS.
+Il preparatore non chiama confirm/reject/activate; fonte non approvata/non attiva.
+Dopo card verificata occorre review effettiva del contenuto e decisione HUMAN
+attraverso il percorso fiduciario; il login device da solo non approva.
+La challenge ha TTL: se scade prima della review, recuperare in modo esplicito.
+Seguono attivazione e prima run reale; R-SMOKE e R-INSTALL rimangono OPEN.
