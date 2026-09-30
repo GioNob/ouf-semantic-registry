@@ -1,6 +1,18 @@
 # OUF — Manuale di installazione e bootstrap
 
 
+### Recovery readback e correzione generica del retry in preparazione
+
+Readback live: run PAUSED/controlVersion=0, quarantena OPEN/lifecycleVersion=0 blocking per ING_EXECUTION_GATEWAY_404, un tentativo fallito n.1, zero handoff/replay. payload_ref OTHER_REFERENCE_NOT_DURABILITY_PROOF: non assumere RAW lake durevole. Ingestion running/revision 0dfab1e7b2253fd939088259ea61754d6e56706c match. Route HUMAN run read/resume e quarantine read/retry/reprocess tutte count=0. Nessun retry/replay/resume eseguito.
+
+Implementata su GioNob/ouf-ingestion-runtime, branch `codex/r4a-governed-record-retry` (base release live), correzione generica: worker legge nuovo attempt number con verifica lease; failed attempts restano append-only. Resume blocca quarantene blocking OPEN/REPROCESSING finché HUMAN non autorizza RETRY_READY con expectedVersion. ACK durevole risolve solo quarantene RETRY_READY di precedenti FAILED attempts dello stesso run/source object, con decision ref: aggiornamento quarantena, runtime issue e audit nella transazione ACK, duplicate ACK idempotente. Nessuna migrazione, override business-source o raw replay SPI aggiunto. Tre regressioni PostgreSQL aggiunte a RunExecutionWorkerRuntimeTest, OpenAPI resume aggiornato, traceability `docs/R4A_GOVERNED_RECORD_RETRY.md`.
+
+Commit candidato corrente `759d916cc9a45a39e9be0156f54677225a172e1f`, NON deployed. Prima CI su 608a52da4175328efe64d28b9cf1beb573afec80: 112 test, una nuova asserzione usava vista senza control_version; corretta alla vista governata. Build/supply-chain e DR PASS sul primo commit, ma non trasferire tale prova al nuovo head; CI del nuovo commit da verificare. Nessuna Maven/PostgreSQL locale disponibile in workspace, non dichiarare test locali Java PASS.
+
+Prossimo inventario indipendente: `r4a_recovery_access_catalogue.py --tenant ouf-lab`, GET del bundle attivo e descriptor/grant diagnostici per ingestion.run.read, ingestion.run.resume, ingestion.quarantine.read, ouf.ingestion.quarantine.retry. Non aggiunge scope HUMAN al workload ouf-ingestion, non pubblica policy, non crea route. Conta grant subject-bound nel tenant senza stampare identità; non è prova di grant per l'operatore, validità o owner authorization. Gate successivi: CI esatta verde, release/candidate/switch conservando loop/mount/token/history/run PAUSED, bootstrap condiviso HUMAN reviewabile e owner GET, poi retry/resume governati con receipt e readback. SPI raw replay e policy lake per fonte/zona restano aperti.
+
+
+
 ### Profilo lake live PASS; recupero del run richiede correzione Ingestion
 
 Readback operativo: prepare/plan/apply lake profile PASS, stessa immagine, profile match 90/OPERATIONAL/RESTRICTED, IAM/S3 preservati, Flyway invariato, code/pubblicazioni invariati. Backup `/etc/ouf/deploy-snapshots/udp-before-lake-profile-y_fx48s_.dump` root-private, restore reale scratch PASS; receipt `/etc/ouf/deploy-snapshots/udp-lake-profile-switch.json`, rollback container `ouf-udp-lake-profile-rollback-82c813b86bfa`. Inventario successivo: tutti i binding lake/IAM validi, nessun override, LAKE_BINDINGS_READY_DIAGNOSTIC=true/invalid checks NONE. Nessun POST intake/resume; permessi S3 e owner intake ancora non provati.
