@@ -18,7 +18,7 @@ spec.loader.exec_module(prep)
 
 
 class PreparationTests(unittest.TestCase):
-    def exercise(self, drift=False, repeat=False):
+    def exercise(self, drift=False, repeat=False, memory_drift=False):
         with tempfile.TemporaryDirectory() as directory, ExitStack() as stack:
             root = Path(directory)
             root.chmod(0o700)
@@ -30,6 +30,8 @@ class PreparationTests(unittest.TestCase):
             old = {"Id": "old", "Image": "old-image", "Config": config,
                    "State": {"Running": True},
                    "HostConfig": {"NetworkMode": "ouf-backend", "RestartPolicy": {"Name": "unless-stopped"},
+                                  "Binds": [str(props) + ":" + prep.probe.PROPERTIES + ":ro"],
+                                  "Memory": 1073741824, "MemorySwap": 2147483648,
                                   "LogConfig": {"Type": "json-file", "Config": {}}},
                    "NetworkSettings": {"Networks": {"ouf-backend": {}}},
                    "Mounts": [{"Type": "bind", "Source": str(props), "Destination": prep.probe.PROPERTIES, "RW": False},
@@ -54,6 +56,8 @@ class PreparationTests(unittest.TestCase):
                     return prep.NAME if candidate is not None else ""
                 if cmd[:2] == ["docker", "create"]:
                     self.assertNotIn("hidden", " ".join(cmd))
+                    self.assertEqual(cmd[cmd.index("--memory") + 1], "1073741824")
+                    self.assertEqual(cmd[cmd.index("--memory-swap") + 1], "2147483648")
                     candidate = copy.deepcopy(old)
                     candidate.update(Id="created", Image="new-image", State={"Running": False, "Status": "created"})
                     candidate["HostConfig"]["RestartPolicy"]["Name"] = "no"
@@ -62,6 +66,7 @@ class PreparationTests(unittest.TestCase):
                         if m["Destination"] == prep.probe.PROPERTIES:
                             m["Source"] = next(root.glob("ingestion-compatibility-*/ingestion-summary.properties")).as_posix()
                     if drift: candidate["Config"]["Env"] = ["WRONG=value"]
+                    if memory_drift: candidate["HostConfig"]["MemorySwap"] = -1
                     return "created"
                 if cmd[:2] == ["docker", "rm"]:
                     self.assertEqual(cmd[-1], "created")
@@ -78,7 +83,7 @@ class PreparationTests(unittest.TestCase):
             stack.enter_context(patch.object(prep.os, "chown"))
             args = SimpleNamespace(source="source", version="version", expected_hash="hash", tenant_id="tenant")
             with redirect_stdout(io.StringIO()):
-                if drift:
+                if drift or memory_drift:
                     with self.assertRaisesRegex(RuntimeError, "READBACK_MISMATCH"):
                         prep.main(args)
                     self.assertIsNone(candidate)
@@ -122,6 +127,30 @@ class PreparationTests(unittest.TestCase):
             link.symlink_to(target)
             with self.assertRaisesRegex(RuntimeError, "PRIVATE_FILE_UNSAFE"):
                 prep.private(link, 0o600)
+
+    def test_memory_flags_preserve_limits_and_unlimited_swap(self):
+        self.assertEqual(prep.memory_flags({"Memory": 1024, "MemorySwap": -1}),
+                         ["--memory", "1024", "--memory-swap", "-1"])
+        self.assertEqual(prep.memory_flags({}), [])
+        for memory, swap in ((True, 0), (-1, 0), (0, 1024), (1024, 512), (1024, -2)):
+            with self.assertRaisesRegex(RuntimeError, "MEMORY_SETTINGS_UNSUPPORTED"):
+                prep.memory_flags({"Memory": memory, "MemorySwap": swap})
+
+    def test_binds_reject_unresolved_rw_and_extra_options(self):
+        live = {"HostConfig": {"Binds": ["/host:/container:ro"]},
+                "Mounts": [{"Type": "bind", "Source": "/host", "Destination": "/container", "RW": False}]}
+        prep.validate_binds(live)
+        for value in ("/other:/container:ro", "/host:/container:rw", "/host:/container:ro,z"):
+            changed = copy.deepcopy(live)
+            changed["HostConfig"]["Binds"] = [value]
+            with self.assertRaises(RuntimeError):
+                prep.validate_binds(changed)
+        live["Mounts"][0]["Propagation"] = "rshared"
+        with self.assertRaisesRegex(RuntimeError, "PROPAGATION_UNSUPPORTED"):
+            prep.validate_binds(live)
+
+    def test_candidate_memory_drift_is_rejected(self):
+        self.exercise(memory_drift=True)
 
 
 if __name__ == "__main__":

@@ -36,13 +36,40 @@ def environment(doc):
     return result
 
 
+def memory_flags(host):
+    memory, swap = host.get("Memory", 0), host.get("MemorySwap", 0)
+    if (type(memory) is not int or type(swap) is not int or memory < 0 or swap < -1
+            or (memory == 0 and swap != 0) or (swap > 0 and swap < memory)):
+        raise RuntimeError("ING_MEMORY_SETTINGS_UNSUPPORTED")
+    flags = ["--memory", str(memory)] if memory else []
+    if swap:
+        flags.extend(["--memory-swap", str(swap)])
+    return flags
+
+
+def validate_binds(live):
+    resolved = mounts(live)
+    if any(m.get("Propagation", "rprivate") != "rprivate" for m in live["Mounts"]):
+        raise RuntimeError("ING_MOUNT_PROPAGATION_UNSUPPORTED")
+    binds = live["HostConfig"].get("Binds") or []
+    parsed = []
+    for value in binds:
+        parts = value.rsplit(":", 2)
+        if (len(parts) != 3 or not parts[0].startswith("/") or not parts[1].startswith("/")
+                or set(parts[2].split(",")) not in ({"ro"}, {"ro", "rprivate"})):
+            raise RuntimeError("ING_BIND_FORMAT_UNSUPPORTED")
+        parsed.append(("bind", parts[0], parts[1], False))
+    if len(parsed) != len(set(parsed)) or any(m not in resolved for m in parsed):
+        raise RuntimeError("ING_BINDS_RESOLVED_MOUNT_MISMATCH")
+
+
 def guard(live, image):
     probe.probe_mounts(live)
     host, config = live["HostConfig"], live["Config"]
-    unsupported = ("PortBindings", "Binds", "VolumesFrom", "Privileged", "ReadonlyRootfs",
+    unsupported = ("PortBindings", "VolumesFrom", "Privileged", "ReadonlyRootfs",
         "ExtraHosts", "Dns", "DnsSearch", "CapAdd", "SecurityOpt", "Devices", "Tmpfs",
-        "AutoRemove", "GroupAdd", "UsernsMode", "Init", "Ulimits", "CapDrop", "Memory",
-        "MemorySwap", "NanoCpus", "CpuShares", "PidsLimit", "OomKillDisable", "CpusetCpus",
+        "AutoRemove", "GroupAdd", "UsernsMode", "Init", "Ulimits", "CapDrop", "MemoryReservation",
+        "NanoCpus", "CpuShares", "PidsLimit", "OomKillDisable", "CpusetCpus",
         "CpusetMems", "PidMode", "Sysctls")
     if (any(host.get(k) for k in unsupported) or config.get("Healthcheck")
             or host.get("RestartPolicy", {}).get("Name") != "unless-stopped"
@@ -50,6 +77,8 @@ def guard(live, image):
             or any(t != "bind" or rw or any(c in source + target for c in ",\n\r")
                    for t, source, target, rw in mounts(live))):
         raise RuntimeError("ING_RUNTIME_SETTINGS_UNSUPPORTED")
+    validate_binds(live)
+    memory_flags(host)
     for key in ("User", "Entrypoint", "Cmd", "WorkingDir", "ExposedPorts"):
         if config.get(key) != image["Config"].get(key):
             raise RuntimeError("ING_IMAGE_LAUNCH_CONTRACT_CHANGED")
@@ -81,6 +110,8 @@ def matches(candidate, old, image, properties):
         and "ouf-ingestion" in candidate["NetworkSettings"]["Networks"]["ouf-backend"].get("Aliases", [])
         and candidate["HostConfig"].get("RestartPolicy", {}).get("Name") == "no"
         and candidate["HostConfig"].get("LogConfig") == old["HostConfig"].get("LogConfig")
+        and all(candidate["HostConfig"].get(k, 0) == old["HostConfig"].get(k, 0)
+                for k in ("Memory", "MemorySwap"))
         and all(candidate["Config"].get(k) == old["Config"].get(k)
                 for k in ("User", "Entrypoint", "Cmd", "WorkingDir", "ExposedPorts")))
 
@@ -140,6 +171,7 @@ def main(args):
             cmd = ["docker", "create", "--name", NAME, "--network", "ouf-backend",
                 "--network-alias", "ouf-ingestion", "--restart", "no", "--user", "10002:10002",
                 "--log-driver", "json-file", "--env-file", str(env_path)]
+            cmd.extend(memory_flags(old["HostConfig"]))
             for k, v in old["HostConfig"]["LogConfig"].get("Config", {}).items():
                 cmd.extend(["--log-opt", k + "=" + v])
             for _, src, dst, _ in mounts(old, properties):
