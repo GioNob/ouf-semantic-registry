@@ -1149,3 +1149,31 @@ PolicyBundle; nessuna proposta è ancora creata. Verificare scadenza, hash,
 base ACTIVE e accesso Gateway/delegation prima di proporla; pubblicazione
 richiede conferma HUMAN THS, mai SQL o script storico di publish diretto.
 R-SMOKE/R-INSTALL OPEN.
+
+### Scope Semantic applicato e proposta grant PENDING — 30 settembre
+
+Operatore: reconciler plan/apply/verify PASS, `ouf.semantic.read` DEFAULT=true e
+OPTIONAL=false su `ouf-ingestion`; nessuna drift al verify. Subito dopo il bearer
+esistente aveva scope assente e TTL 269 secondi: verifica del token rinnovato
+ancora da acquisire, non diagnosticare fallimento del binding da quel solo output.
+Inventario policy invariato: descriptor SERVICE valido, un grant non corrispondente.
+
+L'assistente ha usato il plugin OUF MCP con il collegamento `ouf-admin`, prima
+ROLES (catalogo preservato), poi GRANTS filtrato `subjectId=ouf-ingestion`:
+policyRef :31, hash `sha256:3c043bf01564b1fc0647d8114220b8cd114d0d6d701371e2fd9cb44ff4ec3bc7`,
+proiezione vuota; una proiezione configurata non è prova di permessi effettivi.
+Creata via `authorization.permissions.propose` una UPSERT di un solo grant:
+`grant-r4a-semantic-read-ingestion-20260930`, capability `ouf.semantic.read`,
+tenant `ouf-lab`, servicePrincipalId `ouf-ingestion`, subject/organization null,
+constraints null, validFrom 2026-09-30T00:00:00Z, validUntil 2027-09-30T00:00:00Z.
+Il resto del PolicyBundle e il ruolo admin restano preservati. Nessun publish.
+
+Ricevuta: proposta `44817d9d-e66c-4c02-8ef5-53ca2b2548e9`, revision 0, PENDING,
+expiresAt **2026-09-30T08:28:55.717003Z** (10:28:55 Europe/Rome).
+[Conferma HUMAN nel THS](https://api.ouf-lab.it/trusted-human/authorization/?proposal=44817d9d-e66c-4c02-8ef5-53ca2b2548e9).
+La scadenza della proposta è distinta dalla validUntil del grant. Il chatbot non
+conferma; dopo la decisione leggere la ricevuta con `authorization.proposal.read`
+(same account), verificare finalPolicyRef e rinnovo token. Se la proposta è scaduta,
+non usare il link come conferma valida: preparare una nuova proposta sullo stato
+ACTIVE corrente. Compatibilità, prova Semantic/asset e rollout ancora aperti;
+R-SMOKE/R-INSTALL OPEN. Nessuna attestazione o attivazione della fonte.
