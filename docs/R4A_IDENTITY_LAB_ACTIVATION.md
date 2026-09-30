@@ -942,8 +942,8 @@ cd /opt/ouf/onboarding
 git fetch --no-tags origin codex/r4a-onboarding-managed-identity-integration
 cd /opt/ouf/semantic
 git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
-git show 76073d25ceff9f8a54684fee214071c564423b83:scripts/r4a_managed_identity_release_inventory.py > /tmp/r4a_managed_identity_release_inventory.py
-git show 76073d25ceff9f8a54684fee214071c564423b83:scripts/r4a_prepare_managed_identity_candidate.py > /tmp/r4a_prepare_managed_identity_candidate.py
+git show 6eb09c963b39cfc67401d15e39397df4663f456a:scripts/r4a_managed_identity_release_inventory.py > /tmp/r4a_managed_identity_release_inventory.py
+git show 6eb09c963b39cfc67401d15e39397df4663f456a:scripts/r4a_prepare_managed_identity_candidate.py > /tmp/r4a_prepare_managed_identity_candidate.py
 sudo python3 /tmp/r4a_prepare_managed_identity_candidate.py
 )
 ```
@@ -970,3 +970,32 @@ Il comando corrente è aggiornato alla correzione. Ancora nessun build o
 candidato fermo attestato dall'operatore, nessuno switch/POST. Versione/hash,
 live, IAM, route, asset e rollback precedenti restano invariati.
 R-SMOKE/R-INSTALL OPEN.
+
+### Build eseguita, stop nel lookup candidato — correzione indipendente dagli errori Docker
+
+Output operatore su 76073d2…: preflight PASS prima e dopo la build, poi
+OWNER_DOCKER_INSPECT_FAILED nel lookup opzionale del candidato. La build è
+terminata e il controllo di provenance/contratto di avvio è superato;
+nessuna nuova creazione candidato attestata, nessun avvio/switch o POST.
+Log privato conservato:
+`/etc/ouf/deploy-snapshots/onboarding-managed-identity-bmvgzvr2/build.log`.
+Non stampare lo stato/env privato. Il live e il DB restano invariati.
+
+Il vecchio helper distingueva assenza da guasto leggendo due stringhe d'errore
+di docker inspect; l'output redatto non permette di confermare quale errore
+Docker specifico si sia presentato. Correzione Semantic **6eb09c963b39cfc67401d15e39397df4663f456a**:
+docker container ls --all con formato Names, confronto per nome esatto,
+poi inspect solo quando il candidato esiste. Il risultato vuoto è assenza;
+un errore del daemon o un race dell'inspect blocca, senza trattarlo come
+assenza e senza mostrarne i dettagli. Nessuna dipendenza dalla lingua/forma
+del messaggio No such object/container/image.
+
+Dieci test Python locali PASS, inclusi assenza/nome simile/nome esatto,
+errore daemon fail-closed, main completo, drift e cleanup per ID.
+Candidata Onboarding invariata 6340d5bf…, stessa immagine/tag: la build ripetuta
+può riusare la cache, i due preflight restano obbligatori. Comando corrente
+aggiornato alla nuova revisione. CI helper avviata, non ancora acquisita;
+le quattro CI Onboarding erano già verdi.
+Nessuna modifica IAM/route/asset/versione congelata o ai rollback;
+R-SMOKE/R-INSTALL OPEN. Prossimo risultato richiesto: CANDIDATE PASS STOPPED=true,
+prima di preparare il backup/switch.
