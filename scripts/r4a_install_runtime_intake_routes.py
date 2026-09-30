@@ -97,7 +97,7 @@ def save(value, exclusive=False):
         os.close(fd)
 
 
-def policy(live):
+def policy(live, diagnostic=False):
     helper = admin.inventory.routes.helper
     settings = helper.transport_settings(live,'ouf-lab')
     mounts = {m['Destination']:m for m in live['Mounts']}
@@ -117,10 +117,40 @@ def policy(live):
     if code != '200':
         raise RuntimeError('INTAKE_POLICY_READ_NOT_200')
     document = json.loads(body)
+    if diagnostic:
+        catalogue_report(document,claims)
+        return document,{}
     scopes = {cap:scope_for(document,cap,report=True) for _,_,cap in TARGETS}
     if not set(scopes.values()) <= set(str(claims.get('scope','')).split()):
         raise RuntimeError('INTAKE_TOKEN_REQUIRED_SCOPE_MISSING_NO_IAM_CHANGED')
     return document,scopes
+
+
+def catalogue_report(document, claims):
+    def safe(value):
+        return str(value) if isinstance(value,(str,int)) and re.fullmatch(r'[A-Za-z0-9._:-]{1,160}',str(value)) else 'UNSUPPORTED_REDACTED'
+    all_objects = list(objects(document))
+    token_scopes = set(str(claims.get('scope','')).split())
+    for key in ('bundleId','bundleVersion','contentHash'):
+        print('INTAKE_POLICY_' + key.upper() + '=' + safe(document.get(key)))
+    for _,_,capability in TARGETS:
+        relevant = [x for x in all_objects if x.get('capabilityId') == capability]
+        descriptors = [x for x in relevant if 'operation' in x or 'requiredScope' in x or 'allowedActors' in x]
+        grants = [x for x in relevant if 'grantId' in x]
+        print('INTAKE_CATALOGUE_CAPABILITY=' + capability + ' EXACT_OBJECT_COUNT=' + str(len(relevant)) + ' DESCRIPTOR_COUNT=' + str(len(descriptors)) + ' GRANT_COUNT=' + str(len(grants)))
+        print('INTAKE_CATALOGUE_SERVICE_TENANT_GRANT_DIAGNOSTIC_COUNT=' + str(sum(x.get('servicePrincipalId') == 'ouf-ingestion' and x.get('tenantId') == 'ouf-lab' for x in grants)))
+        for index,descriptor in enumerate(descriptors,1):
+            actors = descriptor.get('allowedActors')
+            actors = actors if isinstance(actors,list) else []
+            print('INTAKE_CATALOGUE_DESCRIPTOR=' + str(index) + ' OPERATION=' + safe(descriptor.get('operation')) + ' REQUIRED_SCOPE=' + safe(descriptor.get('requiredScope')) + ' SERVICE_ALLOWED=' + str('SERVICE' in actors).lower() + ' TOKEN_SCOPE_PRESENT=' + str(isinstance(descriptor.get('requiredScope'),str) and descriptor['requiredScope'] in token_scopes).lower())
+    related = sorted({x['capabilityId'] for x in all_objects if isinstance(x.get('capabilityId'),str) and re.fullmatch(r'[A-Za-z0-9._:-]{1,160}',x['capabilityId']) and any(word in x['capabilityId'].lower() for word in ('lake','candidate'))})
+    for capability in related[:50]:
+        descriptor = [x for x in all_objects if x.get('capabilityId') == capability and ('operation' in x or 'requiredScope' in x)]
+        print('INTAKE_RELATED_CAPABILITY=' + capability + ' DESCRIPTOR_COUNT=' + str(len(descriptor)))
+        for item in descriptor:
+            print('INTAKE_RELATED_OPERATION=' + safe(item.get('operation')) + ' REQUIRED_SCOPE=' + safe(item.get('requiredScope')))
+    print('INTAKE_RELATED_TOKEN_SCOPES=' + json.dumps(sorted(x for x in token_scopes if re.fullmatch(r'[A-Za-z0-9._:-]{1,160}',x) and any(word in x.lower() for word in ('lake','candidate')))))
+    print('R4A_RUNTIME_INTAKE_CATALOGUE=COMPLETE READ_ONLY=true IAM_UNCHANGED=true ROUTES_UNCHANGED=true RUN_RESUME=false OWNER_AUTHORIZATION_NOT_PROVEN=true SECRETS_NOT_PRINTED=true')
 
 
 def existing(values):
@@ -166,6 +196,9 @@ def main(mode):
     if run != {'state':'PAUSED','failure':'ING_RECORD_QUARANTINED','outbox':0}:
         raise RuntimeError('PAUSED_RUN_BASELINE_DRIFT')
     ing = helper.inspect('ouf-ingestion')
+    if mode == 'catalogue':
+        policy(ing,diagnostic=True)
+        return
     document,scopes = policy(ing)
     apisix = helper.inspect('ouf-apisix')
     if not apisix['State']['Running']:
@@ -230,7 +263,7 @@ def main(mode):
 
 if __name__ == '__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('mode',choices=('plan','apply'))
+    parser.add_argument('mode',choices=('catalogue','plan','apply'))
     try:
         main(parser.parse_args().mode)
     except Exception as error:
