@@ -1212,8 +1212,8 @@ Riscontro statico, da confrontare con il runtime: ExecutionGatewayClient legge
 GET `/internal/object-storage/v1/content?ref=…`; il binding Gateway
 `onboarding-managed-file-read` a 3014f3c… punta a
 `/api/internal/v1/onboarding/managed-files/content` su Onboarding. Quel controller
-non è nel tree della baseline Onboarding f74c3a9…; il relativo scope del vecchio
-controller è inoltre diverso da `ouf.internal.object-storage.read` del bearer.
+non è nel tree della baseline Onboarding f74c3a9…. La capability owner
+`ouf.object-storage.content.read` richiede lo scope `ouf.internal.object-storage.read` del bearer.
 Questo non dimostra che la route live coincida con quel binding, né che
 l'asset manchi. Non ricaricare il file, cambiare hash o introdurre accesso diretto
 allo storage per aggirare il 404.
@@ -1250,3 +1250,57 @@ Revisione inventario invariata: `0dfab1e7b2253fd939088259ea61754d6e56706c`.
 Tutte le 14 run CI push/PR ora completed/success. I 19 test Python locali erano
 già PASS. Il blocco consumer resta `ING_EXECUTION_GATEWAY_404`; compatibilità,
 R-SMOKE e R-INSTALL restano aperti.
+
+### Gate corrente confermato — endpoint owner assente nella release live
+
+Output VPS: baseline owner=true, una route GET esatta, rewrite al vecchio
+endpoint content=true, upstream Onboarding=true, nessun upstream_id,
+OIDC=true, required scope match=true, rewrite=true; inventario completo
+in sola lettura. La route invia la richiesta al controller assente nel tree
+f74c3a9…. Non vi è evidenza che l'asset sia perso. Il preflight Semantic
+è già superato; otto righe, compatibilità live, attestazione Ingestion e
+filiera Ingestion → UDP → search rimangono aperti.
+
+Correzione della precedente nota sullo scope: `ouf.object-storage.content.read`
+è il nome della capability owner, mentre il descriptor richiede proprio
+`ouf.internal.object-storage.read`, già presente nel token. Questa distinzione
+non richiede un cambio IAM. Il backend dovrà comunque effettuare la sua
+decisione effettiva di autorizzazione dopo il ripristino dell'endpoint.
+
+I rami intake (5d770df…) e identity live (f74c3a9…) divergono dal parent
+21de5f2…; il rollout identity ha lasciato fuori l'implementazione intake.
+Preparata **Onboarding PR #39**, branch
+`codex/r4a-onboarding-managed-identity-integration`, commit
+**6340d5bf120e09b47c32177656e2c377a4c03640**, con entrambi i parent nella storia. Ripristina
+intake/picker/delegation e conserva gate UDP e PermissionProposal publication.
+Cinque file modificati da entrambi i rami integrati con merge a tre vie;
+conflitti risolti sulle tre superfici sessione HUMAN e sulle due validazioni,
+entrambe mantenute. Il test storico che attivava un managed DRAFT incompleto
+resta sostituito dalla regressione fail-closed già introdotta nell'intake.
+
+Tutte le **quattro CI push/PR completed/success** alla verifica: module e
+browser. La CI del container verifica GET owner anonimo 403 con
+ONB_AUTHORIZATION_DENIED oltre alla readiness, quindi rileva anche una
+release priva del controller. Nessun deploy VPS effettuato.
+Procedura specifica nel repo Onboarding:
+`docs/R4A_MANAGED_IDENTITY_INTEGRATION.md`. Non eseguire il vecchio rollout
+picker: riguarda un'altra fase e il suo controllo git non risolve questo caso.
+
+Il DB live è già V31, ma V30/V31 mancano nel tree identity f74c3a9….
+La candidata conserva i file originali intake: occorre confrontare ogni
+script/checksum con la storia Flyway effettiva, non dichiarare migrazioni
+invariate dal solo confronto con quel tree. Preflight Semantic versionato a
+**721d81a25c194615eb0ddf48fca8b9bd0a281ef9**, quattro test locali PASS e test aggiunto alla CI:
+`scripts/r4a_managed_identity_release_inventory.py`. Solo git read/ancestor,
+Docker inspect e SQL BEGIN READ ONLY/ROLLBACK; verifica entrambe le storie,
+baseline, env/mount read-only, metadati file per UID/GID 10003 e migrazioni
+esatte già applicate. Stampa conteggi/booleani; nessun valore o identità.
+Un mismatch blocca i prerequisiti della release. La CI Semantic nuova è in
+corso; CI della candidata Onboarding già verde.
+
+Acquisire questo inventario prima di build/candidato fermo e switch con
+backup recuperabile. Conservare i rollback e i dump già registrati,
+versione/hash congelati e attestazione UDP esistente. La prova isolata e
+il gate d'identità devono restare insieme alla lettura managed. Nessun
+restore automatico del DB, reupload, cambio hash o aggiramento diretto
+dello storage. R-SMOKE/R-INSTALL OPEN.
