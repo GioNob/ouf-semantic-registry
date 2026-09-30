@@ -1304,3 +1304,47 @@ versione/hash congelati e attestazione UDP esistente. La prova isolata e
 il gate d'identità devono restare insieme alla lettura managed. Nessun
 restore automatico del DB, reupload, cambio hash o aggiramento diretto
 dello storage. R-SMOKE/R-INSTALL OPEN.
+
+### Preflight release acquisito PASS — candidata da costruire e lasciare ferma
+
+L'operatore ha eseguito il preflight sulla candidata Onboarding
+6340d5bf120e09b47c32177656e2c377a4c03640: entrambe le storie preservate,
+31 migrazioni tutte corrispondenti al DB, baseline live attiva, quattro env
+staging presenti, mount credenziali read-only e file privati leggibili,
+gateway/token managed presenti, gateway/token identity presenti e leggibili.
+RELEASE_PREREQUISITES=PASS, LIVE_UNCHANGED=true. Nessun nuovo prerequisito
+IAM/configurazione va introdotto per riparare l'endpoint mancante.
+
+Automazione Semantic aggiornata a **6fc4ed9b4e74cb038250c609f3688b4276aadb31**:
+`scripts/r4a_prepare_managed_identity_candidate.py`. Fissa la candidata
+Onboarding alla revisione verde; ripete l'inventario prima e dopo la build da
+git archive, verifica label immagine e contratto di avvio, e blocca se live,
+env, mount, migrazioni o impostazioni Docker cambiano. Crea solo il container
+`ouf-onboarding-r4a-managed-identity-candidate`, in stato created,
+restart=no, alias ouf-onboarding, UID/GID 10003, con env/mount/log del live.
+Non lo avvia, non cambia il live, non accede al bucket e non invia attestazioni.
+
+Un candidato già presente è riutilizzato solo se fermo e identico; eventuale
+drift blocca senza sostituzione. Il readback deve confermare l'ID creato,
+immagine, env, mount, rete e stato. In caso d'errore ripulisce solo il proprio
+container ancora fermo e non tocca container sostituiti da altri operatori.
+Il file env temporaneo è privato e rimosso nel finally.
+
+Manifest privato root 0600:
+`/opt/ouf/r4a-stage/onboarding-managed-identity-release.json`;
+contiene lo snapshot Docker live (anche env segreti), candidate ID e image ID.
+Non stamparlo, condividerlo o committarlo. Le build log sono in una directory
+root 0700 sotto r4a-stage, il solo percorso viene stampato; conservate su errore.
+Lo stato esistente non viene sovrascritto; deve corrispondere al live/candidato.
+Non modificare `identity-images.json` e non eliminare i rollback precedenti.
+
+Otto test Python locali PASS e discovery CI estesa a entrambi gli script:
+checksum/migrazioni, mount privati, preparazione completa, drift durante build,
+cleanup per ID e candidati preesistenti. CI preparatore avviata, non ancora
+acquisita; le quattro CI della candidata Onboarding restano completed/success.
+Prossimo passo: acquisire BUILDING → CANDIDATE PASS/STOPPED; poi backup
+recuperabile e switch con verifica di readiness, endpoint e Flyway invariata.
+Il preparatore non crea backup e non esegue lo switch. Compatibilità consumer,
+attestazione e HUMAN approval/activation restano gate successivi.
+Versione/hash congelati, attestazione UDP e backup/rollback preservati;
+R-SMOKE/R-INSTALL OPEN.
