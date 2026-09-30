@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Read Gateway routes for real lake/handoff execution after ACTIVE publication."""
+import argparse
 import base64
 import json
 import os
@@ -7,7 +8,6 @@ from pathlib import Path
 import re
 import r4a_execution_route_inventory as routes
 import r4a_approval_route_inventory as matching
-import r4a_cinema_execution_readback as readback
 
 TARGETS = {'LAKE': '/api/internal/v1/lake/objects', 'HANDOFF': '/api/internal/v1/handoffs'}
 
@@ -16,14 +16,16 @@ def flag(key, value):
     print(key + '=' + str(bool(value)).lower())
 
 
-def main():
+def main(smoke_cinema=False):
     if os.geteuid() != 0:
         raise RuntimeError('ROOT_REQUIRED')
-    receipt = readback.private(readback.ROOT / 'cinema-source-activation.json')
-    if (receipt.get('status') != 'PASS' or receipt.get('sourceId') != readback.SOURCE or
-        receipt.get('versionId') != readback.VERSION or receipt.get('configurationHash') != readback.HASH or
-        receipt.get('publicationId') != readback.PUBLICATION):
-        raise RuntimeError('ACTIVATION_RECEIPT_MISMATCH')
+    if smoke_cinema:
+        import r4a_cinema_execution_readback as readback
+        receipt = readback.private(readback.ROOT / 'cinema-source-activation.json')
+        if (receipt.get('status') != 'PASS' or receipt.get('sourceId') != readback.SOURCE or
+            receipt.get('versionId') != readback.VERSION or receipt.get('configurationHash') != readback.HASH or
+            receipt.get('publicationId') != readback.PUBLICATION):
+            raise RuntimeError('ACTIVATION_RECEIPT_MISMATCH')
     print('R4A_RUNTIME_INTAKE_ROUTE_INVENTORY=READ_ONLY', flush=True)
     udp = routes.helper.inspect('ouf-udp')
     image = routes.helper.inspect(udp['Image'], 'image')
@@ -81,7 +83,9 @@ def main():
 
 if __name__ == '__main__':
     try:
-        main()
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument('--smoke-cinema', action='store_true', help='Optional lab receipt check; default inventory covers shared routes')
+        main(parser.parse_args().smoke_cinema)
     except Exception as error:
         code = str(error) if isinstance(error,RuntimeError) else type(error).__name__
         print('R4A_RUNTIME_INTAKE_ROUTE_INVENTORY=BLOCKED CODE=' + code + ' READ_ONLY=true SECRETS_NOT_PRINTED=true')
