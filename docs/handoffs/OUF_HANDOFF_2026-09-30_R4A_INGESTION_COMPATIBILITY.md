@@ -374,9 +374,30 @@ cd /opt/ouf/ingestion
 git fetch --no-tags origin codex/r4a-ingestion-frozen-compatibility-probe
 git show 0dfab1e7b2253fd939088259ea61754d6e56706c:scripts/r4a_prepare_frozen_compatibility_probe.py > /tmp/r4a_prepare_frozen_compatibility_probe.py
 git show 0dfab1e7b2253fd939088259ea61754d6e56706c:scripts/r4a_execution_route_inventory.py > /tmp/r4a_execution_route_inventory.py
-sudo python3 /tmp/r4a_execution_route_inventory.py
+sudo python3 /tmp/r4a_execution_route_inventory.py --admin-key /opt/ouf/secrets/apisix-admin-key
 )
 ```
 
 Acquisire solo l'output sintetico. I comandi precedenti sono storici; non
 rieseguire ancora build/switch/attestazione.
+
+### Inventario route: chiave esplicita nel comando
+
+Output VPS acquisito: `EXEC_READ_OWNER_BASELINE_REVISION_MATCH=true`, poi
+`APISIX_ADMIN_KEY_LAYOUT_UNSUPPORTED`. La lettura dell'Admin API non è stata
+eseguita: non sono ancora disponibili evidenze sulle route attive. La baseline
+Onboarding f74c3a9… è invece confermata dall'immagine live.
+
+Il parser ristretto del bind config.yaml non accetta il layout osservato.
+Usare l'opzione già disponibile `--admin-key /opt/ouf/secrets/apisix-admin-key`:
+è lo stesso riferimento del rollout Gateway versionato
+`scripts/r4a_semantic_rdf_route_rollout.py` a 3014f3c….
+La presenza del file sul VPS sarà verificata dalla lettura, non è stata dedotta
+dalla sola fonte GitHub. La chiave resta in memoria/stdin, non in argv/output;
+il layout YAML non viene interpretato. Nessuna modifica a configurazione, token,
+route, policy, asset, immagini live o attestazioni.
+
+Revisione inventario invariata: `0dfab1e7b2253fd939088259ea61754d6e56706c`.
+Tutte le 14 run CI push/PR ora completed/success. I 19 test Python locali erano
+già PASS. Il blocco consumer resta `ING_EXECUTION_GATEWAY_404`; compatibilità,
+R-SMOKE e R-INSTALL restano aperti.
