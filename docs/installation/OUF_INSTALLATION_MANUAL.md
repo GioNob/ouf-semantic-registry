@@ -1,5 +1,11 @@
 # OUF — Manuale di installazione e bootstrap
 
+### 2026-09-30 — Operator LIVE Ingestion IAM binding inventory
+
+Operator read-only inventory PASS: running Ingestion matches expected live revision 0dfab1e7b2253fd939088259ea61754d6e56706c; activation and execution properties are both true. IAM enabled/issuer/audience are absent from environment and mounted properties; no Spring JSON, command IAM override, direct IAM property environment or properties config import was reported. External Spring configuration environment is PRESENT, so its source must be classified before candidate preparation. This is diagnostic evidence, not proof of the live principal bean or owner authorization. Routes and published policy remain installed; workload token, IAM, runtime and queues were unchanged. Retry and run resume were NOT performed.
+
+Next: rerun the extended read-only IAM inventory to identify one supported explicit mounted properties source without printing selector values. The classifier accepts only a single SPRING_CONFIG_LOCATION or SPRING_CONFIG_ADDITIONAL_LOCATION pointing to file:/run/secrets/ingestion-summary.properties (optional: prefix allowed); other layouts require review, not removal of configuration. Seven local classifier checks pass; no live configuration loading or authorization was tested locally. The CI-green IAM + governed retry release 163c167d09b8371ff7a62ce7068e9d485b6969b7 remains NOT DEPLOYED. A stopped candidate must preserve existing external configuration and both enabled loops. Production support is shared across tenant sources; cinema remains test data. S3 durability, intake owner authorization, HUMAN recovery authorization, retry/resume and eight-row UDP/search evidence remain OPEN.
+
 ## 2026-09-30 — Four recovery routes VERIFIED LIVE; Ingestion principal adapter CI all green, not deployed
 
 Actual operator READ_ONLY route readback PASS: saved receipt PASS, RECEIPT_MATCH=true, ROUTE_COUNT=4, EXISTING_ROUTES_PRESERVED=true. This resolves the uncertain SSH result; do not rerun installation. Control-plane route state verified, no live HUMAN owner authorization proof. Policy35 remains 42 capabilities/83 grants; four HUMAN scopes OPTIONAL on ouf-human-admin already verified. No retry/resume; source ACTIVE/run PAUSED/quarantine OPEN remains checkpoint.

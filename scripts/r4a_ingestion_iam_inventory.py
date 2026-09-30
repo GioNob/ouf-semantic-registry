@@ -11,6 +11,17 @@ import r4a_prepare_frozen_compatibility_probe as helper
 def flag(name,value):print(name+'='+str(bool(value)).lower())
 
 
+def external_config_status(env):
+    """Recognize one explicit properties file; refuse additional config sources."""
+    selectors={k:v for k,v in env.items() if v and re.sub(r'[^a-z0-9]','',k.lower()) in
+        {'springconfiglocation','springconfigadditionallocation','springconfigimport'}}
+    accepted={'file:'+helper.PROPERTIES,'optional:file:'+helper.PROPERTIES}
+    supported=(len(selectors)==1 and next(iter(selectors)) in
+        {'SPRING_CONFIG_LOCATION','SPRING_CONFIG_ADDITIONAL_LOCATION'} and
+        next(iter(selectors.values())) in accepted)
+    return selectors,supported
+
+
 def main(args):
     if os.geteuid()!=0:raise RuntimeError('ROOT_REQUIRED')
     live=helper.inspect('ouf-ingestion')
@@ -26,6 +37,12 @@ def main(args):
         flag('ING_IAM_'+key+'_ENV_MATCH',value==wanted)
     flag('ING_IAM_SPRING_JSON_PRESENT',bool(env.get('SPRING_APPLICATION_JSON')))
     flag('ING_IAM_EXTERNAL_CONFIG_ENV_PRESENT',any(env.get(k) for k in ('SPRING_CONFIG_LOCATION','SPRING_CONFIG_ADDITIONAL_LOCATION','SPRING_CONFIG_IMPORT')))
+    selectors,supported=external_config_status(env)
+    print('ING_IAM_EXTERNAL_CONFIG_SELECTOR_COUNT='+str(len(selectors)))
+    flag('ING_IAM_EXTERNAL_CONFIG_SINGLE_PROPERTIES_FILE',supported)
+    flag('ING_IAM_EXTERNAL_CONFIG_LOCATION_SELECTOR', 'SPRING_CONFIG_LOCATION' in selectors)
+    flag('ING_IAM_EXTERNAL_CONFIG_ADDITIONAL_LOCATION_SELECTOR', 'SPRING_CONFIG_ADDITIONAL_LOCATION' in selectors)
+    flag('ING_IAM_EXTERNAL_CONFIG_IMPORT_SELECTOR',any(re.sub(r'[^a-z0-9]','',k.lower())=='springconfigimport' for k in selectors))
     flag('ING_IAM_DIRECT_PROPERTY_ENV_PRESENT',any(re.sub(r'[^a-z0-9]','',k.lower()).startswith('oufingestioniam') for k in env))
     command=[str(x) for x in [*(live['Config'].get('Cmd') or []),*(live['Config'].get('Entrypoint') or [])]]
     flag('ING_IAM_COMMAND_OVERRIDE_PRESENT',any(re.search(r'ouf[._-]ingestion[._-]iam|spring[._-]config|SPRING_APPLICATION_JSON',x,re.I) for x in command))
