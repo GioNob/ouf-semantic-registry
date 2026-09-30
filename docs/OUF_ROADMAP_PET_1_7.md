@@ -689,3 +689,54 @@ le quattro CI Onboarding erano già verdi.
 Nessuna modifica IAM/route/asset/versione congelata o ai rollback;
 R-SMOKE/R-INSTALL OPEN. Prossimo risultato richiesto: CANDIDATE PASS STOPPED=true,
 prima di preparare il backup/switch.
+
+### Candidato combinato preparato PASS — switch ancora da eseguire
+
+Output VPS acquisito: inventario PASS prima/dopo build, CANDIDATE=PASS
+STOPPED=true ENV_AND_MOUNTS_PRESERVED=true; PREPARE=PASS LIVE_UNCHANGED=true
+DB_UNCHANGED=true. Il candidato fermo è
+`ouf-onboarding-r4a-managed-identity-candidate`, revisione Onboarding
+6340d5bf120e09b47c32177656e2c377a4c03640. Stato privato root 0600:
+`/etc/ouf/deploy-snapshots/onboarding-managed-identity-release.json`.
+Build log del tentativo riuscito:
+`/etc/ouf/deploy-snapshots/onboarding-managed-identity-h4pcqei_/build.log`.
+Non stampare i contenuti; i log precedenti restano conservati.
+
+Automazione switch Semantic a **13feb098621f3c08889f875e92c0d381905a7b7a**:
+`scripts/r4a_switch_managed_identity_candidate.py`, modalità plan/apply.
+Verifica manifest/ID, snapshot live, env/mount/rete, label/contratto immagine,
+31 checksum, token managed e identity freschi con client/scopo/tenant/issuer/
+audience corretti, readiness live e versione/hash congelati.
+Plan è di sola lettura e non crea receipt/backup. Apply ferma il live,
+crea un dump custom dell'intero DB Onboarding e prova pg_restore in un
+database temporaneo, rimosso nel finally; exige 31 migrazioni ripristinate.
+Rilegge storia Flyway e versione congelata dopo backup e dopo avvio.
+
+Conserva il vecchio container come
+`ouf-onboarding-managed-identity-rollback-<old-id-prefix>`; rinomina e avvia
+solo il candidato verificato, richiede readiness, stesso ID/immagine/env/mount,
+storia Flyway identica e versione congelata invariata. Verifica diniego anonimo
+401/403 sul port owner content e freshness dei due token, poi imposta
+restart=unless-stopped. Il diniego anonimo non è lettura positiva dell'asset:
+la sonda consumer resta il gate seguente, prima di attestazioni.
+
+Receipt privato root 0600:
+`/etc/ouf/deploy-snapshots/onboarding-managed-identity-switch.json`;
+conserva fase, ID, nome rollback/failed, dump e storia migration. Un receipt
+preesistente blocca per evitare doppio switch. In caso di errore tenta ritorno
+al vecchio runtime per ID, conserva il nuovo failed e fino a 120 righe di log
+in file privato. Se il backup fallisce prima dello swap, riavvia l'originale.
+Non rimuove il vecchio rollback e non ripristina automaticamente il DB;
+un ID live estraneo blocca il recupero senza toccare quel container.
+Ogni fallimento va analizzato dal suo output redatto e stato privato,
+senza rilanciare alla cieca un receipt già esistente.
+
+Sedici test Python locali PASS (aggiunti plan senza scritture, apply completo,
+backup-before-swap, rollback su backup/start fallito, ID estraneo e cleanup
+scratch con dump privato conservato); discovery CI già comprende la suite.
+CI nuova helper avviata, non ancora acquisita. Le quattro CI Onboarding
+della revisione candidata sono completed/success alla verifica.
+Nessuno switch effettivo ancora attestato, nessun cambio route/IAM/asset,
+nessun POST compatibilità/approval/activation. Prossimo passo: plan/apply
+sulla versione e hash congelati; poi prova Ingestion, mai attivare la fonte
+in base alla sola readiness. R-SMOKE/R-INSTALL OPEN.
