@@ -1327,7 +1327,7 @@ Dopo UDP corrente PASS predisporre card/challenge di review nella THS,
 con decisione approval/activation esclusivamente HUMAN. Catena reale
 Ingestion→UDP→search ancora da eseguire; R-SMOKE/R-INSTALL OPEN.
 
-### Prossimo comando corrente — verifica UDP corrente, sola lettura
+### Comando storico eseguito PASS — verifica UDP corrente, sola lettura
 
 ```bash
 (
@@ -1344,3 +1344,36 @@ sudo python3 /tmp/r4a_current_udp_activation_gate.py \
   --tenant-id ouf-lab
 )
 ```
+
+## 2026-09-30 — UDP corrente PASS; versione IN_REVIEW senza challenge
+
+Evidenza VPS incollata dall'operatore: UDP gate HTTP200/valid=true,
+source/hash/tenant/classe/policyRef/policyVersion corrispondenti, coverageRef
+presente, live invariato. L'attestazione Ingestion
+00006776-5970-4f5c-acf0-145171a6f944 e la prova del consumer deployato su otto
+righe restano acquisite. Versione cinema
+68394f42-5c82-4127-a1f3-126516665749, fonte managed-cinema-8ec8ae90:
+IN_REVIEW, hash congelato invariato, zero approval_challenge per la versione.
+Non è stata acquisita l'approvazione finale di questo pacchetto; non dedurre
+che siano assenti o invalide precedenti decisioni su schema/mapping semantici.
+Nessuna nuova approvazione, attivazione o materializzazione effettuata.
+
+Prossimo comando: scripts/r4a_approval_route_inventory.py (Semantic
+66a78a99b6167605934c4f9936666612be784483), con dipendenze
+r4a_execution_route_inventory.py e r4a_prepare_frozen_compatibility_probe.py.
+Inventaria CREATE/CARD/CONFIRM/ACTIVATE e scope inline; controlla owner/versione
+invariati; nessun POST. Quattro test locali PASS, CI non ancora acquisita.
+Non certifica ALLOW owner, sessione HUMAN, browser THS o enforcement; riferimenti
+service/plugin/upstream, rewrite e condizioni ulteriori richiedono verifica.
+Non crea challenge prima della verifica del percorso; non conferma o attiva.
+
+Distinguere il gate HUMAN della configurazione/attivazione della fonte dalla
+risoluzione UDP per record: NEW_OBJECT e MATCH non ambiguo procedono secondo
+policy governata senza THS per ogni riga; REVIEW_REQUIRED apre review umana.
+Identità della pratica, tipo NUOVA_LICENZA/RINNOVO e identità dehor/concessione
+sono distinti, con chiavi/relazioni approvate in onboarding. Il flag non decide
+l'identità; nuove pratiche possono collegarsi allo stesso dehor, mentre stesso
+ID pratica può produrre revisioni/evidenze senza duplicazione dell'oggetto.
+Questa è una regola di modellazione concordata, non prova di un deploy aggiuntivo.
+Dopo approvazione e attivazione seguono run managed reale, CDE/handoff/ACK,
+materializzazione e ricerca. R-SMOKE e R-INSTALL restano OPEN.
