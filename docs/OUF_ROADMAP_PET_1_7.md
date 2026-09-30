@@ -1,6 +1,14 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
 
+### CI esatta verde della correzione retry (non ancora live)
+
+Verificato commit `759d916cc9a45a39e9be0156f54677225a172e1f`, branch `codex/r4a-governed-record-retry`, GioNob/ouf-ingestion-runtime. Tutti e sette i workflow associati risultano completed/success: module CI (run 36762530058), R4a frozen consumer (36762529950), R2a (36762530202), R2b (36762529995), R2c (36762529910), R2e (36762529885), Shared Authorization SDK pairwise (36762530005). Module job Java21/PostgreSQL17: 112 test, zero failures/errors/skips; RunExecutionWorkerRuntimeTest nove test, tutti PASS, inclusi tre nuovi casi di retry. OpenAPI release gate PASS; non-root image/package, supply-chain/deployment e database DR job PASS sul medesimo commit.
+
+Questa è evidenza CI sul nuovo codice, non recupero del run live o prova owner/S3. Il live resta revision 0dfab1e7b2253fd939088259ea61754d6e56706c, run PAUSED/controlVersion=0 e quarantena OPEN/version=0. Il prossimo comando operatore è il solo inventario `r4a_recovery_access_catalogue.py --tenant ouf-lab` (pinned Semantic d6059ed9038abc2eee172bef16d9622e8aa55724). Successivi gate ancora da eseguire: bootstrap HUMAN condiviso (descriptor/grant/scope/route e owner access), candidato e switch Ingestion conservando loop/transport/token/history e backup restore drill, retry della quarantena e resume con expectedVersion/receipt/readback. Non aggiungere scope HUMAN a ouf-ingestion, non ripetere source activation, non trattare il riferimento payload come RAW durevole, non dichiarare SPI replay o smoke/search completati.
+
+
+
 ### Recovery readback e correzione generica del retry in preparazione
 
 Readback live: run PAUSED/controlVersion=0, quarantena OPEN/lifecycleVersion=0 blocking per ING_EXECUTION_GATEWAY_404, un tentativo fallito n.1, zero handoff/replay. payload_ref OTHER_REFERENCE_NOT_DURABILITY_PROOF: non assumere RAW lake durevole. Ingestion running/revision 0dfab1e7b2253fd939088259ea61754d6e56706c match. Route HUMAN run read/resume e quarantine read/retry/reprocess tutte count=0. Nessun retry/replay/resume eseguito.
