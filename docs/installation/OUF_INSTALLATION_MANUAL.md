@@ -1,5 +1,51 @@
 # OUF — Manuale di installazione e bootstrap
 
+## 2026-09-30 — tenant assente nei binding osservati; candidati owner/refresher pronti
+
+Output VPS READ_ONLY: tenant JSON relaxed count=0, imported property count=0,
+unsupported import count=0, command override=false; scope config-read nel
+bearer Ingestion=false. GET registry bundle HTTP200, conteggi riconosciuti
+descriptor/grant/service/principal-match=0: non concludere assenza prima della
+verifica del layout reale del bundle.
+Un solo refresher systemd: ouf-ingestion-policy-token.service,
+`/opt/ouf/ops/refresh-ingestion-policy-token.py`, SHA256
+af4275509ab66841e77a04e1cf04605228d12e627de51e1c043588eb151f50d0.
+CAP nel sorgente=false; token host path literal=false (può essere costruito
+dinamicamente: non prova che il refresher non aggiorni il token giusto).
+
+Helper scripts/r4a_prepare_publication_bindings.py, Semantic
+**946ec112d37cfa466f91c549150a1b396bb422c4**; quattro test locali PASS sulla
+trasformazione AST: append scope esistente senza rimuoverlo, aggiunta scope
+mancante, UTF8/commenti e blocco su dizionari ambigui/unpack. CI non acquisita.
+Preparazione soltanto: stessa immagine owner live 6340d5bf…/user10003,
+candidato ouf-onboarding-r4a-runtime-tenant-candidate fermo, aggiunge solo
+OUF_RUNTIME_PUBLICATIONS_TENANT_ID=ouf-lab agli env; mount read-only/logging/
+launch contract preservati, restart=no e alias ouf-onboarding su ouf-backend.
+Rifiuta runtime/settings/env/image/source hash drift o candidato non posseduto.
+Non ricostruisce immagine, non avvia container né migrazioni.
+
+Verifica hash esatto del refresher installato; identifica un unico dict
+grant_type=client_credentials tramite AST. Nella copia privata aggiunge lo
+scope ouf.onboarding.configuration.read, preservando gli altri scope/espressioni
+e tutte le parti esterne al dict; parsing sintattico verificato, niente exec
+della copia. Il dict può essere riformattato da ast.unparse, semantica delle
+altre chiavi preservata. Dizionari multipli/unpack o sorgente cambiato bloccano.
+Originale/refresher/systemd/token restano invariati, nessuna credenziale nuova.
+Copia .py e stato possono contenere valori privati già presenti nel runtime:
+root0600 in directory root0700, non stamparli/uploadarli in chat.
+State `/etc/ouf/deploy-snapshots/publication-bindings-prepare.json`.
+
+GET registry mostra soltanto root field names, presence testo capability,
+parent field names in caso di capability presente come valore O chiave:
+serve a distinguere schema non riconosciuto da assenza vera, non è ALLOW.
+Nessuna policy/IAM mutata, fonte ancora APPROVED, niente activate/worker.
+Preparazione ancora da eseguire sul VPS fino a output PASS; in seguito:
+verificare binding IAM scope e autorità SERVICE nel layout esatto; eventuale
+grant governato HUMAN, rollout tenant con backup/rollback, adozione privata
+refresher e token nuovo con readback, GET discovery200 e worker enablement,
+quindi HUMAN activate e smoke reale. R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — route LIST installata PASS; binding owner/token da completare
 
 Operatore: plan/apply PASS, ID r4a-onboarding-runtime-publications-list.
