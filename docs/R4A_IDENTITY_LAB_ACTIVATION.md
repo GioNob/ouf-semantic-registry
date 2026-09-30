@@ -1103,7 +1103,7 @@ Solo dopo PASS della sonda: rilascio controllato Ingestion e prova positiva
 del consumer live prima dell'attestazione; approval/activation restano HUMAN THS.
 R-SMOKE/R-INSTALL **OPEN**.
 
-### Prossimo comando corrente — sonda Ingestion, nessuna attestazione
+### Comando storico eseguito — sonda Ingestion, nessuna attestazione
 
 ```bash
 (
@@ -1118,4 +1118,67 @@ sudo python3 /tmp/r4a_prepare_frozen_compatibility_probe.py \
   --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
   --tenant-id ouf-lab
 )
+```
+
+## 2026-09-30 — sonda frozen Ingestion PASS, otto righe validate
+
+Output VPS acquisito: R4A_ING_COMPAT_TRANSPORT=PASS; sonda reale
+R4A_ING_COMPAT_PROBE=PASS VALIDATED_ROWS=8, candidato
+**0dfab1e7b2253fd939088259ea61754d6e56706c**.
+La lettura via Gateway e la validazione del consumer isolato hanno superato
+il gate sulla versione congelata. Il candidato **non è deployato**:
+LIVE_CONTAINER_UNCHANGED=true, ATTESTATION_POST=false.
+Proof locale privato: `/opt/ouf/r4a-stage/ingestion-compatibility-probe.json`;
+non stamparne contenuti o altri snapshot privati.
+
+Il precedente blocco sonda è storico ed eseguito. Prossimo passo:
+inventario read-only del contratto live/candidato Ingestion e delle sole
+presenze delle proprietà/env activation; la sonda ha usato proprietà
+temporanee senza modificare il live. L'inventario serve alla preparazione
+del rilascio controllato, con backup e rollback, e non è uno switch.
+Prima dell'attestazione occorre prova positiva del consumer deployato.
+Approval/activation della fonte restano HUMAN THS; R-SMOKE/R-INSTALL OPEN.
+
+### Prossimo comando corrente — inventario rilascio Ingestion
+
+```bash
+sudo python3 - <<'PY'
+import json, re, subprocess
+from pathlib import Path
+
+def run(args):
+    return subprocess.run(args, check=True, capture_output=True, text=True, timeout=30).stdout.strip()
+def inspect(name, kind="container"):
+    return json.loads(run(["docker", "inspect", "--type", kind, name]))[0]
+def flag(key, value):
+    print(key + "=" + str(bool(value)).lower())
+
+print("R4A_ING_RELEASE_INVENTORY=READ_ONLY", flush=True)
+try:
+    proof = json.loads(Path("/opt/ouf/r4a-stage/ingestion-compatibility-probe.json").read_text())
+    live = inspect("ouf-ingestion")
+    image = inspect(proof["candidateImageId"], "image")
+    old = inspect(live["Image"], "image")
+    flag("ING_PROOF_REVISION_MATCH", proof.get("candidateCommit") == "0dfab1e7b2253fd939088259ea61754d6e56706c")
+    flag("ING_PROOF_EIGHT_ROWS_PASS", proof.get("status") == "PASS" and proof.get("validatedRows") == 8 and proof.get("attestationSubmitted") is False)
+    flag("ING_LIVE_BASELINE_MATCH", live["Image"] == proof.get("liveImageId"))
+    flag("ING_LIVE_RUNNING", live["State"]["Running"])
+    flag("ING_CANDIDATE_LABEL_MATCH", image["Config"].get("Labels", {}).get("org.opencontainers.image.revision") == proof.get("candidateCommit"))
+    flag("ING_IMAGE_LAUNCH_CONTRACT_MATCH", all(image["Config"].get(k) == old["Config"].get(k) for k in ("User", "Entrypoint", "Cmd", "WorkingDir", "ExposedPorts")))
+    flag("ING_RUNTIME_NETWORK_MATCH", live["HostConfig"]["NetworkMode"] == "ouf-backend" and set(live["NetworkSettings"]["Networks"]) == {"ouf-backend"})
+    mounts = {m["Destination"]: m for m in live["Mounts"]}
+    flag("ING_TRANSPORT_MOUNTS_READ_ONLY", all(mounts.get(k, {}).get("Type") == "bind" and mounts[k].get("RW") is False for k in ("/run/ouf-ingestion-auth", "/run/secrets/ingestion-summary.properties")))
+    text = Path(mounts["/run/secrets/ingestion-summary.properties"]["Source"]).read_text()
+    env = {v.split("=", 1)[0]: v.split("=", 1)[1] for v in live["Config"].get("Env", []) if "=" in v}
+    for suffix in ("gateway-url", "token-file", "tenant-id"):
+        key = "ouf.ingestion.activation." + suffix
+        flag("ING_ACTIVATION_" + suffix.upper().replace("-", "_") + "_PROPERTY_PRESENT", bool(re.search(r"^[ \t]*" + re.escape(key) + r"[ \t]*[=:][ \t]*\S", text, re.MULTILINE)))
+        flag("ING_ACTIVATION_" + suffix.upper().replace("-", "_") + "_ENV_PRESENT", bool(env.get(key.upper().replace(".", "_").replace("-", "_"))))
+    version = run(["docker", "exec", "ouf-postgres", "psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-U", "ouf_ingestion", "-d", "ouf_ingestion", "-c", "begin read only; select version from ouf_ingestion.flyway_schema_history order by installed_rank desc limit 1; rollback;"])
+    flag("ING_FLYWAY_14", version == "14")
+    print("R4A_ING_RELEASE_INVENTORY=COMPLETE LIVE_UNCHANGED=true VALUES_NOT_PRINTED=true")
+except Exception as error:
+    print("R4A_ING_RELEASE_INVENTORY=BLOCKED CODE=" + type(error).__name__ + " SECRETS_NOT_PRINTED=true")
+    raise SystemExit(1)
+PY
 ```

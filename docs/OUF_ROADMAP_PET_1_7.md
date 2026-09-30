@@ -770,3 +770,22 @@ Ingestion, non migra DB e non invia attestazioni.
 Solo dopo PASS della sonda: rilascio controllato Ingestion e prova positiva
 del consumer live prima dell'attestazione; approval/activation restano HUMAN THS.
 R-SMOKE/R-INSTALL **OPEN**.
+
+## 2026-09-30 — sonda frozen Ingestion PASS, otto righe validate
+
+Output VPS acquisito: R4A_ING_COMPAT_TRANSPORT=PASS; sonda reale
+R4A_ING_COMPAT_PROBE=PASS VALIDATED_ROWS=8, candidato
+**0dfab1e7b2253fd939088259ea61754d6e56706c**.
+La lettura via Gateway e la validazione del consumer isolato hanno superato
+il gate sulla versione congelata. Il candidato **non è deployato**:
+LIVE_CONTAINER_UNCHANGED=true, ATTESTATION_POST=false.
+Proof locale privato: `/opt/ouf/r4a-stage/ingestion-compatibility-probe.json`;
+non stamparne contenuti o altri snapshot privati.
+
+Il precedente blocco sonda è storico ed eseguito. Prossimo passo:
+inventario read-only del contratto live/candidato Ingestion e delle sole
+presenze delle proprietà/env activation; la sonda ha usato proprietà
+temporanee senza modificare il live. L'inventario serve alla preparazione
+del rilascio controllato, con backup e rollback, e non è uno switch.
+Prima dell'attestazione occorre prova positiva del consumer deployato.
+Approval/activation della fonte restano HUMAN THS; R-SMOKE/R-INSTALL OPEN.
