@@ -502,10 +502,10 @@ container ancora fermo e non tocca container sostituiti da altri operatori.
 Il file env temporaneo è privato e rimosso nel finally.
 
 Manifest privato root 0600:
-`/opt/ouf/r4a-stage/onboarding-managed-identity-release.json`;
+`/etc/ouf/deploy-snapshots/onboarding-managed-identity-release.json`;
 contiene lo snapshot Docker live (anche env segreti), candidate ID e image ID.
 Non stamparlo, condividerlo o committarlo. Le build log sono in una directory
-root 0700 sotto r4a-stage, il solo percorso viene stampato; conservate su errore.
+root 0700 sotto /etc/ouf/deploy-snapshots, il solo percorso viene stampato; conservate su errore.
 Lo stato esistente non viene sovrascritto; deve corrispondere al live/candidato.
 Non modificare `identity-images.json` e non eliminare i rollback precedenti.
 
@@ -529,8 +529,31 @@ cd /opt/ouf/onboarding
 git fetch --no-tags origin codex/r4a-onboarding-managed-identity-integration
 cd /opt/ouf/semantic
 git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
-git show 6fc4ed9b4e74cb038250c609f3688b4276aadb31:scripts/r4a_managed_identity_release_inventory.py > /tmp/r4a_managed_identity_release_inventory.py
-git show 6fc4ed9b4e74cb038250c609f3688b4276aadb31:scripts/r4a_prepare_managed_identity_candidate.py > /tmp/r4a_prepare_managed_identity_candidate.py
+git show 76073d25ceff9f8a54684fee214071c564423b83:scripts/r4a_managed_identity_release_inventory.py > /tmp/r4a_managed_identity_release_inventory.py
+git show 76073d25ceff9f8a54684fee214071c564423b83:scripts/r4a_prepare_managed_identity_candidate.py > /tmp/r4a_prepare_managed_identity_candidate.py
 sudo python3 /tmp/r4a_prepare_managed_identity_candidate.py
 )
 ```
+
+### Correzione percorso privato del preparatore — stop prima del build
+
+Tentativo VPS su 6fc4ed9…: OWNER_STAGE_DIRECTORY_UNSAFE, prima di git archive,
+build, candidato o file di stato. Il preflight precedente resta PASS; non
+dedurre drift del runtime, IAM o migrazioni da questo blocco.
+
+Il preparatore aveva usato /opt/ouf/r4a-stage come parent per stato contenente
+env segreti: quel percorso di staging condiviso non soddisfa il requisito
+root-only. Correzione **76073d25ceff9f8a54684fee214071c564423b83**: usa la directory già prevista dai rollout
+Onboarding `/etc/ouf/deploy-snapshots`, richiede directory reale (non symlink),
+owner root e modo esatto 0700. Non modifica permessi/owner del vecchio staging.
+Stato ora `/etc/ouf/deploy-snapshots/onboarding-managed-identity-release.json`,
+root 0600; log ed env temporanei nelle sottodirectory private della stessa root.
+Non esiste uno stato precedente creato dal tentativo bloccato da spostare.
+
+Nove test locali PASS, inclusa regressione che blocca directory user-owned,
+accessibile ad altri o symlink prima di inspect/build. CI della correzione
+avviata; candidata Onboarding invariata 6340d5bf… con CI già verde.
+Il comando corrente è aggiornato alla correzione. Ancora nessun build o
+candidato fermo attestato dall'operatore, nessuno switch/POST. Versione/hash,
+live, IAM, route, asset e rollback precedenti restano invariati.
+R-SMOKE/R-INSTALL OPEN.
