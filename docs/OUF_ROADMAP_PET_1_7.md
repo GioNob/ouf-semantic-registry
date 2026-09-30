@@ -740,3 +740,33 @@ Nessuno switch effettivo ancora attestato, nessun cambio route/IAM/asset,
 nessun POST compatibilità/approval/activation. Prossimo passo: plan/apply
 sulla versione e hash congelati; poi prova Ingestion, mai attivare la fonte
 in base alla sola readiness. R-SMOKE/R-INSTALL OPEN.
+
+## 2026-09-30 — switch managed intake + identity eseguito: PASS
+
+L'output VPS di plan/apply conferma Onboarding live a
+**6340d5bf120e09b47c32177656e2c377a4c03640**, Flyway **31**,
+versione congelata e hash invariati. Backup completo ripristinato con successo
+nel database temporaneo e conservato:
+`/etc/ouf/deploy-snapshots/onboarding-before-managed-identity-_6czsruy.dump`.
+Container precedente conservato:
+`ouf-onboarding-managed-identity-rollback-260c56287584`.
+Receipt privato:
+`/etc/ouf/deploy-snapshots/onboarding-managed-identity-switch.json`.
+Non stampare dump, receipt, token, env o snapshot privati.
+
+Il GET anonimo owner content restituisce **401**: il controllo di accesso
+nega l'accesso anonimo. La lettura autenticata dell'asset da Ingestion e la
+validazione delle otto righe restano da verificare. Nessun POST attestazione
+è stato eseguito, nessuna approval/activation della fonte.
+
+Il precedente blocco switch è storico ed eseguito: non rilanciarlo.
+Prossimo gate: sonda Ingestion isolata alla revisione
+**0dfab1e7b2253fd939088259ea61754d6e56706c** (14 CI completed/success
+verificate), con Semantic storico esatto e lettura via Execution Gateway.
+Policy pubblicata ouf-lab-authorization:32 e scope ouf.semantic.read nel
+token restano le evidenze IAM precedenti. La sonda non cambia il live
+Ingestion, non migra DB e non invia attestazioni.
+
+Solo dopo PASS della sonda: rilascio controllato Ingestion e prova positiva
+del consumer live prima dell'attestazione; approval/activation restano HUMAN THS.
+R-SMOKE/R-INSTALL **OPEN**.
