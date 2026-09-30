@@ -1,5 +1,39 @@
 # R4a: attivazione controllata dell'identità nel laboratorio
 
+## 2026-09-30 — review card acquisita PASS; conferma HUMAN pronta, non eseguita
+
+Operatore: REVIEW=PASS CARD_AND_OWNER_MATCH=true, hash invariato,
+challenge d56c8e00-de2b-4f47-a940-38b453facf2f CREATED/non scaduta al controllo.
+Mapping cinema→nome e indirizzo→indirizzo IDENTITY, classe Cinema, proprietà
+OPEN, ontology 1.0.0 e binding revision/publication set esatti; CSV managed
+509 byte, otto righe validate, identità sorgente asset+ordinal.
+La limitazione al riordino delle righe riguarda l'identità sorgente;
+la risoluzione canonica UDP usa la policy governed separata.
+La review PASS certifica corrispondenza tecnica, non consenso HUMAN.
+Scadenza challenge 2026-09-30T13:13:21.263Z; non estenderla via SQL.
+
+Helper `scripts/r4a_confirm_cinema_approval.py`, commit
+**58a561a94d31d3a69e2ee0c3aaa9922fd30ebf27**: quattro test locali PASS
+(cancel senza POST, consenso esplicito e readback, timeout/no-repost,
+token privato e solo endpoint confirm); CI non acquisita.
+Solo operatore umano nel terminale: nuova login Device Flow, GET card THS
+corrente, sezioni decisionali stampate direttamente dalla card e richiesta
+di digitare APPROVO seguito dall'UUID challenge. Una risposta differente
+annulla senza POST o receipt. Controlla expiry/hash/config prima del consenso
+e di nuovo dopo, route/runtime/versione invariati. Riserva receipt root0600
+`/etc/ouf/deploy-snapshots/cinema-approval-confirmation.json`, poi singolo
+POST /api/trusted-human/v1/approval-challenges/{id}/confirm.
+Richiede HTTP200/APPROVED/config e hash invariati, readback versione APPROVED
+e una approval_decision APPROVE sullo stesso challenge/versione/hash.
+Esito incerto conserva receipt e blocca ogni secondo POST automatico.
+Non invia activate, non esegue ingestion; conferma non ancora eseguita
+finché l'operatore non fornisce output PASS. È prova diretta del backend THS
+con consenso HUMAN locale, non completamento della superficie browser THS.
+Dopo PASS: attivazione separata, gate corrente e prima run managed reale.
+Se expiry precede conferma, recupero esplicito conservando receipt/challenge.
+R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — challenge cinema e card create PASS; review ancora da completare
 
 Output VPS: challenge **d56c8e00-de2b-4f47-a940-38b453facf2f**,
