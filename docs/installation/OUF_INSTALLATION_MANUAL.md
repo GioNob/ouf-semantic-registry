@@ -1,5 +1,33 @@
 # OUF — Manuale di installazione e bootstrap
 
+## 2026-09-30 — candidati binding PASS; verifica accesso prima del rollout
+
+Output VPS: owner candidate fermo/stessa immagine/tenant ENV preparato PASS,
+refresher candidate PASS con script installato e token invariati.
+State privato: /etc/ouf/deploy-snapshots/publication-bindings-prepare.json.
+Policy reale root activatedAt,bundle,bundleId,bundleVersion,contentHash;
+descriptor con allowedActors/operation/requiredScope; grant flat con
+servicePrincipalId/subjectId/tenantId/organizationId/validFrom/validUntil.
+Capability presente: i precedenti zeri del parser non provano assenza.
+
+Nuovo helper read-only scripts/r4a_publication_access_inventory.py, commit
+c6a02fc5026f42e8a5a1313de3220a956f5176f2; due test locali PASS, CI non acquisita.
+Conta descriptor SERVICE/scope e grant flat, confronta principal con claim
+noti, subject/tenant e finestra temporale. Tutti i conteggi sono diagnostici:
+normalizzazione SDK, organization e autorizzazione effettiva non sono provate.
+Non aggiungere grant sulla sola base di zero match diagnostici.
+Legge Keycloak con kcadm GET e sessione admin già disponibile: realm dal
+token issuer, client ouf-ingestion, scope omonimo e associazioni default/optional.
+Container default ouf-keycloak, override esplicito --keycloak-container.
+Se sessione/container non disponibili stampa UNAVAILABLE senza credenziali:
+nessun login automatico e nessuna modifica IAM. Token/bundle/output kcadm
+restano in memoria e non sono stampati; solo conteggi/flag.
+Nessun avvio candidato/installazione refresher/enable worker/attivazione fonte.
+Prossimo: risolvere eventuale binding scope, rollout owner con backup/rollback,
+adozione refresher e readback token, discovery reale HTTP200 prima del worker.
+Fonte APPROVED; R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — tenant assente nei binding osservati; candidati owner/refresher pronti
 
 Output VPS READ_ONLY: tenant JSON relaxed count=0, imported property count=0,
