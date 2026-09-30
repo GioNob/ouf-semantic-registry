@@ -846,7 +846,7 @@ La correzione deve preservare il contratto reale rilevato; poi ripetere
 preparazione fermo, backup/switch e prova consumer deployato prima del POST.
 R-SMOKE/R-INSTALL OPEN.
 
-### Prossimo comando corrente — diagnosi contratto runtime Ingestion
+### Comando storico eseguito — diagnosi contratto runtime Ingestion
 
 ```bash
 sudo python3 - <<'PY'
@@ -885,4 +885,49 @@ except Exception as error:
           + type(error).__name__ + " SECRETS_NOT_PRINTED=true")
     raise SystemExit(1)
 PY
+```
+
+## 2026-09-30 — contratto runtime identificato: bind e limiti memoria preservati
+
+Inventario read-only VPS: tre campi non vuoti **Binds, Memory, MemorySwap**;
+Healthcheck assente; restart/log driver conformi; tutti i mount bind read-only
+e formato path conforme. Live invariato; valori e identità non stampati.
+
+Correzione helper Semantic **c1bbb31d81ee067008f264ad0f8c662aa1c014e2**: valida ogni bind ro rispetto al mount
+risolto (nessun bind extra/duplicato, niente opzioni sconosciute); accetta solo
+propagazione rprivate e ricrea i mount via --mount readonly.
+Non ricopia ciecamente HostConfig.Binds. Mantiene sostituzione della sola copia
+properties del candidato, mentre tutti gli altri source/target restano uguali.
+
+Valida Memory/MemorySwap come interi coerenti, conserva i valori via
+--memory/--memory-swap (incluso swap -1) e richiede uguaglianza nel readback.
+Gli altri campi non supportati restano bloccanti; MemoryReservation è
+esplicitamente bloccante. Nessun numero/valore di configurazione è stampato.
+20 test locali dei preparatori PASS, di cui 8 per il preparatore Ingestion:
+flusso completo con bind/memoria, candidato fermo, riuso, cleanup, drift,
+swap illimitato e rifiuto bind/limiti incoerenti. CI nuova revisione non
+ancora acquisita; revisione prodotto candidata rimane 0dfab1e7… con prova
+isolata otto righe PASS. Nessun candidato preparato attestato dal VPS finora.
+
+Il blocco diagnostico precedente è storico ed eseguito. Prossimo comando:
+ripetere la preparazione con il helper corretto, senza build/avvio/switch,
+migrazioni o POST. Risultato richiesto CANDIDATE PASS STOPPED=true; poi backup
+e switch controllato, prova positiva consumer deployato prima dell'attestazione.
+Approval/activation HUMAN THS; R-SMOKE/R-INSTALL OPEN.
+
+### Prossimo comando corrente — preparazione corretta del candidato Ingestion fermo
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+git show c1bbb31d81ee067008f264ad0f8c662aa1c014e2:scripts/r4a_prepare_frozen_compatibility_probe.py > /tmp/r4a_prepare_frozen_compatibility_probe.py
+git show c1bbb31d81ee067008f264ad0f8c662aa1c014e2:scripts/r4a_prepare_ingestion_candidate.py > /tmp/r4a_prepare_ingestion_candidate.py
+sudo python3 /tmp/r4a_prepare_ingestion_candidate.py \
+  --source managed-cinema-8ec8ae90 \
+  --version 68394f42-5c82-4127-a1f3-126516665749 \
+  --expected-hash sha256:2b4a491e27e0d6bb2f7fabfb07d5644676986c5c4e90be31998d3cb9a9a81891 \
+  --tenant-id ouf-lab
+)
 ```

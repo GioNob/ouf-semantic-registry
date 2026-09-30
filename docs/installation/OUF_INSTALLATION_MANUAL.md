@@ -1559,3 +1559,31 @@ di conformità, senza stampare valori, env o mount path.
 La correzione deve preservare il contratto reale rilevato; poi ripetere
 preparazione fermo, backup/switch e prova consumer deployato prima del POST.
 R-SMOKE/R-INSTALL OPEN.
+
+## 2026-09-30 — contratto runtime identificato: bind e limiti memoria preservati
+
+Inventario read-only VPS: tre campi non vuoti **Binds, Memory, MemorySwap**;
+Healthcheck assente; restart/log driver conformi; tutti i mount bind read-only
+e formato path conforme. Live invariato; valori e identità non stampati.
+
+Correzione helper Semantic **c1bbb31d81ee067008f264ad0f8c662aa1c014e2**: valida ogni bind ro rispetto al mount
+risolto (nessun bind extra/duplicato, niente opzioni sconosciute); accetta solo
+propagazione rprivate e ricrea i mount via --mount readonly.
+Non ricopia ciecamente HostConfig.Binds. Mantiene sostituzione della sola copia
+properties del candidato, mentre tutti gli altri source/target restano uguali.
+
+Valida Memory/MemorySwap come interi coerenti, conserva i valori via
+--memory/--memory-swap (incluso swap -1) e richiede uguaglianza nel readback.
+Gli altri campi non supportati restano bloccanti; MemoryReservation è
+esplicitamente bloccante. Nessun numero/valore di configurazione è stampato.
+20 test locali dei preparatori PASS, di cui 8 per il preparatore Ingestion:
+flusso completo con bind/memoria, candidato fermo, riuso, cleanup, drift,
+swap illimitato e rifiuto bind/limiti incoerenti. CI nuova revisione non
+ancora acquisita; revisione prodotto candidata rimane 0dfab1e7… con prova
+isolata otto righe PASS. Nessun candidato preparato attestato dal VPS finora.
+
+Il blocco diagnostico precedente è storico ed eseguito. Prossimo comando:
+ripetere la preparazione con il helper corretto, senza build/avvio/switch,
+migrazioni o POST. Risultato richiesto CANDIDATE PASS STOPPED=true; poi backup
+e switch controllato, prova positiva consumer deployato prima dell'attestazione.
+Approval/activation HUMAN THS; R-SMOKE/R-INSTALL OPEN.
