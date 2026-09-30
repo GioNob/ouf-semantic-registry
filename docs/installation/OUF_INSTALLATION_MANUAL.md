@@ -1,5 +1,28 @@
 # OUF — Manuale di installazione e bootstrap
 
+## 2026-09-30 — Four recovery routes VERIFIED LIVE; Ingestion principal adapter CI all green, not deployed
+
+Actual operator READ_ONLY route readback PASS: saved receipt PASS, RECEIPT_MATCH=true, ROUTE_COUNT=4, EXISTING_ROUTES_PRESERVED=true. This resolves the uncertain SSH result; do not rerun installation. Control-plane route state verified, no live HUMAN owner authorization proof. Policy35 remains 42 capabilities/83 grants; four HUMAN scopes OPTIONAL on ouf-human-admin already verified. No retry/resume; source ACTIVE/run PAUSED/quarantine OPEN remains checkpoint.
+
+Ingestion branch `codex/r4a-governed-record-retry` now has tested release commit `163c167d09b8371ff7a62ce7068e9d485b6969b7`, superseding retry-only `759d916cc9a45a39e9be0156f54677225a172e1f`. Implemented IngestionIamSecurityConfiguration with Spring OAuth2 resource server, Nimbus HTTPS issuer discovery/JWKS signature verification, issuer/timestamp validators, required expiration and audience. Only signed claims form TrustedPrincipal on final servlet request after SecurityContextHolderAwareRequestFilter. HUMAN_USER normalizes HUMAN; malformed actor/subject claim conflicts fail; SERVICE/AI_AGENT require workload client identity and conflicting client_id/azp rejected. Client identity/capability headers ignored. Existing SDK remains unchanged and independently evaluates policy capability, scope/grant/resource/tenant. IAM disabled/missing enablement denies protected API namespaces; no fallback generated login. Health and outgoing worker execution remain independent. No Flyway migration or frozen/source config changes.
+
+Runtime bindings to prepare (not yet applied): OUF_ING_IAM_ENABLED=true, OUF_ING_IAM_ISSUER=https://auth.ouf-lab.it/realms/ouf, OUF_ING_IAM_AUDIENCE=ouf-api-gateway (property equivalents ouf.ingestion.iam.*). No source/run hardcoding. Both activation and execution loops must remain enabled, plus existing properties/auth mounts, registry/token refresher and settings. The old live ingestion remains `0dfab1e7b2253fd939088259ea61754d6e56706c`. No new release deployed yet.
+
+Exact final CI verified complete/success for all seven workflows on 163c167d09b8371ff7a62ce7068e9d485b6969b7:
+- R4a frozen configuration consumer probe: 36778449732 SUCCESS
+- Shared Authorization SDK pairwise: 36778449784 SUCCESS
+- R2a Onboarding automatic activation: 36778449742 SUCCESS
+- Ingestion Runtime module CI: 36778449726 SUCCESS
+- R2c governed publication to historical serving: 36778449744 SUCCESS
+- R2e GeoPackage features and governed camera-cabinet relations: 36778449725 SUCCESS
+- R2b source to authorized serving: 36778450074 SUCCESS
+
+Module Java/PostgreSQL job 110102186713: 118 tests, failures/errors/skips zero; IngestionIamHttpBoundaryTest six tests PASS (real locally signed RSA tokens verified by Nimbus public key and production validators), RunExecutionWorkerRuntimeTest nine PASS. OpenAPI gate, non-root image/SDK package checks, supply-chain/deployment job110102186468 and database restore drill job110102186749 PASS. First adapter commit db3daa2080b13cf08a073bae6beeef26b91678a0 had six errors from isolated HTTP fixture missing ingestionReadiness; final commit corrects that test fixture and explicitly installs fixture policy into MockServletContext. No production readiness validation disabled. No local Maven available; remote CI is evidence. Public-key fixture decoder stands in for external JWKS discovery in tests, so production discovery/JWKS/network/authentication is still unproven.
+
+New generic READ_ONLY scripts/r4a_ingestion_iam_inventory.py imports only the standalone frozen helper. CLI --issuer, --audience, --expected-live-revision; reads live container metadata and three IAM ENV/property source flags, SpringJSON/external imports/command/direct overrides and both loop property flags. Prints diagnostics only, no config values/secrets, no runtime changes, token changes, policy/IAM or SQL mutation. Local CLI/import PASS, not server binding evidence. Next operator: pin/download this script and r4a_prepare_frozen_compatibility_probe.py; run against expected OLD live revision above, lab issuer/audience. This identifies overrides before preparing a stopped candidate with tested image and explicit IAM settings. Then verify image/revision/dependencies plus actual readiness, backup+scratch restore/retained rollback, adopt release, prove authenticated HUMAN GETs, only then versioned retry and resume. Do not reactivate the source, reset consumed once schedule, modify lifecycle SQL or retry on old release.
+
+Open proof remains: production principal/JWKS discovery and HUMAN owner access, S3 RAW write durability and UDP intake owner authorization, eight-row delivery/materialization/search, RAW replay SPI readiness, governed per-source/per-zone lake retention/access and broader previous PET/RSMOKE/RINSTALL issues. All code/bootstrap remains production-general; cinema is exclusively the smoke fixture.
+
 ## 2026-09-30 — SSH disconnected; recovery route installation success unverified
 
 Operator reports SSH disconnected and output unavailable; recalls PASS markers. Treat installation as UNKNOWN until readback; do not claim four routes installed or rerun plan/apply. The existing exclusive receipt intentionally prevents blind repeats after uncertain results. No evidence of retry/resume; installer never calls recovery APIs.
