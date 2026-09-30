@@ -789,3 +789,42 @@ temporanee senza modificare il live. L'inventario serve alla preparazione
 del rilascio controllato, con backup e rollback, e non è uno switch.
 Prima dell'attestazione occorre prova positiva del consumer deployato.
 Approval/activation della fonte restano HUMAN THS; R-SMOKE/R-INSTALL OPEN.
+
+## 2026-09-30 — inventario rilascio Ingestion acquisito; preparatore candidato fermo
+
+Inventario VPS COMPLETE read-only: proof revisione/otto righe PASS, baseline live,
+runtime running, provenance immagine, contratto di avvio, rete e mount read-only
+tutti true; Flyway **14**. Le tre proprietà activation gateway-url/token-file/
+tenant-id sono assenti sia nel file sia nell'ambiente del live.
+
+Helper Semantic **f763a5b7949f26298d9dde11a470528bdead096f**:
+`scripts/r4a_prepare_ingestion_candidate.py`. Riusa l'immagine immutabile
+della proof candidata **0dfab1e7b2253fd939088259ea61754d6e56706c**;
+non ricostruisce e non modifica il branch/revisione prodotto Ingestion.
+La dipendenza `scripts/r4a_prepare_frozen_compatibility_probe.py` è copia
+esatta del helper Ingestion a 0dfab1e7… (per import/tests autonomi del repo
+Semantic); nel preparatore sono usati solo inspect, GET/SQL read-only e
+validazione trasporto/proof, non il main di build/sonda.
+
+Richiede directory root 0700 `/etc/ouf/deploy-snapshots`, proof PASS esatta,
+baseline/image label/launch contract, rete, mount, env univoci, Flyway14,
+versione/hash congelati e token trasporto fresco. Copia tutte le properties
+live in file privato root:10002 mode0440, aggiungendo esclusivamente le tre
+chiavi activation derivate dal trasporto verificato. Nessun valore/token/env
+è stampato; il file properties live rimane identico.
+
+Crea solo `ouf-ingestion-r4a-compatibility-candidate` con restart=no, env
+identici, mount read-only identici salvo la copia properties e alias
+ouf-ingestion; non lo avvia. Verifica readback e snapshot live, conserva
+stato privato root0600:
+`/etc/ouf/deploy-snapshots/ingestion-compatibility-release.json`.
+Riuso consentito solo per candidato/state posseduti e coincidenti;
+drift blocca. Un fallimento dopo creazione rimuove soltanto il proprio ID
+ancora fermo; il file temporaneo env viene sempre rimosso.
+Cinque nuovi test PASS, 17 test locali dei preparatori PASS; CI nuova revisione
+non ancora acquisita. Nessun candidato preparato attestato dal VPS finora.
+
+Il blocco inventario precedente è storico ed eseguito. Prossimo gate:
+CANDIDATE PASS STOPPED=true, prima di predisporre backup/switch Ingestion.
+Nessun live switch, migrazione, attestazione, approval/activation in questo
+blocco. R-SMOKE/R-INSTALL OPEN.
