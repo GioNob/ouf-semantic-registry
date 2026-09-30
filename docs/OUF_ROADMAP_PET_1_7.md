@@ -1,5 +1,52 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+## 2026-09-30 — policy33 pubblicata PASS; rollout tenant owner pronto
+
+Operatore: conferma HUMAN PUBBLICO ouf-lab-authorization:33 acquisita.
+R4A_PUBLICATION_GRANT_PUBLISH/READBACK PASS: active33, 36 capability/77 grant,
+grant Ingestion presente, tutti i precedenti preservati.
+Receipt privato:
+ /etc/ouf/deploy-snapshots/ingestion-runtime-publication-grant-publication.json.
+Non ripubblicare policy, non rifare draft/approval.
+Worker/refresher/token invariati, fonte non attivata e ancora APPROVED.
+
+Helper Semantic scripts/r4a_switch_publication_owner.py, commit
+6662ae05a4e25e29b1b9212c0a2aa8378ebc30c6; due test locali mock PASS:
+backup failure invoca recupero del vecchio runtime e receipt blocca re-entry;
+recovery failure conserva MANUAL_RECOVERY_REQUIRED. CI non acquisita.
+Plan/apply: adotta il candidato tenant già PASS, stessa immagine live,
+OUF_RUNTIME_PUBLICATIONS_TENANT_ID=ouf-lab, nessun nuovo build/schema.
+Richiede receipt grant33 PASS, state preparazione root0600,
+old stable esatto, candidate ID/created/env/mount/network/launch/image revision
+6340d5bf… esatti, root snapshots0700, token owner freschi e readiness200.
+Fonte/hash/config devono restare APPROVED/esatti; history Flyway31 e nessun
+errore migration. Nomi rollback/failed liberi prima di iniziare.
+
+Receipt publication-owner-switch.json riservata O_EXCL STARTING e fsync
+file/directory prima di mutare live. Stop owner, backup completo DB privato e
+restore drill su DB scratch con31 migrations usando helper già collaudato;
+backup conservato. Nessun restore automatico della DB live.
+Controlla history/fonte e candidato ancora identici dopo backup, rename
+vecchio runtime conservato, rename/start candidato, readiness e token.
+Verifica cambio solo tenantENV, immagine/mount/user/launch/Flyway/fonte/hash
+invariati; anonymous managed-file read deve dare401/403.
+Restart unless-stopped finale e runtime guard, receipt PASS.
+
+Errore o KeyboardInterrupt durante switch: recupero per ID esatto del vecchio
+container tramite helper già esistente, conservando il candidato fallito/log
+privato; receipt ROLLED_BACK o MANUAL_RECOVERY_REQUIRED. Receipt anche PASS/
+incerto blocca qualunque nuova apply automatica: non cancellarla né ritentare
+alla cieca. Backup/restore helper conserva prefissi MANAGED_IDENTITY negli
+output, ma in questo passo non cambia il motore identità: solo binding tenant.
+Rollout VPS ancora NON eseguito fino a output operatore PASS.
+
+Prossimo dopo owner PASS: adottare refresher privato preparato con verifica
+hash e coordinamento timer/service; acquisire bearer nuovo con scope read e
+verificare discovery reale200/policy owner ALLOW. Solo dopo worker enablement
+e HUMAN activate; smoke ingestione/materializzazione/search ancora aperto.
+R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — draft grant Ingestion acquisito; pubblicazione HUMAN preparata
 
 Operatore: ACTIVE_POLICY_REF=ouf-lab-authorization:32, 36 capability/76 grant.
