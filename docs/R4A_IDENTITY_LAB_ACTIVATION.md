@@ -1,5 +1,37 @@
 # R4a: attivazione controllata dell'identità nel laboratorio
 
+## 2026-09-30 — worker activation live disabilitato; preflight prima dell'abilitazione
+
+Inventario VPS COMPLETE: fonte APPROVED, Ingestion running su revisione attesa,
+properties corrispondenti al release; activation.enabled PROPERTY_COUNT=0,
+PROPERTY=ABSENT, ENV=ABSENT, nessun Spring JSON/command/JVM override.
+application.yml della revisione prodotto 0dfab1e7… verificato via GitHub:
+nessun default activation.enabled. ActivationLoop, PublicationGatewayClient e
+RunCoordinator richiedono ConditionalOnProperty havingValue=true senza
+matchIfMissing. Il worker non è abilitato nella configurazione verificata.
+Questo non invalida il PASS consumer in JVM separata né l'approvazione della
+fonte, ma impedisce di assumere l'avvio automatico della run dopo publication.
+
+Prima di aggiungere activation.enabled=true e riavviare/sostituire il runtime,
+inventariare catalogo ACTIVE e schedule/run preesistenti: il loop scopre e
+riconcilia pubblicazioni visibili, non soltanto la fonte cinema.
+Helper scripts/r4a_worker_enablement_preflight.py, Semantic
+**9e53089f089631a0a1689e5347878671f0638ca5**, compilazione Python verificata.
+READ_ONLY: conteggi SQL pubblicazioni ACTIVE (globale e cinema), schedule ACTIVE/
+publication_enabled/non blocked e run non finite. GET reale con token SERVICE
+Ingestion e trasporto live verso /api/onboarding/v1/runtime/publications?limit=20&after=,
+lo stesso endpoint del consumer. Token su stdin curl, nessun redirect/retry o
+stampa bundle/credenziali; solo HTTP/count/next-page flag.
+COMPLETE non equivale a accesso autorizzato se HTTP diverso da 200 né a inventario
+completo del catalogo visibile se nextAfter non vuoto. Conteggi SQL globali e
+pagina Gateway autorizzata sono evidenze distinte. Nessun worker abilitato,
+nessuna property modificata, fonte ancora non attiva.
+Dopo output: risolvere eventuale route/capability/blocker, preparare candidato
+con copia privata delle properties e flag esplicito, preservare env/mount/
+memoria, prova e switch controllato; poi decisione HUMAN activate e smoke reale.
+Conservare tutti i dump/rollback/receipt; R-SMOKE/R-INSTALL OPEN.
+
+
 ## 2026-09-30 — approvazione HUMAN acquisita PASS; attivazione ancora da eseguire
 
 Output VPS: HUMAN_APPROVAL=PASS challenge **4f7a8248-ef40-4dc4-8a64-8a6101c98511**,
