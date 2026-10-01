@@ -2507,3 +2507,15 @@ sudo python3 -B "$ouf_token_diag" \
   --container ouf-udp --service-match 'ouf.*(token|auth|refresh)'
 )
 ```
+
+## 2026-10-01 — Correct UDP scopes present; refresher inventory partial and hardened
+
+Actual operator evidence: UDP execution token ENV present, current valid SERVICE JWT, directory bind, age30s/TTL268s; BOTH ouf.onboarding.configuration.read and ouf.semantic.read true. Four installed services match broad selector. Successfully inspected: ouf-gateway-policy-token.service (replace/rename1, truncating0), ouf-ingestion-policy-token.service (1/0), ouf-onboarding-identity-token.service (3/0). Then inventory BLOCKED CalledProcessError BEFORE printing fourth unit; exact service/stage unknown in the old script. This is a diagnostic failure, not a production/refresher failure or proof of token-race causality. No refresh or business mutation occurred.
+
+Current missing scope and simple invalid/expired token diagnostics are not present. Three static script results weaken a broad claim of non-atomic writes, but do not identify which output feeds UDP or classify dynamic/helper writes. The3-replacement Onboarding identity writer may publish several credentials; target matching has NOT yet been demonstrated. Do not change script/token/IAM or jobs based on counts alone.
+
+Generic token inventory corrected to print each unit BEFORE systemctl read; skip uninstantiated @.service templates without calling show; isolate failures per unit and print only stage EXEC_START/SCRIPT_METADATA/SCRIPT_AST plus exception TYPE. Every other selected unit continues. Adds safe boolean execution_token_target_literal_present from AST string constants matching the resolved host execution-token filename. A false value does not rule out assembled/dynamic paths, and a true literal presence does not prove that replace/rename targets that file. Overall COMPLETE means bounded collection finished, not all sections succeeded or causal proof.
+
+Five local tests PASS, including new unavailable-service redaction/continuation and template skip checks. UDP job and token inventory tests added to independent module CI script job alongside recovery regressions; CI result not yet acquired for this change. No deployed Java/config/state change. PET sprint UDP1.3 §109.7 diagnostic vs readiness/integrity separation consulted. Shared scope/profile bindings remain parameterized; service matcher stays a CLI lab argument.
+
+Next operator reruns only the hardened READ_ONLY inventory. Inspect fourth-unit outcome and exact-target structural evidence before selecting further runtime verification. If no destination can be proven, use a supported point-of-use resolver probe with precise symbolic cause; do not keep assuming a token race. RunSUCCEEDED/eight ACKs/five materialized/three QUARANTINED CONTRACT_INVALID and all prior broad open items remain unchanged. Preserve all receipts/job events/objects; no blind replay or SQL state repair.

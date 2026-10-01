@@ -48,6 +48,31 @@ def mapped(container,target):
     return found[0]
 
 
+def inspect_services(units,token_path):
+    for unit in units:
+        print('REFRESHER_UNIT='+unit,flush=True)
+        if '@.' in unit:
+            print('REFRESHER_INSPECTION=SKIPPED UNINSTANTIATED_TEMPLATE=true')
+            continue
+        stage='EXEC_START'
+        try:
+            start=run(['systemctl','show',unit,'--property=ExecStart','--value'])
+            paths=sorted(set(re.findall(r'(/[A-Za-z0-9_./-]+\\.py)(?=\\s|;|$)',start)))
+            print('REFRESHER_PYTHON_SCRIPT_COUNT='+str(len(paths)))
+            for source in paths:
+                stage='SCRIPT_METADATA'
+                file=Path(source);metadata=file.lstat()
+                if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid!=0 or metadata.st_mode&0o022:
+                    raise RuntimeError('REFRESHER_SCRIPT_UNSAFE')
+                stage='SCRIPT_AST'
+                text=file.read_text()
+                facts=writer_facts(text)
+                facts['execution_token_target_literal_present']=any(
+                    isinstance(node,ast.Constant) and node.value==token_path for node in ast.walk(ast.parse(text)))
+                print('REFRESHER_STRUCTURAL_FACTS='+json.dumps(facts,sort_keys=True))
+        except Exception as error:
+            print('REFRESHER_INSPECTION=UNAVAILABLE STAGE='+stage+' TYPE='+type(error).__name__)
+
 def main(args):
     if os.geteuid()!=0:raise RuntimeError('ROOT_REQUIRED')
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,159}',args.container):raise ValueError('container')
@@ -77,14 +102,7 @@ def main(args):
         name=line.split()[0]
         if re.fullmatch(r'[A-Za-z0-9_.@-]+\.service',name) and matcher.search(name):units.append(name)
     print('UDP_TOKEN_REFRESHER_SERVICE_COUNT='+str(len(units)))
-    for unit in units:
-        start=run(['systemctl','show',unit,'--property=ExecStart','--value'])
-        paths=sorted(set(re.findall(r'(/[A-Za-z0-9_./-]+\.py)(?=\s|;|$)',start)))
-        print('REFRESHER_UNIT='+unit+' PYTHON_SCRIPT_COUNT='+str(len(paths)))
-        for source in paths:
-            file=Path(source);metadata=file.lstat()
-            if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid!=0 or metadata.st_mode&0o022:raise RuntimeError('REFRESHER_SCRIPT_UNSAFE')
-            print('REFRESHER_STRUCTURAL_FACTS='+json.dumps(writer_facts(file.read_text()),sort_keys=True))
+    inspect_services(units,str(path))
     print('R4A_UDP_TOKEN_TRANSPORT_INVENTORY=COMPLETE READ_ONLY=true TOKEN_REFRESH_NOT_TRIGGERED=true SCRIPT_VALUES_NOT_PRINTED=true CAUSALITY_NOT_PROVEN=true')
 
 
