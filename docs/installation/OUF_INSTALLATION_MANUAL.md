@@ -4014,3 +4014,13 @@ Ordine: baseline/evidence -> collegamento Semantic al chatbot -> proposta/versio
 Strategia verifiche richiesta: riusare le suite già presenti come regressione e le receipt come prova storica; nuove prove sui collegamenti modificati, authorization/channel boundaries e nuova E2E Teatri. Nessuna ripetizione indiscriminata dei comandi SSH e delle verifiche manuali già passate. Riaprire un gate già superato solo se una nuova modifica/rollout lo coinvolge, se la prova non copre il collegamento nuovo o emerge drift/incompatibilità. Test del flusso deve coprire ripresa dopo perdita chat/shell, decisione stale, transient vs integrity, scope/tenant negati e nessun duplicato da retry.
 
 Questa registrazione è piano operativo, non dichiarazione di capacità end-to-end già funzionante né modifica ai PET. Nessun nuovo deploy/API/permission mutato. Nuovo CSV Teatri ancora soltanto asset/profile SUCCEEDED; nuova semantica/mapping/DRAFT da predisporre con capability governate. Primo deliverable concreto: esposizione semantica e proposta mapping dello stesso asset già caricato, senza nuovo upload o replay Cinema.
+
+### Ripresa 2026-10-01 20:54 — collegamento Semantic/MCP da industrializzare
+
+[Inventario iniziale e requisiti del deploy](../audits/OUF_FILE_TO_UDP_INITIAL_INVENTORY_2026-10-01.md). PET v1.7 ricevuti/verificati: 323 checksum, zero mismatch. Nessun rollout effettuato in questa ripresa.
+
+Prima di predisporre il candidato riconciliare revisioni/loader/overlay MCP: main e branch managed-file/object-search esaminati non rappresentano da soli tutta la superficie attualmente disponibile. Preservare upload/picker/profile e Search oltre ai fix owner/Gateway. La configurazione sorgente Gateway main ouf.semantic.read ACTIVE/toolEligible=false non attesta il binding live.
+
+Ricerca Semantic esistente limitata a semantic_id; latest artifact GET non equivale a pinned historical read. references:resolve ha membership exact ma risposta metadata ridotta. Completare il contratto utile al mapping prima di dichiarare il collegamento operativo.
+
+Installer del nuovo collegamento dovrà ricevere esplicitamente binding di tenant/Ente, domini, host/porte/reti, TLS trust, issuer/audience, principal/client/delegation/scopes, secret refs e routes; release manifest e immagini pinned, plan/apply/verify idempotenti, drift fail-closed e rollback circoscritto. Catalogo/proiezione MCP convergono sullo stesso owner via Gateway; decisioni HUMAN restano THS. Provider esterni parametrizzati e on demand; nessun Ontopia endpoint provato da questa analisi. R-INSTALL resta OPEN.
