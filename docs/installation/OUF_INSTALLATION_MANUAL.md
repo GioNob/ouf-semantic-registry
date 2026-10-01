@@ -3074,3 +3074,7 @@ sudo python3 -B "$ouf_recovery_dir/r4a_recover_ingestion_run.py" recover \
   --expected-revision 163c167d09b8371ff7a62ce7068e9d485b6969b7
 )
 ```
+
+### Recovery cycle CI evidence acquired
+
+GitHub module CI run36826901911 on commit4f3e6e8f19d40b7e78b425e4fb6bbbafa503a927: independent job recovery-cycle-scripts110254498715 completed SUCCESS (14 tests). Full module/container and pairwise suites were still in progress at observation. The operator command pins634dc70db74a6c3d54faedb8727e6004ec2803fe with identical recovery/proof code; later4f3e6e8 only corrects root-context CI and saves the command. No LIVE second recovery output yet. Do not infer full CI or S3/handoff success from this script job.
