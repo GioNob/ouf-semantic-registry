@@ -57,10 +57,11 @@ def profile(live,old_image,image):
     for key in ('User','Entrypoint','Cmd','WorkingDir','StopSignal','Healthcheck','ExposedPorts','Volumes'):
         if config.get(key)!=old_image['Config'].get(key) or config.get(key)!=image['Config'].get(key):
             raise ValueError('IMAGE_RUNTIME_DEFAULTS_CHANGED')
-    allowed_aliases={live['Name'].lstrip('/'),live['Id'],live['Id'][:12]}
     endpoint=next(iter(networks.values()))
-    if endpoint.get('IPAMConfig') or endpoint.get('Links') or set(endpoint.get('Aliases') or [])-allowed_aliases:
+    if endpoint.get('IPAMConfig') or endpoint.get('Links'):
         raise ValueError('CUSTOM_NETWORK_BINDING_UNSUPPORTED')
+    if any(not re.fullmatch('[A-Za-z0-9][A-Za-z0-9_.-]{0,252}',alias) for alias in endpoint.get('Aliases') or []):
+        raise ValueError('NETWORK_ALIAS_INVALID')
     mounts=mount_set(live)
     if any(kind!='bind' or propagation!='rprivate' or ',' in source or ',' in destination
            for kind,source,destination,rw,propagation in mounts):raise ValueError('MOUNT_PROFILE_UNSUPPORTED')
@@ -120,6 +121,8 @@ def main(args):
         env_file.write_text('\n'.join(k+'='+v for k,v in sorted(env.items()))+'\n')
         cmd=['create','--pull','never','--name',args.candidate_container,'--network',network,
              '--restart','no','--user',live['Config']['User'],'--env-file',str(env_file)]
+        aliases=set(live['NetworkSettings']['Networks'][network].get('Aliases') or [])-{live['Id'],live['Id'][:12]}
+        for alias in sorted(aliases):cmd+=['--network-alias',alias]
         log=live['HostConfig'].get('LogConfig') or {}
         if log.get('Type'):cmd+=['--log-driver',log['Type']]
         for key,value in sorted((log.get('Config') or {}).items()):cmd+=['--log-opt',key+'='+value]
@@ -144,6 +147,7 @@ def main(args):
                 or candidate['Config'].get('User')!=live['Config'].get('User')
                 or candidate['Config'].get('Labels')!=expected_labels
                 or set(candidate['NetworkSettings']['Networks'])!={network}
+                or not aliases<=set(candidate['NetworkSettings']['Networks'].get(network,{}).get('Aliases') or [])
                 or candidate['HostConfig'].get('LogConfig')!=live['HostConfig'].get('LogConfig')):
             raise ValueError('STAGED_READBACK_MISMATCH')
         for key in ('MaskedPaths','ReadonlyPaths','CgroupnsMode','IpcMode','ShmSize','Privileged','ReadonlyRootfs',

@@ -19,7 +19,7 @@ class StageTests(unittest.TestCase):
           'State':{'Running':True,'StartedAt':'start'},'Config':copy.deepcopy(old['Config']),
           'HostConfig':{'NetworkMode':'separate-network','ShmSize':67108864,'IpcMode':'private','Runtime':'runc',
             'RestartPolicy':{'Name':'unless-stopped'},'LogConfig':{'Type':'json-file','Config':{'max-size':'10m'}}},
-          'NetworkSettings':{'Networks':{'separate-network':{'Aliases':['udp','d'*12]}}},
+          'NetworkSettings':{'Networks':{'separate-network':{'Aliases':['udp','retained-previous-name','d'*12]}}},
           'Mounts':[{'Type':'bind','Source':'/private/tokens','Destination':'/tokens','RW':False,'Propagation':'rprivate'}]}
         live['Config'].update(Hostname='d'*12,Env=['SECRET=PRIVATE_TOKEN','TENANT=other-tenant'],Labels={'installation':'custom'})
         return live,old,image
@@ -83,6 +83,7 @@ class StageTests(unittest.TestCase):
         self.assertEqual([c[0] for c in calls],['ps','create'])
         command=calls[1];self.assertEqual(command[command.index('--restart')+1],'no')
         self.assertIn('installation=custom',command);self.assertNotIn('PRIVATE_TOKEN',str(calls))
+        self.assertIn('retained-previous-name',command);self.assertIn('udp',command)
         self.assertIn('type=bind,src=/private/tokens,dst=/tokens,bind-propagation=rprivate,readonly',command)
 
     def test_unsupported_binding_blocks_before_creation(self):
