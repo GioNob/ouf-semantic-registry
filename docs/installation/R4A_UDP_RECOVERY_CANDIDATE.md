@@ -422,3 +422,64 @@ sudo python3 -B "$ouf_binding_tmp/r4a_recovery_binding_inventory.py" \
   --snapshot /etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/binding-inventory.json
 )
 ```
+
+
+### Checkpoint 2026-10-01 13:30 Europe/Rome — Gateway acquisito, IAM inventory parziale
+
+Operatore: review GET URI candidates0, retry POST URI candidates0; 42 template inline nei backend selezionati. Esistono template HUMAN Ingestion r4a-ingestion-human-quarantine-read/retry/run-read/resume e UDP ths-identity-preflight-read/create, con OIDC bearer-only e limit-count. Questo non prova routing parity, né la correttezza completa di un template da clonare: i body completi sono nel private snapshot /etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/binding-inventory.json. IAM inventory BLOCKED UNCLASSIFIED CalledProcessError, causa/sessione scaduta NON provata; overall PARTIAL READ_ONLY, nessun cambio IAM/route/policy/retry. Scope existence/assignment non acquisiti. Non rieseguire l'inventory con stesso filename esclusivo.
+
+CI completa inventory f961fb1c4c8409418af1c78b430a14333f36855a SUCCESS: run36853251203 modulo (77 test helper, Java/PostgreSQL e container), Shared SDK36853251233, Authorization Semantic36853251113, Gateway36853251194. DRAFT b305bcae-a03f-4f0d-8b81-81508bcddb24 revision0 ancora non pubblicato nell'ultima evidenza, ACTIVE:35 nell'ultima lettura; UDP immagine024c6691…/afa5c4c4…/Flyway34,5SUCCEEDED+3QUARANTINED invariati nell'ultimo guard. Target:36 da riconfermare fresh prima di publish. Handoff e gate precedenti preservati.
+
+Prossimo blocco: rinnovo interattivo kcadm realm master, administrator configurato oufadmin nel runbook, password esclusivamente nel terminale (non argv/env/chat); login distinto dal Device Grant HUMAN ouf-admin. Con lettura client esatto riuscita, helper Keycloak immutati Onboarding6340d5bf120e09b47c32177656e2c377a4c03640, tutti gli argomenti container/realm/client/scope/binding espliciti: catalogue plan; se scope esiste binding plan prima delle mutazioni per negare DEFAULT confliggente; catalogue apply/verify; binding plan/apply/verify OPTIONAL solo udp.materialization.retry su ouf-human-admin. Nessun altro scope/binding modificato; nessuna modifica del DRAFT/pubblicazione/route/job. Software path kcadm resta il percorso canonico dei helper esistenti, limite di portabilità da parametrizzare nel successivo consolidamento R-INSTALL. Bash syntax verificata; la riconciliazione effettiva IAM resta da provare sul server. Se login/plan fallisce, stop; non stampare credenziali o raw kcadm output e non reiterare una create incerta senza readback.
+
+#### Rinnovo kcadm e scope OPTIONAL — recovery UDP
+
+Binding del laboratorio espliciti nelle variabili del blocco. Per il login realm master usare l'amministratore Keycloak configurato (qui oufadmin); la password viene chiesta direttamente da kcadm. Il login e l'apply riguardano soltanto la configurazione IAM, non la pubblicazione della bozza né il retry. Modificare i binding dichiarati per altre installazioni; non condividere la password. Gli helper immutati riconciliano un singolo scope e preservano gli altri binding.
+
+```bash
+(
+set -euo pipefail
+umask 077
+cd /opt/ouf/semantic
+git fetch --no-tags https://github.com/GioNob/ouf-source-onboarding.git 6340d5bf120e09b47c32177656e2c377a4c03640
+ouf_iam_tmp=$(mktemp -d /tmp/ouf-r4a-recovery-iam.XXXXXX)
+trap 'rm -rf -- "$ouf_iam_tmp"' EXIT
+for script in r4a_keycloak_client_scope_catalogue.py r4a_keycloak_client_scope_binding.py; do
+  git show 6340d5bf120e09b47c32177656e2c377a4c03640:scripts/"$script" > "$ouf_iam_tmp/$script"
+done
+# Binding dell'installazione corrente; password solo nel prompt kcadm.
+ouf_kc_container=ouf-keycloak
+ouf_kc_server=https://auth.ouf-lab.it
+ouf_kc_admin=oufadmin
+ouf_kc_realm=ouf
+ouf_kc_client=ouf-human-admin
+ouf_kc_scope=udp.materialization.retry
+sudo docker exec -it "$ouf_kc_container" /opt/keycloak/bin/kcadm.sh config credentials \
+  --server "$ouf_kc_server" --realm master --user "$ouf_kc_admin"
+sudo python3 -B - "$ouf_iam_tmp" "$ouf_kc_container" "$ouf_kc_realm" "$ouf_kc_client" <<'PY'
+import sys
+sys.path.insert(0,sys.argv[1])
+import r4a_keycloak_client_scope_binding as binding
+try:
+    binding.exact_client(sys.argv[2],sys.argv[3],sys.argv[4])
+except binding.ScopeError as error:
+    print('R4A_IAM_CLIENT_PREFLIGHT=BLOCKED CODE='+str(error))
+    raise SystemExit(1)
+print('R4A_IAM_CLIENT_PREFLIGHT=PASS READ_ONLY=true')
+PY
+ouf_catalogue_args=(--container "$ouf_kc_container" --realm "$ouf_kc_realm" --scope "$ouf_kc_scope")
+ouf_binding_args=(--container "$ouf_kc_container" --realm "$ouf_kc_realm" --client "$ouf_kc_client" --scope "$ouf_kc_scope" --binding optional)
+sudo python3 -B "$ouf_iam_tmp/r4a_keycloak_client_scope_catalogue.py" plan "${ouf_catalogue_args[@]}" \
+  | tee "$ouf_iam_tmp/catalogue-plan.txt"
+# Rifiuta un binding DEFAULT confliggente prima di cambiare uno scope esistente.
+if test "$(sed -n 's/^EXISTS=//p' "$ouf_iam_tmp/catalogue-plan.txt")" = true; then
+  sudo python3 -B "$ouf_iam_tmp/r4a_keycloak_client_scope_binding.py" plan "${ouf_binding_args[@]}"
+fi
+sudo python3 -B "$ouf_iam_tmp/r4a_keycloak_client_scope_catalogue.py" apply "${ouf_catalogue_args[@]}"
+sudo python3 -B "$ouf_iam_tmp/r4a_keycloak_client_scope_catalogue.py" verify "${ouf_catalogue_args[@]}"
+sudo python3 -B "$ouf_iam_tmp/r4a_keycloak_client_scope_binding.py" plan "${ouf_binding_args[@]}"
+sudo python3 -B "$ouf_iam_tmp/r4a_keycloak_client_scope_binding.py" apply "${ouf_binding_args[@]}"
+sudo python3 -B "$ouf_iam_tmp/r4a_keycloak_client_scope_binding.py" verify "${ouf_binding_args[@]}"
+printf '%s\n' 'R4A_UDP_RECOVERY_IAM_BINDING=PASS OPTIONAL=true POLICY_PUBLISH_NOT_CALLED=true ROUTE_WRITES=false RETRY=false SECRETS_NOT_PRINTED=true'
+)
+```
