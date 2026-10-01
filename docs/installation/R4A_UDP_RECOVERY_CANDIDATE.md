@@ -1346,3 +1346,108 @@ PY
 printf 'R4A_REMAINING_REFERENCE_FAILURE_LOG=%s PRIVATE=true\n' "$LOG"
 ROOT
 ```
+
+
+### R4A — anche nuova quarantena senza diagnostica: verificare codice runtime (2026-10-01 18:35 Europe/Rome)
+
+Operatore ha eseguito sola lettura mirata, protocollo privato `/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/remaining-reference-failure.6rMnAL`. Job e7572836/handoff aed8ef93 restaQUARANTINEDv5/attempts2/integrityAttempts2/safeFailureCodeUDP_REFERENCE_INTEGRITY_CONTRACT_INVALID. Entrambi eventi hanno diagnosticCode/categoryNOT_RECORDED,frames[]: nuovo `2026-10-01T16:14:25.674269+00:00` (18:14locale dopo retry) e storico `2026-10-01T06:52:29.339869+00:00`. ReaderCOMPLETE,nessunretry/replay/payload/secrets. Non dire che nuovaevidencecontieneframes né inventare causa;7/8materializzati rimaneultimo readback.
+
+Rilette sorgenti UDP pin83249a: MaterializationReferenceGate catchIllegalArgumentException chiama ReferenceFailureEvidence.detail, che restituisce sempre diagnosticCode (ancheUNCLASSIFIED),diagnosticCategory e diagnosticFrames (anchelista vuota). ResolutionRepository.quarantine(claim,code,Map) copiaMap e aggiunge safeFailureCode prima delwriteJSON/eventappend. ResolutionWorker esegue gate prima della propria try; il catch successivo usa jobs.fail, distinto dal referencequarantine. Dockerfile copia src e compila jar; nessun checkoutalternativo dichiarato. La mancanza dei tre campi nel nuovoevento è incompatibile con quel percorso sorgente se quello stesso bytecode ha scritto l'evento; non prova quale immagine/writer sia stato attivo. Non attribuire a vecchio container, serializzazione,token o trigger senza prova. JAR etichettato atteso e dichiarazione di release non sostituiscono osservazione del file effettivo/mount/writer.
+
+Nextgate READ_ONLY runtime inventory: dockerinspectlive image/OCIrevision rispetto5e048a/83249a, inventario container con nome contenenteudp (running/restartpolicy/image/revision), dockerCP della sola /app/app.jar nei soli container running selezionati in directory0700/root; nessun dockercreate/start/restart/deploy. Zipfile legge classi BOOT-INF e verifica strutturalmente ReferenceFailureEvidence.class, marker/chiamataGate, signatureoverloadRepository conMap, campi diagnostici e recoveryAPIcandidates; controlla duplicateentry/limiti, mount che coprejar, identitàcontainer prima/dopo. Jarhash e copie rimangono privati, stdout solo strutture/identità giàpubbliche. Receipt/log root0600 e artifactdirectory persistenti; Configenv,mountsources,arguments/credentials mai stampati né salvati. JAR_COPY_ONLY e BUSINESS_STATE_UNCHANGED riferiti al probe, non assenza di attività autonoma del worker. Nomefilterudp non provaassenza di ogni altroprocesso/host; bytecodemarkers non provano da soli writer dell'evento precedente né gli oggetti giàcaricati inJVM, soprattutto conjarbindmount. Un changedidentity rende l'osservazione concorrente e richiede riconciliazione.
+
+Test locale structuralprojection PASS per jar sintetico instrumentato e legacy, bash-nPASS. Nessun cambio condiviso/applicativo e nessun nuovo deploy/retry. PET UDP109.7 readiness/point-of-use consultato. Dopo inventario basare fix/diagnostica sui risultati; seJARcoerente e singolo writer visibile, indagare altro writer/trigger/serializzazione senza stampare safe_detailintegrale. Conservare originali e tutti3retryaudit. Status materializzazione7/8, search/storageindipendente/causalitàstorica/R-INSTALL e altri gate ereditati restanoaperti.
+
+
+#### R4A UDP recovery — inventario JAR runtime dopo diagnostica assente
+
+Entrambi eventi dell'originale rimasto sono NOT_RECORDED anche dopo release83249a. Verificarefile/classi/identità prima di dedurre una causa o rilasciare altro codice. Il blocco fa soltanto dockerinspect/ps/cp e lettura ziplocale, nessun avvioSpring/container o modifica del DB/job, nessun retry. Copia gli JAR dei container running selezionati nel directoryprivato nuovo, salva digest in receiptprivate e mostra soltanto fatti strutturali. Include container stopped nella lista senza copiarli/avviarli. Se una copia non-live non è unJAR/èinaccessibile, la marcaUNAVAILABLE; sul live richiesto il probe si blocca. I nomi contenentiudp sono filtroesplicito, non inventario globalehost/processi.
+
+Controllare liveexpectedimage/revisionmatch, gateReferencesFailureEvidence, gateReferencesDiagnosticQuarantineOverload, failureEvidenceHasAllDiagnosticKeys e APIcandidates; mount/identitychanged rendono più debole l'inferenza sul bytecode giàcaricato. Non stampare receipt/jar/env/configurazioni. Nessun hashJar sul terminale. Structuralmarkers sono prova di presenza nel file letto, non prova di quale processo abbia scritto il vecchioevento. Bootstrap esterno con ORhandler per mantenereSSHaperta; path log/receiptstampati e persistenti.
+
+```bash
+set -euo pipefail
+sudo python3 -u -B - ouf-udp /app/app.jar \
+  sha256:5e048a859716d6674355e72238f03f899abd705a943ceadbdc5c8863d28f4e9f \
+  83249a897eb4add4289b5181b3299f48ea4c0f99 \
+  /etc/ouf/deploy-snapshots/udp-materialization-recovery-policy <<'PY'
+import hashlib, json, os, re, stat, subprocess, sys, tempfile, zipfile
+from pathlib import Path
+def require(value):
+    if not value:raise RuntimeError('RUNTIME_INVENTORY_BINDING_OR_SHAPE_INVALID')
+def docker(*args):
+    return subprocess.run(['docker',*args],check=True,capture_output=True,text=True,timeout=30).stdout.strip()
+def inspect(name):return json.loads(docker('inspect',name))[0]
+def identity(row):
+    return (row['Id'],row['Image'],row['State']['Running'],row['State']['StartedAt'],row['RestartCount'])
+def classes(path):
+    base='BOOT-INF/classes/it/comune/trieste/ouf/udp/'
+    with zipfile.ZipFile(path) as archive:
+        def read(name):
+            entries=[e for e in archive.infolist() if e.filename==base+name+'.class']
+            require(len(entries)<=1)
+            if not entries:return b''
+            require(entries[0].file_size<=2000000);return archive.read(entries[0])
+        gate=read('MaterializationReferenceGate');failure=read('ReferenceFailureEvidence')
+        repo=read('ResolutionRepository');api=read('MaterializationRecoveryApi')
+        signature=b'(Lit/comune/trieste/ouf/udp/ResolutionRepository$Claim;Ljava/lang/String;Ljava/util/Map;)V'
+        return {'gateClassPresent':bool(gate),'failureEvidenceClassPresent':bool(failure),
+            'gateReferencesFailureEvidence':b'it/comune/trieste/ouf/udp/ReferenceFailureEvidence' in gate,
+            'gateReferencesDiagnosticQuarantineOverload':signature in gate,
+            'repositoryHasDiagnosticQuarantineOverload':signature in repo,
+            'failureEvidenceHasAllDiagnosticKeys':all(k in failure for k in (b'diagnosticCode',b'diagnosticCategory',b'diagnosticFrames')),
+            'recoveryApiUsesAdmissionCandidates':b'candidates' in api}
+try:
+    live,jar_path,expected_image,expected_revision,parent=sys.argv[1:]
+    require(os.geteuid()==0 and re.fullmatch('[A-Za-z0-9][A-Za-z0-9._-]{0,159}',live))
+    require(re.fullmatch('sha256:[a-f0-9]{64}',expected_image) and re.fullmatch('[a-f0-9]{40}',expected_revision))
+    require(jar_path.startswith('/') and ':' not in jar_path and not any(c.isspace() for c in jar_path))
+    parent=Path(parent);meta=parent.lstat()
+    require(stat.S_ISDIR(meta.st_mode) and meta.st_uid==0 and stat.S_IMODE(meta.st_mode)==0o700)
+    root=Path(tempfile.mkdtemp(prefix='runtime-reference-code-',dir=parent))
+    receipt=root/'receipt.json';protocol=root/'protocol.log';rows=[]
+    before=inspect(live);require(before['State']['Running'])
+    with protocol.open('x') as log:
+        def emit(line):print(line,flush=True);log.write(line+'\n');log.flush()
+        emit('R4A_UDP_RUNTIME_CODE_RECEIPT='+str(receipt)+' PRIVATE=true')
+        emit('R4A_UDP_RUNTIME_CODE_LOG='+str(protocol)+' PRIVATE=true')
+        emit('UDP_LIVE_EXPECTED_IMAGE_MATCH='+str(before['Image']==expected_image).lower())
+        label=(before['Config'].get('Labels') or {}).get('org.opencontainers.image.revision')
+        emit('UDP_LIVE_EXPECTED_REVISION_LABEL_MATCH='+str(label==expected_revision).lower())
+        names=docker('ps','-a','--format','{{.Names}}').splitlines()
+        names=sorted(set([live]+[name for name in names if 'udp' in name.lower()]))
+        require(len(names)<=100)
+        for index,name in enumerate(names,1):
+            require(re.fullmatch('[A-Za-z0-9][A-Za-z0-9._-]{0,159}',name))
+            row=inspect(name);require(re.fullmatch('sha256:[a-f0-9]{64}',row['Image']))
+            restart=row['HostConfig']['RestartPolicy']['Name'];require(restart in ('no','always','unless-stopped','on-failure',''))
+            revision=(row['Config'].get('Labels') or {}).get('org.opencontainers.image.revision')
+            if not isinstance(revision,str) or not re.fullmatch('[a-f0-9]{40}',revision):revision='NOT_PROVEN'
+            item={'name':name,'running':bool(row['State']['Running']),'imageId':row['Image'],'revisionLabel':revision,'restartPolicy':restart}
+            if item['running']:
+                copied=root/('app-'+str(index)+'.jar')
+                try:
+                    docker('cp',name+':'+jar_path,str(copied));copied.chmod(0o600)
+                    require(copied.stat().st_size<=200000000)
+                    item.update(classes(copied));item['jarSha256']=hashlib.sha256(copied.read_bytes()).hexdigest()
+                    item['jarCopy']='PASS'
+                except Exception as error:
+                    if name==live:raise
+                    item['jarCopy']='UNAVAILABLE';item['jarCopyFailureType']=type(error).__name__
+                item['jarCoveredByMount']=any(jar_path==m['Destination'] or jar_path.startswith(m['Destination'].rstrip('/')+'/')
+                    for m in row.get('Mounts',[]))
+                item['identityUnchangedDuringCopy']=identity(row)==identity(inspect(name))
+            rows.append(item)
+            # jar digest remains private; print only identity and structural facts.
+            safe={k:v for k,v in item.items() if k!='jarSha256'}
+            emit('UDP_RUNTIME_CONTAINER_'+str(index)+'='+json.dumps(safe,sort_keys=True))
+        unchanged=identity(before)==identity(inspect(live))
+        receipt.write_text(json.dumps({'containers':rows,'liveIdentityUnchanged':unchanged},sort_keys=True));receipt.chmod(0o600)
+        emit('R4A_UDP_RUNTIME_CODE_INVENTORY=COMPLETE READ_ONLY=true LIVE_IDENTITY_UNCHANGED='+str(unchanged).lower()
+            +' NAME_FILTER=udp SPRING_NOT_STARTED=true RETRY=false REPLAY=false BUSINESS_STATE_UNCHANGED=true'
+            +' JAR_COPY_ONLY=true SECRETS_NOT_PRINTED=true')
+except Exception as error:
+    print('R4A_UDP_RUNTIME_CODE_INVENTORY=BLOCKED TYPE='+type(error).__name__+' READ_ONLY=true RETRY=false SECRETS_NOT_PRINTED=true',flush=True)
+    raise SystemExit(1)
+PY
+```
