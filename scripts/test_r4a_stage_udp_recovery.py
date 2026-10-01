@@ -28,11 +28,15 @@ class StageTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             parent=Path(directory);live,old,image=self.fixture();calls=[];candidate=None;live_reads=0
             args=argparse.Namespace(container='udp',candidate_container='udp-new',work_parent=str(parent),
-                                    build_receipt=str(parent/'build.json'))
+                                    build_receipt=str(parent/'build.json'),
+                                    allow_enabled_live=mode in ('enabled-upgrade','enabled-preflight'),
+                                    check_only=mode in ('preflight','enabled-preflight'))
             receipt={'state':'BUILT','service_switched':False,'revision':'a'*40,'image_id':image['Id'],
                      'live_before':{'id':live['Id'],'image':live['Image']}}
             Path(args.build_receipt).write_text(json.dumps(receipt));Path(args.build_receipt).chmod(0o600)
             if mode=='unsupported':live['HostConfig']['Dns']=['10.1.2.3']
+            if mode.startswith('enabled-'):live['Config']['Env'].append(stage.FLAG+'=true')
+            if mode=='invalid-flag':live['Config']['Env'].append(stage.FLAG+'=invalid')
             def inspect(name):
                 nonlocal live_reads
                 if name=='udp':
@@ -88,6 +92,23 @@ class StageTests(unittest.TestCase):
 
     def test_unsupported_binding_blocks_before_creation(self):
         calls,state,_=self.run_stage('unsupported');self.assertEqual(calls,[]);self.assertIsNone(state)
+
+    def test_enabled_live_requires_explicit_upgrade_and_preserves_feature(self):
+        calls,state,_=self.run_stage('enabled-denied')
+        self.assertEqual(calls,[]);self.assertIsNone(state)
+        calls,state,out=self.run_stage('enabled-upgrade')
+        self.assertEqual(state['state'],'STAGED');self.assertTrue(state['live_recovery_enabled'])
+        self.assertFalse(state['feature_enabled_on_candidate_only'])
+        self.assertEqual([c[0] for c in calls],['ps','create']);self.assertIn('STAGE=PASS',out)
+
+    def test_preflight_creates_neither_receipts_nor_containers(self):
+        for mode in ('preflight','enabled-preflight'):
+            calls,state,out=self.run_stage(mode)
+            self.assertEqual([c[0] for c in calls],['ps']);self.assertIsNone(state)
+            self.assertIn('STAGE_PREFLIGHT=PASS READ_ONLY=true',out)
+
+    def test_invalid_feature_value_blocks_even_without_creation(self):
+        calls,state,_=self.run_stage('invalid-flag');self.assertEqual(calls,[]);self.assertIsNone(state)
 
     def test_existing_name_is_never_overwritten(self):
         calls,state,_=self.run_stage('exists');self.assertEqual([c[0] for c in calls],['ps']);self.assertIsNone(state)

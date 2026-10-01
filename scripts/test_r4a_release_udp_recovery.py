@@ -25,10 +25,14 @@ class ReleaseTests(unittest.TestCase):
     def run_release(self,mode='pass'):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory);root.chmod(0o700);args=self.args()
-            live,old_image,image=staging_tests.StageTests().fixture();new=copy.deepcopy(live)
+            live,old_image,image=staging_tests.StageTests().fixture()
+            if mode=='enabled-upgrade':live['Config']['Env'].append(release.stage.FLAG+'=true')
+            new=copy.deepcopy(live)
             new.update(Id='e'*64,Name='/udp-new',Image=image['Id'])
             new['State']={'Running':False,'Status':'created'};new['HostConfig']['RestartPolicy']={'Name':'no'}
-            new['Config'].update(Hostname='e'*12,Env=live['Config']['Env']+[release.stage.FLAG+'=true'],
+            expected_env=dict(entry.split('=',1) for entry in live['Config']['Env'])
+            expected_env[release.stage.FLAG]='true'
+            new['Config'].update(Hostname='e'*12,Env=[k+'='+v for k,v in expected_env.items()],
                                  Labels={**image['Config']['Labels'],**live['Config']['Labels']})
             snapshot=root/'snapshot.json';snapshot.write_text(json.dumps(live));snapshot.chmod(0o600)
             staged={'runtime_snapshot':str(snapshot),'runtime_snapshot_hash':release.stage.digest(live),
@@ -99,6 +103,12 @@ class ReleaseTests(unittest.TestCase):
         self.assertTrue(old['State']['Running']);self.assertEqual(old['Name'],'/udp')
         self.assertFalse(new['State']['Running']);self.assertFalse(state['database_restored'])
         return calls
+
+    def test_upgrade_of_enabled_live_preserves_environment_without_requeue(self):
+        calls,state,old,new,out=self.run_release('enabled-upgrade')
+        self.assertEqual(state['state'],'RELEASED');self.assertIn('RELEASE=PASS',out)
+        self.assertEqual(set(old['Config']['Env']),set(new['Config']['Env']))
+        self.assertFalse(state['retry_executed']);self.assertFalse(state['database_restored'])
 
     def test_backup_failure_restores_old_before_any_rename(self):
         calls=self.assert_rollback('backup');self.assertFalse(any(c[0]=='rename' for c in calls))
