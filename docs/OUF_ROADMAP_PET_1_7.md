@@ -2482,3 +2482,13 @@ sudo python3 -B "$ouf_token_diag" \
 ```
 
 No login or service restart; the service matcher is a lab CLI binding. Structural writer facts are not proof of token-target behavior or historical causality.
+
+## 2026-10-01 — UDP token current read PASS; writer not found by narrow service matcher
+
+Actual operator token inventory: execution token explicit ENV present, JWT format valid, SERVICE actor, age28s/TTL271s, directory bind (file-bind=false), ouf.semantic.read present. Zero matching services under regex udp.*token|token.*udp. This proves only the current token diagnostics and lack of matching installed systemd names; it does NOT prove no refresh mechanism or atomic token writes. No writer script was inspected. Directory bind supports atomic file replacement visibility, unlike a file bind; actual writer behavior and historical empty/partial read remain unproven.
+
+Correction to diagnostic: configuration.read=false tested the WRONG generic scope name, not the runtime publication owner's capability. Verified pinned Onboarding6340d5bf… RuntimePublicationApi.require uses ouf.onboarding.configuration.read, matching r4a_publication_bindings_inventory.CAP. The script now tests that exact scope plus ouf.semantic.read. No reason to add generic configuration.read or change IAM/grants. Any owner authorization proof still requires actual Gateway/owner request, not decoded scope claims. Scope omission alone would normally lead HTTP unavailable classification in this pinned UDP client, not establish the CONTRACT_INVALID cause.
+
+Next READ_ONLY inventory reuses corrected script with broader lab CLI service matcher ouf.*(token|auth|refresh), covering shared/Onboarding credential services instead of requiring UDP in their name. It prints only service names, Python script count and redacted AST structural counts. No source/config/token values, login, token refresh, service restart or job mutation. Shell/helper/dynamic writer behavior stays explicitly unproven. If still no writer, inspect deployment-specific scheduler/container binding through a targeted read-only inventory rather than scanning arbitrary secret/config trees.
+
+PET sprint UDP1.3 §109.7 and owner authorization boundaries consulted; fail closed preserved. All eight refs remain identical/valid-required;5 objects succeeded and3 jobs QUARANTINED/CONTRACT_INVALID,8 ACKs/runSUCCEEDED unchanged. No corrective release or recovery yet. Existing S3 independent verification/search/PET/R-INSTALL/replay/retention/portability/operational-awareness/latency/second-source gaps remain open.

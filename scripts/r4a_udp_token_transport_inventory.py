@@ -70,7 +70,7 @@ def main(args):
         part=value.split('.')[1];claims=json.loads(base64.urlsafe_b64decode(part+'='*(-len(part)%4)))
         print('UDP_EXECUTION_TOKEN_SERVICE_ACTOR='+str(claims.get('ouf_actor_type')=='SERVICE').lower())
         print('UDP_EXECUTION_TOKEN_TTL_SECONDS='+str(int(claims['exp']-time.time()) if type(claims.get('exp')) is int else 'INVALID'))
-        for cap in ('configuration.read','ouf.semantic.read'):
+        for cap in ('ouf.onboarding.configuration.read','ouf.semantic.read'):
             print('UDP_EXECUTION_TOKEN_SCOPE_'+cap+'='+str(cap in str(claims.get('scope','')).split()).lower())
     units=[]
     for line in run(['systemctl','list-unit-files','--type=service','--no-legend','--no-pager']).splitlines():
