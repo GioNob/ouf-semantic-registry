@@ -568,3 +568,59 @@ Output operatore: plan/apply/verify PASS, 2 route GET review/POST retry con UUID
 Nuovo helper parametrizzato `scripts/r4a_review_publish_scoped_human_policy.py` con modi review/publish/verify. Usa soltanto draft-receipt/resources esistenti, nessuna ricreazione del draft, registrazione o modifica di grant. Confronta identità, hash baseline, diff esatta, resourceType/ID/attrs/DataAccessLabel e scadenza; mantiene ogni entry preesistente. Legge ACTIVE e draft/ETag, verifica catalogue owner/descriptor, preview e simulazioni lato owner Authorization: ALLOW per ogni risorsa/label; DENY per SERVICE, AI_AGENT, scope assente, soggetto/ID/type/attrs/label diversi o label assente; contesti tenant esterni respinti HTTP403 dal boundary (non confondere con decisione SDK). Response deve essere HYPOTHETICAL_NOT_IAM_VERIFIED/authoritative=false, hash e revisioni coerenti. Le POST preview/simulate scrivono audit amministrativo, non mutano policy ACTIVE/draft o business UDP: non dichiararle globalmente read-only. Tre risorse lab con quattro attrs e una label ciascuna producono 41 scenari. Nessuna prova HUMAN owner UDP ottenuta dalle simulazioni.
 
 Pubblicazione: login Device Grant HUMAN fresco sul client configurato, account OUF corretto verificato per sub/tenant/issuer/audience/adminscope; conferma locale esatta `PUBBLICO <bundle:version>` dopo review. La bozza lab è b305bcae-a03f-4f0d-8b81-81508bcddb24 rev0/base:35, target:36, grant scadono 2026-10-02T10:00:00Z. Recheck dopo conferma di expiry/draft/ACTIVE; durable intent root 0600 prima di POST publish; response + GET draft PUBLISHED rev1 e ACTIVE esatto (publishedAt stabilito dall'owner). Receipt privata impedisce repost; verify legge soltanto policy/draft con sessione HUMAN fresca, anche dopo expiry per diagnosticare una pubblicazione storica, senza ripubblicare. Per state senza publish intent serve riconciliazione, non forzare receipt né blind retry. Nessuna chiamata UDP retry/intake/replay/source activation. Runbook esegue fresh GET Gateway verify prima del login. Test locali 26 PASS, 6 nuovi; CI recovery passa da83 a89 con checksum esatti sui byte pubblicati. Attendere CI e output operatore prima di dichiarare pubblicato :36. Dopo pubblicazione, next gate sessione HUMAN col nuovo scope + reale GET review dei tre job e controlli Spring/reference, poi eventuale retry HUMAN originale, poi readback8/8/search. Restano tutti i blocker ereditati e R-INSTALL/portabilità/autodeploy non chiusi.
+
+
+#### R4A UDP recovery policy — review simulazioni e pubblicazione HUMAN
+
+Prerequisiti: ricevute draft/resources già presenti e IAM OPTIONAL verificato; fresh Gateway GET verify eseguito dal blocco. Questo ciclo non ricrea draft né grant. Usa account OUF `ouf-admin` per Device Grant (`ouf-human-admin` è client OIDC; `oufadmin` nel master Keycloak non è questo login). Non incollare browser code o token in chat. Receipt root 0600 conserva intent, preview/simulazioni e readback; se output SSH perso rieseguire il blocco: receipt esistente -> soltanto verify, mai POST publish automatico.
+
+Review invoca POST amministrative preview/simulate: scrivono audit, non policy/business. Dopo PASS propone :35 -> :36 con tre grant nominali esatti e bounded, e richiede nel terminale `PUBBLICO ouf-lab-authorization:36`; confermare soltanto se riepilogo è coerente. Se risposta persa o mismatch, non eliminare la receipt: riconciliare con GET. Pubblicazione fallisce su drift, expiry vicina, scenario inatteso, identità non conforme o conferma diversa. Lo script non invoca retry/materializzazione. Prossimo gate è GET reale UDP con HUMAN e nuovo scope, non la simulazione ipotetica.
+
+```bash
+set -euo pipefail
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+REVISION=190e3f052e5a0612109da3145534e73ae519dae7
+WORK_DIR=$(mktemp -d)
+trap 'rm -rf "$WORK_DIR"' EXIT
+for SCRIPT in r4a_review_publish_scoped_human_policy.py r4a_prepare_scoped_human_policy.py r4a_install_materialization_recovery_routes.py r4a_recovery_binding_inventory.py r4a_execution_route_inventory.py r4a_prepare_frozen_compatibility_probe.py; do
+  git show "$REVISION:scripts/$SCRIPT" > "$WORK_DIR/$SCRIPT"
+done
+STATE_DIR=/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy
+# Fresh GET-only Gateway readback before policy publication; private credentials never printed.
+sudo python3 -B "$WORK_DIR/r4a_install_materialization_recovery_routes.py" verify \
+  --gateway-container ouf-apisix --config-destination /usr/local/apisix/conf/config.yaml \
+  --admin-origin http://127.0.0.1:9180 --curl-image curlimages/curl:8.16.0 \
+  --template-id r4a-onboarding-runtime-publications-list \
+  --template-uri /api/onboarding/v1/runtime/publications \
+  --template-node ouf-onboarding:8080 --template-scope ouf.onboarding.configuration.read \
+  --public-host api.ouf-lab.it --udp-node ouf-udp:8080 \
+  --base-path /api/udp/v1/governance/materialization/jobs --scope udp.materialization.retry \
+  --review-id r4a-udp-human-materialization-review --retry-id r4a-udp-human-materialization-retry \
+  --snapshot "$STATE_DIR/binding-inventory.json" --receipt "$STATE_DIR/gateway-routes-receipt.json"
+COMMON=(
+  --issuer https://auth.ouf-lab.it/realms/ouf
+  --client ouf-human-admin
+  --audience ouf-api-gateway
+  --admin-scope authorization.policy.admin
+  --base-url https://api.ouf-lab.it/api/trusted-human/v1/authorization
+  --tenant ouf-lab
+  --subject b93d8cf6-cd14-4ee6-91d7-84cd76c4f500
+  --capability udp.materialization.retry
+  --operation COMMAND
+  --required-scope udp.materialization.retry
+  --owner udp
+  --expected-resources 3
+  --min-remaining-seconds 120
+  --draft-receipt "$STATE_DIR/draft-receipt.json"
+  --resources "$STATE_DIR/resources.json"
+  --receipt "$STATE_DIR/publication-receipt.json"
+)
+# Login Device Grant fresco: browser/codice solo in terminale, account OUF ouf-admin.
+# Non copiare codice/token in chat. Conferma finale esplicita nel terminale.
+if sudo test -e "$STATE_DIR/publication-receipt.json"; then
+  sudo python3 -B "$WORK_DIR/r4a_review_publish_scoped_human_policy.py" verify "${COMMON[@]}"
+else
+  sudo python3 -B "$WORK_DIR/r4a_review_publish_scoped_human_policy.py" publish "${COMMON[@]}"
+fi
+```
