@@ -173,7 +173,8 @@ class Review(unittest.TestCase):
                 ready,_,_=select.select([master],[],[],0.1)
                 if ready:
                     try:chunk=os.read(master,4096)
-                    except OSError:break
+                    # PTY hangup can precede waitpid visibility of child exit.
+                    except OSError:chunk=b''
                     data+=chunk
                     if b'CONFERMA HUMAN>' in data and not sent:
                         os.write(master,(phrase+'\n').encode());sent=True

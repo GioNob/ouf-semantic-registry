@@ -110,4 +110,4 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify versioned recovery cycles and transport bindings
         working-directory: scripts
-        run: sudo python3 -B -m unittest test_r4a_recover_ingestion_run test_r4a_recovery_cycles test_r4a_udp_materialization_diagnostic test_r4a_udp_token_transport_inventory test_r4a_udp_reference_transport_probe test_r4a_udp_java_reference_probe test_r4a_prepare_udp_recovery_image test_r4a_stage_udp_recovery test_r4a_release_udp_recovery test_r4a_scoped_human_policy test_r4a_recovery_binding_inventory test_r4a_materialization_recovery_routes test_r4a_review_publish_scoped_human_policy
+        run: sudo python3 -B -m unittest test_r4a_recover_ingestion_run test_r4a_recovery_cycles test_r4a_udp_materialization_diagnostic test_r4a_udp_token_transport_inventory test_r4a_udp_reference_transport_probe test_r4a_udp_java_reference_probe test_r4a_prepare_udp_recovery_image test_r4a_stage_udp_recovery test_r4a_release_udp_recovery test_r4a_scoped_human_policy test_r4a_recovery_binding_inventory test_r4a_materialization_recovery_routes test_r4a_review_publish_scoped_human_policy test_r4a_read_human_materialization_review
