@@ -865,3 +865,65 @@ ROOT
 
 
 R4A safe GET error capture CI finale su f89e9983b39759d8a45fc470dc2b14deca971904: module36880091805 Java/checksum/container SUCCESS, recovery102/102 PASS; Authorization36880092062, SDK36880092071 e Gateway36880091803 SUCCESS. Codice operativo d6c32cbf062618f0b255c51f8a7a8d6fb521e839. Protocol-filter testPASS: codice Device Grant visibile al terminale ma escluso dal fileprivato. Nuovo blocco pronto, bootstrap externalbash con ORhandler protegge shell; nessun retrybusiness. Attesa nuovaGET per classificare errore successivo ai due negativi, ownerpositivo/refgate non ancora provati; conservata receipt143329.
+
+
+### R4A — Attesa dopo LOG causata dal filtro interattivo, correzione (2026-10-01 17:05 Europe/Rome)
+
+Operatore segnala attesa prolungata subito dopo HUMAN_REVIEW_PROTOCOL_LOG=...TwWflM, prima del codice THS. Raccomandato Ctrl+C, nessun inserimento credenziali alla cieca. Riprodotto localmente con mawk1.3.4: producer stampa DeviceCode flush e attende input, filtro awk precedente non consegna la linea prima di EOF (fflush agiva solo sull'output). Deadlock di presentazione: login attende conferma che non può essere effettuata perché il codice è trattenuto. Difetto del runbook/logger, il precedente test di filtraggio controllava solo processo terminato, non interattività. Non usare quel filtro e non attribuire questa attesa a nuova prova di failureowner.
+
+Sostituito awk con python3-u logger stdin line-by-line, stdout write+flush immediato; scrive sul protocollo root0600 solo prefixUDP_HUMAN/R4A_UDP, nessun devicecode/token. Producer helper avviato anche -u. Test interattivo PASS: codice visibile entro2sec prima della conferma, producer ancora in attesa, poi esito salvato e codice escluso dal protocollo; filtrovecchio WITHHELD=true riprodotto. bash-nPASS. Solo documentazione/runbook modificati, Pythonhelperresta codice d6c32cbf062618f0b255c51f8a7a8d6fb521e839 giàCI102PASS; nessun cambio owner/Docker/IAM/Gateway/policy o retry. Nuovo loginGET-only dopo interruzione, nuova receipt/protocollo; conservare TwWflM e receiptprecedenti, sono evidencepotenzialmenteparziali. Sempre bootstrap externalbash con ORhandler, mai set-einterattivo. Ultime prove owner: negativi401/403 salvati, reviewpositive0 nella receiptprima; nuovaownerpositive/refgate/8materializzazioni/search ancoraNOTPROVEN. Aggiornati handoff/manuale/roadmap/runbook.
+
+
+#### R4A UDP recovery — GET HUMAN con protocollo immediato senza awk
+
+Interrompere il precedente blocco con Ctrl+C e attendere il ritorno del prompt. Il nuovo logger Python rende immediatamente visibili browser/code THS, mantenendo fuori dal protocollo DeviceCode/token. Non usare il runbook con awk per logininterattivo. Account OUF ouf-admin; solo login IAM e GET UDP, niente retry/publish/replay. Protocollo e receipt nuove e private; non cancellare le precedenti. Il bootstrap deve usare bash separato con ORhandler per mantenere la shell aperta. Se codice non compare entro circa60sec, non aspettare indefinitamente: riportare le righe simboliche o assenza di nuove righe, senza token/devicecode; i timeout HTTPsono30sec per chiamata e precedono il codice con due chiamate IAM. Dopo login, ultima riga CODE/PHASE/ERROR_SAVED indica la failure effettiva, oppure PASS/referencegateBLOCKED. Nessuna prova materiale8/8 anticipata.
+
+```bash
+set -euo pipefail
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+REVISION=d6c32cbf062618f0b255c51f8a7a8d6fb521e839
+WORK_DIR=$(mktemp -d)
+trap 'rm -rf "$WORK_DIR"' EXIT
+for SCRIPT in r4a_read_human_materialization_review.py r4a_prepare_scoped_human_policy.py; do
+  git show "$REVISION:scripts/$SCRIPT" > "$WORK_DIR/$SCRIPT"
+done
+sudo bash -s -- "$WORK_DIR" <<'ROOT'
+set -euo pipefail
+umask 077
+WORK_DIR=$1
+STATE_DIR=/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy
+LOG=$(mktemp "$STATE_DIR/human-review-protocol.XXXXXX")
+printf 'HUMAN_REVIEW_PROTOCOL_LOG=%s PRIVATE=true\n' "$LOG"
+RECEIPT="$STATE_DIR/human-review-$(date -u +%Y%m%dT%H%M%S)-$$.json"
+set +e
+python3 -u -B "$WORK_DIR/r4a_read_human_materialization_review.py" \
+  --issuer https://auth.ouf-lab.it/realms/ouf --client ouf-human-admin \
+  --audience ouf-api-gateway --tenant ouf-lab \
+  --subject b93d8cf6-cd14-4ee6-91d7-84cd76c4f500 \
+  --scope udp.materialization.retry --expected-policy ouf-lab-authorization:36 \
+  --base-url https://api.ouf-lab.it/api/udp/v1/governance/materialization/jobs \
+  --publication-receipt "$STATE_DIR/publication-receipt.json" \
+  --resources "$STATE_DIR/resources.json" --receipt "$RECEIPT" \
+  --expected-version 2 --expected-resources 3 \
+  --expected-failure UDP_REFERENCE_INTEGRITY_CONTRACT_INVALID \
+  --binding 7793566d-b9d4-4402-8cda-c09b8f135c04:8869a6d6-3d82-4514-a63a-d23f9b26d48f \
+  --binding e7572836-f8af-4c58-b5fc-12d7aff5db1d:aed8ef93-6d00-4cf0-868d-d2d82d79b524 \
+  --binding e5b6ca24-6143-4ae5-8907-5dce398abfa3:e58faf8c-c35a-4106-b4b6-67e58dec9774 \
+  --outside-job f84de729-c245-4e34-80cf-764c4eb0f160 2>&1 |
+  python3 -u -c '
+import sys
+with open(sys.argv[1], "a", buffering=1) as log:
+    for line in sys.stdin:
+        sys.stdout.write(line); sys.stdout.flush()
+        if line.startswith(("UDP_HUMAN_REVIEW_", "R4A_UDP_HUMAN_REVIEW")):
+            log.write(line); log.flush()
+' "$LOG"
+RESULT=("${PIPESTATUS[@]}")
+set -e
+printf 'HUMAN_REVIEW_PROTOCOL_LOG=%s PRIVATE=true\n' "$LOG"
+printf 'HUMAN_REVIEW_PROCESS_EXIT=%s OUTPUT_CAPTURE_EXIT=%s RETRY=false\n' "${RESULT[0]}" "${RESULT[1]}"
+test "${RESULT[1]}" -eq 0
+exit "${RESULT[0]}"
+ROOT
+```
