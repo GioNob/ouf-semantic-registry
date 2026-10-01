@@ -2332,3 +2332,34 @@ On success, intent RESUME_CONFIRMED/controlVersion2 records only API acceptance;
 14 local tests PASS, including real controlling TTY, stripped HTTP204, predecessor ambiguity/context/version refusal, deterministic separate paths, second cycle single retry(version0)/resume(version1), canceled operation, timeout/no-repost, and non-lab database/network/image arguments reaching transport with bearer on stdin. New independent CI job recovery-cycle-scripts added; CI and LIVE second-cycle recovery are NOT claimed by local tests. No deployed Java/image or live configuration change in this increment.
 
 Next operator action: corrected pinned wrapper recover with --cycle2fac075e… and predecessor /etc/ouf/deploy-snapshots/ingestion-human-recovery-86809c17-3354-45ca-a7e6-57e903944b24.json. Deployment revision remains163c167d09b8371ff7a62ce7068e9d485b6969b7. A single fresh device login followed by exact terminal confirmation is necessary for this new HUMAN action. Preserve all receipts. Await actual operator result; then run scoped delivery/materialization readback (with generic failure bundle dependencies) and distinguish ACK/materialization/search. Handoff admission and S3 writes remain NOT_PROVEN until actual execution evidence. Current correction establishes Lake admission only.
+
+### Exact next operator command — prepared, not executed
+
+Lab profile values below are CLI example bindings only. Open the device verification URI printed by the process, authenticate as the authorized HUMAN, then confirm in the VPS terminal with `RECUPERO 86809c17-3354-45ca-a7e6-57e903944b24 2fac075e-0862-4ae6-a799-cf63c41b651b`. This authorizes retry and resume; the run can execute and write Lake/UDP afterward. Do not paste device codes or bearer tokens in chat. On any BLOCKED after intent creation, preserve receipt and use verify, never repeat recover blindly.
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_recovery_dir=$(mktemp -d /tmp/ouf-r4a-recovery-cycle.XXXXXX)
+trap 'rm -rf -- "$ouf_recovery_dir"' EXIT
+for script in r4a_recover_ingestion_run.py r4a_verify_human_recovery_access.py r4a_prepare_frozen_compatibility_probe.py; do
+  git show 634dc70db74a6c3d54faedb8727e6004ec2803fe:scripts/"$script" > "$ouf_recovery_dir/$script"
+done
+sudo python3 -B "$ouf_recovery_dir/r4a_recover_ingestion_run.py" recover \
+  --cycle 2fac075e-0862-4ae6-a799-cf63c41b651b \
+  --previous-receipt /etc/ouf/deploy-snapshots/ingestion-human-recovery-86809c17-3354-45ca-a7e6-57e903944b24.json \
+  --receipt-root /etc/ouf/deploy-snapshots \
+  --ingestion-container ouf-ingestion --postgres-container ouf-postgres \
+  --database ouf_ingestion --db-user ouf_ingestion \
+  --network ouf-backend --curl-image curlimages/curl:8.16.0 \
+  --issuer https://auth.ouf-lab.it/realms/ouf \
+  --api https://api.ouf-lab.it --client ouf-human-admin \
+  --subject b93d8cf6-cd14-4ee6-91d7-84cd76c4f500 \
+  --tenant ouf-lab --audience ouf-api-gateway \
+  --run 86809c17-3354-45ca-a7e6-57e903944b24 \
+  --quarantine 2fac075e-0862-4ae6-a799-cf63c41b651b \
+  --expected-revision 163c167d09b8371ff7a62ce7068e9d485b6969b7
+)
+```
