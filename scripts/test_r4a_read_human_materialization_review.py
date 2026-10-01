@@ -41,11 +41,15 @@ class HumanRead(unittest.TestCase):
                 if url.endswith('/'+args.outside_job):
                     if failure=='outside-allowed':return 200,value,{}
                     raise api.Blocked('HTTP_403')
+                if failure=='owner-denied':raise api.Blocked('HTTP_403')
+                if failure=='transport':raise TimeoutError('PRIVATE_TRANSPORT_DETAIL')
                 return 200,copy.deepcopy(value),{}
             out=io.StringIO();error=None
             with patch.object(api,'http',side_effect=http),patch.object(api,'login',return_value='PRIVATE_TOKEN') as login,contextlib.redirect_stdout(out):
                 try:read.execute(args)
-                except BaseException as caught:error=caught
+                except BaseException as caught:
+                    error=caught
+                    if isinstance(caught,Exception):read.save_failure(args,caught)
                 evidence=json.loads(args.receipt.read_text()) if args.receipt.exists() else None
                 if evidence:
                     self.assertEqual(args.receipt.stat().st_mode&0o777,0o600)
@@ -79,5 +83,28 @@ class HumanRead(unittest.TestCase):
     def test_duplicate_original_job_binding_rejected(self):
         job=str(uuid.uuid4());handoff=str(uuid.uuid4())
         with self.assertRaises(api.Blocked):read.bindings([job+':'+handoff,job+':'+handoff])
+    def test_owner_denial_saved_with_phase_and_negative_probes(self):
+        error,state,_,_=self.run_case('owner-denied')
+        self.assertIsInstance(error,api.Blocked)
+        self.assertEqual(state['status'],'BLOCKED');self.assertEqual(state['safeFailureCode'],'HTTP_403')
+        self.assertEqual(state['phase'],'OWNER_REVIEW_GET_1')
+        self.assertEqual(state['anonymousHttp'],401);self.assertEqual(state['outsideScopeHttp'],403)
+        self.assertEqual(state['reviews'],[])
+    def test_validation_or_transport_errors_saved_without_sensitive_message(self):
+        for failure,phase,code in (('payload','OWNER_REVIEW_VALIDATE_1','UDP_REVIEW_SHAPE_UNSUPPORTED'),
+                                  ('transport','OWNER_REVIEW_GET_1','UNCLASSIFIED')):
+            with self.subTest(failure=failure):
+                error,state,_,out=self.run_case(failure)
+                self.assertIsNotNone(error);self.assertEqual(state['status'],'BLOCKED')
+                self.assertEqual(state['phase'],phase);self.assertEqual(state['safeFailureCode'],code)
+                self.assertNotIn('PRIVATE_TRANSPORT_DETAIL',json.dumps(state)+out)
+                if failure=='payload':self.assertEqual(state['ownerHttp'],[200])
+    def test_error_handler_never_overwrites_unowned_receipt(self):
+        import argparse
+        with tempfile.TemporaryDirectory() as folder:
+            p=Path(folder)/'receipt.json';p.write_text('{"status":"PASS_READY"}')
+            args=argparse.Namespace(receipt=p,_receipt_owned=False)
+            self.assertEqual(read.save_failure(args,api.Blocked('HTTP_403')),('HTTP_403',False))
+            self.assertEqual(p.read_text(),'{"status":"PASS_READY"}')
 
 if __name__=='__main__':unittest.main()
