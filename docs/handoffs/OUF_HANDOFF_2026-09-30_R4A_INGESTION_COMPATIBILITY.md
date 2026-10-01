@@ -1,5 +1,8 @@
 # OUF · handoff R4a, 30 settembre 2026: Ingestion compatibility probe
 
+> **Stato corrente — 2026-10-01 19:28 Europe/Rome:** consegna e materializzazione **8/8 PASS**; Search/serving, storage indipendente e R-INSTALL **aperti**. PET obbligatori a ogni sprint; ambiguità o lacune normative da decidere con l’utente. Dettaglio nell’ultimo checkpoint R4A.
+
+
 Questo documento prosegue l'[handoff del 29 settembre](OUF_HANDOFF_2026-09-29_R4A_PREFLIGHT_TO_INGESTION.md). I suoi vincoli e gli altri gate aperti restano validi. Non ripetere upload, submit, pubblicazione Semantic, policy o preflight UDP.
 
 ## Evidenza acquisita dall’operatore
@@ -3405,3 +3408,33 @@ Prossimo blocco READ_ONLY: valida la ricevuta primaria privata (PASS_AUTHORIZED_
 Il readback Cinema resta una fixture lab esplicita, non un manifest portabile: in una nuova installazione utilizzare parametri frozen/source/run e binding di deployment locali. Le query dei diversi DB non sono uno snapshot atomico. Criterio di completamento: otto originali consegnati e otto job SUCCEEDED/PROCESSED con reference gate passato e risoluzione completata, nessun job originale in quarantena. Distinguere questo risultato dalla verifica serving/Search, dai controlli storage e dal deploy industrializzato, ancora aperti.
 
 PET UDP v1.3 §§109.6–109.7 riconsultato: recovery governata e verifica reference-integrity prima della materializzazione. Nessun nuovo deploy, policy publish o ampliamento di autorizzazione. Handoff, manuale installazione, roadmap e runbook aggiornati; acquisire il prossimo output prima di dichiarare il gate 8/8 chiuso.
+
+
+### R4A — consegna e materializzazione 8/8 PROVATE; vincolo PET e hardening generale (2026-10-01, 19:28 Europe/Rome)
+
+**Checkpoint corrente: ING_DELIVERY_EIGHT_ROWS=PASS; UDP_MATERIALIZATION_EIGHT_ROWS=PASS.** Questo checkpoint supera gli stati storici 5/8 e 7/8, senza cancellare le relative evidenze. Search/serving, verifica byte/hash storage indipendente e industrializzazione deploy R-INSTALL restano APERTI.
+
+Readback operatore privato: `/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/readback-after-retry.sUa4nQ`. Exit readback=0 e diagnostica UDP=0. Source ACTIVE, hash frozen/publication corrispondenti; run `86809c17-3354-45ca-a7e6-57e903944b24` SUCCEEDED, 8 handoff ACKED, 8 lineages, 0 quarantene Ingestion. Schedule trigger_once consumata/DISABLED. Dieci attempt ING conservano la storia degli errori risolti, senza nuove ingestion/replay.
+
+UDP: 8 intake PROCESSED, 8 job SUCCEEDED, 8 decisioni NEW_OBJECT, 8 observations/revisions/bindings/active objects; nessun failure code o issue di risoluzione aperta. Set handoff ING/UDP corrispondenti. Ogni handoff ha esattamente un HANDOFF_DURABLE, REFERENCE_INTEGRITY_PASSED e RESOLUTION_COMPLETED. I tre originali recuperati conservano gli eventi di quarantena e comando autorizzato: due job hanno un MATERIALIZATION_RETRY_AUTHORIZED e una quarantena storica; l'ultimo ha due di ciascuno. Nessun audit cancellato per far apparire il run riuscito.
+
+Ultimo originale `e7572836-f8af-4c58-b5fc-12d7aff5db1d` / handoff `aed8ef93-6d00-4cf0-868d-d2d82d79b524`: SUCCEEDED/PROCESSED v8, attempts=3, integrityAttempts=2, baseline presente, missingRefCount=0, nextCheck assente, safeFailureCode nullo. Il precedente retry nominale HUMAN a v5->READY v6 è ora seguito da effettivo completamento. Non serve altro retry né riattivazione di source/schedule.
+
+Limiti espliciti: letture cross-DB non atomiche; SEARCH_NOT_VERIFIED=true. I marker recenti ING_ACTIVATION_DISCOVERY_UNAVAILABLE sono 13; dispatch/publication/delivery/execution failure marker sono 0. Il run riuscito non risolve automaticamente i marker discovery: restano da correlare con finestra/worker e dipendenze, senza dedurne da soli un nuovo blocco del run. L'autore storico dell'evento privo di diagnostica NON è provato dal successo dopo isolamento del legacy.
+
+**Istruzione di governo confermata dall'utente:** consultare i PET a ogni sprint; evitare deriva; se una regola del PET è ambigua o manca, presentare il punto preciso all'utente e decidere insieme prima di implementare quella scelta. Non introdurre una nuova norma in PET, codice o runbook tramite deduzione dal singolo caso. Gli incidenti sono evidenze e fixture di regressione; le regole operative derivano dagli invarianti generali. Container/UUID/source/tenant/domain/host/reti sono binding di installazione/test, non costanti di dominio.
+
+PET riconsultato: UDP v1.3 §36.1 (search e access label, nessun side channel da count non autorizzati), §§109.2 (API/schema compatibili e rollout N/N+1), 109.6–109.7 (recovery e reference gate), 109.9 (runbook, retry bounded/transient e quarantena integrity, nessun repair business non auditato). Authorization v1.5 §36.10 è il vincolo owner già applicato alla recovery. Il PET consente workload/runtime distinti e N/N+1; non generalizzare l'incidente a “un solo worker” o “tutte le revisioni differenti vietate”.
+
+| Evidenza del caso | Invariante generale collegato al PET | Stato |
+| --- | --- | --- |
+| Worker legacy attivo sul medesimo binding DB | Tutti i workload di una release devono avere contratti/schema compatibili; concorrenza e N/N+1 restano ammessi (§109.2). | Legacy isolato; inventario e gate automatico compatibilità da industrializzare. |
+| Reference gate in quarantena | Verificare i riferimenti prima della materializzazione, senza fallback a ACTIVE (§109.7/109.9). | Otto originali hanno ora reference gate PASS; hardening diagnostico e regressioni da consolidare. |
+| Owner HTTP403 e grant scoped | Applicare authn/capability/resource/data-label nell'owner prima di accesso/serializzazione (§36.1 e Authorization §36.10). | Fix owner e test già implementati; GET/POST HUMAN nominali provati. |
+| Perdita shell/output o risposta incerta | Recovery idempotente/auditabile da stato verificato, senza ripetizioni ambigue (§109.6/109.9). | Ricevute persistenti, intent prima POST, riconciliazione e logger verificati; integrazione stabile THS/deploy da consolidare. |
+| Retry di tre originali, poi uno solo | Comando governato con precondizioni correnti per ciascuna risorsa (§109.6). | Selezione parametrica nel set pubblicato, snapshot/versione freschi, test regressione e CI 113 PASS. |
+| ACK riusciti ma materializzazione parziale | Durable ACK e serving non attestano la medesima fase (PET semantica durable ACK e serving). | Due gate delivery/materialization chiusi separatamente; serving/Search aperto. |
+
+Le colonne “da industrializzare/consolidare” sono backlog generale tracciato, non nuove norme architetturali già approvate. Nessuna scelta di nuovi tipi di quarantena, TTL, topology policy o automatismi di mutazione viene applicata se non coperta dal PET o da decisione utente registrata. I test devono includere casi generali (worker compatibili multipli/N+1, versioni stale, accesso negato, timeout, retry idempotente), oltre alla fixture lab.
+
+Prossimo gate autorizzato: verifica Search/serving attraverso il canale e le API previste, con principal e access label autorizzati; contare record in PostgreSQL non prova Search. Pinned ServingApi offre GET /api/udp/v1/objects?type=... e POST /objects/search per MCP con medesimo owner enforcement; nessuna chiamata runtime serving eseguita in questo checkpoint e nessun grant/routes/scope ampliato per ottenerla. Verificare prima i binding effettivi ed i contratti macchina della release.
