@@ -735,3 +735,75 @@ sudo python3 -B "$WORK_DIR/r4a_read_human_materialization_review.py" \
 
 
 R4A HUMAN GET review CI finale su `0bd124c2fdc9554d784273fb3aad14fe4dedbb8c`: module run36870489064 Java/checksum/container SUCCESS, recovery99/99 PASS; Authorization36870489030, SharedSDK36870489031 e Gateway36870489124 SUCCESS. Codice operativo pinnato d06a5ca48d2cfc058f04ce73e4ba0703fdce5566. Pronto gate operatore: sessione HUMAN scopeudp.materialization.retry e soleGET reali. Receipt interna in caso reference nonready è AUTHORIZATION_PASS_REFERENCE_GATE_BLOCKED, output R4A_UDP_HUMAN_REVIEW=BLOCKED/HUMAN_OWNER_AUTHORIZATION_PROVEN=true. Non confondere con PASS della materializzazione: nessun retry finora,8/8/search ancora da provare. Pubblicazione:36 giàPASS ricevuta da operatore, GETowner proof non ancora ricevuta.
+
+
+### R4A — Output GET HUMAN perso / shell chiusa dopo THS (2026-10-01 16:35 Europe/Rome)
+
+Operatore segnala shell chiusa dopo conferma THS, output finale non disponibile. Non assumere review PASS né owner authz/reference ready; ultima prova certa resta pubblicazione ACTIVE:36 PASS, retryUDP mai chiamato dal blocco GET-only consegnato. Recuperare esclusivamente receipt human-review-*.json rootprivate, soli metadata/stati, senza nuovo login/GET/POST/retry. Receipt può essere RESERVED/LOGIN_PENDING/partial oppure PASS_READY o AUTHORIZATION_PASS_REFERENCE_GATE_BLOCKED; stati incompleti non provano esito positivo e il vecchio helper non persiste l'exception finale, quindi la causa remota può restare ignota dopo lettura. Le receipt sono evidenza salvata, non query live né snapshot fresco per futuro retry.
+
+Difetto certo individuato nel bootstrap incollato in SSH: `set -euo pipefail` impostava opzioni della shell interattiva chiamante. Qualsiasi exit nonzero (incluso gate reference bloccato previsto, exit2) può chiudere tale shell/sessione. Non attribuire automaticamente la chiusura a nuovo bug applicativo né escluderlo senza evidence. Da ora bootstrap in processo bash separato, status gestito con OR nel chiamante; non alterare opzioni interattive. I runbook interni possono usare set-e dentro il processo isolato. Recovery metadata testato localmente con fixture LOGIN_PENDING/PASS_READY/REFERENCE_BLOCKED e private-mode unsafe: nessun ref/hash/payload/token stampato, nessuna falsa prova completa da partial. Nessun deploy/cambioIAM/Gateway/policy/UDPbusiness e nessun nuovo retry. Handoff/manuale/roadmap/runbook aggiornati; nextgate invariato fino a recupero output reale.
+
+
+#### R4A UDP recovery — recupero output perso dalle ricevute HUMAN
+
+Questo blocco legge al massimo le tre receipt più recenti, verifica rootownership/0600 e directory0700, stampa solo stati/counter/boolean e codici contract whitelisted. Non stampa payload/ref/hash/token o contenuto della receipt. Nessun login né accesso live API/DB; nessun replay/retry. Se stato LOGIN_PENDING con zero/partial review, successo completo NOT_PROVEN. È normale che il vecchio helper non distingua tutte le fasi dalla sola status; non dedurre che login sia ancora in corso né eliminare file. Il bootstrap da chat deve avviare bash separato con status gestito nel chiamante, mai applicare set-e alla shell interattiva.
+
+```bash
+set -euo pipefail
+sudo python3 - /etc/ouf/deploy-snapshots/udp-materialization-recovery-policy <<'PY'
+import json, os, re, stat, sys
+from pathlib import Path
+root=Path(sys.argv[1])
+def require(value):
+    if not value:raise RuntimeError('PRIVATE_EVIDENCE_UNSAFE')
+def private(path,directory=False):
+    info=path.lstat()
+    require(info.st_uid==0 and stat.S_IMODE(info.st_mode)==(0o700 if directory else 0o600)
+        and (stat.S_ISDIR(info.st_mode) if directory else stat.S_ISREG(info.st_mode)))
+def load(path):
+    private(path);require(path.stat().st_size<=8000000)
+    return json.loads(path.read_text())
+def boolean(value):return str(value).lower() if type(value) is bool else 'NOT_RECORDED'
+try:
+    require(os.geteuid()==0);private(root,True)
+    rows=[p for p in root.glob('human-review-*.json')
+          if re.fullmatch(r'human-review-[0-9]{8}T[0-9]{6}-[0-9]+\.json',p.name)]
+    for p in rows:private(p)
+    rows=sorted(rows,key=lambda p:p.stat().st_mtime_ns,reverse=True)[:3]
+    print('HUMAN_REVIEW_RECEIPTS_FOUND='+str(len(rows)))
+    for receipt_index,path in enumerate(rows,1):
+        value=load(path)
+        allowed=('RESERVED_NO_POST','LOGIN_PENDING_NO_BUSINESS_POST','PASS_READY',
+                 'AUTHORIZATION_PASS_REFERENCE_GATE_BLOCKED','BLOCKED')
+        status=value.get('status')
+        require(status in allowed)
+        reviews=value.get('reviews',[]);require(isinstance(reviews,list) and len(reviews)<=3)
+        print('RECEIPT_'+str(receipt_index)+'_PATH='+str(path)+' PRIVATE=true')
+        print('RECEIPT_'+str(receipt_index)+'_SAVED_STATUS='+status)
+        print('RECEIPT_'+str(receipt_index)+'_VALIDATED_REVIEWS='+str(len(reviews)))
+        for field,label in (('anonymousHttp','ANONYMOUS_HTTP'),('outsideScopeHttp','OUTSIDE_SCOPE_HTTP')):
+            number=value.get(field)
+            require(number is None or type(number) is int and number in (401,403))
+            print('RECEIPT_'+str(receipt_index)+'_'+label+'='+('NOT_RECORDED' if number is None else str(number)))
+        for index,row in enumerate(reviews,1):
+            review=row['review'];check=review.get('contractCheck')
+            require(check in ('READY','MISSING','CONTRACT_INVALID','CATALOG_UNAVAILABLE','NOT_ELIGIBLE'))
+            version=review.get('stateVersion');require(type(version) is int and 0<=version<=1000000)
+            require(review.get('state')=='QUARANTINED' and review.get('intakeState')=='DURABLE')
+            print('RECEIPT_'+str(receipt_index)+'_REVIEW_'+str(index)
+                +' STATE=QUARANTINED INTAKE=DURABLE VERSION='+str(version)
+                +' RETRY_ELIGIBLE='+boolean(review.get('retryEligible'))
+                +' CONTRACT_READY='+boolean(review.get('contractReady'))+' CONTRACT_CHECK='+check)
+        if status in ('PASS_READY','AUTHORIZATION_PASS_REFERENCE_GATE_BLOCKED'):
+            require(len(reviews)==3 and value.get('anonymousHttp') in (401,403)
+                    and value.get('outsideScopeHttp')==403)
+            print('RECEIPT_'+str(receipt_index)+'_HUMAN_OWNER_AUTHORIZATION_SAVED_PROOF=true')
+        else:print('RECEIPT_'+str(receipt_index)+'_COMPLETE_SUCCESS_NOT_PROVEN=true')
+    print('R4A_HUMAN_REVIEW_OUTPUT_RECOVERY=COMPLETE READ_ONLY=true SAVED_EVIDENCE_ONLY=true'
+          +' LIVE_STATE_NOT_QUERIED=true LOGIN=false RETRY=false REPLAY=false SECRETS_NOT_PRINTED=true')
+except Exception as error:
+    print('R4A_HUMAN_REVIEW_OUTPUT_RECOVERY=BLOCKED TYPE='+type(error).__name__
+          +' READ_ONLY=true RETRY=false SECRETS_NOT_PRINTED=true')
+    raise SystemExit(1)
+PY
+```
