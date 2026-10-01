@@ -1,5 +1,14 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+## Prossimo sprint concordato — file → UDP guidato dal chatbot
+
+Checkpoint 2026-10-01 20:24 Europe/Rome: [handoff completo per nuova chat](handoffs/OUF_HANDOFF_2026-10-01_FILE_TO_UDP_NEXT_SPRINT.md).
+
+Ordine dei deliverable: (1) baseline/evidenze dei passi già corretti; (2) consultazione Semantic governata dal chatbot; (3) proposta mapping completa del CSV Teatri già caricato; (4) THS e ripresa da esito persistito; (5) collegamento activation/ingestion/risoluzione UDP e recovery; (6) collaudo E2E/serving e installazione parametrica dei collegamenti.
+
+**Il chatbot lavora al mapping; Onboarding valida/persiste; Semantic governa le versioni; decisioni autoritative restano owner/THS.** Riusare servizi/test/fix e receipt già acquisiti. Nuove prove sui collegamenti, non ripetizione indiscriminata dei passaggi manuali. Nessun nuovo upload o replay della fixture Cinema. PET obbligatori; lacune/ambiguità da decidere con l'utente. Il dettaglio dei deliverable e del criterio di chiusura è nel checkpoint collegato.
+
+
 > **Stato corrente — 2026-10-01 19:28 Europe/Rome:** consegna e materializzazione **8/8 PASS**; Search/serving, storage indipendente e R-INSTALL **aperti**. PET obbligatori a ogni sprint; ambiguità o lacune normative da decidere con l’utente. Dettaglio nell’ultimo checkpoint R4A.
 
 

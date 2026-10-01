@@ -1,5 +1,10 @@
 # OUF · handoff R4a, 30 settembre 2026: Ingestion compatibility probe
 
+## Ripartenza nuova chat — checkpoint 2026-10-01 20:24 Europe/Rome
+
+**Leggere prima [il checkpoint compatto per il prossimo sprint](OUF_HANDOFF_2026-10-01_FILE_TO_UDP_NEXT_SPRINT.md).** Contiene risultati di questa chat, stato asset/profile Teatri, pin da preservare, vincoli PET/THS e roadmap file → UDP guidata dal chatbot. Delivery/materializzazione Cinema 8/8 PASS; nuovo Teatri soltanto upload/profile PASS, DRAFT/ingestion ancora non creati. Riusare fix e prove precedenti, non ripartire dal lavoro manuale.
+
+
 > **Stato corrente — 2026-10-01 19:28 Europe/Rome:** consegna e materializzazione **8/8 PASS**; Search/serving, storage indipendente e R-INSTALL **aperti**. PET obbligatori a ogni sprint; ambiguità o lacune normative da decidere con l’utente. Dettaglio nell’ultimo checkpoint R4A.
 
 
