@@ -389,3 +389,36 @@ Operatore: R4A_SCOPED_HUMAN_POLICY_DRAFT PASS, base ouf-lab-authorization:35, dr
 ### Checkpoint 2026-10-01 — inventario binding parametrizzato prima di apply/publish
 
 Nuovo r4a_recovery_binding_inventory.py: tutti i binding IAM/Gateway/realm/client/scope/config destination/admin origin/curl image/backend/path/snapshot espliciti. Riusa soltanto parser pure del precedente inventory, senza i suoi default runtime. Legge route con APISIX Admin GET e chiave solo via stdin; legge client/scope/binding con kcadm GET esistente, nessuna ricerca o stampa credenziali. Controlla Gateway identity/config invariati; scrive snapshot esclusivo root0600 sotto parent0700, contenente configurazione tecnica privata, da non condividere. Output pubblico solo fatti/ID/path sanitizzati. URI candidates sono conservativi: priority/vars/radixtree parity non provata. Un accesso IAM bloccato non impedisce acquisire l'inventario Gateway; stato PARTIAL non equivale a PASS. Non cambia scope, route, policy o job e non fa retry. Quattro test locali PASS (secret/stdin-only + GET, IAM binding, mount/clear HTTP fail closed, snapshot parziale privato). Nuovo test aggiunto alla CI; checksum workflow e nuovi file aggiornati nello stesso commit. DRAFT b305bcae-a03f-4f0d-8b81-81508bcddb24 revision0 resta in attesa simulazioni/binding/pubblicazione HUMAN. Necessario l'output inventario del server per preparare un apply che preservi la configurazione effettiva; non ricreare bozza o scope resource file.
+
+
+### Prossima esecuzione — binding inventory read-only
+
+Blocco nel runbook R4A_UDP_RECOVERY_CANDIDATE per inventario IAM/Gateway, codice c353542fb687b23147d10e76e478d8286e840a2a. Snapshot /etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/binding-inventory.json PRIVATE: include route complete e segreti tecnici OIDC; non incollare o esportare. Solo output simbolico. Non richiede nuovo Device Grant HUMAN, riusa soltanto la sessione amministrativa kcadm già configurata e legge APISIX tramite root/mount esistente. Se accesso IAM fallisce, PARTIAL riporta comunque Gateway; nessuna ricerca/stampa delle credenziali e nessun cambiamento applicativo. CI del nuovo commit avviata, risultato non ancora acquisito. Il DRAFT e ACTIVE restano invariati, nessun retry, le simulazioni e i binding apply/pubblicazione restano gate successivi.
+
+#### Inventario IAM e Gateway — DRAFT recovery UDP
+
+Binding dell'installazione corrente espliciti. Solo letture amministrative e snapshot tecnico privato. Non condividere il file snapshot: contiene la configurazione completa delle route. Nessuna pubblicazione o retry. L'inventario non prova autorizzazione HUMAN runtime o routing parity; acquisisce i fatti necessari al prossimo apply governato.
+
+```bash
+(
+set -euo pipefail
+umask 077
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_binding_tmp=$(mktemp -d /tmp/ouf-r4a-binding-inventory.XXXXXX)
+trap 'rm -rf -- "$ouf_binding_tmp"' EXIT
+for script in r4a_recovery_binding_inventory.py r4a_prepare_scoped_human_policy.py r4a_execution_route_inventory.py r4a_prepare_frozen_compatibility_probe.py; do
+  git show c353542fb687b23147d10e76e478d8286e840a2a:scripts/"$script" > "$ouf_binding_tmp/$script"
+done
+sudo python3 -B "$ouf_binding_tmp/r4a_recovery_binding_inventory.py" \
+  --gateway-container ouf-apisix --config-destination /usr/local/apisix/conf/config.yaml \
+  --admin-origin http://127.0.0.1:9180 --curl-image curlimages/curl:8.16.0 \
+  --udp-node ouf-udp:8080 --template-node ouf-udp:8080 \
+  --template-node ouf-ingestion:8080 --template-node ouf-onboarding:8080 \
+  --review-path /api/udp/v1/governance/materialization/jobs/7793566d-b9d4-4402-8cda-c09b8f135c04 \
+  --retry-path /api/udp/v1/governance/materialization/jobs/7793566d-b9d4-4402-8cda-c09b8f135c04/retry \
+  --keycloak-container ouf-keycloak --kcadm /opt/keycloak/bin/kcadm.sh \
+  --realm ouf --client ouf-human-admin --scope udp.materialization.retry \
+  --snapshot /etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/binding-inventory.json
+)
+```
