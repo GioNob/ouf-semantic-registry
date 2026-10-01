@@ -50,7 +50,10 @@ def post(args,kind,version,token,correlation):
             'header = "X-Correlation-ID: '+correlation+'"\ndata = '+json.dumps(body)+'\n'
             'url = "'+args.api+path+'"\nwrite-out = "\\n%{http_code}"\n')
     raw=read.helper.run(['docker','run','--rm','-i','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--network','ouf-backend','curlimages/curl:8.16.0','--config','-'],input=config,timeout=40)
-    body,code=raw.rsplit('\n',1)
+    # helper.run strips outer whitespace; an empty HTTP204 becomes just "204".
+    body,separator,code=raw.rpartition('\n')
+    if not separator:
+        body,code='',raw
     if code!=('204' if kind=='retry' else '200'):
         raise RuntimeError('RECOVERY_'+kind.upper()+'_HTTP_'+(code if re.fullmatch(r'\d{3}',code) else 'INVALID')+'_RECONCILE_DO_NOT_REPOST')
     return None if kind=='retry' else json.loads(body)

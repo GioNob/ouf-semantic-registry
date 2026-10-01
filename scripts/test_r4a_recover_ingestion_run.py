@@ -50,7 +50,7 @@ class GovernedRecoveryTests(unittest.TestCase):
 
     def test_only_versioned_retry_and_resume_posts_are_permitted(self):
         correlation='81a9168c-0e83-4eae-aa25-9d72aa817099'
-        for action,raw,path in [('retry','\n204','quarantine/'+self.args().quarantine+'/retry'),('resume','{}\n200','runs/'+self.args().run+'/resume')]:
+        for action,raw,path in [('retry','204','quarantine/'+self.args().quarantine+'/retry'),('retry','\n204','quarantine/'+self.args().quarantine+'/retry'),('resume','{}\n200','runs/'+self.args().run+'/resume')]:
             with self.subTest(action=action),patch.object(recovery.read.helper,'run',return_value=raw) as run:
                 recovery.post(self.args(),action,0,'e30.e30.sig',correlation)
                 config=run.call_args.kwargs['input']
