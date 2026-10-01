@@ -2590,3 +2590,31 @@ The diagnostic invokes original `PublishedRuntimeConfiguration.resolveContracts`
 Validation: local combined suite30 tests PASS, including four new tests for byte preservation, traversal rejection, missing resolver and runner SQL/network/non-root/private-reference/output isolation. These are runner tests, not a completed live Java compile. CI extended. Previous code `9ebd98307075395f095fe9ed0d1d2916ee16f494`: recovery-cycle-scripts job SUCCESS in runs36830206038 and36830210649; full module CI failed at exactly one checksum, `.github/workflows/module-ci.yml`, as verified in decoded logs. Refresh its manifest hash with the current reviewed workflow; other frozen source hashes unchanged. New full CI result pending.
 
 Next operator action: execute isolated Java probe from pinned coordination commit using lab bindings in the next block. JDK helper image provision only if absent; no deployment/restart. Capture complete safe output, especially UDP_JAVA_SAFE_CODE/UDP_JAVA_FRAME or PASS. If PASS, do not reset quarantined jobs: next work is governed recovery plus diagnostic retention for historical failures. If BLOCKED, use precise code/frame and live image evidence to select corrective work. Never replay the successful ingestion run or modify frozen source publication to bypass integrity.
+
+### Exact next operator Java diagnostic — pinned, prepared, not yet executed
+
+Code/tests/checksum fix commit: `307a652a7103457847409ee303237d6d2f22618d`. From the operator shell as oufadmin:
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_probe_dir=$(mktemp -d /tmp/ouf-r4a-java-reference.XXXXXX)
+trap 'rm -rf -- "$ouf_probe_dir"' EXIT
+for script in r4a_udp_token_transport_inventory.py r4a_udp_java_reference_probe.py; do
+  git show 307a652a7103457847409ee303237d6d2f22618d:scripts/"$script" > "$ouf_probe_dir/$script"
+done
+if ! sudo docker image inspect maven:3.9.11-eclipse-temurin-21 >/dev/null 2>&1; then
+  sudo docker pull maven:3.9.11-eclipse-temurin-21
+fi
+sudo python3 -B "$ouf_probe_dir/r4a_udp_java_reference_probe.py" \
+  --container ouf-udp --jar-path /app/app.jar \
+  --run 86809c17-3354-45ca-a7e6-57e903944b24 \
+  --source managed-cinema-8ec8ae90 \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp \
+  --network ouf-backend --jdk-image maven:3.9.11-eclipse-temurin-21
+)
+```
+
+All lab paths/source/run/container/network/compiler references are operator CLI bindings, not installation defaults inside the diagnostic. The Maven JDK21 image is a compiler helper only; if absent this block provisions its local image cache, without building/deploying OUF or restarting services. Compiler is subsequently resolved to immutable local image ID, offline compilation, no implicit pulls. UDP execution uses actual immutable running image ID, not this helper image. Capture safe output only. No HUMAN recovery action authorized by a Java PASS alone. Current CI for this new commit is pending; the Python runner local tests PASS and earlier script CI PASS are distinct from live Java compile/run evidence.
