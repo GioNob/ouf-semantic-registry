@@ -188,3 +188,74 @@ Il release receipt privato `/opt/ouf/udp-recovery-candidates/udp-recovery-stage-
 La revisione dei grant ha rilevato che MaterializationRecoveryService passava RAW access_label come ResourceContext.organizationId. Il PET Authorization v1.5 §36.10 e lo SDK richiedono invece l'attributo dataAccessLabel. Fix `afa5c4c4cf03bff4e39b02e27f898256c3776cbc`: organizationId nullo, etichetta RAW in dataAccessLabel, scope tenant/source/run/job conservato. Un test Spring/PostgreSQL usa AuthorizationPolicy.evaluate reale: etichetta diversa nega review e retry prima della lettura dei contratti, senza evento o transizione; etichetta corretta ammette il retry. CI avviata, risultato non ancora acquisito. Non attivare capability/grant prima del fix verificato e distribuito. La capability nuova non è stata attivata: nessun ampliamento di autorità eseguito.
 
 Prossimo passo: una sola esecuzione operatore di build con baseline c0b6, probe Java GET-only, stage fermo e release controllato con backup/rollback. Parametri di ambiente espliciti; nessun replay, retry o riattivazione source. Dopo readback del release corretto, preparare catalogo e policy DRAFT a scope dei tre job, senza pubblicare ACTIVE automaticamente. Restano aperti full8/search, mapper Spring e causalità storica, industrializzazione deploy e tutti i gate precedenti.
+
+
+### Checkpoint 2026-10-01 — fix DataAccessLabel verificato, release operatore pronto
+
+UDP `afa5c4c4cf03bff4e39b02e27f898256c3776cbc`: workflow PR run36848626832 SUCCESS, 15 test (recovery10, diagnostica2, gate3), zero failure/error/skipped; run36848626818 SUCCESS in tutti i job Java21/PostgreSQL17, supply-chain/deployment con vulnerability gate, disaster recovery e performance. Shared SDK run36848626776 e CRS run36848626844 SUCCESS. Nessuna migrazione aggiunta; compatibilità con la baseline live c0b6 sarà verificata di nuovo dalla build sul server. Il deploy del fix NON è ancora eseguito: live resta immagine e15fb349… / Flyway34; 5 SUCCEEDED + 3 QUARANTINED originali; nessun retry né nuova capability/grant attivata.
+
+Il runbook R4A_UDP_RECOVERY_CANDIDATE contiene il blocco unico build → Java GET-only → stage fermo → release con backup, snapshot job invariato, negative anonymous/spoof, health Gateway e rollback conservato. Helper pinnati a 53ee0c69d6ecabc5d8bdbfdaa838beb476b06537; baseline live e immagine attesa aggiornate. Bash syntax validata; esecuzione Docker/DB resta a carico dell'operatore, senza accesso remoto da questa sessione. Fermarsi al primo errore. Richiesto solo protocollo simbolico, non receipt privati o log completi. Dopo PASS, riprendere preparazione governata del catalogo e policy DRAFT con fresh HUMAN login; ACTIVE/retry ancora non autorizzati/provati dalle evidenze.
+
+#### Esecuzione unica del fix verificato — installazione corrente
+
+I valori seguenti sono binding espliciti dell'installazione corrente, da sostituire per altri Enti/host/reti. Nessun valore viene introdotto nel codice applicativo. Il blocco richiede sudo sul server; interrompe brevemente UDP per backup e switch. Non esegue retry/replay o pubblicazione policy. Non ripetere una fase release con esito incerto: riconciliare il receipt privato prima.
+
+```bash
+(
+set -euo pipefail
+umask 077
+# Valori dell'installazione corrente; gli helper richiedono parametri espliciti.
+ouf_coordination=/opt/ouf/semantic
+ouf_work_parent=/opt/ouf/udp-recovery-candidates
+ouf_udp_container=ouf-udp
+ouf_candidate_container=ouf-udp-materialization-candidate
+ouf_revision=afa5c4c4cf03bff4e39b02e27f898256c3776cbc
+ouf_baseline=c0b6c98c5029682a51e5ed82717092f86bfbb318
+ouf_expected_image=sha256:e15fb3493992d67b065ecb3035beb36fd36b139a590544bd9fb55879bc782229
+ouf_helpers=53ee0c69d6ecabc5d8bdbfdaa838beb476b06537
+ouf_run=86809c17-3354-45ca-a7e6-57e903944b24
+ouf_source=managed-cinema-8ec8ae90
+cd "$ouf_coordination"
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_fix_dir=$(mktemp -d /tmp/ouf-r4a-udp-label-fix.XXXXXX)
+trap 'rm -rf -- "$ouf_fix_dir"' EXIT
+for script in r4a_prepare_udp_recovery_image.py r4a_udp_java_reference_probe.py r4a_udp_token_transport_inventory.py r4a_stage_udp_recovery.py r4a_release_udp_recovery.py; do
+  git show "$ouf_helpers:scripts/$script" > "$ouf_fix_dir/$script"
+done
+sudo docker image inspect maven:3.9.11-eclipse-temurin-21 >/dev/null
+sudo docker image inspect curlimages/curl:8.16.0 >/dev/null
+sudo install -d -m 0700 "$ouf_work_parent"
+sudo python3 -B "$ouf_fix_dir/r4a_prepare_udp_recovery_image.py" \
+  --repository https://github.com/GioNob/ouf-udp-object-resolution.git \
+  --revision "$ouf_revision" --baseline-revision "$ouf_baseline" \
+  --container "$ouf_udp_container" --expected-live-image "$ouf_expected_image" \
+  --image-repository ouf-udp-recovery-candidate --work-parent "$ouf_work_parent" \
+  | tee "$ouf_fix_dir/build-protocol.txt"
+ouf_candidate_id=$(sed -n 's/^UDP_RECOVERY_CANDIDATE_IMAGE_ID=//p' "$ouf_fix_dir/build-protocol.txt")
+ouf_build_receipt=$(sed -n 's/^R4A_UDP_RECOVERY_IMAGE_RECEIPT=\([^ ]*\) PRIVATE=true$/\1/p' "$ouf_fix_dir/build-protocol.txt")
+test -n "$ouf_candidate_id"
+test -n "$ouf_build_receipt"
+sudo python3 -B "$ouf_fix_dir/r4a_udp_java_reference_probe.py" \
+  --resolver-image "$ouf_candidate_id" --expected-revision "$ouf_revision" \
+  --container "$ouf_udp_container" --jar-path /app/app.jar \
+  --run "$ouf_run" --source "$ouf_source" \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp \
+  --network ouf-backend --jdk-image maven:3.9.11-eclipse-temurin-21
+sudo python3 -B "$ouf_fix_dir/r4a_stage_udp_recovery.py" \
+  --container "$ouf_udp_container" --candidate-container "$ouf_candidate_container" \
+  --build-receipt "$ouf_build_receipt" --work-parent "$ouf_work_parent" \
+  | tee "$ouf_fix_dir/stage-protocol.txt"
+ouf_stage_receipt=$(sed -n 's/^R4A_UDP_RECOVERY_STAGE_RECEIPT=\([^ ]*\) PRIVATE=true$/\1/p' "$ouf_fix_dir/stage-protocol.txt")
+test -n "$ouf_stage_receipt"
+sudo python3 -B "$ouf_fix_dir/r4a_release_udp_recovery.py" \
+  --stage-receipt "$ouf_stage_receipt" \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp \
+  --gateway-container ouf-apisix --curl-image curlimages/curl:8.16.0 \
+  --health-origin http://127.0.0.1:8080 --health-path /actuator/health \
+  --gateway-health-url http://ouf-udp:8080/actuator/health \
+  --expected-flyway 34 --stop-seconds 60 --health-attempts 45 \
+  --source "$ouf_source" --run "$ouf_run" \
+  --probe-job 7793566d-b9d4-4402-8cda-c09b8f135c04 \
+  --expected-job-count 8 --expected-succeeded 5 --expected-quarantined 3
+)
+```
