@@ -1697,3 +1697,107 @@ except Exception as error:
     raise SystemExit(1)
 PY
 ```
+
+
+### R4A — isolamento legacy PASS; recovery del solo originale restante predisposta (2026-10-01, 19:10 Europe/Rome)
+
+L'operatore ha restituito PASS dell'arresto circoscritto. Ricevuta privata `/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/legacy-worker-stop-asbhqris/receipt.json`: legacy STOPPED, preservato, restart disabilitato; identità live invariata, salute backend gateway PASS, originali invariati. Guard prima dello stop: worker idle. Nessun retry/replay eseguito in questa fase. Autore storico dell'evento di quarantena ancora NON provato.
+
+Ultimo stato business provato: 7 originali SUCCEEDED/PROCESSED e il job `e7572836-f8af-4c58-b5fc-12d7aff5db1d` / handoff `aed8ef93-6d00-4cf0-868d-d2d82d79b524` QUARANTINED/DURABLE a v5. La procedura nuova seleziona soltanto questo job. Verifica comunque resources.json completo, hash della ricevuta di pubblicazione, descriptor e tutti e tre i grant nominali; non produce una policy ristretta diversa e non ripubblica la versione 36. Gli altri due job già recuperati non vengono riesaminati come quarantene né rilanciati.
+
+Codice helper pubblicato e congelato a `9ff81375422399bd1a259414dbe9932cb8fdcd1a`: `--select-job` restringe GET/POST al sottoinsieme del resource set completo verificato; ID fuori insieme o duplicati sono bloccati. `--prior-expected-version 2` valida soltanto la review storica di tutti e tre i job. La nuova review owner HUMAN deve avere stato QUARANTINED/DURABLE, versione esatta 5, contratto READY e snapshot verificato; è l'unica origine di snapshot e versione del nuovo POST. Il fresh receipt deve contenere l'esatto sottoinsieme selezionato. Mai utilizzare lo snapshot della review storica per il nuovo comando.
+
+Il blocco operatore ricontrolla la ricevuta di isolamento PASS e gli ID/immagini corrente principale/legacy, legacy fermo con restart=no e revision live attesa prima del login. Poi Device Grant THS nominale `ouf-admin` con scope già configurato; GET anonima e fuori ambito devono essere negate, GET owner fresca del solo restante deve passare. Piano JOBS=1, expectedVersion=5, READY acceptedVersion=6. Solo dopo la conferma esplicita nel terminale viene trasmesso un POST /retry dell'originale; operationId e richiesta persistiti prima della trasmissione, token con oltre 60 secondi residui, nessuna ripetizione automatica.
+
+La conferma richiesta resta `CONFERMO RETRY ORIGINALE 86809c17-3354-45ca-a7e6-57e903944b24`: verificare prima che il piano stampato abbia JOBS=1 e il solo ID e7572836. Receipt/protocol nuovi con prefisso human-retry-remaining, separati da quelli precedenti. Se BLOCKED o risposta incerta, riconciliare le ricevute senza rilanciare automaticamente. PASS di retry significa requeue accettato, NON materializzazione riuscita; servirà readback business successivo. La procedura non crea intake/handoff o replay, non riattiva la source/schedule.
+
+Verifiche: 50 test locali policy/recovery, incluse regressioni selezione singola v5->6, altri due già SUCCEEDED, selezione fuori scope/duplicata, drift v6 e contratto non READY. Preflight isolamento: cinque scenari simulati. CI sul pin helper: 113 test recovery PASS (job 110488957023, run PR 36897761180), Java/container PASS, tutti e sette i workflow push/PR SUCCESS inclusi Authorization, Shared SDK e Gateway pairwise. Checksum dei tre file modificati aggiornati. Nessun nuovo deploy UDP necessario.
+
+PET riconsultati: UDP v1.3 §§109.6–109.7 e Authorization v1.5 §36.10, owner enforcement e reference gate senza fallback. Installazione portabile continua a separare argomenti/configurazione da codice helper; blocco seguente è una riconciliazione lab con binding espliciti, non un default per Enti diversi. Handoff/deploy/roadmap conservano aperti 8/8, search, verifiche storage e automatizzazione install/upgrade/restore. Esito live della recovery singola ancora NON eseguito.
+
+#### R4A UDP recovery — review fresca e retry HUMAN del solo originale restante a v5
+
+Serve login THS nominale e conferma del piano di UN SOLO job. L'isolamento legacy è ricontrollato prima del login. Si verifica l'intero insieme pubblicato di tre risorse ma si seleziona soltanto e7572836 per nuove GET owner e POST. Nessuna richiesta business viene trasmessa prima della nuova review READY e della conferma. Non ripetere il blocco dopo un esito incerto: riconciliare la ricevuta indicata.
+
+```bash
+set -euo pipefail
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+REVISION=9ff81375422399bd1a259414dbe9932cb8fdcd1a
+WORK_DIR=$(mktemp -d)
+trap 'rm -rf "$WORK_DIR"' EXIT
+for SCRIPT in r4a_retry_human_materialization.py r4a_read_human_materialization_review.py r4a_prepare_scoped_human_policy.py; do
+  git show "$REVISION:scripts/$SCRIPT" > "$WORK_DIR/$SCRIPT"
+done
+sudo bash -s -- "$WORK_DIR" <<'ROOT'
+set -euo pipefail
+umask 077
+WORK_DIR=$1
+STATE_DIR=/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy
+python3 -u -B - "$STATE_DIR/legacy-worker-stop-asbhqris/receipt.json" \
+  ouf-udp ouf-udp-r4a-smoke \
+  sha256:5e048a859716d6674355e72238f03f899abd705a943ceadbdc5c8863d28f4e9f \
+  sha256:707fe8ca7b1a795f8ff359f9fdb6c968734c0cf66e5b8f7bd9757f4104466f80 \
+  83249a897eb4add4289b5181b3299f48ea4c0f99 <<'PY'
+import json, os, stat, subprocess, sys
+from pathlib import Path
+def require(ok):
+    if not ok:raise ValueError('LEGACY_ISOLATION_BINDING_INVALID')
+try:
+    receipt,live,legacy,live_image,legacy_image,revision=sys.argv[1:]
+    path=Path(receipt);meta=path.lstat()
+    require(stat.S_ISREG(meta.st_mode) and meta.st_uid==0 and stat.S_IMODE(meta.st_mode)==0o600)
+    saved=json.loads(path.read_text())
+    require(saved['status']=='PASS_LEGACY_STOPPED' and saved['originalJobsUnchanged'] is True)
+    require(saved['liveIdentityUnchanged'] is True and saved['legacyRestartDisabled'] is True)
+    def inspect(name):
+        return json.loads(subprocess.run(['docker','inspect',name],check=True,
+            capture_output=True,text=True,timeout=15).stdout)[0]
+    main=inspect(live);old=inspect(legacy)
+    require(main['Id']==saved['liveId'] and main['Image']==live_image and main['State']['Running'])
+    require((main['Config'].get('Labels') or {}).get('org.opencontainers.image.revision')==revision)
+    require(old['Id']==saved['legacyId'] and old['Image']==legacy_image and not old['State']['Running'])
+    require(old['HostConfig']['RestartPolicy']['Name']=='no')
+    print('R4A_UDP_REMAINING_RETRY_PREFLIGHT=PASS READ_ONLY=true LEGACY_STOPPED=true LIVE_BINDING_MATCH=true RETRY=false',flush=True)
+except Exception as error:
+    print('R4A_UDP_REMAINING_RETRY_PREFLIGHT=BLOCKED TYPE='+type(error).__name__+' READ_ONLY=true RETRY=false SECRETS_NOT_PRINTED=true',flush=True)
+    raise SystemExit(1)
+PY
+LOG=$(mktemp "$STATE_DIR/human-retry-protocol.XXXXXX")
+printf 'HUMAN_RETRY_PROTOCOL_LOG=%s PRIVATE=true\n' "$LOG"
+RECEIPT="$STATE_DIR/human-retry-remaining-$(date -u +%Y%m%dT%H%M%S)-$$.json"
+set +e
+python3 -u -B "$WORK_DIR/r4a_retry_human_materialization.py" \
+  --issuer https://auth.ouf-lab.it/realms/ouf --client ouf-human-admin \
+  --audience ouf-api-gateway --tenant ouf-lab \
+  --subject b93d8cf6-cd14-4ee6-91d7-84cd76c4f500 \
+  --scope udp.materialization.retry --expected-policy ouf-lab-authorization:36 \
+  --base-url https://api.ouf-lab.it/api/udp/v1/governance/materialization/jobs \
+  --publication-receipt "$STATE_DIR/publication-receipt.json" \
+  --resources "$STATE_DIR/resources.json" --receipt "$RECEIPT" \
+  --prior-review-receipt "$STATE_DIR/human-review-20261001T155349-3513740.json" \
+  --run 86809c17-3354-45ca-a7e6-57e903944b24 --source managed-cinema-8ec8ae90 \
+  --reason "Ripresa del solo job originale restante dopo isolamento worker legacy e nuova review HUMAN READY" \
+  --expected-version 5 --prior-expected-version 2 --expected-resources 3 \
+  --select-job e7572836-f8af-4c58-b5fc-12d7aff5db1d \
+  --expected-failure UDP_REFERENCE_INTEGRITY_CONTRACT_INVALID \
+  --binding 7793566d-b9d4-4402-8cda-c09b8f135c04:8869a6d6-3d82-4514-a63a-d23f9b26d48f \
+  --binding e7572836-f8af-4c58-b5fc-12d7aff5db1d:aed8ef93-6d00-4cf0-868d-d2d82d79b524 \
+  --binding e5b6ca24-6143-4ae5-8907-5dce398abfa3:e58faf8c-c35a-4106-b4b6-67e58dec9774 \
+  --outside-job f84de729-c245-4e34-80cf-764c4eb0f160 2>&1 |
+  python3 -u -c '
+import sys
+with open(sys.argv[1], "a", buffering=1) as log:
+    for line in sys.stdin:
+        sys.stdout.write(line); sys.stdout.flush()
+        if line.startswith(("UDP_HUMAN_REVIEW_", "UDP_HUMAN_RETRY_", "R4A_UDP_")):
+            log.write(line); log.flush()
+' "$LOG"
+RESULT=("${PIPESTATUS[@]}")
+set -e
+printf 'HUMAN_RETRY_PROTOCOL_LOG=%s PRIVATE=true\n' "$LOG"
+printf 'HUMAN_RETRY_PROCESS_EXIT=%s OUTPUT_CAPTURE_EXIT=%s\n' "${RESULT[0]}" "${RESULT[1]}"
+test "${RESULT[1]}" -eq 0
+exit "${RESULT[0]}"
+ROOT
+```
