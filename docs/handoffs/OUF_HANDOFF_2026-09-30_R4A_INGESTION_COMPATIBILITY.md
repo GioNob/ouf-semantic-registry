@@ -2742,3 +2742,28 @@ Probe intentionally does NOT recalculate bundle checksum bytes, instantiate Java
 Two new transport tests PASS for absent optional refs/drift comparison and actual GET-only/stdin/redaction behavior with mocked responses. Combined local script suite26 tests PASS (recovery14, materialization diagnostic4, token inventory6, transport probe2); CI job extended with transport tests, current CI result pending. No UDP live code/schema/config/job mutation or service refresh. SourceACTIVE/runSUCCEEDED/eight ACKs/five materialized/three QUARANTINED CONTRACT_INVALID preserved.
 
 PET sprint UDP1.3 §109.7 point-of-use reference integrity and Gateway/owner boundaries consulted. Next operator runs corrected structural inventory AND fresh owner GET probe in one pinned block. If transport pins PASS, move to precise shipped-Java validation/error classification evidence before corrective release/governed job recovery. Do not continue to assume token race, change frozen bundles, or replay Ingestion. Full materialization/search/independent S3 readback/R-INSTALL and every earlier retention/replay/portability/operational-awareness/latency/second-source gate stay OPEN.
+
+### Exact next operator combined block — prepared, not executed
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_probe_dir=$(mktemp -d /tmp/ouf-r4a-udp-reference.XXXXXX)
+trap 'rm -rf -- "$ouf_probe_dir"' EXIT
+for script in r4a_udp_token_transport_inventory.py r4a_udp_reference_transport_probe.py; do
+  git show 9ebd98307075395f095fe9ed0d1d2916ee16f494:scripts/"$script" > "$ouf_probe_dir/$script"
+done
+sudo python3 -B "$ouf_probe_dir/r4a_udp_token_transport_inventory.py" \
+  --container ouf-udp --service-match 'ouf.*(token|auth|refresh)'
+sudo python3 -B "$ouf_probe_dir/r4a_udp_reference_transport_probe.py" \
+  --container ouf-udp \
+  --run 86809c17-3354-45ca-a7e6-57e903944b24 \
+  --source managed-cinema-8ec8ae90 \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp \
+  --network ouf-backend --curl-image curlimages/curl:8.16.0
+)
+```
+
+Lab installation values are CLI bindings. No login, token refresh, service restart, retry, replay or materialization. Owner authorization/audit records from normal GETs may be recorded. Preserve complete safe output including any individual UNAVAILABLE marker.
