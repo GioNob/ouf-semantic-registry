@@ -1,5 +1,8 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+> **Continuità verificata — 2026-10-01 20:33:** il [checkpoint della nuova chat](handoffs/OUF_HANDOFF_2026-10-01_FILE_TO_UDP_NEXT_SPRINT.md) contiene ora il registro esplicito di tutti i gate ereditati e la regola d'identità concordata nell'handoff 29/09. R-SMOKE completo e R-INSTALL restano OPEN; 8/8 chiude solo consegna/materializzazione della fixture. Nessuna issue si chiude per omissione dal prossimo sprint.
+
+
 ## Prossimo sprint concordato — file → UDP guidato dal chatbot
 
 Checkpoint 2026-10-01 20:24 Europe/Rome: [handoff completo per nuova chat](handoffs/OUF_HANDOFF_2026-10-01_FILE_TO_UDP_NEXT_SPRINT.md).

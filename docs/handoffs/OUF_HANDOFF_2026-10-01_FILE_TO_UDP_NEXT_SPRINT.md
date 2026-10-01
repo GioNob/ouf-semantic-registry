@@ -86,6 +86,42 @@ Non ripetere tutte le prove manuali già superate. Eseguire regressioni automati
 
 Lo sprint si chiude quando il chatbot può condurre **il nuovo file** attraverso ricerca/proposta, decisioni THS, pubblicazione/ingestion e risultato UDP verificato, usando solo canali governati, senza SSH ordinario o IRI forniti manualmente. Verificare anche pause/ripresa, denial di scope/tenant, snapshot/versioni stale, transient vs integrity e assenza duplicazioni da retry. Nessuna nuova norma scelta senza PET o decisione utente.
 
+
+## Registro esplicito dei gate ereditati — verifica 2026-10-01 20:33 Europe/Rome
+
+**Il prossimo sprint non sostituisce il backlog precedente. Nessuna questione si chiude perché omessa da questa sintesi.** Verificati in questa ripresa: [handoff iniziale del 29/09](OUF_HANDOFF_2026-09-29_R4A_PREFLIGHT_TO_INGESTION.md), [handoff del 30/09 e cronologia di questa chat](OUF_HANDOFF_2026-09-30_R4A_INGESTION_COMPATIBILITY.md), [handoff 27/09](OUF_HANDOFF_2026-09-27_R4A.md), [audit 27/09](../audits/OUF_R4A_FINAL_AUDIT_2026-09-27.md), [handoff 25/09](https://github.com/GioNob/ouf-semantic-registry/blob/docs/r4a-2026-09-25-handoff/docs/handoffs/OUF_HANDOFF_R4A_2026-09-25_SCOPE_BOOTSTRAP_NEXT.md) e roadmap corrente. Gli stati live vecchi sono storici; vincoli e gate aperti restano validi salvo nuova prova esplicita.
+
+| Gate ereditato | Stato dopo questa chat / prova mancante |
+|---|---|
+| Approval/activation e compatibilità della fixture Cinema; primo run/handoff/materializzazione | Superati per la fixture già pubblicata; run e otto handoff/materializzazioni PASS nella ricevuta finale. Non ripetere approval/activation/recovery. Questo non certifica una nuova source o un rollout diverso. |
+| **R-SMOKE completo** | **OPEN**: 8/8 è una parte, non tutto il gate. Search via Gateway/MCP con almeno tre oggetti, un oggetto/proprietà da minimizzare, due pagine, cursor/invalid cursor/partial, label/authority enforcement e audit da verificare. |
+| Seconda fonte sovrapposta e matching/review reali | **OPEN**: source diversa ma classe/candidati sovrapposti; subset nelle due direzioni, campi concordi/diversi, conflitti/missing, autorità, forme disgiunte, ampiezza bounded senza m×n, overflow/coverage, backfill e pacchetto THS atomico/resume. Il nuovo Teatri non prova da solo questo gate, né è automaticamente il file sovrapposto menzionato nel vecchio handoff. |
+| Gateway/upload di prodotto | **OPEN per acceptance residua**: streaming/primi byte prima del completamento client, oversized 413 senza asset parziale, 415/media-type, digest mismatch, anonimo, limiti/idempotenza/rollback. Upload/profile reali PASS non sostituiscono tutte le prove negative e il trasporto streaming end-to-end. |
+| MCP/UX e channel neutrality | Questo host: upload/picker, callback con Asset ID e profile/preview PASS. **OPEN** secondo host/client MCP compatibile senza copia manuale Asset ID, limiti host/adattatori e continuità login; bridge hostfiles diretto non è un fallback autorizzato. |
+| Semantic exact refs e contratti storici | Prove puntuali della fixture conservate. **OPEN per integrazione/generalità**: chatbot search/read/pinned references, discovery/adozione governata, bundle/provenance/consumer compatibility e contratto DTO/schema non vanno dichiarati tutti conformi da un GET o validator PASS. |
+| Data Lake: verifica indipendente | **OPEN** byte/hash/S3 e riconciliazione DB-object store; persistenza/ACK/materializzazione non equivalgono a lettura indipendente dei byte. Backup di oggetti e restore storage da provare nel perimetro previsto. |
+| Replay RAW originario / SPI | **OPEN** esecutore/trasporto e prova di sorgente RAW durevole. UDP REPRODUCE genera un nuovo handoff/job: non sostituisce il retry dell'originale né prova il replay source Ingestion. Non inferire durabilità dal solo payload_ref. |
+| Policy Lake per source/type/zone | **OPEN** retention/access e enforcement per ambito, senza default lab trasformati in regola generale. Il profilo esplicito già adottato non prova policy dinamiche né cancellazione effettiva degli oggetti esistenti. |
+| Portabilità e **R-INSTALL** | **OPEN** manifest/secret refs, bootstrap idempotente IAM/Authorization/routes, installazione automatica dei moduli, clean install, upgrade N/N+1, rollback/restore/PITR/reconciliation e CI d'installabilità su macchine/reti/domain/Enti diversi. Preservare backup/snapshot/container, nessun restore o cleanup indiscriminato. |
+| Reti separate e trust TLS | **OPEN** verifica comportamentale del trust upstream/trasporto remoto; semplice scheme=https non è attestazione di verifica certificati. Conservare i vincoli già tracciati su Gateway/runtime/streaming. |
+| Capacity/concurrency/performance | **OPEN** profili rappresentativi, lease race/rollout compatibile/governor multi-replica e SLO; non usare fixture vuote come acceptance. |
+| Operational awareness / collectors | **OPEN** raccolta/proiezioni/gate e alert cross-owner. Tredici marker discovery unavailable da correlare; log mancanti non equivalgono a healthy. |
+| Latenza ChatGPT–MCP | **OPEN** misure e correlazione dei tempi host/tool/Gateway/owner; evitare attribuzioni speculative dal solo tempo percepito. |
+| Cross-module release / PR / branch reconciliation | **OPEN** riconciliare branch reali corretti e main/stale base, pin/SBOM/checksum/security/cross-module acceptance. Successo CI, presenza sorgente, deploy e risultato live sono evidenze distinte; base-image tag non digest-pinned non prova build bit-for-bit. |
+| Causalità storica degli errori 403/reference | Non provata integralmente dalla risoluzione corrente. Conservare eventi/receipt; nessuna nuova mutazione necessaria soltanto per ottenere una spiegazione. |
+
+### Regola d'identità già concordata: non regredire
+
+L'handoff 29/09 §4 contiene la scelta utente, successiva alla discussione weighted del 27/09. **Identità tecnica della riga sorgente distinta dall'identità canonica UDP.** Coordinate/indirizzi/nomi non sono automaticamente chiavi canoniche stabili.
+
+La policy pubblicata governa proprietà/comparatori/candidati: subset sufficiente concorde anche nelle due direzioni può dare MATCH se le premesse e l'unicità sono soddisfatte; campi comuni confrontabili tutti diversi indicano distinto; concordanze parziali/conflitti/assenza di confrontabilità restano incerti. NEW richiede policy allowAutoNew e coverage completa; overflow è REVIEW_REQUIRED/RESOLUTION_TOO_BROAD. Score/frequenza/selettività non conferiscono autorità identificante da soli. Il motore class-neutral è implementato nel branch corretto: non rifarlo né ripristinare weighted legacy perché un documento storico lo descriveva come ancora mancante.
+
+Il chatbot mostra evidenze/proposte, l'utente accetta/modifica e conferma il pacchetto nel THS. Review non trattiene durable ACK/watermark; nessuna transazione DB aperta in attesa umana. Binding/riaccodamento e lineage/audit restano governati e append-only. Per il nuovo CSV non scegliere nome_teatro come identità canonica soltanto perché unico nel campione.
+
+### Come usare questo registro nel prossimo sprint
+
+Portare tutti i gate nella matrice evidenze; associare ogni chiusura a prova/versione/ambito specifici. Integrare il percorso file → UDP con questi vincoli, senza trasformare ogni gate ereditato in una nuova prova manuale preventiva. Riusare test/receipt; chiedere intervento soltanto dove effettivamente necessario. I gate fuori dal perimetro dello sprint restano OPEN e tracciati, non cancellati.
+
 ## Letture obbligatorie per la nuova chat
 
 Baseline PET v1.7 fornita dall'utente: Source Onboarding v1.6 §§92–92.2 e THS; Semantic Registry v1.3 §§9.2,10–11,17–18; UDP v1.3 §§21–22,109.2,109.6–109.9; Authorization v1.5 §36.10; MCP v1.4 e Gateway v1.5 per projection/delegation/channel boundary.

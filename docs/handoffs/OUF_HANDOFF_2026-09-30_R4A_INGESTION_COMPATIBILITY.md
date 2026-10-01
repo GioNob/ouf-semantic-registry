@@ -1,5 +1,8 @@
 # OUF · handoff R4a, 30 settembre 2026: Ingestion compatibility probe
 
+> **Continuità verificata — 2026-10-01 20:33:** il [checkpoint della nuova chat](OUF_HANDOFF_2026-10-01_FILE_TO_UDP_NEXT_SPRINT.md) contiene ora il registro esplicito di tutti i gate ereditati e la regola d'identità concordata nell'handoff 29/09. R-SMOKE completo e R-INSTALL restano OPEN; 8/8 chiude solo consegna/materializzazione della fixture. Nessuna issue si chiude per omissione dal prossimo sprint.
+
+
 ## Ripartenza nuova chat — checkpoint 2026-10-01 20:24 Europe/Rome
 
 **Leggere prima [il checkpoint compatto per il prossimo sprint](OUF_HANDOFF_2026-10-01_FILE_TO_UDP_NEXT_SPRINT.md).** Contiene risultati di questa chat, stato asset/profile Teatri, pin da preservare, vincoli PET/THS e roadmap file → UDP guidata dal chatbot. Delivery/materializzazione Cinema 8/8 PASS; nuovo Teatri soltanto upload/profile PASS, DRAFT/ingestion ancora non creati. Riusare fix e prove precedenti, non ripartire dal lavoro manuale.
