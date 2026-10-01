@@ -55,6 +55,7 @@ def execute(args):
     for path in (args.prior_review_receipt,args.resources,args.publication_receipt):api.private(path)
     resources=json.loads(args.resources.read_text());prior=json.loads(args.prior_review_receipt.read_text())
     publication=json.loads(args.publication_receipt.read_text());expected=review.bindings(args.binding)
+    selected=review.selected_jobs(args,expected)
     api.require(isinstance(resources,list) and len(resources)==args.expected_resources
         and {r['resourceId'] for r in resources}==set(expected)
         and all(r['resourceAttributes'].get('sourceRef')==args.source
@@ -68,14 +69,16 @@ def execute(args):
     api.require(len(old)==len(resources) and {r['review']['jobId'] for r in old}==set(expected),
                 'PRIOR_REVIEW_JOB_SET_MISMATCH')
     by_id={r['resourceId']:r for r in resources}
+    prior_args=copy.copy(args)
+    prior_args.expected_version=getattr(args,'prior_expected_version',None) or args.expected_version
     for entry in old:
         value=entry['review']
         api.require(entry.get('ready') is True and review.check_review(
-            value,by_id[value['jobId']],expected[value['jobId']],args),'PRIOR_REVIEW_NOT_READY')
+            value,by_id[value['jobId']],expected[value['jobId']],prior_args),'PRIOR_REVIEW_NOT_READY')
     api.reserve(args.receipt);args._receipt_owned=True
     evidence={'status':'FRESH_REVIEW_PENDING_NO_POST','phase':'FRESH_REVIEW',
         'priorReviewReceiptHash':api.digest(prior),'resourcesHash':api.digest(resources),
-        'runId':args.run,'sourceId':args.source,'rows':[]}
+        'runId':args.run,'sourceId':args.source,'selectedJobIds':sorted(selected),'rows':[]}
     api.write(args.receipt,evidence)
     print('R4A_UDP_HUMAN_RETRY_RECEIPT='+str(args.receipt)+' PRIVATE=true',flush=True)
     def phase(name):
@@ -91,6 +94,11 @@ def execute(args):
         raise
     fresh=json.loads(fresh_args.receipt.read_text())
     api.require(fresh.get('status')=='PASS_READY','FRESH_REVIEW_NOT_READY')
+    api.require(fresh.get('resourcesHash')==api.digest(resources)
+        and fresh.get('publicationReceiptHash')==api.digest(publication)
+        and len(fresh['reviews'])==len(selected)
+        and {entry['review']['jobId'] for entry in fresh['reviews']}==selected,
+        'FRESH_REVIEW_SELECTED_SET_MISMATCH')
     evidence['freshReviewReceipt']=str(fresh_args.receipt)
     evidence['freshReviewReceiptHash']=api.digest(fresh)
     for entry in fresh['reviews']:
@@ -151,6 +159,8 @@ if __name__=='__main__':
     for name in ('publication-receipt','resources','prior-review-receipt','receipt'):
         p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--binding',action='append',required=True)
+    p.add_argument('--select-job',action='append',help='Retry only these jobs within the fully verified published resource set')
+    p.add_argument('--prior-expected-version',type=int,help='Version in the historical prior review; fresh GET must still match expected-version')
     p.add_argument('--expected-version',type=int,required=True)
     p.add_argument('--expected-resources',type=int,required=True)
     args=p.parse_args()

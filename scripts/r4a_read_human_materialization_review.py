@@ -16,6 +16,14 @@ def bindings(values):
         api.require(job not in result,'DUPLICATE_JOB_BINDING');result[job]=handoff
     return result
 
+def selected_jobs(args,expected):
+    values=getattr(args,'select_job',None)
+    if not values:return set(expected)
+    selected=[str(uuid.UUID(value)) for value in values]
+    api.require(len(selected)==len(set(selected)) and set(selected)<=set(expected),
+                'SELECTED_JOB_SET_INVALID')
+    return set(selected)
+
 def http_deny(url,token,codes):
     try:api.http(url,token)
     except api.Blocked as error:
@@ -66,10 +74,11 @@ def execute(args):
         and g['servicePrincipalId'] is None and g['constraints']['resourceId'] in expected for g in grants),
         'ACTIVE_RECEIPT_GRANT_MISMATCH')
     outside=str(uuid.UUID(args.outside_job));api.require(outside not in expected,'OUTSIDE_JOB_IN_SCOPE')
+    selected=selected_jobs(args,expected)
     api.reserve(args.receipt)
     args._receipt_owned=True
     evidence={'status':'LOGIN_PENDING_NO_BUSINESS_POST','publicationReceiptHash':api.digest(publication),
-        'resourcesHash':api.digest(resources),'reviews':[]};api.write(args.receipt,evidence)
+        'resourcesHash':api.digest(resources),'selectedJobIds':sorted(selected),'reviews':[]};api.write(args.receipt,evidence)
     def phase(name):
         args._phase=name;evidence['phase']=name
         api.write(args.receipt,evidence)
@@ -77,11 +86,11 @@ def execute(args):
     phase('LOGIN')
     args.admin_scope=args.scope;token=api.login(args);base=args.base_url.rstrip('/')
     phase('ANONYMOUS_GET')
-    evidence['anonymousHttp']=http_deny(base+'/'+next(iter(expected)),None,(401,403))
+    evidence['anonymousHttp']=http_deny(base+'/'+sorted(selected)[0],None,(401,403))
     phase('OUTSIDE_SCOPE_GET')
     evidence['outsideScopeHttp']=http_deny(base+'/'+outside,token,(403,))
     api.write(args.receipt,evidence)
-    for index,resource in enumerate(resources,1):
+    for index,resource in enumerate((r for r in resources if r['resourceId'] in selected),1):
         phase('OWNER_REVIEW_GET_'+str(index))
         status,value,_=api.http(base+'/'+resource['resourceId'],token)
         evidence.setdefault('ownerHttp',[]).append(status)
@@ -128,6 +137,7 @@ if __name__=='__main__':
         p.add_argument('--'+name,required=True)
     for name in ('publication-receipt','resources','receipt'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--binding',action='append',required=True)
+    p.add_argument('--select-job',action='append',help='Review only these jobs within the fully verified published resource set')
     p.add_argument('--expected-version',type=int,required=True);p.add_argument('--expected-resources',type=int,required=True)
     args=p.parse_args()
     try:execute(args)
