@@ -2661,3 +2661,20 @@ The broader PublishedRuntimeConfiguration validation and current Gateway/owner r
 PET sprint: UDP1.3 §109.7 reference integrity at point of use and no silent fallback; Matrix1.7 actual secret/environment bindings and service identity lifecycle. Next generic scripts/r4a_udp_token_transport_inventory.py reads explicit container and service-name regex bindings. It reads only configured OUF_UDP_EXECUTION_TOKEN_FILE, host bind metadata/current bounded JWT and safe expiry/actor/scope diagnostics; distinguishes file bind vs directory bind (important for atomic replacement visibility). Requires a supported explicit env binding rather than guessing hidden external configuration. Reads matching systemd service ExecStart privately and inspects Python AST only, reports truncating-write and replace/rename site counts. It never executes refresher scripts, invokes token refresh, prints token/secret/script contents or changes services. Dynamic writer modes/uninspected helpers/shell scripts are not classified and absence of sites is NOT proof of atomic publication. Whole-script sites are structural evidence only; destination not proven.
 
 Three local tests PASS for structural redaction, read/dynamic-mode classification and safe bind mapping/file-vs-directory. CI/live inventory not yet verified. No policy/route/deploy/token/job mutation; eight ACKs, five objects and three QUARANTINED jobs remain intact. After inventory, inspect exact token-writer target and preserved metadata before any corrective deployment. Do not blindly requeue jobs: recovery needs versioned owner action/new technical evidence and retained quarantine history. Full R-SMOKE, search, independent S3 verification, R-INSTALL and earlier replay/retention/portability/operational-awareness/latency/second-source gaps stay OPEN.
+
+### Exact next operator inventory — prepared, not executed
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_token_diag=$(mktemp /tmp/ouf-r4a-udp-token.XXXXXX.py)
+trap 'rm -f -- "$ouf_token_diag"' EXIT
+git show c7ee0e4c2fd5f36646762506f6b563c82e48dcc6:scripts/r4a_udp_token_transport_inventory.py > "$ouf_token_diag"
+sudo python3 -B "$ouf_token_diag" \
+  --container ouf-udp --service-match 'udp.*token|token.*udp'
+)
+```
+
+No login or service restart; the service matcher is a lab CLI binding. Structural writer facts are not proof of token-target behavior or historical causality.
