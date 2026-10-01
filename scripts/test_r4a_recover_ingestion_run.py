@@ -1,4 +1,9 @@
 import copy
+import os
+import pty
+import select
+import signal
+import time
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -6,6 +11,40 @@ import r4a_recover_ingestion_run as recovery
 
 
 class GovernedRecoveryTests(unittest.TestCase):
+    def test_confirmation_on_real_nonseekable_controlling_terminal(self):
+        for answer,wanted in [('RECUPERO test',True),('annullo',False)]:
+            with self.subTest(answer=answer):
+                pid,fd=pty.fork()
+                if pid==0:
+                    try:
+                        result=recovery.confirmation('RECUPERO test')
+                        os._exit(0 if result is wanted else 2)
+                    except Exception:
+                        os._exit(3)
+                completed=False
+                try:
+                    prompt=b''
+                    deadline=time.monotonic()+3
+                    while b'\n> ' not in prompt and b'\r\n> ' not in prompt:
+                        ready,_,_=select.select([fd],[],[],max(0,deadline-time.monotonic()))
+                        self.assertTrue(ready,'TTY prompt not displayed')
+                        prompt+=os.read(fd,4096)
+                    self.assertIn(b'Per confermare digita RECUPERO test',prompt)
+                    os.write(fd,(answer+'\n').encode())
+                    while time.monotonic()<deadline:
+                        result,status=os.waitpid(pid,os.WNOHANG)
+                        if result:
+                            completed=True
+                            self.assertEqual(os.waitstatus_to_exitcode(status),0)
+                            break
+                        time.sleep(0.01)
+                    self.assertTrue(completed,'TTY confirmation did not finish')
+                finally:
+                    if not completed:
+                        os.kill(pid,signal.SIGKILL)
+                        os.waitpid(pid,0)
+                    os.close(fd)
+
     def args(self):
         return SimpleNamespace(api='https://api.example',run='86809c17-3354-45ca-a7e6-57e903944b24',quarantine='7741f1f3-479b-42be-bb0d-a711efb20722')
 

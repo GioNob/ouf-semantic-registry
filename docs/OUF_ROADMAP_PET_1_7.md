@@ -1,5 +1,11 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+### 2026-10-01 — Recovery stopped before confirmation; nonseekable TTY fix
+
+Actual operator recovery attempt reached owner readback runPAUSED/controlVersion0 and quarantineOPEN/lifecycleVersion0, printed source and action explanation, then BLOCKED CODE=UnsupportedOperation before showing the confirmation prompt. Root cause is Python buffered text open('/dev/tty','r+'), which requires seekable stream behavior incompatible with TTY. In the pinned script this failure point precedes exclusive intent receipt creation and both POST calls; no retry or resume was performed by this attempt. Read proof remains PASS; write authorization and execution remain unverified. Do not misclassify this as policy/API failure or change IAM/routes.
+
+Fix uses separate write-only and read-only /dev/tty handles. New local regression exercises a real Linux controlling pseudoterminal (pty.fork), verifies prompt emission and both exact-phrase acceptance and cancellation. Four recovery tests PASS, including prior version/action/redaction tests. No LIVE terminal/write proof yet. Operator may rerun recover with the corrected pinned script: existing receipt guard still refuses any attempted recovery when an intent already exists, and owner/database versions must match the saved read proof. No need to delete receipts or manually adjust lifecycle versions. Exact terminal phrase remains RECUPERO <run UUID>. If another failure occurs after receipt creation, use GET-only verify and reconcile rather than re-POST. Both LIVE loops and ACTIVE source remain unchanged; S3 durability/intake authorization/eight-row materialization/search and broader PET open items remain open.
+
 ### 2026-10-01 — HUMAN recovery reads LIVE PASS; versioned retry/resume ready for operator
 
 Actual operator HUMAN read proof PASS through existing shared gateway routes: run GET200, quarantine GET200; runPAUSED/controlVersion0, quarantineOPEN/lifecycleVersion0. Private receipt /etc/ouf/deploy-snapshots/ingestion-human-recovery-read-86809c17-3354-45ca-a7e6-57e903944b24.json. Read authorization is proven end-to-end; write authorization has NOT been tested. No retry/resume occurred. Ingestion LIVE163c167d09b8371ff7a62ce7068e9d485b6969b7 remains the deployed IAM + governed retry release.

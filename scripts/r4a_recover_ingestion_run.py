@@ -77,6 +77,15 @@ def report(value):
     print('RECOVERY_QUARANTINE_STATE='+str(value['quarantine']['lifecycle_state'])+' LIFECYCLE_VERSION='+str(value['quarantine']['lifecycle_version']))
 
 
+def confirmation(phrase):
+    # TTYs are not seekable: avoid a buffered read/write TextIOWrapper (r+).
+    with open('/dev/tty','w') as output:
+        output.write('Per confermare digita '+phrase+'\n> ')
+        output.flush()
+    with open('/dev/tty','r') as source:
+        return source.readline().strip()==phrase
+
+
 def main(args):
     if os.geteuid()!=0:raise RuntimeError('ROOT_REQUIRED')
     os.umask(0o077)
@@ -118,10 +127,7 @@ def main(args):
     print('SOURCE='+current['run']['source_id'],flush=True)
     print('Il retry autorizza il record in quarantena. Il resume avvia nuovamente ingestion e consegna a UDP.',flush=True)
     phrase='RECUPERO '+args.run
-    with open('/dev/tty','r+') as tty:
-        tty.write('Per confermare digita '+phrase+'\n> ');tty.flush()
-        answer=tty.readline().strip()
-    if answer!=phrase:
+    if not confirmation(phrase):
         print('R4A_HUMAN_RUN_RECOVERY=CANCELLED RETRY=false RUN_RESUME=false');return
     read.claims_check(token,args)
     expect_initial(views(args,token),current)
