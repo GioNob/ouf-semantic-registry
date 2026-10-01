@@ -2367,3 +2367,27 @@ sudo python3 -B "$ouf_recovery_dir/r4a_recover_ingestion_run.py" recover \
 ### Recovery cycle CI evidence acquired
 
 GitHub module CI run36826901911 on commit4f3e6e8f19d40b7e78b425e4fb6bbbafa503a927: independent job recovery-cycle-scripts110254498715 completed SUCCESS (14 tests). Full module/container and pairwise suites were still in progress at observation. The operator command pins634dc70db74a6c3d54faedb8727e6004ec2803fe with identical recovery/proof code; later4f3e6e8 only corrects root-context CI and saves the command. No LIVE second recovery output yet. Do not infer full CI or S3/handoff success from this script job.
+
+## 2026-10-01 — Second quarantine recovery LIVE PASS; execution readback next
+
+Actual operator output: private cycle receipt /etc/ouf/deploy-snapshots/ingestion-human-recovery-86809c17-3354-45ca-a7e6-57e903944b24-2fac075e-0862-4ae6-a799-cf63c41b651b.json; retry HTTP204, RETRY_READY/version1; resume HTTP200/controlVersion2. Both HUMAN write authorizations proven for this cycle. No source reactivation or RAW replay. Successful script flow records RESUME_CONFIRMED; retain this intent, scoped read proof and original first-cycle receipts. Do NOT repeat recover for either cycle.
+
+The API acceptance is NOT execution completion. Current ingestion outcome has not yet been read; source remains last-verified ACTIVE/frozen. S3 durability, handoff/ACK, eight-row materialization and search remain NOT_PROVEN. PET sprint check Ingestion1.3 §45.2 and UDP1.3 §4.1/ACK-01: ACK requires durable input/metadata but does not imply resolution/materialization or serving completion. No schema, deploy or configuration change in this step.
+
+Next command uses existing cinema smoke readback (fixture, not a generic production deploy tool), plus all three failure-bundle dependencies pinned together. Only READ_ONLY domain SQL/log/config reads and existing policy GETs; no login/retry/resume/intake POST. It checks exact ACTIVE publication/hash, schedules/runs/attempts/lineage/outbox receipts and matching UDP intake/jobs/observations/revisions/bindings/current objects. Cross-database snapshot is not atomic; in-flight work may require another read. A NOT_PROVEN result requires interpreting actual states/reasons before any action. The legacy OPEN quarantine count is NOT a lifecycle-aware count of newly blocking items; RETRY_READY historical items can remain included. Never delete/dismiss historical quarantines merely to make this fixture PASS; reconcile classification if delivery otherwise succeeds. Empty matching handoff sets alone are not success. Readback does not perform independent S3 byte/hash verification or search. If failure occurs, attached unified bundle preserves symbolic diagnosis; APISIX log timeout is diagnostic unavailability, not proof of owner deny.
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_readback_dir=$(mktemp -d /tmp/ouf-r4a-execution-readback.XXXXXX)
+trap 'rm -rf -- "$ouf_readback_dir"' EXIT
+for script in r4a_cinema_execution_readback.py r4a_execution_failure_bundle.py r4a_execution_route_inventory.py r4a_prepare_frozen_compatibility_probe.py; do
+  git show 4db36e14fe47adc80c4886d31548d0a638d776a9:scripts/"$script" > "$ouf_readback_dir/$script"
+done
+sudo python3 -B "$ouf_readback_dir/r4a_cinema_execution_readback.py"
+)
+```
+
+Command prepared, not yet operator-executed. Await actual output; classify delivery separately from materialization, then search and second-source matching/review. All preceding PET/R-SMOKE/R-INSTALL/replay/retention/portability/operational-awareness/latency open items remain OPEN.
