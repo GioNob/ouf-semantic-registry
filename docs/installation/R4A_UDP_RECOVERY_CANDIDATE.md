@@ -1165,3 +1165,95 @@ test "${RESULT[1]}" -eq 0
 exit "${RESULT[0]}"
 ROOT
 ```
+
+
+### R4A — retry HUMAN dei tre job originali accettato (2026-10-01 18:14 Europe/Rome)
+
+Operatore ha effettuato nuova sessione HUMAN, tre GET owner200 con job binding esatto, QUARANTINED/DURABLE/v2, retryEligible=true e contractReady=true/READY; anonimo e job fuori scope negati. Fresh review privata `/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/human-retry-20261001T161313-3517748-fresh-review.json`. Piano source managed-cinema-8ec8ae90/run86809c17-3354-45ca-a7e6-57e903944b24, tre originali e transizionev2->v3 mostrati. Operatore ha digitato frase esatta CONFERMO RETRY ORIGINALE con runID, quindi tutti e tre POST/retry HTTP200 PASS/ORIGINAL_JOB_MATCH/acceptedVersion3/READY/repeatedfalse.
+
+Ordine confermato: job7793566d-b9d4-4402-8cda-c09b8f135c04/handoff8869a6d6-3d82-4514-a63a-d23f9b26d48f; jobe5b6ca24-6143-4ae5-8907-5dce398abfa3/handoffe58faf8c-c35a-4106-b4b6-67e58dec9774; jobe7572836-f8af-4c58-b5fc-12d7aff5db1d/handoffaed8ef93-6d00-4cf0-868d-d2d82d79b524. R4A_UDP_HUMAN_RETRY=PASS/ACCEPTED_COUNT3/HUMAN_OWNER_AUTHORIZATION_PROVEN/ORIGINAL_JOBS_REQUEUED. REPLAY=false, INTAKE_POST=false, MATERIALIZATION_NOT_YET_VERIFIED=true. Protocollo privato `/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/human-retry-protocol.edA735`; process e capture exit0. Receipt retry principale derivabile senza ambiguità dal nome fresh-review del helper: `/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/human-retry-20261001T161313-3517748.json`; contiene operationId/body/snapshot e risposta per ciascun POST, non stampare. Il prossimo reader ne verifica presenza/privacy/schema/set prima dei readback live.
+
+Non ripetere i retry: ammissione originale completata, il worker procede asincrono. Non riattivare sorgente/schedule trigger_once, non replay/reintake/repair DB. Version3/READY è accettazione, non SUCCEEDED o effetto canonico. Ultimo stato Ingestion noto resta SUCCEEDED/control2/8ACKED, lineages8, attempts10 con due failstorici risolti; cinque materializzazioni UDP precedenti più tre ora in coda, totale effettivo corrente da leggere. Live83249a/5e048a/Flyway34, policy36 nominale3scope, nessun cambio deploy/IAM/Gateway/policy. Causalità storica reference failures NOT_PROVEN.
+
+PET UDP109.6–109.7 e Authorization36.10 consultati: re-run da evidence/version/snapshot e durable originals, owner fine-grained, reference gate senza fallback. Preparato blocco READ_ONLY: valida ricevuta retry originale0600/root e parent0700, set3job/handoff, distinct operationId, requestversion2 e receiptversion3/READY/repeatedfalse, stampa solo saved evidence. Poi riusa fixture cinema già versionata: activation receipt e pubblicazione ACTIVE/frozenchecksum exact; Ingestion e UDP scope publication/run, handoffIDset, intakes/jobs/decisions/issues/observations/revisions/bindings/activeobjects; più diagnostica UDP parametrizzata per source/run e tutti jobID/state/version/counters/flags ed eventi simbolici (incl MATERIALIZATION_RETRY_AUTHORIZED, REFERENCE_INTEGRITY_PASSED e RESOLUTION_COMPLETED se presenti). Nessun safe_detail/token/payload/ref/hash stampato. Cinque casi locali readerPASS (buono/unknown/wrongjob/version/privacy), bash-nPASS; helper runtime riusati senza modifiche. Protocollo readback rootprivate persistente, exit dei due reader separati; COMPLETE/exit0 non converte NOT_PROVEN in PASS.
+
+Nota deploy: cinema_execution_readback è una fixture storica legata al deployment cinema corrente, non uno strumento di deploy generico; non introdotte nuove costanti lab nel codice applicativo/helper condiviso. La diagnostica UDP è parametrizzata CLI. Questa fase non chiude portabilità multi-host/domain/network/tenant né automatismi R-INSTALL. Se8materializationPASS, seguiranno search e byte/hash Lake indipendenti; letture cross-DB non atomiche, singolo snapshot non è consenso distribuito. Se pending/failure, analizzare originale senza nuovo retry cieco. Tutti altri gate ereditati restano aperti.
+
+
+#### R4A UDP recovery — readback dopo tre retry HUMAN accettati
+
+I tre POST originali sono PASS HTTP200/version3/READY. Questo blocco non effettua login, retry, intake, replay, resume, source activation o deploy; legge receipt salvata e DB/log simbolici con transazioni READ_ONLY e timeout. Il path retry è quello corrispondente alla fresh review161313 ricevuta, verificato prima delle query. Il readback cinema è la fixture storica per questa sorgente/installazione, valida publication/frozen activation ricevuta e distingue delivery8ACKED da materializzazione8PROCESSED/SUCCEEDED/observation/binding/noopenissues; non forzare otto urbanobjects se la resolution governata li unifica. Non è una prova portabile R-INSTALL. La seconda diagnostica richiede binding CLI espliciti run/source/container/database/user e mostra i job originali/eventi, senza payload/safe_detail/hash/ref.
+
+Il protocollo root0600 persiste soltanto questo output simbolico; nessun devicecode o token perché non c'è login. I dati vengono letti in istanti diversi, non atomicamente tra DB. `UDP_MATERIALIZATION_EIGHT_ROWS=NOT_PROVEN` con processo exit0 è comunque un gate incompleto. Conservare ricevute/retry audit e rollback. Se output perso si può ripetere questa sola lettura; non rieseguire il blocco POST. Search e verifica S3byte/hash non inclusi.
+
+```bash
+set -euo pipefail
+umask 077
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_helpers=b9108fa360a11bb5be745e187e278ecbc7814229
+ouf_readback_dir=$(mktemp -d /tmp/ouf-r4a-after-retry.XXXXXX)
+trap 'rm -rf -- "$ouf_readback_dir"' EXIT
+for script in r4a_cinema_execution_readback.py r4a_execution_failure_bundle.py r4a_execution_route_inventory.py r4a_prepare_frozen_compatibility_probe.py r4a_udp_materialization_diagnostic.py; do
+  git show "$ouf_helpers:scripts/$script" > "$ouf_readback_dir/$script"
+done
+sudo bash -s -- "$ouf_readback_dir" <<'ROOT'
+set -euo pipefail
+umask 077
+ouf_readback_dir=$1
+ouf_state_dir=/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy
+ouf_retry_receipt="$ouf_state_dir/human-retry-20261001T161313-3517748.json"
+ouf_run=86809c17-3354-45ca-a7e6-57e903944b24
+ouf_source=managed-cinema-8ec8ae90
+ouf_bindings=(
+  7793566d-b9d4-4402-8cda-c09b8f135c04:8869a6d6-3d82-4514-a63a-d23f9b26d48f
+  e5b6ca24-6143-4ae5-8907-5dce398abfa3:e58faf8c-c35a-4106-b4b6-67e58dec9774
+  e7572836-f8af-4c58-b5fc-12d7aff5db1d:aed8ef93-6d00-4cf0-868d-d2d82d79b524
+)
+LOG=$(mktemp "$ouf_state_dir/readback-after-retry.XXXXXX")
+printf 'R4A_POST_RETRY_READBACK_LOG=%s PRIVATE=true\n' "$LOG"
+python3 -B - "$ouf_retry_receipt" "$ouf_run" "$ouf_source" "${ouf_bindings[@]}" <<'PY' | tee "$LOG"
+import json, os, re, stat, sys, uuid
+from pathlib import Path
+def require(value):
+    if not value:raise RuntimeError('RECEIPT_MISMATCH')
+try:
+    path=Path(sys.argv[1]);meta=path.lstat();parent=path.parent.lstat()
+    require(os.geteuid()==0 and stat.S_ISREG(meta.st_mode) and meta.st_uid==0 and stat.S_IMODE(meta.st_mode)==0o600)
+    require(stat.S_ISDIR(parent.st_mode) and parent.st_uid==0 and stat.S_IMODE(parent.st_mode)==0o700)
+    require(meta.st_size<=8000000)
+    value=json.loads(path.read_text());expected=dict(pair.split(':',1) for pair in sys.argv[4:])
+    require(all(str(uuid.UUID(j))==j and str(uuid.UUID(h))==h for j,h in expected.items()))
+    require(value['status']=='PASS_AUTHORIZED_REQUEUE' and value['runId']==sys.argv[2] and value['sourceId']==sys.argv[3])
+    require(value['humanConfirmed'] is True and len(value['rows'])==len(expected)==3)
+    require({row['jobId'] for row in value['rows']}==set(expected))
+    operations=set()
+    for row in value['rows']:
+        request=row['request'];receipt=row['receipt'];job=row['jobId'];handoff=expected[job]
+        require(row['status']=='PASS_ACCEPTED' and row['handoffId']==handoff)
+        require(request['expectedVersion']==2 and re.fullmatch('sha256:[a-f0-9]{64}',request['expectedSnapshotHash']))
+        operation=request['operationId'];require(str(uuid.UUID(operation))==operation and operation not in operations)
+        operations.add(operation)
+        require(receipt['operationId']==operation and receipt['jobId']==job and receipt['handoffId']==handoff)
+        require(receipt['acceptedVersion']==3 and receipt['state']=='READY' and receipt['repeated'] is False)
+    print('R4A_HUMAN_RETRY_SAVED_RECEIPT=PASS ACCEPTED_COUNT=3 EXACT_ORIGINAL_JOB_SET=true SAVED_EVIDENCE_ONLY=true LIVE_MATERIALIZATION_NOT_YET_QUERIED=true SECRETS_NOT_PRINTED=true')
+except Exception as error:
+    print('R4A_HUMAN_RETRY_SAVED_RECEIPT=BLOCKED TYPE='+type(error).__name__+' READ_ONLY=true SECRETS_NOT_PRINTED=true')
+    raise SystemExit(1)
+PY
+set +e
+python3 -u -B "$ouf_readback_dir/r4a_cinema_execution_readback.py" 2>&1 | tee -a "$LOG"
+ouf_cinema_result=("${PIPESTATUS[@]}")
+python3 -u -B "$ouf_readback_dir/r4a_udp_materialization_diagnostic.py" \
+  --run "$ouf_run" --source "$ouf_source" \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp 2>&1 | tee -a "$LOG"
+ouf_udp_result=("${PIPESTATUS[@]}")
+set -e
+printf 'R4A_POST_RETRY_READBACK_LOG=%s PRIVATE=true\n' "$LOG"
+printf 'R4A_POST_RETRY_READBACK_EXIT=%s UDP_DIAGNOSTIC_EXIT=%s READ_ONLY=true RETRY=false REPLAY=false\n' "${ouf_cinema_result[0]}" "${ouf_udp_result[0]}"
+test "${ouf_cinema_result[0]}" -eq 0
+test "${ouf_cinema_result[1]}" -eq 0
+test "${ouf_udp_result[0]}" -eq 0
+test "${ouf_udp_result[1]}" -eq 0
+ROOT
+```
