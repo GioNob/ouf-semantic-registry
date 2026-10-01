@@ -2405,3 +2405,22 @@ Pinned UDP ResolutionRepository distinguishes job.safe_failure_code from handoff
 New generic scripts/r4a_udp_materialization_diagnostic.py requires explicit run/source/PostgreSQL container/database/user CLI bindings. One bounded READ_ONLY transaction joins only this source/run's intake+jobs and grouped symbolic handoff events. Projects job ID/state/version, attempts, integrity_attempts, safe_failure_code, missing-ref COUNT (no reference values), baseline/next-check presence and safe event counts. No payload/safe_detail/raw exception text/token. SQL scopes validated; subprocess output and errors captured; non-symbolic codes redacted. Three local tests PASS for transaction/scope/projection, injection refusal and redaction. CI/live diagnostic not yet verified. No production code/schema/deploy change.
 
 Next operator: run this diagnostic once, then use exact reason/version to inspect the governed reference/configuration or review owner. No SQL job-state mutation, blanket replay or discarded evidence. Preserve all eight ACKs, five successful objects and three quarantined jobs. R-SMOKE is PARTIAL (delivery PASS, materialization5/8, search OPEN); R-INSTALL and all earlier replay/retention/portability/PET/cross-module/operational-awareness/latency/second-source work remain OPEN.
+
+### Exact next operator diagnostic — prepared, not executed
+
+Installation/source values are lab fixture CLI bindings, not production code literals. Paste only its safe output; no login needed.
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_udp_diag=$(mktemp /tmp/ouf-r4a-udp-jobs.XXXXXX.py)
+trap 'rm -f -- "$ouf_udp_diag"' EXIT
+git show 19a8e9a8054be9ccd5f3e1cd25cdde8a3d14cbd8:scripts/r4a_udp_materialization_diagnostic.py > "$ouf_udp_diag"
+sudo python3 -B "$ouf_udp_diag" \
+  --run 86809c17-3354-45ca-a7e6-57e903944b24 \
+  --source managed-cinema-8ec8ae90 \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp
+)
+```
