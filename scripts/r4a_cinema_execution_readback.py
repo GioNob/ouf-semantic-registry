@@ -109,6 +109,14 @@ def main():
     result = subprocess.run(['docker','logs','--since',since,'--tail','1000','ouf-ingestion'], capture_output=True, text=True, timeout=15, check=True)
     logs = result.stdout + result.stderr
     print('ING_RECENT_FAILURE_MARKERS=' + json.dumps({m:logs.count(m) for m in markers}, sort_keys=True))
+    if run_ids and (not delivered or not materialized):
+        try:
+            from types import SimpleNamespace
+            import r4a_execution_failure_bundle as diagnostic
+            for run_id in run_ids:
+                diagnostic.main(SimpleNamespace(run=run_id))
+        except Exception as error:
+            print('EXECUTION_FAILURE_BUNDLE=UNAVAILABLE TYPE='+type(error).__name__)
     print('R4A_CINEMA_EXECUTION_READBACK=COMPLETE READ_ONLY=true CROSS_DATABASE_ATOMIC=false SEARCH_NOT_VERIFIED=true SECRETS_NOT_PRINTED=true')
 
 
