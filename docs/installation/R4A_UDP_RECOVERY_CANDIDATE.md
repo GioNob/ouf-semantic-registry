@@ -1257,3 +1257,92 @@ test "${ouf_udp_result[0]}" -eq 0
 test "${ouf_udp_result[1]}" -eq 0
 ROOT
 ```
+
+
+### R4A — readback completo: 7/8 materializzati, un originale nuovamente quarantinato (2026-10-01 18:28 Europe/Rome)
+
+Operatore ha prima segnalato NOT_PROVEN, poi allegato output completo Testo incollato.txt, letto nel workspace. Il recupero del log salvato preparato nel frattempo è ora superfluo e non va richiesto. Protocollo reale privato `/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/readback-after-retry.FUnWAL`. Receipt retry salvata PASS/3accepted/exactoriginaljobset; sourceACTIVE/frozenhash/publicationmatch. Ingestion run86809c17 SUCCEEDED/control2,10attempts/8lineages/0quarantines,8ACKED e UDP handoffIDset match; delivery8 PASS. Trigger_once consumed/DISABLED. Due failstorici404/403 restanoRESOLVEDv2. Output di entrambi reader exit0, non equivalenti a materializationPASS.
+
+UDP:7PROCESSED/SUCCEEDED/NEW_OBJECT,7observations/revisions/bindings/activeobjects;1DURABLE/QUARANTINED,0open resolution issues. Materialization8 NOT_PROVEN e searchnonverificata. Dei tre retry, job7793566d/handoff8869a6d6 e jobe5b6ca24/handoffe58faf8c sonoSUCCEEDEDv5, attempts2/integrityAttempts1/baselinepresente, eventi originali+1MATERIALIZATION_RETRY_AUTHORIZED+REFERENCE_INTEGRITY_PASSED+RESOLUTION_COMPLETED. Ultimo job `e7572836-f8af-4c58-b5fc-12d7aff5db1d` / handoff `aed8ef93-6d00-4cf0-868d-d2d82d79b524` è tornatoQUARANTINEDv5/attempts2/integrityAttempts2,baselineassente,missingRefCount0,nextcheckassente,safeFailureCodeUDP_REFERENCE_INTEGRITY_CONTRACT_INVALID. Eventi:1retryAUTHORIZED e2REFERENCE_INTEGRITY_QUARANTINED (storico+nuovo), nessunREFERENCE_PASSED/RESOLUTION_COMPLETED per questo handoff. Questo è fallimento tecnico nel worker, non semplice job pendente; non ripetere alcun retry dei tre.
+
+Tutte3review fresche avevanoREADY e POSTacceptedv3; il terzo tentativo asincrono contraddice readiness osservata prima in una diversa chiamata/istante. Causa specifica non dimostrata: non attribuire a token/Gateway/policy/mapper/payload senza nuova evidence. ACTIVEpolicy36 HTTP200 nel bundle generale; logruntimeUDP/Apisixsenza marker simbolici, accesslogTimeoutExpired. ING_ACTIVATION_DISCOVERY_UNAVAILABLE12da finestraprepubblicazione è diagnostica storica e non spiega da sola il nuovoUDPfailure. UDP_FAILURE_CODES=[] è proiezione intake, non assenza di safeFailureCode nel job. Zero resolutionissues non elimina questa quarantena tecnica. Owner authorization HUMAN è giàprovata dai3GET/POST; flagOWNER_AUTHORIZATION_NOT_PROVEN del bundlegenerale non revoca quella prova scoped.
+
+Lettura sorgenti live83249a: MaterializationReferenceGate quarantina IllegalArgumentException con UDP_REFERENCE_INTEGRITY_CONTRACT_INVALID, e passa ReferenceFailureEvidence.detail alla append-only event. Nuova strumentazione deve contenere diagnosticCode allowlisted/category e max4 Javaapplicationframes, senza exceptionmessage/payload. ResolutionRepository inserisce questi campi direttamente nel safe_detail della nuovaREFERENCE_INTEGRITY_QUARANTINED; V1handoff_event.created_at è verificato da schema. Prossimo gate READ_ONLY mirato al solo originale rimasto: proietta esclusivamente jobstate/version/counters/safecode e recenti eventi quarantena con diagnosticCode/category/frames, ordinati percreated_at. Nessuna lettura/stampa integrale safe_detail o ref/hash/token/payload. Storico privo di campi ->NOT_RECORDED, simboli sconosciuti redatti; framesvalidati. Binding container/database/user/job/handoff/source/run solo CLI/runbook. SQL READ_ONLY/timeout15s/lock2s, processo25s, protocollo root0600. Proiezione sanitizer locale PASS (simboli/frame/valori arbitrari redatti/legacyabsent), bash-nPASS. È documentazione diagnostica, nessun cambio applicativo/deploy/policy/IAM/route/DB.
+
+PET UDP109.6–109.7/Authorization36.10 consultati: conservare originali e audit, fermarsi sul nuovo failure, verificare referencegate senza fallback. Dopo code/frames usare prova per diagnosi/fix reviewable; niente retrycieco/replay/reactivation. Ultimo live83249a/5e048a/Flyway34, due originali recuperati con effetti canonici, uno ancora bloccato. Tutti gate ereditati, storage/search indipendente, causalità storica e industrializzazione R-INSTALL restano aperti.
+
+
+#### R4A UDP recovery — evidenza sicura del solo job rimasto in quarantena
+
+ReadbackFUnWAL dimostra7/8, con jobe7572836 tornatoQUARANTINEDv5/CONTRACT_INVALID. Questo blocco legge soltanto eventi e stato di quell'originale; nessun login/GETHTTP/retry/replay/intake/deploy o modifica DB. La strumentazione già rilasciata dovrebbe aver salvato codice simbolico/category/max4frames nella nuova event; quella storica può mancare di diagnostica e verrà NOT_RECORDED. Le query proiettano soltanto queste tre chiavi del safe_detail, mai il JSON intero, e il sanitizer redige valori fuoriallowlist. Non stampare loggrezzi o eccezioni integrali. Config installativa/source/run/job/handoff è passata esplicitamente alla Pythoninline nel runbook.
+
+Protocollo privato persistente remaining-reference-failure.*, transazione READ_ONLY con timeout, output simbolico utile per distinguere il punto di errore. Nessun retry autorizzato da questo blocco; una nuova reviewREADY da sola non spiegherebbe la discrepanza con il worker. Conservare entrambeeventi quarantena e le tre receipt di retry. Shell bootstrap esterna con ORhandler, outputincollare solo simbolico.
+
+```bash
+set -euo pipefail
+sudo bash <<'ROOT'
+set -euo pipefail
+umask 077
+LOG=$(mktemp /etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/remaining-reference-failure.XXXXXX)
+printf 'R4A_REMAINING_REFERENCE_FAILURE_LOG=%s PRIVATE=true\n' "$LOG"
+# Binding espliciti dell'installazione e dell'originale rimasto in quarantena.
+python3 -u -B - ouf-postgres ouf_udp ouf_udp \
+  e7572836-f8af-4c58-b5fc-12d7aff5db1d aed8ef93-6d00-4cf0-868d-d2d82d79b524 \
+  managed-cinema-8ec8ae90 86809c17-3354-45ca-a7e6-57e903944b24 <<'PY' | tee "$LOG"
+import json, re, subprocess, sys, uuid
+from datetime import datetime
+def require(value):
+    if not value:raise RuntimeError('DIAGNOSTIC_SHAPE_OR_BINDING_INVALID')
+def clean(document):
+    job=document.get('job');require(isinstance(job,dict))
+    result={'job':{},'events':[]}
+    for key in ('state_version','attempts','integrity_attempts'):
+        require(type(job.get(key)) is int and job[key]>=0);result['job'][key]=job[key]
+    for key in ('job_state','safe_failure_code'):
+        value=job.get(key);require(value is None or isinstance(value,str) and re.fullmatch('[A-Z0-9_]{1,120}',value))
+        result['job'][key]=value
+    allowed={'UDP_PINNED_PROFILE_INVALID','UDP_GOVERNED_IDENTITY_PROFILE_INVALID','UDP_RESOLUTION_PROFILE_UNSUPPORTED',
+        'UDP_GATEWAY_INVALID','UDP_CONTRACT_REFS_REQUIRED','UDP_CONTRACT_REF_REQUIRED','UDP_CONTRACT_REF_INVALID',
+        'UDP_HISTORICAL_CATALOG_INVALID','UDP_HISTORICAL_CATALOG_DUPLICATE','UDP_HISTORICAL_BASELINE_INVALID',
+        'UDP_PUBLICATION_UNAVAILABLE','UDP_PUBLICATION_INTERRUPTED','UNCLASSIFIED'}
+    events=document.get('events');require(isinstance(events,list) and len(events)<=8)
+    for event in events:
+        at=event['created_at'];require(isinstance(at,str));datetime.fromisoformat(at.replace('Z','+00:00'))
+        code=event.get('diagnostic_code');category=event.get('diagnostic_category');frames=event.get('diagnostic_frames')
+        if code is None:code='NOT_RECORDED'
+        elif code not in allowed:code='NON_SYMBOLIC_REDACTED'
+        if category is None:category='NOT_RECORDED'
+        elif category not in ('IllegalArgumentException','IllegalStateException'):category='REDACTED'
+        if frames is None:frames=[]
+        require(isinstance(frames,list) and len(frames)<=4)
+        safe_frames=[f for f in frames if isinstance(f,str) and re.fullmatch(
+            r'it\.comune\.trieste\.ouf\.udp\.[A-Za-z0-9_.$]{1,240}#[A-Za-z0-9_$<>]{1,160}:-?[0-9]{1,10}',f)]
+        result['events'].append({'created_at':at,'diagnostic_code':code,'diagnostic_category':category,
+            'diagnostic_frames':safe_frames,'frames_redacted':len(safe_frames)!=len(frames)})
+    return result
+try:
+    container,database,user,job,handoff,source,run=sys.argv[1:]
+    for value in (container,database,user,source):require(re.fullmatch('[A-Za-z0-9][A-Za-z0-9._-]{0,159}',value))
+    job=str(uuid.UUID(job));handoff=str(uuid.UUID(handoff));run=str(uuid.UUID(run))
+    sql=("begin read only; set local statement_timeout='15s'; set local lock_timeout='2s'; "
+        "with target as (select j.handoff_id,j.state job_state,j.state_version,j.attempts,j.integrity_attempts,j.safe_failure_code "
+        "from ouf_udp.materialization_job j join ouf_udp.handoff_intake h using(handoff_id) "
+        "where j.job_id='"+job+"' and j.handoff_id='"+handoff+"' and h.source_id='"+source+"' and h.ingestion_run_id='"+run+"'), "
+        "e as (select e.created_at,e.safe_detail->>'diagnosticCode' diagnostic_code,"
+        "e.safe_detail->>'diagnosticCategory' diagnostic_category,e.safe_detail->'diagnosticFrames' diagnostic_frames "
+        "from ouf_udp.handoff_event e join target t using(handoff_id) where e.event_type='REFERENCE_INTEGRITY_QUARANTINED' "
+        "order by e.created_at desc,e.event_id desc limit 8) "
+        "select json_build_object('job',(select row_to_json(t) from target t),"
+        "'events',coalesce((select json_agg(e order by created_at desc) from e),'[]'::json)); rollback;")
+    raw=subprocess.run(['docker','exec',container,'psql','-X','-qAt','-v','ON_ERROR_STOP=1',
+        '-U',user,'-d',database,'-c',sql],check=True,capture_output=True,text=True,timeout=25).stdout.strip()
+    value=clean(json.loads(raw))
+    print('UDP_REMAINING_REFERENCE_FAILURE_EVIDENCE='+json.dumps(value,sort_keys=True))
+    print('R4A_UDP_REFERENCE_FAILURE_EVIDENCE=COMPLETE READ_ONLY=true RETRY=false REPLAY=false PAYLOADS_NOT_PRINTED=true SECRETS_NOT_PRINTED=true')
+except Exception as error:
+    print('R4A_UDP_REFERENCE_FAILURE_EVIDENCE=BLOCKED TYPE='+type(error).__name__+' READ_ONLY=true RETRY=false SECRETS_NOT_PRINTED=true')
+    raise SystemExit(1)
+PY
+printf 'R4A_REMAINING_REFERENCE_FAILURE_LOG=%s PRIVATE=true\n' "$LOG"
+ROOT
+```
