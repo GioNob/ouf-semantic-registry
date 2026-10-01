@@ -1,5 +1,11 @@
 # OUF — Manuale di installazione e bootstrap
 
+### 2026-10-01 — LIVE resume-only PASS; execution outcome awaits readback
+
+Actual operator resume-only completed: RETRY_RECONCILIATION PASS (RETRY_READY/version1, RETRY_POST=false), RUN_RESUME PASS HTTP200/controlVersion1, RESUME_AUTHORIZATION_PROVEN=true. No repeat retry, source reactivation or replay occurred. Wrapper reports INGESTION_RESULT_NOT_YET_VERIFIED=true. Original recovery intent now should be RESUME_CONFIRMED according to successful script flow; private receipt retained. Both HUMAN write paths have durable evidence (retry state readback and resume ownerHTTP200); this does not prove completed acquisition, delivery, S3 durability or UDP materialization.
+
+Next operator action is existing READ_ONLY scripts/r4a_cinema_execution_readback.py, a cinema smoke evidence fixture only. Shared production IAM/routes/recovery implementations remain source-independent. This script validates private activation receipt/frozen owner publication, scopes Ingestion by source/checksum and UDP by matching ingestion run IDs, reports run failure codes/quarantine/attempt/lineage/outbox/intake/job/decision/observation/revision/binding/object counts and recent symbolic failure markers. It distinguishes ACKED matching handoff delivery from PROCESSED/SUCCEEDED materialization and never calls retry/resume. Empty/mismatched evidence must remain NOT_PROVEN. It does not verify search and cross-database reads are not atomic. No schema/API modifications are required for this readback. All prior open items remain OPEN pending operator evidence; do not infer eight-row success from resumeHTTP200. If a new block is reported, diagnose the symbolic reason from the existing run without source reactivation or blind retry.
+
 ### 2026-10-01 — Committed retry confirmed; resume-only continuation prepared
 
 Actual operator targeted READ_ONLY SQL returned PAUSED|0|RETRY_READY|1. Retry transition committed despite wrapper HTTP204 parse failure. Run was not resumed. Receipt remains the original private intent, not deleted; original terminal confirmation authorized both actions before intent creation. This establishes durable retry state; do not replay retry. No new ingestion/UDP result proof exists.
