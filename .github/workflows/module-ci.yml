@@ -53,7 +53,7 @@ jobs:
       - name: Verify R4a read-only runtime inventory
         run: python3 -m unittest discover -s tests -p 'test_r4a_handoff_snapshot.py'
       - name: Verify managed identity release inventory
-        run: python3 -m unittest discover -s tests -p 'test_r4a_*managed_identity*.py'
+        run: sudo python3 -B -m unittest discover -s tests -p 'test_r4a_*managed_identity*.py'
       - name: Compile, test and package with bounded Maven execution
         run: |
           bash scripts/install-authorization-sdk.sh
