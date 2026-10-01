@@ -323,3 +323,54 @@ Preflight READ_ONLY PASS (LIVE_RECOVERY_ENABLED=true, CANDIDATE_ABSENT=true); st
 ### Checkpoint 2026-10-01 — batch scoped HUMAN policy preparation
 
 Nuovi helper parametrizzati: r4a_materialization_recovery_scope.py legge soltanto metadata dei job originali/RAW, richiede stato tecnico recuperabile e nessun effetto canonico, scrive scope privato exact-job/source/run/type + DataAccessLabel effettivo. r4a_prepare_scoped_human_policy.py accetta manifest batch HUMAN e scope privati, issuer/client/audience/admin scope/API base/tenant/subject/expiry/state-file obbligatori. Registra soltanto descrittori mancanti semanticamente compatibili e crea un DRAFT add-only: ACTIVE fresco e tutte le entry esistenti preservate; baseline/revision/readback/diff preview ricontrollati, nessuna pubblicazione. State file esclusivo 0600 con intent fsync prima di ogni POST; esito incerto obbliga riconciliazione, nessun repost automatico. Token solo in memoria, no redirect e nessuna modifica IAM/route/job. La preview non è prova di autorizzazione runtime. Test di perdita risposta registration/draft, conflitti pre-write, ACTIVE drift, preview scoped-grant drift, deny tenant/canonical effects/labels assenti/SERVICE/duplicati/expiry/redirect; test locali PASS, CI avviata. Per l'esecuzione admin serve fresh Device Grant HUMAN del soggetto esplicito; mantenere il codice fuori dalla chat. Dopo DRAFT: simulazioni deny/allow governate, IAM scope client binding e Gateway exact routes, pubblicazione esplicita HUMAN e poi lettura Spring dei tre job; retry soltanto dopo review/confirm nello stesso contesto umano. Full8/search e gli altri gate precedenti restano aperti.
+
+
+### Checkpoint 2026-10-01 — scoped batch operatore pronto, nessuna activation
+
+CI helper run36851261430 recovery-cycle-scripts SUCCESS, 73 test; modulo fermato prima di Maven perché checksum workflow non aggiornato insieme al nuovo test. Registro source-checksums corretto in 7a163de5bb0351f5bf332f7ad9f42d0cdf4240ea, includendo anche i tre nuovi file helper/test; gate invariato. Nuova CI avviata, completamento non ancora acquisito. Il codice dei due helper resta quello del commit 4c8600c45510ae451dd8385bbb66b3903eb3d080. Operator binding: soggetto HUMAN b93d8cf6-cd14-4ee6-91d7-84cd76c4f500, tenant ouf-lab, admin scope authorization.policy.admin, IAM client ouf-human-admin; validUntil esplicito 2026-10-02T10:00:00Z (12:00 Europe/Rome), da sostituire se la ripresa avviene dopo scadenza. State directory privato /etc/ouf/deploy-snapshots/udp-materialization-recovery-policy; resources.json e draft-receipt.json non stampare. Non rieseguire il blocco se uno di questi file esiste: riconciliare prima lo stato privato; zero repost automatici. DRAFT e preview non provano capability runtime allow. Nessuna publication/IAM/Gateway/retry implicita. Il blocco richiede login Device Grant HUMAN nel browser e non deve essere autenticato con identità SERVICE o altro subject.
+
+#### Preparazione batch della policy HUMAN — tre job originali
+
+Binding dell'installazione corrente espliciti. Il primo helper legge solo metadata DB e scrive scope privato; il secondo valida input, richiede fresh Device Grant HUMAN, registra il manifest batch e crea un DRAFT senza pubblicarlo. Il token resta solo in memoria. Non condividere device user code, token, JSON scope/receipt o payload. Al termine incollare soltanto protocollo simbolico. Una POST con esito incerto richiede riconciliazione del receipt privato, mai riesecuzione alla cieca.
+
+```bash
+(
+set -euo pipefail
+umask 077
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_policy_code=4c8600c45510ae451dd8385bbb66b3903eb3d080
+ouf_policy_tmp=$(mktemp -d /tmp/ouf-r4a-scoped-policy.XXXXXX)
+trap 'rm -rf -- "$ouf_policy_tmp"' EXIT
+for script in r4a_prepare_scoped_human_policy.py r4a_materialization_recovery_scope.py; do
+  git show "$ouf_policy_code:scripts/$script" > "$ouf_policy_tmp/$script"
+done
+# Binding espliciti dell'installazione corrente.
+ouf_policy_dir=/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy
+ouf_policy_tenant=ouf-lab
+ouf_policy_subject=b93d8cf6-cd14-4ee6-91d7-84cd76c4f500
+sudo install -d -m 0700 "$ouf_policy_dir"
+cat > "$ouf_policy_tmp/manifest.json" <<'JSON'
+[{"ownerRef":"udp","descriptor":{"capabilityId":"udp.materialization.retry","operation":"COMMAND","requiredScope":"udp.materialization.retry","allowedActors":["HUMAN"]}}]
+JSON
+sudo python3 -B "$ouf_policy_tmp/r4a_materialization_recovery_scope.py" \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp \
+  --source managed-cinema-8ec8ae90 --tenant "$ouf_policy_tenant" \
+  --run 86809c17-3354-45ca-a7e6-57e903944b24 --capability udp.materialization.retry \
+  --job 7793566d-b9d4-4402-8cda-c09b8f135c04 \
+  --job e7572836-f8af-4c58-b5fc-12d7aff5db1d \
+  --job e5b6ca24-6143-4ae5-8907-5dce398abfa3 \
+  --output "$ouf_policy_dir/resources.json"
+ouf_policy_args=(
+  --issuer https://auth.ouf-lab.it/realms/ouf --client ouf-human-admin
+  --audience ouf-api-gateway --admin-scope authorization.policy.admin
+  --base-url https://api.ouf-lab.it/api/trusted-human/v1/authorization
+  --tenant "$ouf_policy_tenant" --subject "$ouf_policy_subject"
+  --valid-until 2026-10-02T10:00:00Z
+  --manifest "$ouf_policy_tmp/manifest.json" --resources "$ouf_policy_dir/resources.json"
+  --state-file "$ouf_policy_dir/draft-receipt.json"
+)
+sudo python3 -B "$ouf_policy_tmp/r4a_prepare_scoped_human_policy.py" "${ouf_policy_args[@]}" --validate-only
+sudo python3 -B "$ouf_policy_tmp/r4a_prepare_scoped_human_policy.py" "${ouf_policy_args[@]}"
+)
+```
