@@ -73,5 +73,44 @@ class GovernedRecoveryTests(unittest.TestCase):
             changed=copy.deepcopy(expected);changed[category][field]=value
             with self.subTest(field=field),self.assertRaises(RuntimeError):recovery.expect_initial(changed,expected)
 
+    def continuation(self):
+        args=self.args();args.subject='subject';args.tenant='tenant';args.expected_revision='revision'
+        initial={'run':{'state':'PAUSED','control_version':0},'quarantine':{'lifecycle_state':'OPEN','lifecycle_version':0}}
+        current={'run':initial['run'],'quarantine':{'lifecycle_state':'RETRY_READY','lifecycle_version':1}}
+        receipt={'phase':'RETRY_REQUESTED_DO_NOT_REPOST','run':args.run,'quarantine':args.quarantine,'subject':args.subject,'tenant':args.tenant,'revision':args.expected_revision,'initial':initial,'expectedRunVersion':0,'expectedQuarantineVersion':0,'resumeCorrelationId':'81a9168c-0e83-4eae-aa25-9d72aa817099'}
+        return args,current,receipt
+
+    def test_continuation_sends_only_resume_after_intent_is_saved(self):
+        args,current,receipt=self.continuation()
+        phases=[]
+        def saved(path,value):phases.append(value['phase'])
+        def post(args,action,version,token,correlation):
+            self.assertEqual(phases[-1],'RESUME_REQUESTED_DO_NOT_REPOST')
+            self.assertEqual((action,version),('resume',0))
+            return {'run_id':args.run,'state':'RUNNING','control_version':1}
+        with patch.object(recovery,'private',return_value=receipt),patch.object(recovery,'views',return_value=current),patch.object(recovery.read,'claims_check'),patch.object(recovery.read.helper,'inspect',return_value={'Id':'live'}),patch.object(recovery,'save',side_effect=saved),patch.object(recovery,'post',side_effect=post) as request:
+            recovery.resume_only(args,'token',current,{'Id':'live'},'receipt')
+            self.assertEqual(request.call_count,1)
+            self.assertEqual(phases,['RETRY_RECONCILED','RESUME_REQUESTED_DO_NOT_REPOST','RESUME_CONFIRMED'])
+
+    def test_continuation_refuses_ambiguous_resume_and_wrong_owner_versions(self):
+        for phase in ('RESUME_REQUESTED_DO_NOT_REPOST','RESUME_CONFIRMED'):
+            args,current,receipt=self.continuation();receipt['phase']=phase
+            with patch.object(recovery,'private',return_value=receipt),patch.object(recovery,'post') as request:
+                with self.assertRaises(RuntimeError):recovery.resume_only(args,'token',current,{'Id':'live'},'receipt')
+                request.assert_not_called()
+        args,current,receipt=self.continuation();current['quarantine']['lifecycle_version']=2
+        with patch.object(recovery,'private',return_value=receipt),patch.object(recovery,'post') as request:
+            with self.assertRaises(RuntimeError):recovery.resume_only(args,'token',current,{'Id':'live'},'receipt')
+            request.assert_not_called()
+
+    def test_continuation_keeps_ambiguous_intent_when_resume_times_out(self):
+        args,current,receipt=self.continuation();phases=[]
+        with patch.object(recovery,'private',return_value=receipt),patch.object(recovery,'views',return_value=current),patch.object(recovery.read,'claims_check'),patch.object(recovery.read.helper,'inspect',return_value={'Id':'live'}),patch.object(recovery,'save',side_effect=lambda p,v:phases.append(v['phase'])),patch.object(recovery,'post',side_effect=RuntimeError('timeout')) as request:
+            with self.assertRaisesRegex(RuntimeError,'timeout'):
+                recovery.resume_only(args,'token',current,{'Id':'live'},'receipt')
+            self.assertEqual(phases[-1],'RESUME_REQUESTED_DO_NOT_REPOST')
+            self.assertEqual(request.call_count,1)
+
 
 if __name__=='__main__':unittest.main()

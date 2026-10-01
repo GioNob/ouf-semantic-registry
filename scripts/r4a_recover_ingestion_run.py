@@ -89,6 +89,42 @@ def confirmation(phrase):
         return source.readline().strip()==phrase
 
 
+def resume_only(args,token,current,live,receipt_path):
+    receipt=private(receipt_path)
+    if (any(receipt.get(k)!=getattr(args,k) for k in ('run','quarantine','subject','tenant'))
+            or receipt.get('revision')!=args.expected_revision):
+        raise RuntimeError('RECOVERY_RECEIPT_CONTEXT_MISMATCH')
+    if receipt.get('phase') not in ('RETRY_REQUESTED_DO_NOT_REPOST','RETRY_CONFIRMED','RETRY_RECONCILED'):
+        raise RuntimeError('RECOVERY_RESUME_INTENT_EXISTS_OR_PHASE_UNSUPPORTED_USE_VERIFY')
+    rv=receipt['expectedRunVersion'];qv=receipt['expectedQuarantineVersion']
+    if type(rv) is not int or type(qv) is not int or min(rv,qv)<0:
+        raise RuntimeError('RECOVERY_RECEIPT_VERSION_INVALID')
+    initial=receipt['initial']
+    if (initial['run']['state']!='PAUSED' or initial['run']['control_version']!=rv
+            or initial['quarantine']['lifecycle_state']!='OPEN' or initial['quarantine']['lifecycle_version']!=qv):
+        raise RuntimeError('RECOVERY_INITIAL_RECEIPT_INCONSISTENT')
+    expected={'run':initial['run'],'quarantine':{**initial['quarantine'],'lifecycle_state':'RETRY_READY','lifecycle_version':qv+1}}
+    if current!=expected:
+        raise RuntimeError('RECOVERY_RESUME_ONLY_OWNER_STATE_MISMATCH')
+    read.claims_check(token,args)
+    if views(args,token)!=expected or read.helper.inspect('ouf-ingestion')['Id']!=live['Id']:
+        raise RuntimeError('RECOVERY_CONTEXT_CHANGED_BEFORE_RESUME')
+    # This receipt was created after the original HUMAN confirmation of both
+    # actions. Reconcile the committed retry; do not issue it a second time.
+    receipt.update(phase='RETRY_RECONCILED',afterRetry=current,retryConfirmedByReadback=True)
+    save(receipt_path,receipt)
+    print('R4A_HUMAN_RETRY_RECONCILIATION=PASS STATE=RETRY_READY VERSION='+str(qv+1)+' RETRY_POST=false',flush=True)
+    receipt['phase']='RESUME_REQUESTED_DO_NOT_REPOST';save(receipt_path,receipt)
+    response=post(args,'resume',rv,token,receipt['resumeCorrelationId'])
+    if (not isinstance(response,dict) or response.get('run_id')!=args.run or response.get('state')!='RUNNING'
+            or response.get('control_version')!=rv+1):
+        raise RuntimeError('RECOVERY_RESUME_RESPONSE_MISMATCH_DO_NOT_REPOST')
+    receipt.update(phase='RESUME_CONFIRMED',resumeHttp=200,resumedControlVersion=rv+1)
+    save(receipt_path,receipt)
+    print('R4A_HUMAN_RUN_RESUME=PASS HTTP=200 CONTROL_VERSION='+str(rv+1),flush=True)
+    print('R4A_HUMAN_RUN_RECOVERY=PASS RETRY_POST=false RESUME_AUTHORIZATION_PROVEN=true SOURCE_REACTIVATION=false REPLAY=false INGESTION_RESULT_NOT_YET_VERIFIED=true SECRETS_NOT_PRINTED=true')
+
+
 def main(args):
     if os.geteuid()!=0:raise RuntimeError('ROOT_REQUIRED')
     os.umask(0o077)
@@ -109,6 +145,7 @@ def main(args):
     if args.mode=='recover' and (receipt_path.exists() or receipt_path.is_symlink()):
         raise RuntimeError('RECOVERY_INTENT_EXISTS_USE_VERIFY_DO_NOT_REPOST')
     if args.mode=='recover':read.SCOPES |= WRITE_SCOPES
+    if args.mode=='resume-only':read.SCOPES |= {'ingestion.run.resume'}
     token=read.login(args)
     current=views(args,token)
     if args.mode=='verify':
@@ -118,6 +155,9 @@ def main(args):
         report(current)
         print('RECOVERY_SAVED_PHASE='+str(receipt['phase']))
         print('R4A_HUMAN_RUN_RECOVERY_VERIFY=PASS READ_ONLY=true RETRY=false RUN_RESUME=false AUTOMATIC_REPOST=false INGESTION_RESULT_NOT_YET_VERIFIED=true')
+        return
+    if args.mode=='resume-only':
+        resume_only(args,token,current,live,receipt_path)
         return
     previous=private(read.ROOT/('ingestion-human-recovery-read-'+args.run+'.json'))
     if (previous.get('status')!='PASS' or previous.get('quarantineId')!=args.quarantine
@@ -160,7 +200,7 @@ def main(args):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('mode',choices=('recover','verify'))
+    parser.add_argument('mode',choices=('recover','verify','resume-only'))
     for name in ('issuer','api','client','subject','tenant','audience','run','quarantine','expected-revision'):
         parser.add_argument('--'+name,required=True)
     try:main(parser.parse_args())
