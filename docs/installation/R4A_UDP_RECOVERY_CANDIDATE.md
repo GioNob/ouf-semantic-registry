@@ -1801,3 +1801,95 @@ test "${RESULT[1]}" -eq 0
 exit "${RESULT[0]}"
 ROOT
 ```
+
+
+### R4A — retry del solo originale restante accettato; verifica 8/8 pendente (2026-10-01, 19:22 Europe/Rome)
+
+Output operatore ricevuto: nuova GET owner HUMAN HTTP 200 sul solo job `e7572836-f8af-4c58-b5fc-12d7aff5db1d`, handoff `aed8ef93-6d00-4cf0-868d-d2d82d79b524`, QUARANTINED/DURABLE v5, retryEligible=true, contractReady=true, contractCheck=READY. Anonimo e fuori ambito negati; owner authorization e reference gate Spring PASS. Piano JOBS=1 per run `86809c17-3354-45ca-a7e6-57e903944b24` e source `managed-cinema-8ec8ae90`. Conferma esplicita nel terminale seguita da POST HTTP 200, original job match, acceptedVersion=6, READY, repeated=false. ACCEPTED_COUNT=1. Nessun replay/new intake POST.
+
+Ricevuta fresca privata: `/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/human-retry-remaining-20261001T172023-3532794-fresh-review.json`. Ricevuta primaria prevista dal blocco eseguito: stesso stem senza `-fresh-review`, cioè `human-retry-remaining-20261001T172023-3532794.json`; da verificare nel readback, non ricostruire o sovrascrivere. Protocollo privato `human-retry-protocol.edu1pk`. L'output riportato prova il comando accettato; non contiene ancora il readback di materializzazione né gli exit code finali del wrapper.
+
+Ultimo stato materializzato provato ancora 7/8. Non promuovere a 8/8 dal solo READY acceptedVersion=6. Legacy isolato e conservato con restart=no nella ricevuta precedente `legacy-worker-stop-asbhqris/receipt.json`; causalità storica dell'evento senza diagnostica tuttora non provata.
+
+Prossimo blocco READ_ONLY: valida la ricevuta primaria privata (PASS_AUTHORIZED_REQUEUE, humanConfirmed, un solo job/handoff, selectedJobIds esatto, versione richiesta 5 e accettata 6, operationId UUID corrispondente, repeated=false). Poi esegue il readback Cinema della source frozen e la diagnostica UDP parametrizzata per run/source; acquisisce entrambe le uscite in un nuovo protocollo privato anche se il primo controllo non prova il risultato completo. Nessun login THS, retry, replay, riattivazione o intake POST. Helpers congelati al pin CI verde `9ff81375422399bd1a259414dbe9932cb8fdcd1a`; wrapper guarda ricevuta verificato su sei scenari locali, senza query live.
+
+Il readback Cinema resta una fixture lab esplicita, non un manifest portabile: in una nuova installazione utilizzare parametri frozen/source/run e binding di deployment locali. Le query dei diversi DB non sono uno snapshot atomico. Criterio di completamento: otto originali consegnati e otto job SUCCEEDED/PROCESSED con reference gate passato e risoluzione completata, nessun job originale in quarantena. Distinguere questo risultato dalla verifica serving/Search, dai controlli storage e dal deploy industrializzato, ancora aperti.
+
+PET UDP v1.3 §§109.6–109.7 riconsultato: recovery governata e verifica reference-integrity prima della materializzazione. Nessun nuovo deploy, policy publish o ampliamento di autorizzazione. Handoff, manuale installazione, roadmap e runbook aggiornati; acquisire il prossimo output prima di dichiarare il gate 8/8 chiuso.
+
+#### R4A UDP recovery — readback dopo retry HUMAN del solo restante accettato a v6
+
+Sola lettura: prima verifica della ricevuta privata, poi readback business ed eventi degli otto originali. Non necessita di login. Il readback Cinema è la fixture frozen dell'installazione lab documentata; la diagnostica UDP riceve esplicitamente i binding del deployment. Se l'esito non è provato, conservare l'output completo senza rilanciare retry.
+
+```bash
+set -euo pipefail
+umask 077
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_helpers=9ff81375422399bd1a259414dbe9932cb8fdcd1a
+ouf_readback_dir=$(mktemp -d /tmp/ouf-r4a-after-retry.XXXXXX)
+trap 'rm -rf -- "$ouf_readback_dir"' EXIT
+for script in r4a_cinema_execution_readback.py r4a_execution_failure_bundle.py r4a_execution_route_inventory.py r4a_prepare_frozen_compatibility_probe.py r4a_udp_materialization_diagnostic.py; do
+  git show "$ouf_helpers:scripts/$script" > "$ouf_readback_dir/$script"
+done
+sudo bash -s -- "$ouf_readback_dir" <<'ROOT'
+set -euo pipefail
+umask 077
+ouf_readback_dir=$1
+ouf_state_dir=/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy
+ouf_retry_receipt="$ouf_state_dir/human-retry-remaining-20261001T172023-3532794.json"
+ouf_run=86809c17-3354-45ca-a7e6-57e903944b24
+ouf_source=managed-cinema-8ec8ae90
+ouf_bindings=(
+  e7572836-f8af-4c58-b5fc-12d7aff5db1d:aed8ef93-6d00-4cf0-868d-d2d82d79b524
+)
+LOG=$(mktemp "$ouf_state_dir/readback-after-retry.XXXXXX")
+printf 'R4A_POST_RETRY_READBACK_LOG=%s PRIVATE=true\n' "$LOG"
+python3 -B - "$ouf_retry_receipt" "$ouf_run" "$ouf_source" "${ouf_bindings[@]}" <<'PY' | tee "$LOG"
+import json, os, re, stat, sys, uuid
+from pathlib import Path
+def require(value):
+    if not value:raise RuntimeError('RECEIPT_MISMATCH')
+try:
+    path=Path(sys.argv[1]);meta=path.lstat();parent=path.parent.lstat()
+    require(os.geteuid()==0 and stat.S_ISREG(meta.st_mode) and meta.st_uid==0 and stat.S_IMODE(meta.st_mode)==0o600)
+    require(stat.S_ISDIR(parent.st_mode) and parent.st_uid==0 and stat.S_IMODE(parent.st_mode)==0o700)
+    require(meta.st_size<=8000000)
+    value=json.loads(path.read_text());expected=dict(pair.split(':',1) for pair in sys.argv[4:])
+    require(all(str(uuid.UUID(j))==j and str(uuid.UUID(h))==h for j,h in expected.items()))
+    require(value['status']=='PASS_AUTHORIZED_REQUEUE' and value['runId']==sys.argv[2] and value['sourceId']==sys.argv[3])
+    require(value['humanConfirmed'] is True and len(value['rows'])==len(expected)==1)
+    require(value['selectedJobIds']==sorted(expected))
+    require({row['jobId'] for row in value['rows']}==set(expected))
+    operations=set()
+    for row in value['rows']:
+        request=row['request'];receipt=row['receipt'];job=row['jobId'];handoff=expected[job]
+        require(row['status']=='PASS_ACCEPTED' and row['handoffId']==handoff)
+        require(type(request['expectedVersion']) is int and request['expectedVersion']==5
+            and re.fullmatch('sha256:[a-f0-9]{64}',request['expectedSnapshotHash']))
+        operation=request['operationId'];require(str(uuid.UUID(operation))==operation and operation not in operations)
+        operations.add(operation)
+        require(receipt['operationId']==operation and receipt['jobId']==job and receipt['handoffId']==handoff)
+        require(type(receipt['acceptedVersion']) is int and receipt['acceptedVersion']==6
+            and receipt['state']=='READY' and receipt['repeated'] is False)
+    print('R4A_HUMAN_RETRY_SAVED_RECEIPT=PASS ACCEPTED_COUNT=1 EXACT_REMAINING_ORIGINAL_JOB=true SAVED_EVIDENCE_ONLY=true LIVE_MATERIALIZATION_NOT_YET_QUERIED=true SECRETS_NOT_PRINTED=true')
+except Exception as error:
+    print('R4A_HUMAN_RETRY_SAVED_RECEIPT=BLOCKED TYPE='+type(error).__name__+' READ_ONLY=true SECRETS_NOT_PRINTED=true')
+    raise SystemExit(1)
+PY
+set +e
+python3 -u -B "$ouf_readback_dir/r4a_cinema_execution_readback.py" 2>&1 | tee -a "$LOG"
+ouf_cinema_result=("${PIPESTATUS[@]}")
+python3 -u -B "$ouf_readback_dir/r4a_udp_materialization_diagnostic.py" \
+  --run "$ouf_run" --source "$ouf_source" \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp 2>&1 | tee -a "$LOG"
+ouf_udp_result=("${PIPESTATUS[@]}")
+set -e
+printf 'R4A_POST_RETRY_READBACK_LOG=%s PRIVATE=true\n' "$LOG"
+printf 'R4A_POST_RETRY_READBACK_EXIT=%s UDP_DIAGNOSTIC_EXIT=%s READ_ONLY=true RETRY=false REPLAY=false\n' "${ouf_cinema_result[0]}" "${ouf_udp_result[0]}"
+test "${ouf_cinema_result[0]}" -eq 0
+test "${ouf_cinema_result[1]}" -eq 0
+test "${ouf_udp_result[0]}" -eq 0
+test "${ouf_udp_result[1]}" -eq 0
+ROOT
+```
