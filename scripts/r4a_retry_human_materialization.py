@@ -28,7 +28,7 @@ def require_token_time(token):
 def confirm(run):
     phrase='CONFERMO RETRY ORIGINALE '+run
     print('Digitare nel terminale: '+phrase,flush=True)
-    print('CONFERMA HUMAN> ',end='',flush=True)
+    print('CONFERMA HUMAN> ',flush=True)
     # Terminal is non-seekable; do not open r+ and do not consume pipeline stdin.
     with open('/dev/tty','r') as terminal:
         api.require(terminal.readline().strip()==phrase,'HUMAN_CONFIRMATION_NOT_MATCHED')
