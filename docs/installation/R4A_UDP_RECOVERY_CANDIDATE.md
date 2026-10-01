@@ -310,3 +310,6 @@ sudo python3 -B "$ouf_resume_dir/r4a_release_udp_recovery.py" \
   --expected-job-count 8 --expected-succeeded 5 --expected-quarantined 3
 )
 ```
+
+
+CI finale helper upgrade: Semantic Registry run36849692475 su 71c84cebf5a91a3d8d879019ff7eed4f36bf44f6 SUCCESS nei tre job recovery-cycle-scripts (63 test), java21-postgresql17 e container-smoke. Codice helper pinnato b71a964b663e47bb23a93f7c46c62d3ecaa84e0b invariato. Il successivo aggiornamento è solo documentale. Rilascio sul server ancora NON eseguito/provato.
