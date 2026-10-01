@@ -3333,3 +3333,61 @@ All lab paths/source/run/container/network/compiler references are operator CLI 
 ### CI follow-up 2026-10-01 — runner30 PASS; checksum PASS; managed candidate privilege context corrected
 
 New pinned probe documentation commit `4d2f294f0392f4161b532f227fd4bfe8e0833979`, module CI run36831553184: recovery-cycle-scripts SUCCESS (30 tests); checksum step SUCCESS. Full module job reached existing managed identity candidate tests, then failed with ROOT_REQUIRED (four assertion failures/three errors) because its unittest discovery ran unprivileged while prepare/switch intentionally require root and private root-owned temporary fixtures. Tests inspected: Docker/build/HTTP/backup effects are mocked in the affected execution fixtures. Align this test command with root-context script CI using sudo python3 -B; retain production ROOT_REQUIRED guard. Refresh only reviewed workflow checksum again. Full module pipeline result after this correction remains pending. This is CI harness repair, no live candidate build/switch/deploy or privileged VPS operation. The exact Java operator block above remains pinned to `307a652a7103457847409ee303237d6d2f22618d` and unchanged. Live Java compile/run and historical quarantine cause remain pending; all prior business-state/open acceptance gates remain as recorded.
+
+
+## R4A checkpoint 2026-10-01 10:06 Europe/Rome — shipped Java resolver PASS; original-job recovery candidate
+
+### Latest operator evidence and live boundary
+
+Operator ran the pinned isolated Java probe from coordination code `307a652a7103457847409ee303237d6d2f22618d`:
+- Live UDP image `sha256:a47c8607c53451f7d0affba5994ec20dc6c09272ace68808daa9e63c33bc572e`.
+- Offline compiler image `sha256:6fdc855a6ed81d288ca7ca37ac6ff5e9308b612485c0801d70b25a858c83d237`.
+- `UDP_SHIPPED_JAVA_RESOLVE_CONTRACTS=PASS`; GET_ONLY, no Spring startup, materialization or retry; values/token not printed.
+- Original resolver completed sorted-Jackson canonical checksum recomputation, profile decoding/governed identity consistency, execution-reference correspondence and Semantic pin checks in the isolated JVM. This extends the preceding curl owner-GET PASS.
+- `MAPPER_RUNTIME_PARITY_NOT_PROVEN=true` and `HISTORICAL_CAUSALITY_NOT_PROVEN=true` remain material limits. No cause of the three historical exceptions is established. Token race, malformed persisted refs, insufficient current scopes and permanently invalid common profile are not proven root causes.
+
+Last business-state readback remains run `86809c17-3354-45ca-a7e6-57e903944b24` SUCCEEDED/controlVersion2, eight original lineage/handoff rows ACKED, both Ingestion404/403 quarantines RESOLVED/version2; consumed trigger_once schedule DISABLED is correct; source ACTIVE with frozen hash/publication match. UDPfive PROCESSED/SUCCEEDED/materialized and three DURABLE/QUARANTINED `UDP_REFERENCE_INTEGRITY_CONTRACT_INVALID`, stateVersion2/attempts1/integrityAttempts1, no baseline/no scheduled recheck. All eight contractRefs exact JSON equal. This Java PASS does not reread or change those states. Full eight-row canonical materialization remains OPEN.
+
+Original quarantined job/handoff pairs:
+- `7793566d-b9d4-4402-8cda-c09b8f135c04` / `8869a6d6-3d82-4514-a63a-d23f9b26d48f`.
+- `e7572836-f8af-4c58-b5fc-12d7aff5db1d` / `aed8ef93-6d00-4cf0-868d-d2d82d79b524`.
+- `e5b6ca24-6143-4ae5-8907-5dce398abfa3` / `e58faf8c-c35a-4106-b4b6-67e58dec9774`.
+
+Do not replay the successful ingestion run, reactivate its source/schedule, resend ACKed handoffs, alter frozen bundle/optional contract fields or UPDATE job states directly. Previous HUMAN recovery receipts remain private and retain authorization provenance; they authorize earlier Ingestion recovery, not UDP retry or policy changes.
+
+### PET review and implementation gap
+
+Consulted UDP1.3 §§109.6/109.7/109.9 and Ingestion1.3 §45.2: state/version/evidence-controlled re-run, reference-integrity at point of use, privileged recovery audit and distinction between durable ACK and completed materialization. Shipped ResolutionRepository claims READY/expiredRUNNING/duePAUSED only; technical QUARANTINED jobs have no governed retry endpoint. HistoricalReplayService REPRODUCE creates a NEW replay handoff/job and does not recover the original eight-row job set. Resolution issue decisions serve a different HUMAN identity-review workflow and must not bypass reference quarantine.
+
+### Reviewable UDP candidate — not deployed
+
+Draft PR [ouf-udp-object-resolution#38](https://github.com/GioNob/ouf-udp-object-resolution/pull/38), branch `codex/r4a-materialization-recovery`, candidate revision `c0b6c98c5029682a51e5ed82717092f86bfbb318`.
+Review base `codex/r4a-materialization-recovery-base` is frozen at deployed `edaba2bff18a2aaf52d1180f21f0e68984cc3437`; main predates the deployed runtime, so PR targets the frozen baseline rather than including prior unrelated branch history. No main merge/force update/live release or migration. Existing Flyway34 unchanged.
+
+New default-off HUMAN-only API:
+- GET `/api/udp/v1/governance/materialization/jobs/{jobId}`: safe read-only review and real live Spring catalog/mapper check.
+- POST `/{jobId}/retry`: operationUUID + expectedVersion + exact reviewed snapshotHash + explicit bounded reason.
+- Capability `udp.materialization.retry`, operation COMMAND, requiredScope same ID, actors HUMAN only, MCP-ineligible. Immutable ownerRef/descriptor registration input in `catalogue/r4a-udp-materialization-recovery.json`, locally validated by existing batch registrar without network/writes.
+- SDK owner decision on same request snapshot for tenant/RAW label and scopes module UDP/sourceRef/jobRef(ingestionRun)/typeRef. Resource denied before profile read/retry. No implicit SERVICE/AI_AGENT authority.
+- Only technical reference CONTRACT_INVALID/CATALOG_INVALID/MISSING quarantine, intakeDURABLE, no claim/lease, matching tenant/source/type durable RAW metadata, and NO resolution decision/observation/revision/property contribution/initial source binding. HUMAN resolution review, DRIFT, completed/failed canonical processing excluded.
+- Transaction serializes operationUUID, locks job/intake/RAW metadata, revalidates exact snapshot and contracts, preserves any integrity baseline, advances QUARANTINED -> READY/version once and appends immutable HUMAN evidence atomically. Original payload/RAW refs/job/handoff/run/attempts/integrityAttempts and historical events retained.
+- Duplicate identical authorized operation returns original acceptedVersion even after worker claim/completion; no second requeue. Changed request/actor/job conflicts. Audit write failure rolls back requeue. Worker performs normal integrity gate/resolution;200 means admission only.
+- Future gate errors retain allowlisted symbolic diagnostic code/category and at most four application Java frames, without raw exception messages, token, payload, refs or cause dumps. Prior lost details cannot be recovered retrospectively.
+
+Configuration `OUF_UDP_MATERIALIZATION_RECOVERY_ENABLED` maps to `ouf.udp.materialization-recovery.enabled`, defaultfalse. Existing tenant/IAM/Gateway/token/policy/DB/S3 bindings remain installation configuration. No lab domain/source/tenant/host/user/image hardcoded in new production code. Install/recovery acceptance procedure: [module runbook](https://github.com/GioNob/ouf-udp-object-resolution/blob/codex/r4a-materialization-recovery/docs/materialization-recovery.md), OpenAPI updated. New capability/scope/grant/Gateway bindings are NOT registered/activated by committing this input. Require governed draft/preview/simulate/publish preserving complete ACTIVE policy and exact intended human/source/tenant/run scope. Last observed policy35 must be freshly reread, not assumed current.
+
+### Verification and security gate
+
+Coordination Semantic full CI run36831760279 at `8f2f52ecb2f86333810742d6693b48f0044a4e39` SUCCESS, including corrected checksum, root-context mocked candidate fixtures,30 script tests and container smoke.
+
+UDP feature code `b437f0fb2e3a732342c1334d30120b4c04af224c`: focused PostgreSQL17 CI run36833579424 SUCCESS,14 tests/0failures/0errors/0skipped: recovery9, safe diagnostics2, existing integrity gate3. SDK tests10 pass. Full module run36833579517 Java21/PostgreSQL17/build SUCCESS, disaster-recovery drill SUCCESS, performance baseline SUCCESS; SDK pairwise and CRS/grid workflows SUCCESS. Initial Mockito exception-restubbing fixture error corrected; no production guard weakened.
+
+Supply-chain gate on that candidate failed for two scanner-reported HIGH jackson-databind2.21.6 findings, CVE-2026-91776/CVE-2026-91777, fixed2.21.7. Candidate `c0b6c98c5029682a51e5ed82717092f86bfbb318` pins Jackson BOM2.21.7 in the same maintained family; official FasterXML jackson-bom-2.21.7 tag/pom verified. No vulnerability suppression/waiver or gate weakening. Patched candidate focused/full/security/DR/performance/deploy-chart CI still pending at this checkpoint. Feature pre-patch PASS is not proof that this patched candidate is release-ready. Other modules/deployed artifacts require separate dependency/security review; candidate scan is not a live-image scan.
+
+### Exact continuation and remaining gates
+
+Next: finish patched candidate gates, prepare parameterized stopped candidate preserving actual runtime configuration/mounts/user/networks and private build/rollback/backup receipts; do not start/switch it or run migrations without the concrete verified release workflow. Reconcile/register only new HUMAN capability descriptor and IAM scope through existing generic governed catalogue/lifecycle helpers using explicit installation bindings; derive intended scoped grant and owner simulations, then exact GET/POST Gateway deny/allow acceptance. Legacy batch registrar Device Grant includes lab defaults: use explicit endpoint/private-token path or parameterize issuer/client before portable use; never reuse its lab defaults silently in industrial deploy.
+
+After candidate release acceptance: fresh HUMAN login, GET exact original three jobs through Gateway/owner (this verifies live mapper), review ready/eligible/version/snapshot and explicit operator confirmation in same human session; stable operation IDs/private receipts; POST only those jobs, then read back original eight IDs and canonical evidence. No live commands or mutations from this candidate have yet been executed. Any repeat failure must preserve diagnostic event and stop, without automatic retry loop.
+
+All inherited open items remain OPEN: eight-row materialization and search, independent S3 byte/hash readback, second-source matching/review, original source RAW replay SPI versus handoff REPRODUCE, per-source/type/zone retention, portability/multi-host/multi-network/multi-tenant/domain parameterization, clean install/upgrade/restore/automated deploy (R-INSTALL), operational-awareness collectors/gates, ChatGPT-MCP latency, cross-module acceptance/release/branch reconciliation and every unresolved gate from previous handoffs. Documentation/PET consultation remain mandatory each sprint; no obligation waived by transport or Java PASS.
