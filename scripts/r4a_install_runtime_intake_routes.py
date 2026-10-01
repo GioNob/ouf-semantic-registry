@@ -18,6 +18,30 @@ TARGETS = [('r4a-udp-runtime-lake-write','/api/internal/v1/lake/objects','datala
            ('r4a-udp-runtime-handoff-write','/api/internal/v1/handoffs','udp.candidate.write')]
 
 
+def intake_plugins(plugins):
+    known={'openid-connect','proxy-rewrite','client-control','limit-count','request-id','cors','prometheus','serverless-pre-function','serverless-post-function'}
+    if set(plugins)-known or plugins.get('openid-connect',{}).get('bearer_only') is not True:
+        raise RuntimeError('INTAKE_PLUGIN_CONTRACT_UNSUPPORTED')
+    result=copy.deepcopy(plugins)
+    result.pop('proxy-rewrite',None)
+    strip=("return function(conf, ctx) local headers=ngx.req.get_headers(0,true); "
+           "for name,_ in pairs(headers) do if string.lower(name):sub(1,6)=='x-ouf-' "
+           "then ngx.req.clear_header(name) end end end")
+    guard=("return function(conf, ctx) local cjson=require('cjson.safe'); "
+           "local auth=ngx.var.http_authorization; local token=auth and auth:match('^[Bb]earer%s+(.+)$'); "
+           "local part=token and token:match('^[^.]+%.([^.]+)%.[^.]+$'); "
+           "if not part then return ngx.exit(401) end; part=part:gsub('-','+'):gsub('_','/'); "
+           "local rem=#part%4; if rem>0 then part=part..string.rep('=',4-rem) end; "
+           "local raw=ngx.decode_base64(part); local claims=raw and cjson.decode(raw); "
+           "if type(claims)~='table' then return ngx.exit(401) end; "
+           "if claims['ouf_actor_type']~='SERVICE' then return ngx.exit(403) end end")
+    # Access post-function executes after OIDC; owner independently validates JWT
+    # and decides resource grants. Never copy a template's owner/actor Lua.
+    result['serverless-pre-function']={'phase':'rewrite','functions':[strip]}
+    result['serverless-post-function']={'phase':'access','functions':[guard]}
+    return result
+
+
 def objects(value):
     if isinstance(value,dict):
         yield value
@@ -104,7 +128,7 @@ def desired_routes(values, scopes):
         value.update(uri=path,methods=['POST'],name=route_id,desc='Exact authenticated UDP runtime intake; owner SERVICE authorization retained')
         # The preflight transformation belongs to its route. Intake uses exact owner paths.
         # Drop the entire plugin (including method/host/header transformations), not just URI.
-        value['plugins'].pop('proxy-rewrite', None)
+        value['plugins']=intake_plugins(value['plugins'])
         value['plugins']['openid-connect']['required_scopes'] = [scopes[capability]]
         result[route_id] = value
     return result
