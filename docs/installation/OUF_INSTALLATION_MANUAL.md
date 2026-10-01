@@ -3203,3 +3203,18 @@ Correction to diagnostic: configuration.read=false tested the WRONG generic scop
 Next READ_ONLY inventory reuses corrected script with broader lab CLI service matcher ouf.*(token|auth|refresh), covering shared/Onboarding credential services instead of requiring UDP in their name. It prints only service names, Python script count and redacted AST structural counts. No source/config/token values, login, token refresh, service restart or job mutation. Shell/helper/dynamic writer behavior stays explicitly unproven. If still no writer, inspect deployment-specific scheduler/container binding through a targeted read-only inventory rather than scanning arbitrary secret/config trees.
 
 PET sprint UDP1.3 §109.7 and owner authorization boundaries consulted; fail closed preserved. All eight refs remain identical/valid-required;5 objects succeeded and3 jobs QUARANTINED/CONTRACT_INVALID,8 ACKs/runSUCCEEDED unchanged. No corrective release or recovery yet. Existing S3 independent verification/search/PET/R-INSTALL/replay/retention/portability/operational-awareness/latency/second-source gaps remain open.
+
+### Exact next operator inventory — prepared, not executed
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_token_diag=$(mktemp /tmp/ouf-r4a-udp-token.XXXXXX.py)
+trap 'rm -f -- "$ouf_token_diag"' EXIT
+git show b9818c170ed41d99a58f9a7810ecbc9923487cb3:scripts/r4a_udp_token_transport_inventory.py > "$ouf_token_diag"
+sudo python3 -B "$ouf_token_diag" \
+  --container ouf-udp --service-match 'ouf.*(token|auth|refresh)'
+)
+```
