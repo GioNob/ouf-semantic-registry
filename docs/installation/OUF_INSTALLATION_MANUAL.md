@@ -3230,3 +3230,18 @@ Generic token inventory corrected to print each unit BEFORE systemctl read; skip
 Five local tests PASS, including new unavailable-service redaction/continuation and template skip checks. UDP job and token inventory tests added to independent module CI script job alongside recovery regressions; CI result not yet acquired for this change. No deployed Java/config/state change. PET sprint UDP1.3 §109.7 diagnostic vs readiness/integrity separation consulted. Shared scope/profile bindings remain parameterized; service matcher stays a CLI lab argument.
 
 Next operator reruns only the hardened READ_ONLY inventory. Inspect fourth-unit outcome and exact-target structural evidence before selecting further runtime verification. If no destination can be proven, use a supported point-of-use resolver probe with precise symbolic cause; do not keep assuming a token race. RunSUCCEEDED/eight ACKs/five materialized/three QUARANTINED CONTRACT_INVALID and all prior broad open items remain unchanged. Preserve all receipts/job events/objects; no blind replay or SQL state repair.
+
+### Exact next operator inventory — prepared, not executed
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_token_diag=$(mktemp /tmp/ouf-r4a-udp-token.XXXXXX.py)
+trap 'rm -f -- "$ouf_token_diag"' EXIT
+git show ab50b5d0d40684ed0f5c16b0792aa0b5f004edf7:scripts/r4a_udp_token_transport_inventory.py > "$ouf_token_diag"
+sudo python3 -B "$ouf_token_diag" \
+  --container ouf-udp --service-match 'ouf.*(token|auth|refresh)'
+)
+```
