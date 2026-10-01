@@ -78,6 +78,25 @@ def invoke(argv, timeout=30):
     return subprocess.run(argv,check=True,capture_output=True,text=True,timeout=timeout).stdout.strip()
 
 
+def compiled_permissions(classes):
+    # mkdir(mode=...) is filtered by the operator umask. Only non-secret bytecode becomes readable.
+    classes.chmod(0o755)
+    for entry in classes.rglob('*'):
+        if entry.is_symlink():raise ValueError('COMPILED_PATH_UNSAFE')
+        entry.chmod(0o755 if entry.is_dir() else 0o644)
+
+
+def jvm_failure_category(stderr):
+    for marker,category in (
+        ('Could not find or load main class','MAIN_CLASS_UNAVAILABLE'),
+        ('NoClassDefFoundError','DEPENDENCY_CLASS_UNAVAILABLE'),
+        ('UnsupportedClassVersionError','JAVA_VERSION_INCOMPATIBLE'),
+        ('NoSuchMethodError','DEPENDENCY_LINKAGE_ERROR'),
+        ('Permission denied','FILESYSTEM_ACCESS_DENIED')):
+        if marker in stderr:return category
+    return 'UNCLASSIFIED'
+
+
 def resolver_image(args, live):
     candidate=getattr(args,'resolver_image',None)
     expected=getattr(args,'expected_revision',None)
@@ -161,6 +180,8 @@ def main(args):
         invoke(common+['--network','none','--user','0:0','--mount',
             'type=bind,src='+str(root)+',dst=/probe','--entrypoint','javac',compiler,
             '--release','21','-cp',cp,'-d','/probe/probe-classes','/probe/R4aReadOnlyReferenceProbe.java'],timeout=45)
+        compiled_permissions(classes)
+        print('UDP_JAVA_PROBE_COMPILE=PASS',flush=True)
         # Use the actual immutable live image and same numeric identity. No DB credentials/environment.
         process=subprocess.run(common+['--network',args.network,'--user',user,'--mount',
             'type=bind,src='+str(root)+',dst=/probe,readonly','--mount',
@@ -172,8 +193,12 @@ def main(args):
         for line in output:
             if re.fullmatch(r'(?:UDP_SHIPPED_JAVA_RESOLVE_CONTRACTS|UDP_JAVA_EXCEPTION_TYPE|UDP_JAVA_SAFE_CODE|UDP_JAVA_FRAME|R4A_UDP_JAVA_REFERENCE_PROBE)=[A-Za-z0-9_.#:= -]{1,700}',line):
                 print(line,flush=True)
-        if process.returncode!=0:raise RuntimeError('JAVA_PROBE_FAILED')
-        if 'UDP_SHIPPED_JAVA_RESOLVE_CONTRACTS=PASS' not in output:raise RuntimeError('JAVA_PROTOCOL_MISSING')
+        if process.returncode!=0:
+            print('UDP_JAVA_LAUNCH_FAILURE_CATEGORY='+jvm_failure_category(process.stderr),flush=True)
+            raise RuntimeError('JAVA_PROBE_FAILED')
+        if 'UDP_SHIPPED_JAVA_RESOLVE_CONTRACTS=PASS' not in output:
+            print('UDP_JAVA_LAUNCH_FAILURE_CATEGORY=PROTOCOL_MISSING',flush=True)
+            raise RuntimeError('JAVA_PROTOCOL_MISSING')
 
 
 if __name__=='__main__':

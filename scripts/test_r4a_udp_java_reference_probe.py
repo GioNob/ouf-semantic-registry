@@ -2,6 +2,7 @@ import argparse
 import contextlib
 import io
 import json
+import os
 from pathlib import Path
 import tempfile
 import types
@@ -14,6 +15,16 @@ RESOLVER='BOOT-INF/classes/it/comune/trieste/ouf/udp/PublishedRuntimeConfigurati
 
 
 class JavaProbeTests(unittest.TestCase):
+    def test_private_umask_keeps_bytecode_readable_and_refs_private(self):
+        previous=os.umask(0o077)
+        try:self.test_isolation_sql_mounts_and_redaction()
+        finally:os.umask(previous)
+
+    def test_jvm_categories_never_return_stderr_values(self):
+        self.assertEqual(probe.jvm_failure_category('PRIVATE_TOKEN Could not find or load main class private.name'),
+                         'MAIN_CLASS_UNAVAILABLE')
+        self.assertEqual(probe.jvm_failure_category('private arbitrary error'),'UNCLASSIFIED')
+
     def test_candidate_requires_exact_revision_and_same_numeric_identity(self):
         image={'Id':'sha256:'+'b'*64,'Config':{'User':'10004:10004',
             'Labels':{'org.opencontainers.image.revision':'a'*40}}}
@@ -84,9 +95,21 @@ class JavaProbeTests(unittest.TestCase):
         def invoke(argv,timeout=30):
             commands.append(argv)
             if argv[1]=='cp':self.jar(Path(argv[-1]))
+            if 'javac' in argv:
+                mount=next(x for x in argv if x.startswith('type=bind,src='))
+                root=Path(mount.split('src=',1)[1].split(',dst=',1)[0])
+                compiled=root/'probe-classes'/'it'/'ouf';compiled.mkdir(parents=True,mode=0o700)
+                (compiled/'Probe.class').write_bytes(b'non-secret-bytecode')
             return ''
         def execute(argv,**kwargs):
             commands.append(argv)
+            mount=next(x for x in argv if x.startswith('type=bind,src='))
+            root=Path(mount.split('src=',1)[1].split(',dst=',1)[0])
+            self.assertEqual((root/'probe-classes').stat().st_mode&0o777,0o755)
+            self.assertEqual((root/'probe-classes'/'it').stat().st_mode&0o777,0o755)
+            self.assertEqual((root/'probe-classes'/'it'/'ouf').stat().st_mode&0o777,0o755)
+            self.assertEqual((root/'probe-classes'/'it'/'ouf'/'Probe.class').stat().st_mode&0o777,0o644)
+            self.assertEqual((root/'refs.json').stat().st_mode&0o777,0o600)
             return types.SimpleNamespace(returncode=0,stdout='private-token\nUDP_SHIPPED_JAVA_RESOLVE_CONTRACTS=PASS\n',stderr='private body')
         output=io.StringIO()
         with patch.object(probe.inventory,'run',side_effect=inventory), \
