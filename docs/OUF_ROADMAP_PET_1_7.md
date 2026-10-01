@@ -2436,3 +2436,22 @@ Sprint PET UDP1.3 §109.7 consulted: point-of-use reference-integrity fail close
 Next increment adds --compare-contracts to the existing generic diagnostic. One READ_ONLY query groups this exact source/run's persisted contractRefs using JSONB equality; reports groups, succeeded/quarantined counts, required nonblank-string validity and optional value shapes only, never refs/payload. Four local unit tests PASS including scope/SQL projection validation and output redaction (mocked transport); LIVE query and CI not yet verified. Missing required strings explicitly count false. Grouping all8 in one ref group spanning5 successes/3 failures would rule out differing persisted contractRefs as discriminator but would NOT independently prove bundle validity or token-race causality. Multiple groups require owner-pinned comparison; do not change frozen configuration.
 
 Await operator comparison before designing a deployed-code/transport probe or corrective release. No retry/replay/SQL state reset, token mutation, new policy or source activation. Delivery PASS, materialization5/8/search OPEN; every earlier PET/R-INSTALL/portability/retention/replay/operational-awareness/latency/second-source gap remains open.
+
+### Exact next operator comparison — prepared, not executed
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_refs_diag=$(mktemp /tmp/ouf-r4a-contract-refs.XXXXXX.py)
+trap 'rm -f -- "$ouf_refs_diag"' EXIT
+git show 17d96fb5cdcea7e378cee660d4ac33cb019c3dfa:scripts/r4a_udp_materialization_diagnostic.py > "$ouf_refs_diag"
+sudo python3 -B "$ouf_refs_diag" --compare-contracts \
+  --run 86809c17-3354-45ca-a7e6-57e903944b24 \
+  --source managed-cinema-8ec8ae90 \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp
+)
+```
+
+Lab values supplied as CLI fixture bindings only. No login. No contract-reference values printed; preserve all job states until the result is interpreted.
