@@ -1565,3 +1565,135 @@ except Exception as error:
     raise SystemExit(1)
 PY
 ```
+
+
+### R4A — confronto due worker completato; isolamento legacy predisposto (2026-10-01, 19:01 Europe/Rome)
+
+Ricevuta operatore privata: `/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/worker-binding-comparison-azz0955w/receipt.json`.
+I due container RUNNING hanno URL/utente/credenziali DB dichiarati uguali, una rete Docker condivisa, `OUF_UDP_EXECUTION_ENABLED=true`, classi del loop schedulato e relativo gate presenti, binding datasource OUF e schema UDP dichiarati nel JAR. Nessun possibile override rilevato dalla verifica; entrambe le identità invariate. Questo è un rischio concreto di concorrenza con codice legacy incompatibile con la diagnostica corrente. Binding effettivo Spring e autore storico dell'evento NON provati; non attribuire l'evento del job restante al legacy come fatto accertato.
+
+Decisione operativa: preservare e arrestare in modo circoscritto `ouf-udp-r4a-smoke` con immagine attesa `sha256:707fe8ca7b1a795f8ff359f9fdb6c968734c0cf66e5b8f7bd9757f4104466f80`, già restart=no. Non modificare né riavviare `ouf-udp` (immagine 5e048a, revision 83249a); non rimuovere altri container. Arresto predisposto, NON ancora eseguito/verificato.
+
+Runbook con guard: immagini e revision live esatte; flag/binding/rate condivise riconfermati; assenza di override; main raggiungibile attraverso la rete del gateway; nessun job non terminale nell'intero DB interrogato; esattamente sette originali SUCCEEDED/PROCESSED e il restante job e7572836 QUARANTINED/DURABLE a v5. Prima della mutazione salva e fsync la ricevuta privata STOP_INTENT_OUTCOME_UNKNOWN. Lo stop usa l'ID immutabile del solo legacy e 60 secondi per shutdown; un timeout non provoca né restart automatico né retry. Dopo lo stop verifica exit code 0/143 e assenza OOM, restart=no, identità del main invariata, salute backend gateway e confronto completo degli originali prima/dopo.
+
+Verifica locale: sintassi Bash/Python e sei scenari simulati (successo, immagine diversa, override, salute assente, worker non idle, timeout/esito sconosciuto), senza Docker reale. Nessuna chiamata di stop del main in tutti gli scenari. Ricevuta STOP privata con stati e identificativi, senza env/credenziali/URL DB/comandi. Nessun backup aggiuntivo: questa procedura non modifica schema o dati business. Le query sono READ ONLY; l'unica mutazione prevista è lo stop del container legacy.
+
+PET UDP v1.3 §§109.6–109.7 riconsultato: niente arresto con claim pendenti, shutdown controllato e nessun silent fallback. Il gate deploy deve inventariare tutti i processi worker collegabili al DB target e verificare che le loro versioni siano ammesse; non assumere che un rilascio del container principale escluda worker di smoke residui. Conservare parametri host/reti/domain/tenant/moduli nei manifest di installazione e supportare worker concorrenti soltanto con contratti compatibili. Altri container STOPPED con restart unless-stopped restano censiti, senza cleanup indiscriminato.
+
+Stato recovery: 7/8 confermati; nessun nuovo retry eseguito. Dopo PASS dell'isolamento, predisporre una nuova review HUMAN del solo originale restante a v5 e un nuovo retry esplicitamente confermato, usando la policy nominale 36 esistente senza ripubblicazione né ampliamento. Non riutilizzare lo script precedente dei tre job a v2. 8/8, search, storage e industrializzazione deploy restano aperti.
+
+#### R4A UDP recovery — arresto circoscritto del worker legacy con guard
+
+Eseguire una sola volta dopo il confronto ricevuto sopra. Parametri espliciti dell'installazione lab, non configurazione incorporata nell'applicazione. Non ripetere automaticamente se BLOCKED dopo STOP_INTENT: riconciliare la ricevuta e lo stato corrente. Nessun replay/intake POST/retry/materializzazione avviata. La salute usa un container curl temporaneo sul namespace di rete del gateway con immagine già locale e pull=never.
+
+```bash
+set -euo pipefail
+sudo python3 -u -B - ouf-udp ouf-udp-r4a-smoke \
+  sha256:5e048a859716d6674355e72238f03f899abd705a943ceadbdc5c8863d28f4e9f \
+  sha256:707fe8ca7b1a795f8ff359f9fdb6c968734c0cf66e5b8f7bd9757f4104466f80 \
+  83249a897eb4add4289b5181b3299f48ea4c0f99 \
+  ouf-postgres ouf_udp ouf_udp ouf-apisix curlimages/curl:8.16.0 \
+  http://ouf-udp:8080/actuator/health managed-cinema-8ec8ae90 \
+  86809c17-3354-45ca-a7e6-57e903944b24 e7572836-f8af-4c58-b5fc-12d7aff5db1d \
+  /etc/ouf/deploy-snapshots/udp-materialization-recovery-policy <<'PY'
+import json, os, re, stat, subprocess, sys, tempfile, uuid
+from pathlib import Path
+def require(ok,code):
+    if not ok:raise ValueError(code)
+def docker(*args,timeout=30):
+    return subprocess.run(['docker',*args],check=True,capture_output=True,text=True,timeout=timeout).stdout.strip()
+def inspect(name):return json.loads(docker('inspect',name))[0]
+def identity(row):return (row['Id'],row['Image'],row['State']['Running'],row['State']['StartedAt'],row['RestartCount'])
+def env(row):
+    values={}
+    for entry in row['Config'].get('Env') or []:
+        key,sep,value=entry.partition('=');require(sep and key not in values,'ENV_SHAPE_INVALID');values[key]=value
+    return values
+def bindings(rows):
+    values=[env(r) for r in rows]
+    for key in ('OUF_UDP_DB_URL','OUF_UDP_DB_USER','OUF_UDP_DB_PASSWORD'):
+        require(bool(values[0].get(key)) and values[0][key]==values[1].get(key),'DECLARED_DB_BINDINGS_CHANGED')
+    for row,v in zip(rows,values):
+        require(v.get('OUF_UDP_EXECUTION_ENABLED','').lower()=='true','WORKER_FLAG_CHANGED')
+        forbidden=('SPRING_APPLICATION_JSON','SPRING_CONFIG_LOCATION','SPRING_CONFIG_ADDITIONAL_LOCATION',
+            'SPRING_CONFIG_IMPORT','SPRING_PROFILES_ACTIVE','SPRING_PROFILES_INCLUDE','JAVA_TOOL_OPTIONS',
+            'JDK_JAVA_OPTIONS','JAVA_OPTS','_JAVA_OPTIONS','SPRING_DATASOURCE_URL','SPRING_DATASOURCE_USERNAME','SPRING_DATASOURCE_PASSWORD')
+        require(not any(v.get(k,'').strip() for k in forbidden),'CONFIG_OVERRIDE_PRESENT')
+        require(not any(x.startswith(('--spring.','--ouf.','-Dspring.','-Douf.'))
+            for x in [row.get('Path','')]+(row.get('Args') or [])),'COMMAND_OVERRIDE_PRESENT')
+        require(not any(m['Destination'].rstrip('/') in ('','/app','/app/config','/config','/workspace','/workspace/config')
+            for m in row.get('Mounts',[])),'CONFIG_MOUNT_PRESENT')
+    require(bool(set(rows[0]['NetworkSettings']['Networks'])&set(rows[1]['NetworkSettings']['Networks'])),'NETWORK_BINDING_CHANGED')
+def health(gateway,curl_image,url):
+    return docker('run','--rm','--pull','never','--network','container:'+gateway,'--read-only',
+        '--cap-drop','ALL','--security-opt','no-new-privileges',curl_image,'--max-time','5','-sS',
+        '-o','/dev/null','-w','%{http_code}',url)=='200'
+def database_state(pg,database,user,source,run,job):
+    sql=("begin read only; set local statement_timeout='15s'; set local lock_timeout='2s'; "
+        "select json_build_object('pending', (select count(*) from ouf_udp.materialization_job "
+        "where state not in ('SUCCEEDED','QUARANTINED','FAILED')), 'jobs', "
+        "(select json_agg(q order by job_id) from (select j.job_id,j.handoff_id,j.state,j.state_version,"
+        "j.attempts,j.integrity_attempts,j.safe_failure_code,h.state intake_state "
+        "from ouf_udp.materialization_job j join ouf_udp.handoff_intake h using(handoff_id) "
+        "where h.source_id='"+source+"' and h.ingestion_run_id='"+run+"') q)); rollback;")
+    state=json.loads(docker('exec',pg,'psql','-X','-qAt','-v','ON_ERROR_STOP=1','-U',user,'-d',database,'-c',sql))
+    require(state['pending']==0,'WORKERS_NOT_IDLE')
+    rows=state['jobs'];require(isinstance(rows,list) and len(rows)==8,'RUN_JOB_SET_CHANGED')
+    require(sum(r['state']=='SUCCEEDED' and r['intake_state']=='PROCESSED' for r in rows)==7,'RUN_JOB_STATES_CHANGED')
+    target=[r for r in rows if r['job_id']==job]
+    require(len(target)==1 and target[0]['state']=='QUARANTINED' and target[0]['state_version']==5
+        and target[0]['intake_state']=='DURABLE','REMAINING_JOB_CHANGED')
+    return state
+receipt=None;data={}
+try:
+    live,legacy,live_image,legacy_image,revision,pg,database,user,gateway,curl_image,url,source,run,job,parent=sys.argv[1:]
+    require(os.geteuid()==0 and live!=legacy,'OPERATOR_BINDING_INVALID')
+    for name in (live,legacy,pg,database,user,gateway,source):require(re.fullmatch('[A-Za-z0-9][A-Za-z0-9._-]{0,159}',name),'ARGUMENT_INVALID')
+    for image in (live_image,legacy_image):require(re.fullmatch('sha256:[a-f0-9]{64}',image),'IMAGE_ARGUMENT_INVALID')
+    require(re.fullmatch('[a-f0-9]{40}',revision) and url.startswith('http://') and not any(c.isspace() for c in url),'ARGUMENT_INVALID')
+    run=str(uuid.UUID(run));job=str(uuid.UUID(job));parent=Path(parent);meta=parent.lstat()
+    require(stat.S_ISDIR(meta.st_mode) and meta.st_uid==0 and stat.S_IMODE(meta.st_mode)==0o700,'PRIVATE_DIRECTORY_INVALID')
+    os.umask(0o077);root=Path(tempfile.mkdtemp(prefix='legacy-worker-stop-',dir=parent));receipt=root/'receipt.json'
+    def save():
+        temporary=root/'receipt.tmp'
+        with temporary.open('w') as stream:json.dump(data,stream,sort_keys=True);stream.flush();os.fsync(stream.fileno())
+        os.replace(temporary,receipt)
+        fd=os.open(root,os.O_RDONLY);os.fsync(fd);os.close(fd)
+    print('R4A_UDP_LEGACY_STOP_RECEIPT='+str(receipt)+' PRIVATE=true',flush=True)
+    before=[inspect(live),inspect(legacy)]
+    require(all(r['State']['Running'] for r in before),'RUNTIME_STATE_CHANGED')
+    require([r['Image'] for r in before]==[live_image,legacy_image],'IMAGE_ID_CHANGED')
+    require((before[0]['Config'].get('Labels') or {}).get('org.opencontainers.image.revision')==revision,'LIVE_REVISION_CHANGED')
+    require(before[1]['HostConfig']['RestartPolicy']['Name']=='no','LEGACY_RESTART_POLICY_CHANGED')
+    bindings(before)
+    require(health(gateway,curl_image,url),'LIVE_GATEWAY_HEALTH_UNAVAILABLE')
+    state=database_state(pg,database,user,source,run,job)
+    require(all(identity(r)==identity(inspect(r['Id'])) for r in before),'RUNTIME_IDENTITY_CHANGED')
+    data.update(status='STOP_INTENT_OUTCOME_UNKNOWN',liveId=before[0]['Id'],legacyId=before[1]['Id'],
+        legacyName=legacy,legacyImage=legacy_image,originalJobs=state['jobs'],retry=False)
+    save()
+    print('R4A_UDP_LEGACY_STOP=START IDENTITY_GUARDS=PASS WORKERS_IDLE=true TARGET='+legacy+' RETRY=false',flush=True)
+    docker('stop','--time','60',before[1]['Id'],timeout=75)
+    after=inspect(before[1]['Id'])
+    data['legacyStopped']=not after['State']['Running'];data['legacyExitCode']=after['State']['ExitCode'];save()
+    require(not after['State']['Running'] and not after['State'].get('OOMKilled')
+        and after['State']['ExitCode'] in (0,143),'GRACEFUL_STOP_NOT_PROVEN')
+    require(after['Image']==legacy_image and after['HostConfig']['RestartPolicy']['Name']=='no','LEGACY_FINAL_STATE_CHANGED')
+    require(identity(before[0])==identity(inspect(before[0]['Id'])),'LIVE_IDENTITY_CHANGED')
+    require(health(gateway,curl_image,url),'POST_STOP_GATEWAY_HEALTH_FAILED')
+    require(database_state(pg,database,user,source,run,job)==state,'BUSINESS_STATE_CHANGED')
+    data.update(status='PASS_LEGACY_STOPPED',liveIdentityUnchanged=True,gatewayBackendHealth=True,
+        originalJobsUnchanged=True,legacyRestartDisabled=True,historicalWriterProven=False);save()
+    print('R4A_UDP_LEGACY_STOP=PASS LEGACY_STOPPED=true LEGACY_PRESERVED=true LEGACY_RESTART_DISABLED=true'
+        ' LIVE_IDENTITY_UNCHANGED=true GATEWAY_BACKEND_HEALTH=true ORIGINAL_JOBS_UNCHANGED=true'
+        ' RETRY=false REPLAY=false HISTORICAL_WRITER_NOT_PROVEN=true SECRETS_NOT_PRINTED=true',flush=True)
+except Exception as error:
+    if receipt is not None:
+        data['failureType']=type(error).__name__
+        if 'status' not in data:data['status']='BLOCKED_BEFORE_STOP'
+        save()
+    print('R4A_UDP_LEGACY_STOP=BLOCKED TYPE='+type(error).__name__+
+        ' RECONCILE_RECEIPT=true NO_AUTOMATIC_RESTART=true RETRY=false SECRETS_NOT_PRINTED=true',flush=True)
+    raise SystemExit(1)
+PY
+```
