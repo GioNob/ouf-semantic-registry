@@ -938,3 +938,80 @@ Consultati PET Authorization v1.5 §36.10 e UDP v1.3 §§109.6–109.7: Gateway 
 Correzione candidate commit UDP `1aaa1f6b6a27281ea2d97106ec2033748bab1aee` su codex/r4a-materialization-recovery: solo API recovery usa OwnerAuthorization.candidates per ammissione descriptor/actor/scope fresca, mantenendo identità autenticata e snapshot SDK pinned; servizio continua obbligatoriamente owner.require prima della risoluzione contratti/serializzazione o transizione. Nessuna modifica SDK globale, IAM, grant, route, DB/migrazioni. Nuovi test HTTP MockMvc con SDK LocalAuthorization reale, grant nominale job/source/run/type/RAW label, PostgreSQL: GET e POST ammessi senza grant generico; altri job/soggetti/label/sorgenti, actor SERVICE/AI_AGENT, scope assente, anonimo/spoof negati senza catalog/eventi. Filtri JWT disabilitati in questi test per esercitare il server SPI autenticato; firma token/Gateway hanno verifiche separate. CI in corso, fix non ancora rilasciata. Causalità del 403 live compatibile con difetto, non ancora dimostrata end-to-end; possibili ulteriori problemi Gateway/cache/subject non esclusi.
 
 Prossimo gate: completare CI candidate, build parametrizzata/pinned con migrazioni identiche, stage con live invariato, backup e release verificata senza retry; poi nuova GET HUMAN per prova owner/runtime e readiness storica. Non ripubblicare policy, non aggiungere grant generici, non ripetere intake/replay. Restano aperti materializzazione 8/8, verifica search/storage indipendente e industrializzazione R-INSTALL multi-host/network/domain/Ente.
+
+
+### R4A — fix ammissione scoped verificata, pronta al rilascio (2026-10-01)
+
+Codice candidate definitivo `83249a897eb4add4289b5181b3299f48ea4c0f99` (correzione API nel parent 1aaa1f6b, seconda commit corregge solo fixture SERVICE con servicePrincipalId obbligatorio). Primo run ha rilevato quella fixture invalida, non un fallo nel caso HTTP positivo; conservare traccia e non dichiarare verde quel run. Run definitivo recovery push36884410381 e PR36884416179 SUCCESS: 18/18 test, zero failures/errors/skipped (recovery13, referencegate3, evidence2); dipendenza SDK10/10 PASS. Module push36884410102/PR36884416158 SUCCESS in tutti e quattro job Java21/PostgreSQL17/image, DR, performance, supply-chain/deployment (vulnerability gate e Helm inclusi). SDK pairwise36884410299/36884416285 e CRS/grid36884410315/36884416242 SUCCESS. PR38 aggiornata sul comportamento finale; niente merge a main.
+
+Il test HTTP autorizzato dimostra GET200 e POST200/v3 sul job originale senza grant generico; denied GET/POST non raggiungono catalogo né appendono eventi; input originale preservato. Sono verifiche CI con fixture, non prova della corrente identità/route/cache/policy live. Fix non ancora deployata, HUMAN owner positivo e mapper storico runtime ancora da provare. Ultimo output operatore resta HTTP403 OWNER_REVIEW_GET_1/no retry e live024c/afa5/Flyway34. Nuovo runbook usa helper già testati al pin3c0e5ef7, feature-enabled upgrade esplicito, preflight check-only, backup prima dello switch, readback originali e rollback fermo. Binding host/DB/rete/source/run/image/percorsi soltanto nel runbook, tutti helper parametrizzati; nessuna nuova migrazione/config hardcoded applicativa. Base image tag non digest-pinned: riproducibilità bit-for-bit non provata, gate industrializzazione resta aperto.
+
+Prossima azione operatore: blocco unico build/probe/preflight/stage/backup/release nella sezione “fix ammissione scoped e release controllata” del runbook R4A_UDP_RECOVERY_CANDIDATE. Breve indisponibilità UDP durante backup/switch; nessun retry/intake/replay/publish policy. Build stampa START e salva output esteso nel build.log privato, timeout1800sec; non confondere silenzio del build con attesa THS. Dopo PASS release, nuova login/GET HUMAN attraverso Gateway e owner; se401/403 persiste, diagnosticare layer e subject/cache senza allargare grant. Non rieseguire release con stato incerto: riconciliare receipt privato. Grant scadono 2026-10-02T10:00Z. Materializzazione8/8 e search non provate; tutti gate ereditati e R-INSTALL invariati.
+
+
+#### R4A UDP recovery — fix ammissione scoped e release controllata
+
+Eseguire dal bootstrap esterno `bash <<'SH' || printf ...`, mantenendo la shell interattiva aperta anche se il gate fallisce. Codice UDP83249a8 verificato in tutte le CI. Il blocco prepara immagine isolata, esegue probe Java GET-only, preflight in sola lettura, stage fermo, poi backup e release con controlli. Preflight e stage consentono esplicitamente upgrade da recovery-enabled senza cambiare ambiente oltre al flag ammesso. Migrazioni identiche al liveafa5, originali job preservati (8,5SUCCEEDED,3QUARANTINED), Flyway34, negativi anon/spoof e backend health. Nessun retry/policy publish/IAM/route edit/replay. La release200/health non prova owner HUMAN né materializzazione. Tutti valori lab sono binding installativi dichiarati qui, da sostituire per altri Enti/host/reti; gli helper non hanno default lab.
+
+Conservare path receipt build/stage/release e rollback stampati. In caso shell/output perso durante release, non ripetere il blocco: riconciliare quelle ricevute e live in sola lettura. Il build può restare senza nuove righe dopo START mentre scrive log privato (timeout30min); non stampare log integrali. Dopo release PASS attendere nuova review HUMAN GET-only prima di qualsiasi retry.
+
+```bash
+set -euo pipefail
+umask 077
+# Binding espliciti dell'installazione corrente.
+ouf_coordination=/opt/ouf/semantic
+ouf_work_parent=/opt/ouf/udp-recovery-candidates
+ouf_udp_container=ouf-udp
+ouf_candidate_container=ouf-udp-materialization-candidate
+ouf_revision=83249a897eb4add4289b5181b3299f48ea4c0f99
+ouf_baseline=afa5c4c4cf03bff4e39b02e27f898256c3776cbc
+ouf_expected_image=sha256:024c6691888855ef4d5574cadacf060e0dfbf7ff891dbc9a747628f5b5c8a519
+ouf_helpers=3c0e5ef7ace9e2a9bcf91a885080846f2191948e
+ouf_run=86809c17-3354-45ca-a7e6-57e903944b24
+ouf_source=managed-cinema-8ec8ae90
+cd "$ouf_coordination"
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_fix_dir=$(mktemp -d /tmp/ouf-r4a-udp-admission-fix.XXXXXX)
+trap 'rm -rf -- "$ouf_fix_dir"' EXIT
+for script in r4a_prepare_udp_recovery_image.py r4a_udp_java_reference_probe.py r4a_udp_token_transport_inventory.py r4a_stage_udp_recovery.py r4a_release_udp_recovery.py; do
+  git show "$ouf_helpers:scripts/$script" > "$ouf_fix_dir/$script"
+done
+sudo docker image inspect maven:3.9.11-eclipse-temurin-21 >/dev/null
+sudo docker image inspect curlimages/curl:8.16.0 >/dev/null
+sudo install -d -m 0700 "$ouf_work_parent"
+sudo python3 -B "$ouf_fix_dir/r4a_prepare_udp_recovery_image.py" \
+  --repository https://github.com/GioNob/ouf-udp-object-resolution.git \
+  --revision "$ouf_revision" --baseline-revision "$ouf_baseline" \
+  --container "$ouf_udp_container" --expected-live-image "$ouf_expected_image" \
+  --image-repository ouf-udp-recovery-candidate --work-parent "$ouf_work_parent" \
+  | tee "$ouf_fix_dir/build-protocol.txt"
+ouf_candidate_id=$(sed -n 's/^UDP_RECOVERY_CANDIDATE_IMAGE_ID=//p' "$ouf_fix_dir/build-protocol.txt")
+ouf_build_receipt=$(sed -n 's/^R4A_UDP_RECOVERY_IMAGE_RECEIPT=\([^ ]*\) PRIVATE=true$/\1/p' "$ouf_fix_dir/build-protocol.txt")
+test -n "$ouf_candidate_id"
+test -n "$ouf_build_receipt"
+sudo python3 -B "$ouf_fix_dir/r4a_udp_java_reference_probe.py" \
+  --resolver-image "$ouf_candidate_id" --expected-revision "$ouf_revision" \
+  --container "$ouf_udp_container" --jar-path /app/app.jar \
+  --run "$ouf_run" --source "$ouf_source" \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp \
+  --network ouf-backend --jdk-image maven:3.9.11-eclipse-temurin-21
+ouf_stage_args=(
+  --container "$ouf_udp_container" --candidate-container "$ouf_candidate_container"
+  --build-receipt "$ouf_build_receipt" --work-parent "$ouf_work_parent" --allow-enabled-live
+)
+sudo python3 -B "$ouf_fix_dir/r4a_stage_udp_recovery.py" "${ouf_stage_args[@]}" --check-only
+sudo python3 -B "$ouf_fix_dir/r4a_stage_udp_recovery.py" "${ouf_stage_args[@]}" \
+  | tee "$ouf_fix_dir/stage-protocol.txt"
+ouf_stage_receipt=$(sed -n 's/^R4A_UDP_RECOVERY_STAGE_RECEIPT=\([^ ]*\) PRIVATE=true$/\1/p' "$ouf_fix_dir/stage-protocol.txt")
+test -n "$ouf_stage_receipt"
+sudo python3 -B "$ouf_fix_dir/r4a_release_udp_recovery.py" \
+  --stage-receipt "$ouf_stage_receipt" \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp \
+  --gateway-container ouf-apisix --curl-image curlimages/curl:8.16.0 \
+  --health-origin http://127.0.0.1:8080 --health-path /actuator/health \
+  --gateway-health-url http://ouf-udp:8080/actuator/health \
+  --expected-flyway 34 --stop-seconds 60 --health-attempts 45 \
+  --source "$ouf_source" --run "$ouf_run" \
+  --probe-job 7793566d-b9d4-4402-8cda-c09b8f135c04 \
+  --expected-job-count 8 --expected-succeeded 5 --expected-quarantined 3
+```
