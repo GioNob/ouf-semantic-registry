@@ -1094,3 +1094,74 @@ Gate owner positivo e risoluzione attuale nel mapper Spring superati per i tre j
 Preparato helper parametrizzato scripts/r4a_retry_human_materialization.py: richiede receipt review precedente PASS_READY e hash/set esatti, risorse/private publication, binding originali e motivo bounded; nuova sessione HUMAN e nuove GET owner per i tre job. Il helper GET riutilizzabile restituisce token soltanto in-process, mai lo salva. Dopo tutte le review READY persiste tre operationId e richieste esatte, mostra job/handoff/source/run e transizioneQUARANTINEDv2->READYv3, richiede frase sul /dev/tty read-only. Conferma non pubblica policy. Prima di ogni POST verifica TTL>60sec e fsync dell'intento/operationId/body nella receipt esclusiva0600. Solo un POST per originale, nessun loop/repost. HTTP200 verificato con operation/job/handoff/version3/READY/repeatedfalse, append progressivo; successo è PASS_AUTHORIZED_REQUEUE, non prova materializzazione. Qualsiasi failure ferma il batch; timeout/response invalida conserva POST_INTENT_OUTCOME_UNKNOWN e precedenti successi, vieta repost fino a riconciliazione. Nessun messaggio eccezione arbitrario, payload/token/hash sul terminale.
 
 Otto test nuovi coprono tre review fresche prima della conferma/POST, drift input/prior/source, reference/version gate, conferma/TTL, intent durevole, partial timeout/409/schema error e nessun overwrite/repost, token non persistito, terminale reale corretto/negato. 17 test retry+review locali PASS, 47 policy/Gateway/helper locali PASS. CI helper/package da completare prima del blocco operativo. Nessun retry remoto ancora effettuato; prossimo intervento umano sarà login THS e conferma batch mostrato, poi readback8handoff/job originali ed effetti canonici/search. Tutti i gate ereditati/industrializzazione R-INSTALL restano aperti.
+
+
+### R4A — retry HUMAN originale verificato e pronto alla conferma operatore (2026-10-01)
+
+Helper operativo pin `fe8b957907106925acbca95fe8e63595c88f806c`: recovery scripts CI PR36889604556 job110461624123 SUCCESS, 110/110 test PASS. PR module completo Java21/PostgreSQL17/checksum e production container SUCCESS; Authorization pairwise36889604582, Shared SDK36889604497 e Gateway live pairwise36889604635 SUCCESS. Push Authorization36889598494 e SDK36889598423 SUCCESS; pushmodule36889598409 SUCCESS, inclusi checksum/Java,110testhelper e production container. Prompt conferma emesso con newline/flush per il logger a righe: test locale reale producer->logger->PTY PASS, prompt visibile prima di input, codice login escluso dal protocollo. bash-n e published-code readback PASS. Nessun deploy aggiuntivo richiesto: UDP live resta83249a/5e048a/Flyway34. Non confondere CI helper con autorizzazione remota POST; quest'ultima non ancora esercitata.
+
+Blocco operativo nel runbook “retry HUMAN dei tre job originali dopo review PASS”: nuova receipt human-retry-* root0600 e fresh-review separata; sessione HUMAN dedicata, tre nuove GET READY e negativi, piano con tutti job/handoff/run/source, frase esatta da digitare su tty, poi tre POST originali uno per volta. Scope/grant già governati:36, nessuna ripubblicazione, replay/intake/reactivation. Snapshot fresh e version2 da owner, operationId stabili persistiti prima dell'intento; version3/READY è ammissione, non materializzazione. Logger filtra sole righe simboliche, non devicecode/token/hash/payload. Con exitnonzero o connessione persa dopo intent, fermarsi e riconciliare receipt: non rieseguire il batch, non inventare nuova operation né sommare automaticamente una risposta persa ai successi. Conserva pass già registrati e unknown separati, mai claimfalseRETRY=false dopo POST.
+
+Ultima prova remota certa: receipt human-review-20261001T155349-3513740.json PASS_READY,3reviewHTTP200/QUARANTINED/DURABLE/v2/eligible/READY e anon/outside denied. Nessun retry al momento di questo checkpoint. Dopo receipt3POST200 PASS_AUTHORIZED_REQUEUE, nextgate è readback sugli otto originali Ingestion/UDP, stati ed eventi di retry/resolution, effetti canonici e search; non fare nuove ingestion/replay. Restano storage/hash indipendente, causalità storica NOT_PROVEN e tutti gate R-INSTALL/industrializzazione ereditati. Grant expiry2026-10-02T10:00Z, owner enforcement deve continuare fail-closed.
+
+
+#### R4A UDP recovery — retry HUMAN dei tre job originali dopo review PASS
+
+Questo blocco esegue una nuova login HUMAN ouf-admin e sole GET di review/negativi prima della conferma. Se tutti i gate sono PASS, mostra sorgente/run/job/handoff e transizione prevista, poi attende la frase su terminale. Solo dopo conferma invia un POST/retry per ciascun job originale, preservando input e versioni con i guard owner. Nessun replay/intake/source reactivation/policy publish. Binding installativi espliciti qui, helper parametrizzati senza default lab. Il bootstrap deve essere processo bash separato con ORhandler per mantenere la shell SSH aperta; logger Python unbuffered mostra anche prompt completo, salva solo righe simboliche su protocollo privato.
+
+Conferma richiesta (dopo nuove review e piano): `CONFERMO RETRY ORIGINALE 86809c17-3354-45ca-a7e6-57e903944b24`. Prima di digitare controllare i tre job mostrati, source managed-cinema-8ec8ae90, run originale e VERSION2->3. Grant scadono2026-10-02T10:00Z; il helper verifica TTLtoken>60sec dopo conferma e prima di ogni POST. Se si attende troppo e il token non è più sufficiente, si ferma senza quel POST. Non incollare devicecode/token, snapshot o receipt private in chat. Dopo3PASS il worker prosegue in modo asincrono; la risposta non prova ancora materializzazione8/8.
+
+Se il batch si interrompe o output/connessione vengono persi, non ripetere il blocco: conservare il percorso R4A_UDP_HUMAN_RETRY_RECEIPT e protocollo, riconciliare receipt con stati/eventi originali in sola lettura. L'intento è durabile prima del POST e una risposta persa è OUTCOME_UNKNOWN, non negazione o successo dimostrato. Nessun recovery automatico/repost incluso in questo script. Richieste UUID/hash/reason nella receipt privata consentono riconciliazione precisa. La receipt originale di review e tutte le precedenti restano conservate.
+
+```bash
+set -euo pipefail
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+REVISION=fe8b957907106925acbca95fe8e63595c88f806c
+WORK_DIR=$(mktemp -d)
+trap 'rm -rf "$WORK_DIR"' EXIT
+for SCRIPT in r4a_retry_human_materialization.py r4a_read_human_materialization_review.py r4a_prepare_scoped_human_policy.py; do
+  git show "$REVISION:scripts/$SCRIPT" > "$WORK_DIR/$SCRIPT"
+done
+sudo bash -s -- "$WORK_DIR" <<'ROOT'
+set -euo pipefail
+umask 077
+WORK_DIR=$1
+STATE_DIR=/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy
+LOG=$(mktemp "$STATE_DIR/human-retry-protocol.XXXXXX")
+printf 'HUMAN_RETRY_PROTOCOL_LOG=%s PRIVATE=true\n' "$LOG"
+RECEIPT="$STATE_DIR/human-retry-$(date -u +%Y%m%dT%H%M%S)-$$.json"
+set +e
+python3 -u -B "$WORK_DIR/r4a_retry_human_materialization.py" \
+  --issuer https://auth.ouf-lab.it/realms/ouf --client ouf-human-admin \
+  --audience ouf-api-gateway --tenant ouf-lab \
+  --subject b93d8cf6-cd14-4ee6-91d7-84cd76c4f500 \
+  --scope udp.materialization.retry --expected-policy ouf-lab-authorization:36 \
+  --base-url https://api.ouf-lab.it/api/udp/v1/governance/materialization/jobs \
+  --publication-receipt "$STATE_DIR/publication-receipt.json" \
+  --resources "$STATE_DIR/resources.json" --receipt "$RECEIPT" \
+  --prior-review-receipt "$STATE_DIR/human-review-20261001T155349-3513740.json" \
+  --run 86809c17-3354-45ca-a7e6-57e903944b24 --source managed-cinema-8ec8ae90 \
+  --reason "Ripresa governata dei job originali dopo review HUMAN e reference gate READY" \
+  --expected-version 2 --expected-resources 3 \
+  --expected-failure UDP_REFERENCE_INTEGRITY_CONTRACT_INVALID \
+  --binding 7793566d-b9d4-4402-8cda-c09b8f135c04:8869a6d6-3d82-4514-a63a-d23f9b26d48f \
+  --binding e7572836-f8af-4c58-b5fc-12d7aff5db1d:aed8ef93-6d00-4cf0-868d-d2d82d79b524 \
+  --binding e5b6ca24-6143-4ae5-8907-5dce398abfa3:e58faf8c-c35a-4106-b4b6-67e58dec9774 \
+  --outside-job f84de729-c245-4e34-80cf-764c4eb0f160 2>&1 |
+  python3 -u -c '
+import sys
+with open(sys.argv[1], "a", buffering=1) as log:
+    for line in sys.stdin:
+        sys.stdout.write(line); sys.stdout.flush()
+        if line.startswith(("UDP_HUMAN_REVIEW_", "UDP_HUMAN_RETRY_", "R4A_UDP_")):
+            log.write(line); log.flush()
+' "$LOG"
+RESULT=("${PIPESTATUS[@]}")
+set -e
+printf 'HUMAN_RETRY_PROTOCOL_LOG=%s PRIVATE=true\n' "$LOG"
+printf 'HUMAN_RETRY_PROCESS_EXIT=%s OUTPUT_CAPTURE_EXIT=%s\n' "${RESULT[0]}" "${RESULT[1]}"
+test "${RESULT[1]}" -eq 0
+exit "${RESULT[0]}"
+ROOT
+```
