@@ -1,9 +1,20 @@
 import unittest
+import json
+from unittest.mock import patch
 from types import SimpleNamespace
 import r4a_udp_materialization_diagnostic as diag
 
 
 class DiagnosticTests(unittest.TestCase):
+    def test_contract_comparison_projects_counts_not_reference_values(self):
+        args=self.args();sql=diag.contract_query(args)
+        self.assertIn('group by refs',sql)
+        self.assertIn('json_agg(summary',sql)
+        self.assertIn('other-source',sql)
+        row={'ref_group':1,'total':8,'succeeded':5,'quarantined':3,'refs_object':True,'required_strings_valid':True,'mapping_refs_shape':'array','authority_policy_shape':'string','relationship_refs_shape':'array','raw_ref':'PRIVATE'}
+        with patch.object(diag.subprocess,'run',return_value=SimpleNamespace(stdout=json.dumps([row]))),patch('builtins.print') as output:
+            diag.contract_compare(args)
+            self.assertNotIn('PRIVATE',str(output.call_args_list))
     def args(self):return SimpleNamespace(run='86809c17-3354-45ca-a7e6-57e903944b24',source='other-source',postgres_container='other-pg',database='other_udp',db_user='other-user')
     def test_query_is_read_only_scoped_and_has_no_payload_projection(self):
         query=diag.query(self.args())

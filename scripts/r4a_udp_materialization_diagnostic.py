@@ -54,7 +54,49 @@ def sanitize(document):
     return result
 
 
+def contract_query(args):
+    query(args)  # Reuse strict source/run/installation binding validation.
+    run=str(uuid.UUID(args.run))
+    return ("begin read only; set local statement_timeout='15s'; set local lock_timeout='2s'; "
+        "with h as (select h.handoff_id,h.payload_json->'contractRefs' refs,j.state job_state "
+        "from ouf_udp.handoff_intake h join ouf_udp.materialization_job j using(handoff_id) "
+        "where h.source_id='"+args.source+"' and h.ingestion_run_id='"+run+"'), "
+        "g as (select refs,count(*) total,count(*) filter(where job_state='SUCCEEDED') succeeded,"
+        "count(*) filter(where job_state='QUARANTINED') quarantined "
+        "from h group by refs), "
+        "summary as (select row_number() over(order by refs::text) ref_group,total,succeeded,quarantined,"
+        "coalesce(jsonb_typeof(refs)='object',false) refs_object,"
+        "coalesce((select bool_and(coalesce(jsonb_typeof(refs->key)='string' and length(btrim(refs->>key))>0,false)) "
+        "from unnest(array['sourceSchemaRef','bundleRef','semanticPublicationSetRef','adapterProfileRef']) key),false) required_strings_valid,"
+        "coalesce(jsonb_typeof(refs->'mappingRefs'),'ABSENT') mapping_refs_shape,"
+        "coalesce(jsonb_typeof(refs->'authorityPolicyRef'),'ABSENT') authority_policy_shape,"
+        "coalesce(jsonb_typeof(refs->'relationshipResolutionStrategyRefs'),'ABSENT') relationship_refs_shape "
+        "from g) select coalesce(json_agg(summary order by ref_group),'[]'::json) from summary; rollback;")
+
+
+def contract_compare(args):
+    command=['docker','exec',args.postgres_container,'psql','-X','-qAt','-v',
+        'ON_ERROR_STOP=1','-U',args.db_user,'-d',args.database,'-c',contract_query(args)]
+    raw=subprocess.run(command,check=True,capture_output=True,text=True,timeout=25).stdout.strip()
+    rows=json.loads(raw)
+    numeric=('ref_group','total','succeeded','quarantined')
+    boolean=('refs_object','required_strings_valid')
+    shape=('mapping_refs_shape','authority_policy_shape','relationship_refs_shape')
+    clean=[]
+    for row in rows:
+        if any(type(row.get(k)) is not int or row[k]<0 for k in numeric):
+            raise ValueError('summary count')
+        if any(type(row.get(k)) is not bool for k in boolean):
+            raise ValueError('summary flags')
+        if any(row.get(k) not in ('ABSENT','null','string','array','object','number','boolean') for k in shape):
+            raise ValueError('summary shape')
+        clean.append({k:row[k] for k in (*numeric,*boolean,*shape)})
+    print('UDP_CONTRACT_REF_COMPARISON='+json.dumps(clean,sort_keys=True))
+    print('R4A_UDP_CONTRACT_REF_COMPARISON=COMPLETE READ_ONLY=true EXACT_JSON_EQUALITY=true REFERENCE_VALUES_NOT_PRINTED=true RETRY=false')
+
 def main(args):
+    if getattr(args,'compare_contracts',False):
+        contract_compare(args);return
     sql=query(args)
     command=['docker','exec',args.postgres_container,'psql','-X','-qAt','-v',
              'ON_ERROR_STOP=1','-U',args.db_user,'-d',args.database,'-c',sql]
@@ -67,6 +109,7 @@ def main(args):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--compare-contracts',action='store_true',help='Compare exact persisted refs, output counts and shapes only')
     for name in ('run','source','postgres-container','database','db-user'):
         parser.add_argument('--'+name,required=True)
     try:main(parser.parse_args())
