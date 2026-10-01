@@ -129,3 +129,15 @@ Baseline PET v1.7 fornita dall'utente: Source Onboarding v1.6 §§92–92.2 e TH
 Nella sessione precedente i PET erano estratti dal pacchetto `OUF_Reality_Baseline_Package_v1_7(20261001-060705).zip`. Se non disponibili nella nuova chat/workspace o nei riferimenti autorizzati, richiedere il pacchetto necessario: questa sintesi non sostituisce la fonte normativa. Non accedere a Library di altre chat.
 
 **Prima azione concreta:** leggere PET e baseline, verificare catalogo/contratti correnti e collegare la consultazione semantica governata per proporre il mapping dello stesso asset/profile. Non ri-uploadare, ri-profilare, riattivare Cinema o rilanciare recovery senza una necessità verificata.
+
+## Ripresa della nuova chat — 2026-10-01 20:54 Europe/Rome
+
+PET ricevuti: `OUF_Reality_Baseline_Package_v1_7(20261001-185201).zip`; archivio SHA256 `e63df67e8817eec38a9d4b3eb736b020f693b932f3360dc02f4555330f2201ce`. 323 checksum interni verificati, zero mismatch. Consultati L0 Matrix v1.7 e i PET pertinenti indicati sopra. Autorizzazione utente alla lettura/scrittura dei repository OUF per la durata della chat riconfermata; mantenere parametrizzazione e handoff/deploy aggiornati.
+
+Primo deliverable: [inventario PET/contratti/evidenze e gap del collegamento](../audits/OUF_FILE_TO_UDP_INITIAL_INVENTORY_2026-10-01.md), commit documento `6258cfc751ef13ece85696c080a1ab653581e250`. GitHub read/write riusciti. Nessun nuovo rollout, upload/profile, DRAFT/approval/run/retry eseguito; stati live precedenti rimangono evidenze ereditate.
+
+Verifica sorgente Semantic al checkpoint be76527e: search esiste ma usa soltanto similarity di semantic_id; risultato senza label/definition/publication set. get artefatto sceglie l'ultima revisione; references:resolve invece verifica membership exact e ritorna label/metadata, senza definition/domain/range. Prima della proiezione MCP completare/verificare la lettura sufficiente al mapping e la scoperta del riferimento pinned; non equiparare presenza endpoint alla conformità PET §10.
+
+Catalogo di questa chat ancora privo di semantic.search/get. Manifest MCP main, attachment e object-search esaminati mostrano superfici differenti: nessuno dei singoli manifest esaminati riproduce da solo upload+search disponibili qui. Riconciliare loader/overlay/receipt e pin effettivo prima di scegliere la base, preservando managed-file, owner auth e search già corretti. Gateway main dichiara ouf.semantic.read ACTIVE/toolEligible=false: configurazione sorgente, non readback live.
+
+Prossimo passo: verificare contratti di lettura semantica completa e baseline MCP, implementare collegamento governato con deploy parametrico, poi proporre il mapping dello stesso asset/profile Teatri. Nessun IRI inventato/manuale, nessun AI interno a Onboarding e nessuna conferma HUMAN MCP. Tutti i gate della tabella ereditata restano tracciati, con stati invariati.
