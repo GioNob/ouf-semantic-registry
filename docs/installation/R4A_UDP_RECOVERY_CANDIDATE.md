@@ -814,3 +814,51 @@ PY
 Operatore: una receipt human-review-20261001T143329-3493421.json, status LOGIN_PENDING_NO_BUSINESS_POST, anonymousHttp401, outsideScopeHttp403, reviews0. Questo prova login concluso e due negativi osservati/salvati, non successo delle tre review autorizzate. Non reinterpretare il vecchio status come login ancora pendente; il marker non veniva aggiornato dopo il login. Errore/stato HTTP della successiva richiesta non registrati dal vecchio helper, causa corrente ignota: possibileHTTPdeny/trasporto/parser, non dichiarare guastoIAM/mapper. Nessun retryUDP. Ultima policy provata:36, vecchie3QUARANTINED non riverificatelive.
 
 Fix osservabilità helper: phase persistita prima di login/anon/outside/ogniGET e validation, negativi salvati progressivamente; ownerHTTP e responseShape solo tipologie/campi, nessun valore inatteso/payload, salvati prima di check. Main persiste BLOCKED/safeFailureCode/type/phase solo su receipt esclusivamente creata da quella invocazione; errori estranei ->UNCLASSIFIED, mai exception-message arbitrario, mai overwrite di receipt precedente. SystemExit2 referencegate atteso preserva AUTHORIZATION_PASS_REFERENCE_GATE_BLOCKED. Tre test nuovi provano denial/transport/schema salvati, negativi preservati e receiptnonowned intatta; 9 testhelperPASS, CI102previsto. Runbook nuovo: nuova receipt GET-only, protocollo root0600 che filtra solo righe UDP_HUMAN/R4A_UDP (nessun devicecode/token), loginouf-admin, shell bootstrap in bash separato con status gestito; nessun POSTUDP/publish/replay. Conservare receipt precedente. PET UDP109.7 consultato; ownerpositive/referenceSpring/8materializzazioni/search ancoraNOTPROVEN.
+
+
+#### R4A UDP recovery — nuove GET HUMAN con errore e protocollo persistiti
+
+La receipt precedente del 20261001T143329 ha soli negativi401/403 e review0; causa successiva ignota, non cancellarla. Helper corretto salva phase/safeFailureCode/failureType e HTTP strutturali prima di validation, solo nella nuova receipt da esso creata. Questo blocco rifà solo login Device Grant e GET reali, mai retry o POST UDP/policy. Protocollo root0600 contiene soltanto righe simboliche UDP_HUMAN/R4A_UDP, filtra browser-devicecode/token; il devicecode necessario resta sul terminale e non va incollato in chat. Il bootstrap incollato deve essere `bash <<'SH' || ...` in processo separato, non applicare set-e alla shell interattiva. La pipeline mantiene distinto exit Python da exit del capture. Se errore, riportare ultimo R4A...CODE/PHASE/ERROR_SAVED e exit; se output perso, receipt/protocollo privati restano disponibili. Accesso owner positivo/referenceSpring non ancora provati; niente retry basato su negativi.
+
+```bash
+set -euo pipefail
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+REVISION=d6c32cbf062618f0b255c51f8a7a8d6fb521e839
+WORK_DIR=$(mktemp -d)
+trap 'rm -rf "$WORK_DIR"' EXIT
+for SCRIPT in r4a_read_human_materialization_review.py r4a_prepare_scoped_human_policy.py; do
+  git show "$REVISION:scripts/$SCRIPT" > "$WORK_DIR/$SCRIPT"
+done
+sudo bash -s -- "$WORK_DIR" <<'ROOT'
+set -euo pipefail
+umask 077
+WORK_DIR=$1
+STATE_DIR=/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy
+LOG=$(mktemp "$STATE_DIR/human-review-protocol.XXXXXX")
+printf 'HUMAN_REVIEW_PROTOCOL_LOG=%s PRIVATE=true\n' "$LOG"
+RECEIPT="$STATE_DIR/human-review-$(date -u +%Y%m%dT%H%M%S)-$$.json"
+set +e
+python3 -B "$WORK_DIR/r4a_read_human_materialization_review.py" \
+  --issuer https://auth.ouf-lab.it/realms/ouf --client ouf-human-admin \
+  --audience ouf-api-gateway --tenant ouf-lab \
+  --subject b93d8cf6-cd14-4ee6-91d7-84cd76c4f500 \
+  --scope udp.materialization.retry --expected-policy ouf-lab-authorization:36 \
+  --base-url https://api.ouf-lab.it/api/udp/v1/governance/materialization/jobs \
+  --publication-receipt "$STATE_DIR/publication-receipt.json" \
+  --resources "$STATE_DIR/resources.json" --receipt "$RECEIPT" \
+  --expected-version 2 --expected-resources 3 \
+  --expected-failure UDP_REFERENCE_INTEGRITY_CONTRACT_INVALID \
+  --binding 7793566d-b9d4-4402-8cda-c09b8f135c04:8869a6d6-3d82-4514-a63a-d23f9b26d48f \
+  --binding e7572836-f8af-4c58-b5fc-12d7aff5db1d:aed8ef93-6d00-4cf0-868d-d2d82d79b524 \
+  --binding e5b6ca24-6143-4ae5-8907-5dce398abfa3:e58faf8c-c35a-4106-b4b6-67e58dec9774 \
+  --outside-job f84de729-c245-4e34-80cf-764c4eb0f160 2>&1 |
+  awk -v logfile="$LOG" '{ print; fflush(); if ($0 ~ /^(UDP_HUMAN_REVIEW_|R4A_UDP_HUMAN_REVIEW)/) { print >> logfile; fflush(logfile) } }'
+RESULT=("${PIPESTATUS[@]}")
+set -e
+printf 'HUMAN_REVIEW_PROTOCOL_LOG=%s PRIVATE=true\n' "$LOG"
+printf 'HUMAN_REVIEW_PROCESS_EXIT=%s OUTPUT_CAPTURE_EXIT=%s RETRY=false\n' "${RESULT[0]}" "${RESULT[1]}"
+test "${RESULT[1]}" -eq 0
+exit "${RESULT[0]}"
+ROOT
+```
