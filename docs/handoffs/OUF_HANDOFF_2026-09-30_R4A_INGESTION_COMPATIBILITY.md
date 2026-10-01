@@ -2889,3 +2889,53 @@ Preparata estensione parametrizzata di `r4a_udp_java_reference_probe.py`: opzion
 Prossimo passo preciso: predisporre il blocco parametrizzato di build dell'immagine candidata fissata alla revisione CI-verificata e relativa prova GET-only contro i riferimenti reali, senza sostituire UDP live. Il blocco di build/prova non è ancora stato consegnato o eseguito: non presumere che la candidata sia presente sul VPS. Successivamente restano preparazione privata/rollback/backup, registrazione governata della capability HUMAN e relativi binding, acceptance owner/Gateway, rilascio controllato, lettura fresca e conferma HUMAN dei tre job originali. Non usare il vecchio blocco live come se verificasse la candidata e non riaprire job tramite SQL.
 
 Il comando locale in corso è stato interrotto dal messaggio di stato dell'utente; patch verificata presente e test32 ripetuti PASS. Nessun task remoto di deploy era in corso. Handoff, installazione e roadmap aggiornati insieme per conservare questo punto di ripartenza.
+
+
+## Checkpoint 2026-10-01 — build candidata isolata pronta; attesa esecuzione operatore
+
+Consultati di nuovo UDP PET1.3 §§109.6/109.7/109.9 e Ingestion PET1.3 §45.2. Nuovo helper parametrizzato di build `r4a_prepare_udp_recovery_image.py`, codice fissato al commit coordinamento `0f872e39cc76778d3a7df218be706e25360148ec`: repository sorgente separato, SHA esatto, confronto path+hash byte delle migrazioni con baseline installata, tag univoco, label OCI, UID/GID e image ID, guard identità/restart live e receipt/log/source privati. Non avvia Spring, non modifica live/config/policy/DB e non esegue retry. [Procedura e limiti](https://github.com/GioNob/ouf-semantic-registry/blob/0f872e39cc76778d3a7df218be706e25360148ec/docs/installation/R4A_UDP_RECOVERY_CANDIDATE.md). Sette test nuovi + precedenti32 =39 PASS locale e CI recovery-cycle-scripts run36837613268. Bash del comando verificata sintatticamente. La build VPS e la sonda candidata sono ancora NON ESEGUITE.
+
+Ultime prove distinte: candidata UDP `c0b6c98c5029682a51e5ed82717092f86bfbb318` module CI36834423853 tutti i gate SUCCESS; coordinamento precedente `5673633c899d4ad6a1b742b2dd06b613d75b603a` module CI36836641384 SUCCESS. Nuova CI del codice build, run36837613268: Java21/PostgreSQL17,39script test e container smoke tutti SUCCESS, esito finale verificato prima della consegna del comando. Non confondere CI con esecuzione sul VPS o rollout.
+
+Nessuna nuova evidenza business: run SUCCEEDED, otto originali ACKED, cinque materializzati e tre quarantene tecniche. L'helper costruisce solo una candidata e mantiene dati/token/refs fuori chat. Mutable base image tags impediscono ancora riproducibilità bit per bit; usare l'image ID immutabile della build. Tutti i gate aperti del checkpoint precedente rimangono aperti. Nessun merge main, rilascio, nuova capability/scope/grant/route o job retry eseguito.
+
+### Prossimo intervento operatore esatto — build e GET-only, non deploy
+
+Questo blocco usa i binding laboratorio già osservati come argomenti, non come default dello script. Directory candidata nuova e privata; source/build.log/receipt restano sul server. JDK helper deve essere già presente dalla sonda precedente; se assente il preflight blocca prima build. Build può durare diversi minuti: stampa START e receipt, i dettagli restano nel log privato. Solo al PASS viene usato il suo image ID nella JVM isolata, con classi/librerie della candidata. Le sole scritture sono checkout/cache/immagine/ricevuta diagnostica; accessi business SELECT read-only e GET. Nessun riavvio/switch o migrazione. L'assistente non ha SSH: l'operatore deve eseguire questo blocco e riportare solo output protocollo, mai build.log/token/payload/receipt completo.
+
+```bash
+(
+set -euo pipefail
+umask 077
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_probe_dir=$(mktemp -d /tmp/ouf-r4a-udp-candidate.XXXXXX)
+trap 'rm -rf -- "$ouf_probe_dir"' EXIT
+for script in r4a_prepare_udp_recovery_image.py r4a_udp_java_reference_probe.py r4a_udp_token_transport_inventory.py; do
+  git show 0f872e39cc76778d3a7df218be706e25360148ec:scripts/"$script" > "$ouf_probe_dir/$script"
+done
+sudo docker image inspect maven:3.9.11-eclipse-temurin-21 >/dev/null
+sudo install -d -m 0700 /opt/ouf/udp-recovery-candidates
+sudo python3 -B "$ouf_probe_dir/r4a_prepare_udp_recovery_image.py" \
+  --repository https://github.com/GioNob/ouf-udp-object-resolution.git \
+  --revision c0b6c98c5029682a51e5ed82717092f86bfbb318 \
+  --baseline-revision edaba2bff18a2aaf52d1180f21f0e68984cc3437 \
+  --container ouf-udp \
+  --expected-live-image sha256:a47c8607c53451f7d0affba5994ec20dc6c09272ace68808daa9e63c33bc572e \
+  --image-repository ouf-udp-recovery-candidate \
+  --work-parent /opt/ouf/udp-recovery-candidates \
+  | tee "$ouf_probe_dir/build-protocol.txt"
+ouf_candidate_id=$(sed -n 's/^UDP_RECOVERY_CANDIDATE_IMAGE_ID=//p' "$ouf_probe_dir/build-protocol.txt")
+test -n "$ouf_candidate_id"
+sudo python3 -B "$ouf_probe_dir/r4a_udp_java_reference_probe.py" \
+  --resolver-image "$ouf_candidate_id" \
+  --expected-revision c0b6c98c5029682a51e5ed82717092f86bfbb318 \
+  --container ouf-udp --jar-path /app/app.jar \
+  --run 86809c17-3354-45ca-a7e6-57e903944b24 \
+  --source managed-cinema-8ec8ae90 \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp \
+  --network ouf-backend --jdk-image maven:3.9.11-eclipse-temurin-21
+)
+```
+
+Dopo l'output, aggiornare handoff/manuale/roadmap e usare receipt+image ID per preparazione rollback/backup/release e capability HUMAN governata. Solo dopo acceptance owner/Gateway e lettura fresca della reale istanza Spring, conferma HUMAN e retry dei tre originali. Non riattivare source/schedule, non replay/resend/SQL repair. Il PASS della sonda mantiene `MAPPER_RUNTIME_PARITY_NOT_PROVEN=true` e `HISTORICAL_CAUSALITY_NOT_PROVEN=true`; otto materializzazioni/search rimangono da dimostrare.
