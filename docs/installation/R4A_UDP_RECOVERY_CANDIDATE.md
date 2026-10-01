@@ -1015,3 +1015,71 @@ sudo python3 -B "$ouf_fix_dir/r4a_release_udp_recovery.py" \
   --probe-job 7793566d-b9d4-4402-8cda-c09b8f135c04 \
   --expected-job-count 8 --expected-succeeded 5 --expected-quarantined 3
 ```
+
+
+### R4A — release fix ammissione scoped confermata dall’operatore (2026-10-01 17:37 Europe/Rome)
+
+Output operatore: build revisione UDP `83249a897eb4add4289b5181b3299f48ea4c0f99` PASS, candidate/live finale `sha256:5e048a859716d6674355e72238f03f899abd705a943ceadbdc5c8863d28f4e9f`, tag `ouf-udp-recovery-candidate:r4a-83249a897eb4-3fdecb4873a0`. Receipt build privata `/opt/ouf/udp-recovery-candidates/udp-recovery-image-ijxpujl8/receipt.json`. Migrazioni identiche e live precedente024c invariato durante build. Probe compilato/shipped Java resolve PASS GET_ONLY/candidate, senza Spring: non prova mapper runtime o causalità storica.
+
+Preflight PASS READ_ONLY/live recovery-enabled/candidate assente; stage PASS candidate fermo/no restart, mounts uguali, ambiente conservato salvo flag recovery, live invariato. Receipt stage privata `/opt/ouf/udp-recovery-candidates/udp-recovery-stage-5gvo9w_0/receipt.json`. Release PASS dopo stop live e backup PASS con restore-list; receipt privata `/opt/ouf/udp-recovery-candidates/udp-recovery-stage-5gvo9w_0/release-receipt.json`. Live finale5e048a/Flyway34, ORIGINAL_JOBS_UNCHANGED, Gateway backend health, anon/spoof negati. Rollback `ouf-udp-rollback-d2450009a153` fermo/restart-disabled; conservare backup e rollback precedenti. Non ripetere build/release né rimuovere ricevute. Queste sono evidenze operatore, non ispezione SSH diretta dell’agente.
+
+HUMAN_AUTHORIZATION_NOT_PROVEN=true, RETRY=false. Ultimo business stato noto resta 8handoff ACKED, 5PROCESSED/SUCCEEDED e 3DURABLE/QUARANTINED; release dichiara originali invariati, non materializzazione8/8 o search. La fix sorgente è ora rilasciata, ma causalità del precedenteHTTP403 e prova owner positiva richiedono GET reale. PET Authorization§36.10 e UDP§109.7 consultati: health/negativi non sostituiscono AUTHZ-READY e reference gate al punto d’uso. Policy ultima pubblicata:36, grant3 nominali/scoped, expiry2026-10-02T10:00Z; nessuna nuova pubblicazione, route o IAM change richiesta.
+
+Prossimo intervento operatore: nuova sessione HUMAN ouf-admin/clientouf-human-admin con scope OPTIONAL udp.materialization.retry; GET anonimo, fuori scope e tre job originali tramite Gateway->UDP, utilizzando helper giàCI102PASS d6c32cbf e logger Python unbuffered verificato interattivamente. Nuove receipt/protocollo root-private, phase/HTTP/error persistiti. Se GET3PASS e contractReady/retryEligible confermati, preparare soltanto allora retry originale con expectedVersion/snapshotHash/operationId e conferma HUMAN. Se403 persiste diagnosticare Gateway/owner/subject/policycache, senza grant generici o nuovi tentativi di business. Block reference gate con ownerpositive resta esito incompleto e vieta retry. Restano tutti i gate ereditati, storage/search indipendenti e industrializzazione R-INSTALL.
+
+
+#### R4A UDP recovery — review HUMAN dopo release 83249a8
+
+La release5e048a è confermata. Questo blocco usa lo stesso helper GET-only già verificato e il logger Python immediato; nuova receipt/protocollo esclusivi, nessun retry/replay/intake/policy publish. Effettuare la conferma THS con account OUF `ouf-admin`; non incollare in chat devicecode/token o file privati. Il bootstrap deve avviare bash separato e gestire exit nel chiamante per mantenere la shell SSH aperta. Scope richiesto udp.materialization.retry; grant esatti scadono2026-10-02T10:00Z.
+
+Dopo login: anonimo401/403, fuori scope403, poi tre GET owner200; verificare binding originali QUARANTINED/DURABLE/v2, readiness contratti e retryEligible. PASS_READY prova review corrente, non8materializzazioni; AUTHORIZATION_PASS_REFERENCE_GATE_BLOCKED distingue ownerpositive dalla readiness mancante e impedisce retry. In casoHTTP403 riporterà phase/safeFailureCode senza payload; conservare ricevute. Runtime policy globale/in-memory non è provata dal confronto con receipt publication36; non usare simulazione come prova owner.
+
+```bash
+set -euo pipefail
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+REVISION=d6c32cbf062618f0b255c51f8a7a8d6fb521e839
+WORK_DIR=$(mktemp -d)
+trap 'rm -rf "$WORK_DIR"' EXIT
+for SCRIPT in r4a_read_human_materialization_review.py r4a_prepare_scoped_human_policy.py; do
+  git show "$REVISION:scripts/$SCRIPT" > "$WORK_DIR/$SCRIPT"
+done
+sudo bash -s -- "$WORK_DIR" <<'ROOT'
+set -euo pipefail
+umask 077
+WORK_DIR=$1
+STATE_DIR=/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy
+LOG=$(mktemp "$STATE_DIR/human-review-protocol.XXXXXX")
+printf 'HUMAN_REVIEW_PROTOCOL_LOG=%s PRIVATE=true\n' "$LOG"
+RECEIPT="$STATE_DIR/human-review-$(date -u +%Y%m%dT%H%M%S)-$$.json"
+set +e
+python3 -u -B "$WORK_DIR/r4a_read_human_materialization_review.py" \
+  --issuer https://auth.ouf-lab.it/realms/ouf --client ouf-human-admin \
+  --audience ouf-api-gateway --tenant ouf-lab \
+  --subject b93d8cf6-cd14-4ee6-91d7-84cd76c4f500 \
+  --scope udp.materialization.retry --expected-policy ouf-lab-authorization:36 \
+  --base-url https://api.ouf-lab.it/api/udp/v1/governance/materialization/jobs \
+  --publication-receipt "$STATE_DIR/publication-receipt.json" \
+  --resources "$STATE_DIR/resources.json" --receipt "$RECEIPT" \
+  --expected-version 2 --expected-resources 3 \
+  --expected-failure UDP_REFERENCE_INTEGRITY_CONTRACT_INVALID \
+  --binding 7793566d-b9d4-4402-8cda-c09b8f135c04:8869a6d6-3d82-4514-a63a-d23f9b26d48f \
+  --binding e7572836-f8af-4c58-b5fc-12d7aff5db1d:aed8ef93-6d00-4cf0-868d-d2d82d79b524 \
+  --binding e5b6ca24-6143-4ae5-8907-5dce398abfa3:e58faf8c-c35a-4106-b4b6-67e58dec9774 \
+  --outside-job f84de729-c245-4e34-80cf-764c4eb0f160 2>&1 |
+  python3 -u -c '
+import sys
+with open(sys.argv[1], "a", buffering=1) as log:
+    for line in sys.stdin:
+        sys.stdout.write(line); sys.stdout.flush()
+        if line.startswith(("UDP_HUMAN_REVIEW_", "R4A_UDP_HUMAN_REVIEW")):
+            log.write(line); log.flush()
+' "$LOG"
+RESULT=("${PIPESTATUS[@]}")
+set -e
+printf 'HUMAN_REVIEW_PROTOCOL_LOG=%s PRIVATE=true\n' "$LOG"
+printf 'HUMAN_REVIEW_PROCESS_EXIT=%s OUTPUT_CAPTURE_EXIT=%s RETRY=false\n' "${RESULT[0]}" "${RESULT[1]}"
+test "${RESULT[1]}" -eq 0
+exit "${RESULT[0]}"
+ROOT
+```
