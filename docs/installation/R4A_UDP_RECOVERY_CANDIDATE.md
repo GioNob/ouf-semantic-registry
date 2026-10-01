@@ -1451,3 +1451,117 @@ except Exception as error:
     raise SystemExit(1)
 PY
 ```
+
+
+### R4A — due container UDP attivi rilevati, confronto binding ancora aperto (2026-10-01)
+
+L'inventario runtime ricevuto dall'operatore prova che `ouf-udp` usa l'immagine attesa `sha256:5e048a859716d6674355e72238f03f899abd705a943ceadbdc5c8863d28f4e9f`, revision label `83249a897eb4add4289b5181b3299f48ea4c0f99`. Il JAR non è coperto da mount e contiene ReferenceFailureEvidence, le tre chiavi diagnostiche e l'overload diagnostico della quarantena. Identità invariata durante la copia.
+
+È contemporaneamente RUNNING `ouf-udp-r4a-smoke`, immagine `sha256:707fe8ca7b1a795f8ff359f9fdb6c968734c0cf66e5b8f7bd9757f4104466f80`, revision label non provata, restart policy `no`. Il suo JAR contiene il gate ma non ReferenceFailureEvidence né l'overload diagnostico. Gli altri container censiti sono STOPPED; alcuni conservano restart policy `unless-stopped`. Non è stata eseguita alcuna modifica ai container.
+
+Ricevuta privata: `/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy/runtime-reference-code-z145sybh/receipt.json`; protocollo omonimo `protocol.log`. La presenza di due processi non prova da sola un worker concorrente sullo stesso DB né chi abbia scritto l'evento delle 16:14:25Z. Nel codice corrente PublishedResolutionLoop è condizionato da `ouf.udp.execution.enabled=true`; ResolutionWorker presente nel JAR non prova l'attivazione del loop.
+
+Stato business confermato precedente invariato: 7/8 materializzazioni; il job `e7572836-f8af-4c58-b5fc-12d7aff5db1d`, handoff `aed8ef93-6d00-4cf0-868d-d2d82d79b524`, resta QUARANTINED v5, attempts=2/integrityAttempts=2, CONTRACT_INVALID. Nessun ulteriore retry. Policy 36 e autorizzazione HUMAN nominale già provate; non ripubblicare e non ampliare grant.
+
+Prossimo passo: confronto READ_ONLY delle configurazioni dichiarate dei soli due container, delle classi del loop nei rispettivi JAR e dei possibili override. Valori DB, credenziali, comandi e nomi delle reti non sono stampati né inclusi nelle ricevute. Uguaglianza dichiarata non equivale a binding effettivo Spring. Nessun arresto automatico in questa fase. Se emerge concorrenza sul DB, predisporre arresto circoscritto e reversibile del solo legacy preservato, con guard d'identità e ricevuta; successivamente nuova review HUMAN del solo job restante a v5 prima di proporne il retry.
+
+PET consultato: UDP v1.3 §§109.6–109.7, ciclo dei claim/lease e reference-integrity senza fallback. Gate deploy da industrializzare: inventario di tutti i processi che possono acquisire job sul DB di destinazione, controllo versione/configurazione e trattamento esplicito di container legacy e restart policy; supportare più worker soltanto se compatibili e governati. Parametri di installazione in manifest/configurazione, mai endpoint/credenziali/tenant incorporati nel codice. Restano aperti 8/8, search, verifiche storage e installazione automatizzata multi-host/reti/Enti.
+
+#### R4A UDP recovery — confronto dichiarato dei due worker UDP attivi
+
+Questo blocco è una verifica circoscritta all'installazione lab già censita; nomi, immagini attese e destinazione ricevute sono argomenti della procedura. Non è un manifest di deploy portabile. Docker inspect/cp soltanto; nessun docker exec/start/stop/update, nessuna connessione JDBC o API business. L'esito COMPLETE significa raccolta riuscita, non prova di causalità o di binding effettivo. Guard di sintassi e configurazioni alternative verificati localmente, senza eseguire Docker.
+
+```bash
+set -euo pipefail
+sudo python3 -u -B - ouf-udp ouf-udp-r4a-smoke \
+  sha256:5e048a859716d6674355e72238f03f899abd705a943ceadbdc5c8863d28f4e9f \
+  sha256:707fe8ca7b1a795f8ff359f9fdb6c968734c0cf66e5b8f7bd9757f4104466f80 \
+  /etc/ouf/deploy-snapshots/udp-materialization-recovery-policy <<'PY'
+import json, os, re, stat, subprocess, sys, tempfile, zipfile
+from pathlib import Path
+def require(ok):
+    if not ok:raise RuntimeError('WORKER_COMPARISON_PRECONDITION_INVALID')
+def docker(*args):
+    return subprocess.run(['docker',*args],check=True,capture_output=True,text=True,timeout=30).stdout.strip()
+def inspect(name):return json.loads(docker('inspect',name))[0]
+def identity(row):return (row['Id'],row['Image'],row['State']['Running'],row['State']['StartedAt'],row['RestartCount'])
+def environment(row):
+    env={}
+    for value in row['Config'].get('Env') or []:
+        key,sep,item=value.partition('=');require(sep and key not in env);env[key]=item
+    return env
+def configuration(row,env):
+    # Compare declared configuration only. Never infer effective Spring values from env alone.
+    command=[row.get('Path','')]+(row.get('Args') or [])
+    override=any(x.startswith(('--spring.','--ouf.','-Dspring.','-Douf.')) for x in command)
+    dynamic=any(env.get(k,'').strip() for k in ('SPRING_APPLICATION_JSON','SPRING_CONFIG_LOCATION',
+        'SPRING_CONFIG_ADDITIONAL_LOCATION','SPRING_CONFIG_IMPORT','SPRING_PROFILES_ACTIVE',
+        'SPRING_PROFILES_INCLUDE','JAVA_TOOL_OPTIONS','JDK_JAVA_OPTIONS','JAVA_OPTS','_JAVA_OPTIONS'))
+    config_mount=any(m['Destination'].rstrip('/') in ('/','/app','/app/config','/config','/workspace','/workspace/config')
+        for m in row.get('Mounts',[]))
+    execution_args=[x.split('=',1)[1].strip().lower() for x in command
+        if x.startswith(('--ouf.udp.execution.enabled=','-Douf.udp.execution.enabled='))]
+    def value(primary,secondary):
+        return env.get(primary,env.get(secondary,''))
+    return {'url':value('SPRING_DATASOURCE_URL','OUF_UDP_DB_URL'),
+        'user':value('SPRING_DATASOURCE_USERNAME','OUF_UDP_DB_USER'),
+        'password':value('SPRING_DATASOURCE_PASSWORD','OUF_UDP_DB_PASSWORD'),
+        'execution':env.get('OUF_UDP_EXECUTION_ENABLED','').strip().lower(),
+        'executionArgs':execution_args,
+        'overrides':override or dynamic or config_mount}
+def jar_facts(path):
+    with zipfile.ZipFile(path) as archive:
+        def read(name):
+            found=[e for e in archive.infolist() if e.filename==name];require(len(found)<=1)
+            if not found:return b''
+            require(found[0].file_size<2000000);return archive.read(found[0])
+        base='BOOT-INF/classes/'
+        loop=read(base+'it/comune/trieste/ouf/udp/PublishedResolutionLoop.class')
+        config=read(base+'application.yml')+read(base+'application.properties')
+        return {'scheduledPublishedLoopPresent':b'org/springframework/scheduling/annotation/Scheduled' in loop,
+            'executionPropertyGatePresent':b'ouf.udp.execution.enabled' in loop,
+            'oufDatasourceBindingsPresent':all(k in config for k in (b'OUF_UDP_DB_URL',b'OUF_UDP_DB_USER',b'OUF_UDP_DB_PASSWORD')),
+            'udpSchemaDeclared':b'ouf_udp' in config}
+try:
+    live,legacy,live_image,legacy_image,parent=sys.argv[1:]
+    require(os.geteuid()==0 and live!=legacy)
+    for name in (live,legacy):require(re.fullmatch('[A-Za-z0-9][A-Za-z0-9._-]{0,159}',name))
+    for image in (live_image,legacy_image):require(re.fullmatch('sha256:[a-f0-9]{64}',image))
+    parent=Path(parent);meta=parent.lstat()
+    require(stat.S_ISDIR(meta.st_mode) and meta.st_uid==0 and stat.S_IMODE(meta.st_mode)==0o700)
+    os.umask(0o077);root=Path(tempfile.mkdtemp(prefix='worker-binding-comparison-',dir=parent))
+    receipt=root/'receipt.json';protocol=root/'protocol.log'
+    before=[inspect(live),inspect(legacy)]
+    require(all(r['State']['Running'] for r in before))
+    require([r['Image'] for r in before]==[live_image,legacy_image])
+    envs=[environment(r) for r in before];configs=[configuration(r,e) for r,e in zip(before,envs)]
+    facts=[]
+    for index,name in enumerate((live,legacy)):
+        copied=root/('app-'+str(index)+'.jar');docker('cp',name+':/app/app.jar',str(copied));copied.chmod(0o600)
+        require(copied.stat().st_size<200000000);facts.append(jar_facts(copied))
+    def same(key):return bool(configs[0][key]) and configs[0][key]==configs[1][key]
+    shared=set(before[0]['NetworkSettings']['Networks'])&set(before[1]['NetworkSettings']['Networks'])
+    result={'declaredDatasourceUrlEqual':same('url'),'declaredDatasourceUserEqual':same('user'),
+        'declaredDatasourceCredentialsEqual':same('password'),'sharedDockerNetworkPresent':bool(shared),
+        'liveExecutionEnabledDeclared':configs[0]['execution']=='true',
+        'legacyExecutionEnabledDeclared':configs[1]['execution']=='true',
+        'liveExecutionEnabledCommandDeclared':'true' in configs[0]['executionArgs'],
+        'legacyExecutionEnabledCommandDeclared':'true' in configs[1]['executionArgs'],
+        'livePotentialConfigurationOverrides':configs[0]['overrides'],
+        'legacyPotentialConfigurationOverrides':configs[1]['overrides'],
+        'liveJarFacts':facts[0],'legacyJarFacts':facts[1],
+        'liveIdentityUnchanged':identity(before[0])==identity(inspect(live)),
+        'legacyIdentityUnchanged':identity(before[1])==identity(inspect(legacy))}
+    # No raw environment, URLs, credentials, command lines or network names in receipts either.
+    receipt.write_text(json.dumps(result,sort_keys=True));receipt.chmod(0o600)
+    with protocol.open('x') as log:
+        lines=['R4A_UDP_WORKER_COMPARISON_RECEIPT='+str(receipt)+' PRIVATE=true',
+            'UDP_WORKER_BINDING_FACTS='+json.dumps(result,sort_keys=True),
+            'R4A_UDP_WORKER_COMPARISON=COMPLETE READ_ONLY=true EFFECTIVE_DATABASE_BINDING_NOT_PROVEN=true'
+            ' HISTORICAL_WRITER_NOT_PROVEN=true STOP=false RETRY=false REPLAY=false SECRETS_NOT_PRINTED=true']
+        for line in lines:print(line,flush=True);log.write(line+'\n')
+except Exception as error:
+    print('R4A_UDP_WORKER_COMPARISON=BLOCKED TYPE='+type(error).__name__+' READ_ONLY=true STOP=false RETRY=false SECRETS_NOT_PRINTED=true',flush=True)
+    raise SystemExit(1)
+PY
+```
