@@ -374,3 +374,8 @@ sudo python3 -B "$ouf_policy_tmp/r4a_prepare_scoped_human_policy.py" "${ouf_poli
 sudo python3 -B "$ouf_policy_tmp/r4a_prepare_scoped_human_policy.py" "${ouf_policy_args[@]}"
 )
 ```
+
+
+### Checkpoint finale 2026-10-01 — scoped HUMAN batch verificato, in attesa login operatore
+
+Semantic Registry CI push run36851593724 su 88b5b1802eeac5538f8e2205ed86a46d52d55cde SUCCESS: recovery-cycle-scripts (73 test), Java21/PostgreSQL17, container-smoke. Pairwise Shared SDK run36851598351, Authorization Semantic run36851598357 e Gateway live run36851598405 SUCCESS. Source checksum gate ripristinato e verificato. Helper code 4c8600c45510ae451dd8385bbb66b3903eb3d080 immutato. Aggiornamento seguente solo documentale. Il blocco è pronto ma NON ancora eseguito: catalogue/DRAFT/ACTIVE/IAM/Gateway/job invariati da questa sessione; prossimo intervento richiesto è l'esecuzione operatore con fresh Device Grant HUMAN amministratore. Nessun retry eseguito o provato. Conservare tutte le limitazioni e gate indicati sopra.
