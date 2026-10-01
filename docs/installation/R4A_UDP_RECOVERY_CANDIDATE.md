@@ -266,3 +266,47 @@ sudo python3 -B "$ouf_fix_dir/r4a_release_udp_recovery.py" \
 Evidenze operatore: build UDP afa5c4c4cf03bff4e39b02e27f898256c3776cbc PASS, immagine sha256:024c6691888855ef4d5574cadacf060e0dfbf7ff891dbc9a747628f5b5c8a519; receipt privato /opt/ouf/udp-recovery-candidates/udp-recovery-image-ckrhncjk/receipt.json. Migrazioni identiche e live invariato durante build. Probe Java candidata GET-only PASS; mapper Spring e causalità storica non provati. Stage BLOCKED ValueError, senza stage receipt riportato, DEPLOY=false e RETRY=false; release non eseguito.
 
 Revisione helper: lo stage richiedeva feature recovery false sul live, incompatibile con un successivo upgrade del runtime c0b6 già recovery-enabled. Questo è un difetto del percorso upgrade; il messaggio generico non prova ancora il codice effettivo sul server. Lo stage ora richiede --allow-enabled-live per quell'upgrade, rifiuta valori diversi da true/false, conserva gli altri guard e aggiunge --check-only per preflight in sola lettura. StageError riporta esclusivamente codici statici senza valori privati. Receipt distingue prima abilitazione da upgrade. Test per enabled-live negato senza opzione, upgrade consentito, flag invalido, preflight senza receipt/container e release con ambiente invariato. Non disabilitare la feature sul live per aggirare il guard. Riutilizzare la build già validata; nuovo blocco preflight → stage → release, senza rebuild/replay/retry. Se emerge un altro guard, bloccare e riconciliare dal codice simbolico.
+
+
+### Checkpoint 2026-10-01 — helper upgrade verificato; ripresa senza ricostruire immagine
+
+Fix helper deploy `b71a964b663e47bb23a93f7c46c62d3ecaa84e0b`: 22 test locali stage/release PASS, suite helper completa 63 test PASS. CI Semantic Registry run36849541342 job recovery-cycle-scripts SUCCESS (63 test); gli altri job del modulo sono ancora in corso. Il codice applicativo UDP resta afa5c4c4cf03bff4e39b02e27f898256c3776cbc, già verde in tutte le sue CI; si riusa esattamente immagine 024c6691… e receipt build ckrhncjk. Nessun stage/release del fix è provato finché non arriva il nuovo protocollo operatore. Live atteso resta e15fb349… / Flyway34. La prima verifica del blocco seguente è --check-only, GET/inspect soltanto: se non PASS, set -e interrompe senza stage o release. Se PASS, stage fermo e release guardato. Non inviare file privati o messaggi raw di errore; usare CODE statico. Con esito incerto non ripetere release, riconciliare receipt.
+
+#### Ripresa dello stage bloccato — build ckrhncjk
+
+Questo blocco sostituisce quello precedente per il receipt già costruito. Binding dell'installazione corrente espliciti; nuovo preflight in sola lettura, poi stage e release controllato con backup. Nessun rebuild/replay/retry. --allow-enabled-live non modifica la feature sul live.
+
+```bash
+(
+set -euo pipefail
+umask 077
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_resume_dir=$(mktemp -d /tmp/ouf-r4a-udp-stage-resume.XXXXXX)
+trap 'rm -rf -- "$ouf_resume_dir"' EXIT
+for script in r4a_stage_udp_recovery.py r4a_release_udp_recovery.py; do
+  git show b71a964b663e47bb23a93f7c46c62d3ecaa84e0b:scripts/"$script" > "$ouf_resume_dir/$script"
+done
+ouf_stage_args=(
+  --container ouf-udp --candidate-container ouf-udp-materialization-candidate
+  --build-receipt /opt/ouf/udp-recovery-candidates/udp-recovery-image-ckrhncjk/receipt.json
+  --work-parent /opt/ouf/udp-recovery-candidates --allow-enabled-live
+)
+sudo python3 -B "$ouf_resume_dir/r4a_stage_udp_recovery.py" "${ouf_stage_args[@]}" --check-only
+sudo python3 -B "$ouf_resume_dir/r4a_stage_udp_recovery.py" "${ouf_stage_args[@]}" \
+  | tee "$ouf_resume_dir/stage-protocol.txt"
+ouf_stage_receipt=$(sed -n 's/^R4A_UDP_RECOVERY_STAGE_RECEIPT=\([^ ]*\) PRIVATE=true$/\1/p' "$ouf_resume_dir/stage-protocol.txt")
+test -n "$ouf_stage_receipt"
+sudo python3 -B "$ouf_resume_dir/r4a_release_udp_recovery.py" \
+  --stage-receipt "$ouf_stage_receipt" \
+  --postgres-container ouf-postgres --database ouf_udp --db-user ouf_udp \
+  --gateway-container ouf-apisix --curl-image curlimages/curl:8.16.0 \
+  --health-origin http://127.0.0.1:8080 --health-path /actuator/health \
+  --gateway-health-url http://ouf-udp:8080/actuator/health \
+  --expected-flyway 34 --stop-seconds 60 --health-attempts 45 \
+  --source managed-cinema-8ec8ae90 \
+  --run 86809c17-3354-45ca-a7e6-57e903944b24 \
+  --probe-job 7793566d-b9d4-4402-8cda-c09b8f135c04 \
+  --expected-job-count 8 --expected-succeeded 5 --expected-quarantined 3
+)
+```
