@@ -2990,3 +2990,40 @@ verifica corrente. Fonte resta congelata IN_REVIEW, versione
 Dopo UDP corrente PASS predisporre card/challenge di review nella THS,
 con decisione approval/activation esclusivamente HUMAN. Catena reale
 Ingestion→UDP→search ancora da eseguire; R-SMOKE/R-INSTALL OPEN.
+
+## 2026-10-01 — Intake guard repair LIVE PASS; restart checkpoint
+
+Operator evidence carried into this conversation: plan/apply PASS, two owned intake routes repaired, OIDC and limits preserved; direct UDP Lake and Gateway Lake incomplete-body probes both HTTP400. STORAGE_NOT_INVOKED=true under the pinned missing-content invariant; private receipt /etc/ouf/deploy-snapshots/runtime-intake-service-guards.json retained. IAM unchanged and no token modification by this script. RETRY=false, RUN_RESUME=false. This establishes Lake admission for the tested source/run, not S3 durability, handoff admission, ACK, materialization or search. No claim that the historical403 request has been exactly correlated to a route guard.
+
+Last execution evidence remains run86809c17-3354-45ca-a7e6-57e903944b24 PAUSED/controlVersion1; attempt1 Gateway404 and quarantine7741f1f3-479b-42be-bb0d-a711efb20722 RETRY_READY/version1; attempt2 Gateway403 and quarantine2fac075e-0862-4ae6-a799-cf63c41b651b OPEN/version0. Those are last-verified states, not a fresh database snapshot. Original recovery intent/read receipt must remain intact. Existing recovery files are keyed by run, so a second-quarantine recovery needs explicit separate operation/context handling; do NOT delete or overwrite the first recovery receipt or reuse the original read proof as proof of the second item.
+
+PET sprint review: L0 Blueprint0.3, Matrix1.7, terminology notice1.1; Ingestion1.3 (watermark/durable ACK, retry idempotency, attempt history, recovery ownership), UDP1.3 (handoff validation before durability, ACK distinct from materialization, environment bindings), Authorization1.5 and Gateway1.5 (owner fine-grained enforcement, governed transport, configuration as code). Onboarding1.6, Semantic1.3 and MCP1.4 boundaries remain unchanged: frozen source/publication pins, no AI HUMAN decision, no source reactivation. The user explicitly mandates PET consultation EVERY sprint, continuously updated handoff and installation/configuration/deploy documentation, and parameterized installations across hosts/networks/domains/Enti.
+
+Pinned UDP edaba2bff18a2aaf52d1180f21f0e68984cc3437 inspection: HandoffApi authorizes udp.candidate.write for sourceIdentity.sourceId/ingestionRunId BEFORE HandoffIntakeService.accept. accept validates handoff schema BEFORE DB lookup or lake.store. A source/run-only payload omitting handoffId fails FrozenContractValidator with UDP_CONTRACT_INVALID. This revision does not map ContractViolation to a dedicated HTTP status/body; a generic500 is NOT a reliable handoff admission proof. Do not promise a400 handoff probe or treat an arbitrary500 as successful authorization. Lake's400 probe remains a different pinned invariant.
+
+Next operator step: one fresh READ_ONLY unified bundle on the existing run, using all three dependencies from one immutable revision in an isolated temporary directory. It verifies current run/quarantine context, workload token/policy diagnostics and route inventory after the repair. Optional sections may report UNAVAILABLE; COMPLETE means collection finished, not all prerequisites passed. It does not test handoff owner admission, S3 configuration/durability, ACK or materialization. No login, intake POST, IAM/route change, retry or resume. The historical403 may have aged out of the bounded logs; absence of markers is not proof of recovery.
+
+```bash
+(
+set -e
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+ouf_diag_dir=$(mktemp -d /tmp/ouf-r4a-prerequisites.XXXXXX)
+trap 'rm -rf -- "$ouf_diag_dir"' EXIT
+for script in r4a_execution_failure_bundle.py r4a_execution_route_inventory.py r4a_prepare_frozen_compatibility_probe.py; do
+  git show 6e3a7094f3e36debfd1eabe531c73c66a4f4a50b:scripts/"$script" > "$ouf_diag_dir/$script"
+done
+sudo python3 -B "$ouf_diag_dir/r4a_execution_failure_bundle.py" \
+  --run 86809c17-3354-45ca-a7e6-57e903944b24
+)
+```
+
+**Command prepared, NOT executed in this conversation.** Await the operator output before designing the second recovery. Fresh owner reads and a new explicit recovery operation must cover quarantine2fac075e… and current run control version, preserve first operation/failed attempts, and persist intent BEFORE each versioned action. No blind retries, no lifecycle SQL changes, no dismissal, no once-schedule reset. Delivery/materialization/search readback follows any real recovery; remaining pipeline boundaries can still fail independently.
+
+### Mandatory industrialization backlog (R-INSTALL OPEN)
+
+Existing lab helpers are not an industrialized multi-installation deploy system: inspected scripts still contain installation literals (ouf-lab, domains, container names, network, paths, upstream endpoints). Source-independent logic alone does not satisfy portability. These are legacy constraints to remove, not examples to copy into new generic code. Lab IDs/domain bindings may appear only in named fixture/example configuration and operator arguments.
+
+New or revised production/deployment mechanisms must accept explicit versioned installation profiles/CLI/environment references for tenant/Ente, per-module hosts and ports, Gateway and issuer URLs/audiences, service identities, container/network/runtime names, storage endpoint/bucket, database connectivity, mounts/paths, deployment topology and retention/classification settings. Keep credential references private; no secret values in tracked profiles or chat. Validate bindings before mutation; reject missing/ambiguous values. Preserve domain capability IDs, schema invariants and reviewed release safety pins as protocol/safety constants, distinct from installation configuration. Support separated module hosts/networks through governed bindings rather than assuming a shared Docker network.
+
+R-INSTALL closure needs automated plan/apply/verify, idempotent reconciliation, immutable revisions/images, backup+restore drill, retained rollback and durable receipts, drift checks, fresh authorization/readiness tests, full parameter catalog and documented cold install/upgrade. Require at least two different installation profiles/topologies in meaningful portability verification. No such acceptance is claimed here. Keep all previous open PET/roadmap items, including RAW replay SPI, per-source/type/zone retention policy, eight-row delivery/materialization/search, second source matching/review, cross-module gates and operational-awareness/latency work.
