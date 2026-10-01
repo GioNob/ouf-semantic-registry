@@ -78,6 +78,33 @@ def invoke(argv, timeout=30):
     return subprocess.run(argv,check=True,capture_output=True,text=True,timeout=timeout).stdout.strip()
 
 
+def resolver_image(args, live):
+    candidate=getattr(args,'resolver_image',None)
+    expected=getattr(args,'expected_revision',None)
+    if bool(candidate)!=bool(expected):raise ValueError('CANDIDATE_IMAGE_AND_REVISION_REQUIRED')
+    if not candidate:return live['Image'],None
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:/@-]{0,255}',candidate) or not re.fullmatch(r'[a-f0-9]{40}',expected):
+        raise ValueError('candidate binding')
+    image=json.loads(inventory.run(['docker','image','inspect',candidate]))[0]
+    if image['Config'].get('User')!=live['Config'].get('User'):
+        raise ValueError('CANDIDATE_RUNTIME_USER_MISMATCH')
+    if (image['Config'].get('Labels') or {}).get('org.opencontainers.image.revision')!=expected:
+        raise ValueError('CANDIDATE_REVISION_LABEL_MISMATCH')
+    if not re.fullmatch(r'sha256:[a-f0-9]{64}',image['Id']):raise ValueError('candidate image')
+    return image['Id'],expected
+
+
+def copy_jar(args, destination, image, revision):
+    if revision is None:
+        invoke(['docker','cp',args.container+':'+args.jar_path,str(destination)])
+        return
+    # Create only a stopped helper to copy its jar. It is never started or attached to live networks.
+    helper=invoke(['docker','create','--pull','never','--network','none','--restart','no',image])
+    if not re.fullmatch(r'[a-f0-9]{64}',helper):raise ValueError('HELPER_ID_INVALID')
+    try:invoke(['docker','cp',helper+':'+args.jar_path,str(destination)])
+    finally:invoke(['docker','rm',helper])
+
+
 def main(args):
     if os.geteuid()!=0:raise RuntimeError('ROOT_REQUIRED')
     args.run=str(uuid.UUID(args.run))
@@ -89,7 +116,7 @@ def main(args):
         raise ValueError('jar path')
     live=json.loads(inventory.run(['docker','inspect',args.container]))[0]
     if not live.get('State',{}).get('Running'):raise RuntimeError('UDP_NOT_RUNNING')
-    image=live['Image'];user=live['Config'].get('User','')
+    image,revision=resolver_image(args,live);user=live['Config'].get('User','')
     if not re.fullmatch(r'sha256:[a-f0-9]{64}',image):raise ValueError('image')
     if not re.fullmatch(r'[1-9][0-9]*:[1-9][0-9]*',user):raise ValueError('NUMERIC_NONROOT_USER_REQUIRED')
     uid,gid=map(int,user.split(':'))
@@ -116,12 +143,14 @@ def main(args):
     compiler=json.loads(inventory.run(['docker','image','inspect',args.jdk_image]))[0]['Id']
     if not re.fullmatch(r'sha256:[a-f0-9]{64}',compiler):raise ValueError('compiler image')
     print('R4A_UDP_JAVA_REFERENCE_PROBE=GET_ONLY',flush=True)
-    print('UDP_JAVA_LIVE_IMAGE_ID='+image,flush=True)
+    print('UDP_JAVA_LIVE_IMAGE_ID='+live['Image'],flush=True)
+    print('UDP_JAVA_RESOLVER_IMAGE_ID='+image,flush=True)
+    print('UDP_JAVA_CANDIDATE_MODE='+str(revision is not None).lower(),flush=True)
     print('UDP_JAVA_COMPILER_IMAGE_ID='+compiler,flush=True)
     with tempfile.TemporaryDirectory(prefix='ouf-r4a-java-') as temporary:
         root=Path(temporary);root.chmod(0o711)
         jar=root/'runtime.jar'
-        invoke(['docker','cp',args.container+':'+args.jar_path,str(jar)])
+        copy_jar(args,jar,image,revision)
         extract(jar,root);jar.unlink()
         source=root/'R4aReadOnlyReferenceProbe.java';source.write_text(JAVA);source.chmod(0o644)
         refs=root/'refs.json';refs.write_bytes(encoded);os.chown(refs,uid,gid);refs.chmod(0o600)
@@ -151,6 +180,8 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     for name in ('run','source','container','postgres-container','database','db-user','network','jdk-image','jar-path'):
         parser.add_argument('--'+name,required=True)
+    parser.add_argument('--resolver-image')
+    parser.add_argument('--expected-revision')
     try:main(parser.parse_args())
     except Exception as error:
         print('R4A_UDP_JAVA_REFERENCE_PROBE=BLOCKED TYPE='+type(error).__name__+' BUSINESS_STATE_UNCHANGED=true SECRETS_NOT_PRINTED=true')

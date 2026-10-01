@@ -14,6 +14,33 @@ RESOLVER='BOOT-INF/classes/it/comune/trieste/ouf/udp/PublishedRuntimeConfigurati
 
 
 class JavaProbeTests(unittest.TestCase):
+    def test_candidate_requires_exact_revision_and_same_numeric_identity(self):
+        image={'Id':'sha256:'+'b'*64,'Config':{'User':'10004:10004',
+            'Labels':{'org.opencontainers.image.revision':'a'*40}}}
+        live={'Image':'sha256:'+'c'*64,'Config':{'User':'10004:10004'}}
+        args=argparse.Namespace(resolver_image='candidate:tested',expected_revision='a'*40)
+        with patch.object(probe.inventory,'run',return_value=json.dumps([image])):
+            self.assertEqual(probe.resolver_image(args,live),(image['Id'],'a'*40))
+            args.expected_revision='b'*40
+            with self.assertRaises(ValueError):probe.resolver_image(args,live)
+            args.expected_revision='a'*40;image['Config']['User']='0:0'
+        with patch.object(probe.inventory,'run',return_value=json.dumps([image])):
+            with self.assertRaises(ValueError):probe.resolver_image(args,live)
+
+    def test_candidate_copy_never_starts_and_removes_only_created_helper_on_failure(self):
+        args=argparse.Namespace(container='live',jar_path='/app/app.jar');helper='a'*64;image='sha256:'+'b'*64
+        calls=[]
+        def execute(argv):
+            calls.append(argv)
+            if argv[1]=='create':return helper
+            if argv[1]=='cp':raise RuntimeError('copy failed')
+            return ''
+        with patch.object(probe,'invoke',side_effect=execute):
+            with self.assertRaises(RuntimeError):probe.copy_jar(args,Path('/private/jar'),image,'c'*40)
+        self.assertEqual([c[1] for c in calls],['create','cp','rm'])
+        self.assertIn('none',calls[0]);self.assertEqual(calls[-1],['docker','rm',helper])
+        self.assertNotIn('live',str(calls))
+
     def jar(self,path,extra=None):
         with zipfile.ZipFile(path,'w') as jar:
             jar.writestr(RESOLVER,b'byte-identical-live-class')
