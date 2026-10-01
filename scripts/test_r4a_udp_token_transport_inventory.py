@@ -1,10 +1,20 @@
 import unittest
 import subprocess
 from unittest.mock import patch
+from types import SimpleNamespace
 import r4a_udp_token_transport_inventory as inventory
 
 
 class TokenInventoryTests(unittest.TestCase):
+    def test_realistic_execstart_reaches_script_ast_and_token_literal_check(self):
+        start='{ path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /opt/ouf/ops/refresh-token.py ; ignore_errors=no ; }'
+        with patch.object(inventory,'run',return_value=start),patch.object(inventory.Path,'lstat',return_value=SimpleNamespace(st_mode=0o100700,st_uid=0)),patch.object(inventory.Path,'read_text',return_value="target='/private/token'\nos.replace(temp,target)"),patch('builtins.print') as output:
+            inventory.inspect_services(['real.service'],'/private/token')
+            text=str(output.call_args_list)
+            self.assertIn('REFRESHER_PYTHON_SCRIPT_COUNT=1',text)
+            self.assertIn('execution_token_target_literal_present',text)
+            self.assertNotIn('UNAVAILABLE',text)
+            self.assertNotIn('/private/token',text)
     def test_service_error_is_redacted_and_does_not_hide_next_unit(self):
         with patch.object(inventory,'run',side_effect=[subprocess.CalledProcessError(1,['PRIVATE']), '']),patch('builtins.print') as output:
             inventory.inspect_services(['first.service','next.service'],'/private/token')

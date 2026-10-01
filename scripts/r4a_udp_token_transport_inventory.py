@@ -57,7 +57,7 @@ def inspect_services(units,token_path):
         stage='EXEC_START'
         try:
             start=run(['systemctl','show',unit,'--property=ExecStart','--value'])
-            paths=sorted(set(re.findall(r'(/[A-Za-z0-9_./-]+\\.py)(?=\\s|;|$)',start)))
+            paths=sorted(set(re.findall(r'(/[A-Za-z0-9_./-]+\.py)(?=\s|;|$)',start)))
             print('REFRESHER_PYTHON_SCRIPT_COUNT='+str(len(paths)))
             for source in paths:
                 stage='SCRIPT_METADATA'
