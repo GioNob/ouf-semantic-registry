@@ -500,3 +500,53 @@ Readback operatore in sola lettura: scope udp.materialization.retry EXISTS=true,
 IAM verify dell'operatore: `udp.materialization.retry` esiste, DRIFT=NONE; client `ouf-human-admin` OPTIONAL/BOUND. Log privato `iam-verify.22IAo3`, nessun retry. Consultati PET Authorization v1.5 §36.10 e UDP v1.3 §§109.6–109.7: coarse Gateway, fine-grained owner, reference integrity nel punto d'uso; nessun silent fallback.
 
 Nuovo helper `scripts/r4a_install_materialization_recovery_routes.py`: ogni binding obbligatorio da CLI, due route condivise GET review/POST retry con UUID/action ancorati, OIDC bearer-only e limit-count preservati da template validato, guard HUMAN access e rimozione header x-ouf nel rewrite, token preservato per verifica owner indipendente. Non copia Lua di altre capability. Snapshot Gateway privato precedente deve combaciare con lettura fresca; collisione/drift bloccano prima di PUT. Ricevuta esclusiva root 0600 con intent fsync prima di ogni PUT; rollback elimina soltanto route create che combaciano ancora con il desiderato. Se output perso, `verify` legge senza PUT; stato incerto richiede riconciliazione e mai blind retry. Nessun POST owner, nessuna pubblicazione policy, nessun replay/source activation. Test locali 20 PASS (6 nuovi +14 preesistenti); CI aggiunta a 83 test e checksum aggiornati nello stesso commit. Deploy effettivo e HUMAN authorization rimangono da verificare dall'operatore. Bozza b305bcae-a03f-4f0d-8b81-81508bcddb24 non pubblicata; ultimo ACTIVE osservato :35; invariato obiettivo materializzazione 8/8 e search non provata. Limiti: snapshot+readback non sono transazione APISIX distribuita; evitare writer concorrenti nella finestra.
+
+
+#### R4A UDP recovery Gateway — installazione due route dopo IAM verify
+
+Eseguire sul nodo Gateway, finestra senza altri writer APISIX. Binding di esempio dell'ambiente lab nel runbook; helper senza default installativi. Usa snapshot privato Gateway PASS_READ_ONLY anche quando IAM nello stesso inventario era PARTIAL, ora verificato separatamente. Plan/apply/verify salvano protocollo privato; se ricevuta già esiste esegue solo verify. Non pubblica policy e non invoca retry owner. In caso BLOCKED copiare soltanto output simbolico; non stampare snapshot o receipt che contengono configurazione OIDC privata.
+
+```bash
+set -euo pipefail
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+REVISION=2011743b06f685004f74ccef045d1b34b273192b
+WORK_DIR=$(mktemp -d)
+trap 'rm -rf "$WORK_DIR"' EXIT
+for SCRIPT in r4a_install_materialization_recovery_routes.py r4a_recovery_binding_inventory.py r4a_execution_route_inventory.py r4a_prepare_frozen_compatibility_probe.py r4a_prepare_scoped_human_policy.py; do
+  git show "$REVISION:scripts/$SCRIPT" > "$WORK_DIR/$SCRIPT"
+done
+sudo bash -s -- "$WORK_DIR" <<'ROOT'
+set -euo pipefail
+umask 077
+WORK_DIR=$1
+STATE_DIR=/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy
+LOG=$(mktemp "$STATE_DIR/gateway-routes.XXXXXX")
+printf 'RECOVERY_GATEWAY_LOG=%s PRIVATE=true\n' "$LOG"
+COMMON=(
+  --gateway-container ouf-apisix
+  --config-destination /usr/local/apisix/conf/config.yaml
+  --admin-origin http://127.0.0.1:9180
+  --curl-image curlimages/curl:8.16.0
+  --template-id r4a-onboarding-runtime-publications-list
+  --template-uri /api/onboarding/v1/runtime/publications
+  --template-node ouf-onboarding:8080
+  --template-scope ouf.onboarding.configuration.read
+  --public-host api.ouf-lab.it
+  --udp-node ouf-udp:8080
+  --base-path /api/udp/v1/governance/materialization/jobs
+  --scope udp.materialization.retry
+  --review-id r4a-udp-human-materialization-review
+  --retry-id r4a-udp-human-materialization-retry
+  --snapshot "$STATE_DIR/binding-inventory.json"
+  --receipt "$STATE_DIR/gateway-routes-receipt.json"
+)
+if test -e "$STATE_DIR/gateway-routes-receipt.json"; then
+  python3 -B "$WORK_DIR/r4a_install_materialization_recovery_routes.py" verify "${COMMON[@]}" 2>&1 | tee -a "$LOG"
+else
+  python3 -B "$WORK_DIR/r4a_install_materialization_recovery_routes.py" plan "${COMMON[@]}" 2>&1 | tee -a "$LOG"
+  python3 -B "$WORK_DIR/r4a_install_materialization_recovery_routes.py" apply "${COMMON[@]}" 2>&1 | tee -a "$LOG"
+  python3 -B "$WORK_DIR/r4a_install_materialization_recovery_routes.py" verify "${COMMON[@]}" 2>&1 | tee -a "$LOG"
+fi
+ROOT
+```
