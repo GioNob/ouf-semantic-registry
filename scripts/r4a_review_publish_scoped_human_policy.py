@@ -155,8 +155,9 @@ def publication_readback(args,token,state,evidence):
 def confirm(ref):
     phrase='PUBBLICO '+ref
     print('Per pubblicare questa bozza, digitare nel terminale: '+phrase,flush=True)
-    with open('/dev/tty','r+') as terminal:
-        terminal.write('CONFERMA HUMAN> ');terminal.flush()
+    # A terminal is not seekable: TextIOWrapper r+ attempts buffered random I/O.
+    print('CONFERMA HUMAN> ',end='',flush=True)
+    with open('/dev/tty','r') as terminal:
         api.require(terminal.readline().strip()==phrase,'HUMAN_CONFIRMATION_NOT_MATCHED')
 
 def execute(args):
@@ -173,9 +174,18 @@ def execute(args):
             and evidence.get('status') in ('PUBLISH_POST_UNVERIFIED_DO_NOT_REPOST','PASS_PUBLISHED'),
             'NO_PUBLICATION_INTENT_RECONCILE')
         token=api.login(args);publication_readback(args,token,state,evidence);return
-    api.reserve(args.receipt)
-    evidence={'status':'LOGIN_PENDING_NO_PUBLISH','draftReceiptHash':api.digest(state),
-        'resourcesHash':api.digest(resources),'mode':args.mode};api.write(args.receipt,evidence)
+    if args.mode=='resume':
+        api.private(args.receipt);evidence=json.loads(args.receipt.read_text())
+        api.require(evidence.get('draftReceiptHash')==api.digest(state)
+            and evidence.get('resourcesHash')==api.digest(resources)
+            and evidence.get('status')=='REVIEWED_NOT_PUBLISHED'
+            and evidence.get('mode')=='publish','RESUME_REQUIRES_REVIEWED_NO_PUBLISH_INTENT')
+        # Keep the no-publication marker: login/review interruption can be resumed.
+        # Review is rerun with fresh authentication; old simulations never authorize publication.
+    else:
+        api.reserve(args.receipt)
+        evidence={'status':'LOGIN_PENDING_NO_PUBLISH','draftReceiptHash':api.digest(state),
+            'resourcesHash':api.digest(resources),'mode':args.mode};api.write(args.receipt,evidence)
     token=api.login(args);review(args,token,state,resources,evidence)
     print('R4A_SCOPED_POLICY_REVIEW_RECEIPT='+str(args.receipt)+' PRIVATE=true',flush=True)
     if args.mode=='review':
@@ -193,7 +203,7 @@ def execute(args):
     publication_readback(args,token,state,evidence)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('mode',choices=('review','publish','verify'))
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('mode',choices=('review','publish','resume','verify'))
     for name in ('issuer','client','audience','admin-scope','base-url','tenant','subject','capability','operation','required-scope','owner'):
         p.add_argument('--'+name,required=True)
     for name in ('draft-receipt','resources','receipt'):p.add_argument('--'+name,type=Path,required=True)

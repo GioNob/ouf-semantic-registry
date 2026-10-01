@@ -88,6 +88,8 @@ class Review(unittest.TestCase):
                 raise AssertionError('unplanned HTTP')
             def confirm(ref):
                 confirmed.append(ref)
+                if failure=='tty-then-resume' and len(confirmed)==1:
+                    raise io.UnsupportedOperation('terminal is not seekable')
                 if failure=='confirmation':raise policy.Blocked('HUMAN_CONFIRMATION_NOT_MATCHED')
                 if failure=='expiry-after-confirm':
                     # Receipt is immutable; patch validity gate for the final check.
@@ -98,7 +100,12 @@ class Review(unittest.TestCase):
                 try:review.execute(args)
                 except Exception as caught:error=caught
                 evidence=json.loads(args.receipt.read_text())
-                if failure=='lost-response':
+                if failure=='tty-then-resume':
+                    self.assertIsInstance(error,io.UnsupportedOperation)
+                    self.assertEqual(evidence['status'],'REVIEWED_NOT_PUBLISHED')
+                    args.mode='resume';review.execute(args)
+                    evidence=json.loads(args.receipt.read_text());error=None
+                elif failure=='lost-response':
                     args.mode='verify';review.execute(args)
                     self.assertEqual(json.loads(args.receipt.read_text())['status'],'PASS_PUBLISHED')
                 elif mode=='publish' and not error:
@@ -131,6 +138,60 @@ class Review(unittest.TestCase):
         self.assertIsInstance(error,TimeoutError);self.assertTrue(published)
         self.assertEqual(state['status'],'PUBLISH_POST_UNVERIFIED_DO_NOT_REPOST')
         self.assertEqual(sum(url.endswith(':publish') for _,url in calls),1)
+    def test_terminal_failure_resume_fresh_review_then_one_publish(self):
+        calls,state,error,published=self.run_case(failure='tty-then-resume')
+        self.assertIsNone(error);self.assertTrue(published)
+        self.assertEqual(state['status'],'PASS_PUBLISHED')
+        self.assertEqual(sum(url.endswith(':publish') for _,url in calls),1)
+        self.assertEqual(sum(url.endswith(':preview') for _,url in calls),2)
+    def test_resume_refuses_existing_publish_intent_or_identity_drift_before_login(self):
+        with tempfile.TemporaryDirectory() as folder:
+            args,state,resources,_=self.fixture(Path(folder),'resume')
+            saved={'draftReceiptHash':policy.digest(state),'resourcesHash':policy.digest(resources),'mode':'publish'}
+            for status in ('PASS_PUBLISHED','PUBLISH_POST_UNVERIFIED_DO_NOT_REPOST','LOGIN_PENDING_NO_PUBLISH'):
+                args.receipt.write_text(json.dumps({**saved,'status':status}));args.receipt.chmod(0o600)
+                with patch.object(policy,'login') as login:
+                    with self.assertRaises(policy.Blocked):review.execute(args)
+                    login.assert_not_called()
+            args.receipt.write_text(json.dumps({**saved,'status':'REVIEWED_NOT_PUBLISHED','resourcesHash':'drift'}))
+            with patch.object(policy,'login') as login:
+                with self.assertRaises(policy.Blocked):review.execute(args)
+                login.assert_not_called()
+    def terminal_case(self,phrase,denied):
+        import os,pty,select,time
+        pid,master=pty.fork()
+        if pid==0:
+            try:
+                review.confirm('policy:8')
+                os._exit(1 if denied else 0)
+            except policy.Blocked as error:
+                os._exit(0 if denied and str(error)=='HUMAN_CONFIRMATION_NOT_MATCHED' else 2)
+            except BaseException:os._exit(3)
+        data=b'';sent=False;reaped=False;deadline=time.monotonic()+5
+        try:
+            while time.monotonic()<deadline:
+                ready,_,_=select.select([master],[],[],0.1)
+                if ready:
+                    try:chunk=os.read(master,4096)
+                    except OSError:break
+                    data+=chunk
+                    if b'CONFERMA HUMAN>' in data and not sent:
+                        os.write(master,(phrase+'\n').encode());sent=True
+                ended,status=os.waitpid(pid,os.WNOHANG)
+                if ended:reaped=True;break
+            if not reaped:
+                ended,status=os.waitpid(pid,os.WNOHANG)
+                reaped=bool(ended)
+            self.assertTrue(sent);self.assertTrue(reaped,'terminal child did not finish')
+            self.assertEqual(os.waitstatus_to_exitcode(status),0)
+        finally:
+            os.close(master)
+            if not reaped:
+                os.kill(pid,9);os.waitpid(pid,0)
+    def test_real_nonseekable_terminal_confirmation(self):
+        self.terminal_case('PUBBLICO policy:8',False)
+    def test_real_terminal_wrong_confirmation_denied(self):
+        self.terminal_case('NO',True)
     def test_receipt_scope_widening_and_expiry_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             args,state,resources,_=self.fixture(Path(folder),'publish')
