@@ -634,3 +634,53 @@ R4A policy review/publish CI finale verificata su `66ac8b1db36e83a8558aa4a8ab3fa
 Operatore: REVIEW PASS 3 risorse/41 scenari, ACTIVE_UNCHANGED=true, SIMULATION_AUTHORITATIVE=false. Receipt privata publication-receipt.json scritta. La proposta :35->:36 è stata mostrata ma `confirm()` ha sollevato UnsupportedOperation prima del durable publish intent e prima del POST. Causa riprodotta: Python open('/dev/tty','r+') tenta buffered random I/O su terminale non seekable. Nessun publish/retry UDP eseguito in questa invocazione; non eliminare/ricreare la receipt né bozza. Owner HUMAN authorization resta NOT_PROVEN.
 
 Fix: prompt su stdout flush e terminale aperto solo lettura 'r'. Test reali pty.fork con /dev/tty non seekable: frase corretta PASS, frase errata DENY. Nuovo modo resume accetta esclusivamente receipt root0600 REVIEWED_NOT_PUBLISHED con mode originario publish e hash draft/resources identici; fresh HUMAN login + preview/simulazioni completo + ACTIVE/draft/ETag/expiry recheck + nuova conferma terminale. Non utilizza vecchie simulazioni come autorizzazione. Publish intent/PASS_PUBLISHED/altre receipt bloccano resume prima del login, richiedono verify senza repost. Lost response originaria e scope/expiry/drift restano fail-closed. Test locali10 helper PASS (4 nuovi); totale CI93 previsto. Consultati PET Authorization§36.10 e UDP§109.6. Nessun binding installativo nuovo hardcoded e nessuna modifica Gateway/IAM/UDPbusiness/migrazione. Next gate rimane pubblicazione HUMAN :36 verificata, poi GET reale UDP nuovo scope, reference readiness e recovery originale3job; 8/8/search ancora NOT_PROVEN e blocker ereditati invariati.
+
+
+#### R4A UDP recovery policy — ripresa dopo errore terminale non seekable
+
+Eseguire dopo riconnessione SSH. Usa ricevuta esistente REVIEWED_NOT_PUBLISHED/mode publish, non eliminare alcun file e non ricreare bozza/grant. Login fresco account OUF ouf-admin, 41 simulazioni ripetute, nuova conferma nel terminale con apertura /dev/tty solo lettura. Prima esegue verify Gateway GET. Pubblicazione con durable intent e readback; nessun retry UDP. Se receipt indica già publish intent o PASS_PUBLISHED, resume rifiuta senza POST: usare verify sullo stesso helper/argomenti per riconciliare, mai cambiare stato manualmente.
+
+```bash
+set -euo pipefail
+cd /opt/ouf/semantic
+git fetch --no-tags origin codex/r4a-smoke-semantic-inventory
+REVISION=dcd6703e7bb5d8a1f7e29b6a9c15f4c8be0e58d4
+WORK_DIR=$(mktemp -d)
+trap 'rm -rf "$WORK_DIR"' EXIT
+for SCRIPT in r4a_review_publish_scoped_human_policy.py r4a_prepare_scoped_human_policy.py r4a_install_materialization_recovery_routes.py r4a_recovery_binding_inventory.py r4a_execution_route_inventory.py r4a_prepare_frozen_compatibility_probe.py; do
+  git show "$REVISION:scripts/$SCRIPT" > "$WORK_DIR/$SCRIPT"
+done
+STATE_DIR=/etc/ouf/deploy-snapshots/udp-materialization-recovery-policy
+# Fresh GET-only Gateway readback before policy publication; private credentials never printed.
+sudo python3 -B "$WORK_DIR/r4a_install_materialization_recovery_routes.py" verify \
+  --gateway-container ouf-apisix --config-destination /usr/local/apisix/conf/config.yaml \
+  --admin-origin http://127.0.0.1:9180 --curl-image curlimages/curl:8.16.0 \
+  --template-id r4a-onboarding-runtime-publications-list \
+  --template-uri /api/onboarding/v1/runtime/publications \
+  --template-node ouf-onboarding:8080 --template-scope ouf.onboarding.configuration.read \
+  --public-host api.ouf-lab.it --udp-node ouf-udp:8080 \
+  --base-path /api/udp/v1/governance/materialization/jobs --scope udp.materialization.retry \
+  --review-id r4a-udp-human-materialization-review --retry-id r4a-udp-human-materialization-retry \
+  --snapshot "$STATE_DIR/binding-inventory.json" --receipt "$STATE_DIR/gateway-routes-receipt.json"
+COMMON=(
+  --issuer https://auth.ouf-lab.it/realms/ouf
+  --client ouf-human-admin
+  --audience ouf-api-gateway
+  --admin-scope authorization.policy.admin
+  --base-url https://api.ouf-lab.it/api/trusted-human/v1/authorization
+  --tenant ouf-lab
+  --subject b93d8cf6-cd14-4ee6-91d7-84cd76c4f500
+  --capability udp.materialization.retry
+  --operation COMMAND
+  --required-scope udp.materialization.retry
+  --owner udp
+  --expected-resources 3
+  --min-remaining-seconds 120
+  --draft-receipt "$STATE_DIR/draft-receipt.json"
+  --resources "$STATE_DIR/resources.json"
+  --receipt "$STATE_DIR/publication-receipt.json"
+)
+# Ripresa della receipt REVIEWED_NOT_PUBLISHED; nessuna cancellazione o nuova bozza.
+# Fresh login OUF ouf-admin; dopo la review digitare la frase richiesta nel terminale.
+sudo python3 -B "$WORK_DIR/r4a_review_publish_scoped_human_policy.py" resume "${COMMON[@]}"
+```
