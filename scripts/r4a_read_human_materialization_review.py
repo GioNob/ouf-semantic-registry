@@ -108,6 +108,8 @@ def execute(args):
         +' OWNER_GET_ONLY=true RETRY=false REPLAY=false INTAKE_POST=false MATERIALIZATION_NOT_TRIGGERED=true'
         +' HISTORICAL_CAUSALITY_NOT_PROVEN=true SECRETS_NOT_PRINTED=true')
     if not ready:raise SystemExit(2)
+    # In-process recovery may reuse this authenticated HUMAN session; never persist the token.
+    return token
 
 def save_failure(args,error):
     # Never modify a receipt this invocation did not exclusively reserve.
