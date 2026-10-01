@@ -102,3 +102,12 @@ jobs:
         run: docker build --tag ouf-semantic-registry:${{ github.sha }} .
       - name: Inspect image as non-root
         run: test "$(docker image inspect ouf-semantic-registry:${{ github.sha }} --format '{{.Config.User}}')" = "10001:10001"
+
+  recovery-cycle-scripts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify versioned recovery cycles and transport bindings
+        working-directory: scripts
+        run: python3 -B -m unittest test_r4a_recover_ingestion_run test_r4a_recovery_cycles

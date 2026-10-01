@@ -17,6 +17,29 @@ import r4a_prepare_frozen_compatibility_probe as helper
 
 ROOT = Path('/etc/ouf/deploy-snapshots')
 SCOPES = {'ingestion.run.read','ingestion.quarantine.read'}
+RUNTIME = {}
+
+
+def configure(args):
+    """Explicit bindings for new recovery cycles; legacy CLI remains compatible."""
+    global ROOT, RUNTIME
+    fields=('receipt_root','ingestion_container','postgres_container','database','db_user','network','curl_image')
+    values={key:getattr(args,key,None) for key in fields}
+    if getattr(args,'cycle',None) and not all(values.values()):
+        raise RuntimeError('RECOVERY_INSTALLATION_BINDINGS_REQUIRED')
+    for key in ('ingestion_container','postgres_container','database','db_user','network','curl_image'):
+        value=values[key]
+        if value is not None and (not isinstance(value,str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:/@-]{0,255}',value)):
+            raise RuntimeError('RECOVERY_INSTALLATION_BINDING_INVALID')
+    if values['receipt_root'] is not None:
+        path=Path(values['receipt_root'])
+        if not path.is_absolute() or '..' in path.parts:
+            raise RuntimeError('RECOVERY_RECEIPT_ROOT_INVALID')
+        ROOT=path
+    RUNTIME={key:value for key,value in values.items() if value is not None}
+
+
+def ingestion_container():return RUNTIME.get('ingestion_container','ouf-ingestion')
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -103,7 +126,7 @@ def snapshot(run, quarantine):
     query=("begin read only; set local statement_timeout=15000; select json_build_object("
            "'run',(select row_to_json(x) from (select run_id,tenant_id,source_id,state,failure_code,control_version from ouf_ingestion.ing_run where run_id='"+run+"') x),"
            "'quarantine',(select row_to_json(x) from (select quarantine_id,run_id,state,lifecycle_state,lifecycle_version,reason_code from ouf_ingestion.ing_quarantine where quarantine_id='"+quarantine+"') x))::text; rollback;")
-    return json.loads(helper.run(['docker','exec','ouf-postgres','psql','-X','-qAt','-v','ON_ERROR_STOP=1','-U','ouf_ingestion','-d','ouf_ingestion','-c',query]))
+    return json.loads(helper.run(['docker','exec',RUNTIME.get('postgres_container','ouf-postgres'),'psql','-X','-qAt','-v','ON_ERROR_STOP=1','-U',RUNTIME.get('db_user','ouf_ingestion'),'-d',RUNTIME.get('database','ouf_ingestion'),'-c',query]))
 
 
 def get(api,path,token):
@@ -111,8 +134,9 @@ def get(api,path,token):
     config=('silent\nshow-error\nmax-time = 20\nmax-filesize = 1048576\n'
             'request = "GET"\nheader = "Authorization: Bearer '+token+'"\n'
             'header = "Accept: application/json"\nurl = "'+api+path+'"\nwrite-out = "\\n%{http_code}"\n')
-    raw=helper.run(['docker','run','--rm','-i','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--network','ouf-backend','curlimages/curl:8.16.0','--config','-'],input=config,timeout=30)
-    body,code=raw.rsplit('\n',1)
+    raw=helper.run(['docker','run','--rm','-i','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--network',RUNTIME.get('network','ouf-backend'),RUNTIME.get('curl_image','curlimages/curl:8.16.0'),'--config','-'],input=config,timeout=30)
+    body,sep,code=raw.rpartition('\n')
+    if not sep:body,code='',raw
     if code!='200':
         raise RuntimeError('RECOVERY_READ_HTTP_'+(code if re.fullmatch(r'\d{3}',code) else 'INVALID'))
     return json.loads(body)
