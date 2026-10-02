@@ -4,6 +4,7 @@ import io
 import json
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -12,6 +13,8 @@ m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 
 
 class StageTest(unittest.TestCase):
+    def root_metadata(self,path):
+        return SimpleNamespace(st_mode=path.stat().st_mode,st_uid=0)
     def config(self,root):
         return {'stageRoot':str(root),'images':[{'role':r,'repository':'https://github.com/GioNob/ouf-'+r,
                 'commit':'b'*40,'container':r,'liveRevision':'a'*40} for r in ('semantic','mcp')],
@@ -29,7 +32,7 @@ class StageTest(unittest.TestCase):
             def run(argv,*args,**kw):
                 calls.append(argv)
                 return 'b'*40 if 'rev-parse' in argv else ''
-            with patch.object(m.os,'geteuid',return_value=0),patch.object(m,'inspect',side_effect=inspect),patch.object(m,'routes',return_value=[]),patch.object(m,'run',side_effect=run),patch.object(m.subprocess,'run') as build:
+            with patch.object(m.os,'geteuid',return_value=0),patch.object(m.Path,'lstat',autospec=True,side_effect=self.root_metadata),patch.object(m,'inspect',side_effect=inspect),patch.object(m,'routes',return_value=[]),patch.object(m,'run',side_effect=run),patch.object(m.subprocess,'run') as build:
                 build.return_value.returncode=0;out=io.StringIO()
                 with contextlib.redirect_stdout(out):m.main(cfg)
             self.assertNotIn('never-print',out.getvalue())
@@ -41,7 +44,7 @@ class StageTest(unittest.TestCase):
     def test_live_pin_drift_prevents_build(self):
         with tempfile.TemporaryDirectory() as d:
             cfg=self.config(Path(d)/'stage');cfg['images'][0]['liveRevision']='c'*40
-            with patch.object(m.os,'geteuid',return_value=0),patch.object(m,'inspect',side_effect=self.row),patch.object(m.subprocess,'run') as build:
+            with patch.object(m.os,'geteuid',return_value=0),patch.object(m.Path,'lstat',autospec=True,side_effect=self.root_metadata),patch.object(m,'inspect',side_effect=self.row),patch.object(m.subprocess,'run') as build:
                 with self.assertRaisesRegex(RuntimeError,'LIVE_DRIFT'):m.main(cfg)
                 build.assert_not_called()
     def test_rejects_remote_admin_and_unpinned_repository(self):

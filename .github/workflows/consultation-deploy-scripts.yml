@@ -1,0 +1,25 @@
+name: Consultation deploy scripts
+on:
+  push:
+    paths:
+      - 'scripts/r4a_*semantic_consultation.py'
+      - 'scripts/r4a_consultation_runtime_preflight.py'
+      - 'tests/test_*semantic_consultation.py'
+      - 'tests/test_consultation_runtime_preflight.py'
+      - '.github/workflows/consultation-deploy-scripts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preparation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify image stage and stopped candidates
+        run: python3 -m unittest discover -s tests -p 'test_*semantic_consultation.py'
+      - name: Verify runtime metadata redaction
+        run: python3 -m unittest discover -s tests -p 'test_consultation_runtime_preflight.py'
