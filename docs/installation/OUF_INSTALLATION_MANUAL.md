@@ -4165,3 +4165,14 @@ Output operatore: entrambi i contratti scope verify PASS, drift NONE; batch plan
 Readback autenticato MCP successivo: policy36 invariata, pagina completa nextAfter=null; grant nominali/compilati search presenti, read assente. Nessuna proposta/publicazione eseguita. Non basta il binding OAuth per rendere una capability autorizzata.
 
 Prossimo inventario operatore in sola lettura: riuso del preflight r4a_authorization_catalogue_preflight.py pin Onboarding6340d5bf120e09b47c32177656e2c377a4c03640. Adapter in memoria sostituisce il literal urban.object.search della sola query SQL con i due ID esatti ouf.semantic.search/read, uno alla volta; output etichettato con CAPABILITY_ID e CAPABILITY_REGISTERED/CAPABILITY_IN_ACTIVE_BUNDLE. Non modificare file software installati. Occorre sapere se read è registrata e/o pubblicata prima di scegliere il riuso del percorso di registrazione/policy o la sola proposta grant via MCP e THS. Conferma HUMAN e prova positiva restano pendenti; refresh OAuth/discovery ancora necessario. Conservati tutti i gate pregressi.
+
+## Checkpoint 2026-10-02 10:35–10:37 Europe/Rome — catalogo PASS, proposta grant read PENDING
+
+Operatore conferma entrambe le capability ouf.semantic.search/read registrate e nella policy attiva ouf-lab-authorization:36. Preflight READ_ONLY, NO_POLICY_CHANGED=true. Nessuna nuova registrazione necessaria. Readback grant via MCP: policy36, nextAfter=null, search presente; read assente nei grant nominali/compilati del soggetto admin letto.
+
+Preparata tramite plugin OUF - MCP Server (account ouf-admin) una sola proposta UPSERT grant-semantic-read-human-admin, capability ouf.semantic.read, tenant ouf-lab, subject b93d8cf6-cd14-4ee6-91d7-84cd76c4f500; servicePrincipalId/organizationId null. Validità e struttura copiate dal grant-semantic-search-human-admin attivo (validFrom 2026-09-18T07:12:50.968730Z, validUntil 2036-09-15T07:13:50.968730Z), senza modifica del ruolo admin o degli altri grant. Conferma richiede controllo diretto HUMAN della card/delta in THS; proposta NON pubblicata.
+
+Receipt e status riletti: proposalId 4b59b8ab-5063-442b-973f-e52b49768d3b, revision0, PENDING; finalPolicyRef null; scadenza 2026-10-02T08:51:28.041537Z (10:51:28 Europe/Rome).
+THS: https://api.ouf-lab.it/trusted-human/authorization/?proposal=4b59b8ab-5063-442b-973f-e52b49768d3b
+
+Prossimo passo: conferma/reiezione dell'operatore sulla THS autenticata, poi rilettura receipt e grant attivi (non presumere versione37), refresh token OAuth/discovery e prove positive semantic.search/get. Se scade o la policy cambia, rileggere la policy e preparare nuova proposta solo se ancora necessaria; non ripetere alla cieca. Non approvare via chatbot né inviare bearer HUMAN al modello. Nessuna source/run avviata, nessun gate E2E chiuso.
