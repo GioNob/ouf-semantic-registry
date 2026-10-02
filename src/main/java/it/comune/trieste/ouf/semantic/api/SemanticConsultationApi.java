@@ -32,7 +32,7 @@ public class SemanticConsultationApi {
     }catch(Exception e){throw new IllegalArgumentException("SEM_CONSULTATION_ARGUMENTS_INVALID");}
   }
   @PostMapping("/search") public Object search(@RequestBody byte[] raw,HttpServletRequest request) {
-    var a=arguments(raw,request,"ouf.semantic.search","SEARCH","semantic.artifact",Set.of("q","limit","type","namespace","domain","range"));
+    var a=arguments(raw,request,"ouf.semantic.search","READ","semantic.artifact",Set.of("q","limit","type","namespace","domain","range"));
     int limit=20;if(a.has("limit")){if(!a.get("limit").isIntegralNumber()||!a.get("limit").canConvertToInt())throw new IllegalArgumentException("SEM_SEARCH_LIMIT_INVALID");limit=a.get("limit").intValue();}
     return reads.search(text(a,"q",true),"ACTIVE",limit,text(a,"type",false),text(a,"namespace",false),text(a,"domain",false),text(a,"range",false));
   }

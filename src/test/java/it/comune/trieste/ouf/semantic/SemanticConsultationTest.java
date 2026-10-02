@@ -29,7 +29,7 @@ class SemanticConsultationTest {
     return new SemanticReadDelegation(json,file.toString(),"fixture-issuer","fixture-audience","workload");
   }
   byte[] body(Map<String,Object> args) throws Exception {
-    return json.writeValueAsBytes(Map.of("CapabilityID",cap,"GatewayBindingRef","capability://"+cap,"Owner","semantic","OperationClass","SEARCH","Arguments",args));
+    return json.writeValueAsBytes(Map.of("CapabilityID",cap,"GatewayBindingRef","capability://"+cap,"Owner","semantic","OperationClass","READ","Arguments",args));
   }
   Map<String,Object> receipt(byte[] body) throws Exception {
     long now=Instant.now().getEpochSecond();
