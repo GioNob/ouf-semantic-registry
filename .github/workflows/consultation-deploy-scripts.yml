@@ -12,6 +12,8 @@ on:
       - 'tests/test_*semantic_rdf_read.py'
       - 'scripts/r4a_semantic_discovery_preflight.py'
       - 'tests/test_semantic_discovery_preflight.py'
+      - 'scripts/r4a_semantic_southbound_topology.py'
+      - 'tests/test_semantic_southbound_topology.py'
       - '.github/workflows/consultation-deploy-scripts.yml'
   workflow_dispatch:
 permissions:
@@ -37,3 +39,6 @@ jobs:
 
       - name: Verify read-only Semantic discovery configuration inventory
         run: python3 -B -m unittest discover -s tests -p 'test_semantic_discovery_preflight.py'
+
+      - name: Verify read-only southbound topology and redaction
+        run: python3 -B -m unittest discover -s tests -p 'test_semantic_southbound_topology.py'
