@@ -380,3 +380,16 @@ Prossimo comando operatore: riutilizzare `r4a_stage_semantic_consultation.py` al
 Dopo STAGE PASS: preparare tre candidati STOPPED con Gateway c14d3f e `--replace-existing`, precedente pin Gateway `e8ef4b72093f4138d0efe78e9947ddfc4b471e27`, preservando esattamente ownership delle sole due route di consultazione e riusando la chiave owner esistente. Quindi piano/rilascio con backup verificati e denial/readiness; infine prova positiva HUMAN search/get con riferimento esatto tramite MCP pubblico. Nessun rilascio di Onboarding/Ingestion/UDP. Le vecchie immagini staged1568/e64 non sono le candidate per questo contratto; conservarle senza applicarle.
 
 Restano aperti consultazione HUMAN positiva e gli altri gate PET/end-to-end già elencati. Cinema/Teatri e test manuali acquisiti rimangono congelati; nessun replay del percorso business.
+
+
+### 2026-10-02 11:56 Europe/Rome — Immagini HUMAN consultation staged, preparazione prossima
+
+Ricevuta operatore: `CONSULTATION_STAGE=PASS LIVE_UNCHANGED=true ROUTES_UNCHANGED=true NO_SWITCH=true NO_SOURCE_RUN=true PRIVATE_ROOT=/etc/ouf/deploy-snapshots/consultation-human-read-20261002-1153`.
+- Semantic commit `025a542bfe6c76d8c45ee5af668b7cb7bb0de0d6`, image `sha256:809462b5abf7ce94e045061c1d104995ad5dfb866cbfbaef8ab105c0e443451f`, tag `ouf-semantic:consultation-025a542bfe6c`.
+- MCP commit `98e0c7a03d3be38458282250c71f678b9619ae62`, image `sha256:7a8d7f8652a24055f3b92f1e75a8089bceb35318a0dfe5aa3e26b9c45fe2a4b3`, tag `ouf-mcp:consultation-98e0c7a03d3b`.
+
+L'inventario Gateway mostra ancora le due route iniziali `mcp-semantic-search` e `mcp-semantic-get`, attive, e la chiave owner in environment; il PASS dello staging certifica confronto invariato dello snapshot completo prima/dopo. La policy 38 già pubblicata resta il riferimento corrente. Questo step non ha creato candidati né modificato il runtime live.
+
+Prossimo comando: i due helper `r4a_prepare_semantic_consultation.py` e `r4a_stage_semantic_consultation.py` al pin `9dec9601cb22a941495ed17f232692abdaca2324`, Python -B, stage-root sopra, Gateway revision `c14d3f230684e3cb42c283b52f4210d5bfff3dc7`, `--replace-existing --previous-gateway-revision e8ef4b72093f4138d0efe78e9947ddfc4b471e27`, key-env `OUF_SEMANTIC_READ_OWNER_KEY`, key-target `/run/secrets/semantic-read-owner.key`, search-id `mcp-semantic-search`, get-id `mcp-semantic-get`. La preparazione verifica ownership esatta delle due vecchie route contro il pin precedente, genera le nuove route senza applicarle e riusa la chiave esistente. Crea esclusivamente tre candidati STOPPED (Semantic/MCP dalle immagini staged, APISIX dalla stessa immagine live) con snapshot/configurazione privati.
+
+Ricevuta attesa `CONSULTATION_PREPARE=PASS CANDIDATES=3 STOPPED=true LIVE_UNCHANGED=true ROUTES_UNCHANGED=true POLICY_UNCHANGED=true` in `.../prepared`; non ancora ricevuta. Se preparazione si interrompe, non ripetere: riconciliare prepare-receipt.json e candidati eventualmente creati. Solo dopo PASS proseguire con piano/rilascio, backup e denial/readiness, poi positivo HUMAN MCP. Nessuna approvazione o source run business, nessuna modifica Onboarding/Ingestion/UDP. Restano congelati Cinema/Teatri e aperti i gate end-to-end/PET.
