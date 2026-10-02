@@ -14,14 +14,21 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Component;
 
 @Component
-@EnableConfigurationProperties(SchemaGovProperties.class)
+@EnableConfigurationProperties({SchemaGovProperties.class,GatewayOAuthProperties.class})
 public class SchemaGovProvider implements SemanticDiscoveryProvider {
   private static final Set<String> JSON=Set.of("application/json","application/sparql-results+json");
   private static final Set<String> RDF=Set.of("text/turtle","application/ld+json","application/rdf+xml");
   private final SchemaGovProperties cfg;private final BoundedGatewayClient client;private final ObjectMapper json;private final Clock clock;
   private final AtomicInteger consecutiveFailures=new AtomicInteger();private final AtomicReference<Instant> openUntil=new AtomicReference<>();
   @Autowired
-  public SchemaGovProvider(SchemaGovProperties cfg,ObjectMapper json){this(cfg,new BoundedGatewayClient(cfg.connectTimeout()),json,Clock.systemUTC());}
+  public SchemaGovProvider(SchemaGovProperties cfg,ObjectMapper json,GatewayOAuthProperties auth){this(cfg,new BoundedGatewayClient(cfg.connectTimeout(),new ClientCredentialsTokenSource(auth,json)),json,Clock.systemUTC());}
+  // Existing package-local HTTP fixtures cannot become a production anonymous provider.
+  SchemaGovProvider(SchemaGovProperties cfg,ObjectMapper json){this(cfg,fixtureClient(cfg),json,Clock.systemUTC());}
+  private static BoundedGatewayClient fixtureClient(SchemaGovProperties cfg){
+    URI base=cfg.gatewayBaseUrl();
+    if(base==null || !Set.of("127.0.0.1","localhost").contains(base.getHost()))throw new BoundedGatewayClient.ProviderFailure("GATEWAY_AUTH_REQUIRED");
+    return new BoundedGatewayClient(cfg.connectTimeout());
+  }
   SchemaGovProvider(SchemaGovProperties cfg,BoundedGatewayClient client,ObjectMapper json,Clock clock){this.cfg=cfg;this.client=client;this.json=json;this.clock=clock;}
   public String providerId(){return "SCHEMA_GOV_IT";}
   @Override public boolean enabled(){return cfg.enabled();}

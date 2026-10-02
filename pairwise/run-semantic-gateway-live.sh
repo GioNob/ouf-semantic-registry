@@ -9,19 +9,22 @@ rm -f "$evidence_dir"/{results.tap,summary.json,gateway.log,semantic.log,postgre
 postgres_name=ouf-pairwise-postgres
 gateway_name=ouf-pairwise-gateway
 semantic_name=ouf-pairwise-semantic
+fixture_auth_dir="$(mktemp -d)"
 cleanup() {
   docker logs "$gateway_name" >"$evidence_dir/gateway.log" 2>&1 || true
   docker logs "$semantic_name" >"$evidence_dir/semantic.log" 2>&1 || true
   docker logs "$postgres_name" >"$evidence_dir/postgres.log" 2>&1 || true
   docker rm -f "$semantic_name" "$gateway_name" "$postgres_name" >/dev/null 2>&1 || true
 }
-trap cleanup EXIT
+trap 'cleanup; rm -rf "$fixture_auth_dir"' EXIT
 cleanup
 
 retry_http() {
   local url="$1"
+  local tls_args=()
+  if [[ "$url" == https://* ]]; then tls_args=(--cacert "$fixture_auth_dir/gateway.crt"); fi
   for _ in $(seq 1 90); do
-    curl --fail --silent --show-error --max-time 3 "$url" >/dev/null && return 0
+    curl --fail --silent --show-error --max-time 3 "${tls_args[@]}" "$url" >/dev/null && return 0
     sleep 1
   done
   echo "timeout waiting for $url" >&2
@@ -61,12 +64,38 @@ test -n "$postgres_port"
 docker build -f "$repo_dir/pairwise/semantic-fixture/Dockerfile" -t ouf-semantic-pairwise "$repo_dir" >/dev/null
 docker build -t ouf-gateway-pairwise "$repo_dir/pairwise/gateway-fixture" >/dev/null
 
+# TLS and workload credentials exist only for this CI fixture and are removed on exit.
+keytool -genkeypair -alias gateway -keyalg RSA -keysize 2048 -validity 2 \
+  -dname 'CN=127.0.0.1' -ext 'SAN=ip:127.0.0.1' \
+  -storetype PKCS12 -keystore "$fixture_auth_dir/gateway.p12" -storepass fixture-password >/dev/null 2>&1
+keytool -exportcert -rfc -alias gateway -keystore "$fixture_auth_dir/gateway.p12" \
+  -storepass fixture-password -file "$fixture_auth_dir/gateway.crt" >/dev/null 2>&1
+keytool -importcert -noprompt -alias gateway -file "$fixture_auth_dir/gateway.crt" \
+  -storetype PKCS12 -keystore "$fixture_auth_dir/trust.p12" -storepass fixture-password >/dev/null 2>&1
+export OUF_PAIRWISE_PROVIDER_SECRET="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+export OUF_PAIRWISE_PROVIDER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+printf '%s\n' "$OUF_PAIRWISE_PROVIDER_SECRET" >"$fixture_auth_dir/client-secret"
+chmod 600 "$fixture_auth_dir/client-secret"
+sudo chown 10001:10001 "$fixture_auth_dir/client-secret"
+chmod 644 "$fixture_auth_dir/gateway.p12" "$fixture_auth_dir/trust.p12"
+
 docker run -d --name "$gateway_name" --network host \
   -e PORT=18090 \
+  -e OUF_PAIRWISE_PROVIDER_SECRET -e OUF_PAIRWISE_PROVIDER_TOKEN \
+  -e SERVER_SSL_ENABLED=true -e SERVER_SSL_KEY_STORE=file:/fixture/gateway.p12 \
+  -e SERVER_SSL_KEY_STORE_TYPE=PKCS12 -e SERVER_SSL_KEY_STORE_PASSWORD=fixture-password \
+  --mount type=bind,src="$fixture_auth_dir/gateway.p12",dst=/fixture/gateway.p12,readonly \
   -e SCHEMA_GOV_SPARQL_UPSTREAM=https://schema.gov.it/sparql \
   -e SCHEMA_GOV_ALLOWED_HOSTS=schema.gov.it,w3id.org \
   ouf-gateway-pairwise >/dev/null
-retry_http http://127.0.0.1:18090/actuator/health
+retry_http https://127.0.0.1:18090/actuator/health
+# Missing/invalid workload bearer is denied by the fixture before any provider call.
+for header in '' 'Bearer invalid'; do
+  status=$(curl --silent --show-error --max-time 10 --cacert "$fixture_auth_dir/gateway.crt" \
+    -H "Authorization: $header" -o /dev/null -w '%{http_code}' \
+    'https://127.0.0.1:18090/semantic-providers/schema-gov/fetch?uri=https%3A%2F%2Fw3id.org%2Fitalia%2Fonto%2FCLV%2FAddress')
+  test "$status" = 401
+done
 
 export OUF_PAIRWISE_TOKEN="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
 docker run -d --name "$semantic_name" --network host \
@@ -76,7 +105,15 @@ docker run -d --name "$semantic_name" --network host \
   -e SPRING_DATASOURCE_USERNAME=ouf_semantic \
   -e SPRING_DATASOURCE_PASSWORD=ouf_semantic \
   -e OUF_SCHEMA_GOV_ENABLED=true \
-  -e OUF_SCHEMA_GOV_GATEWAY_BASE_URL=http://127.0.0.1:18090 \
+  -e OUF_SCHEMA_GOV_GATEWAY_BASE_URL=https://127.0.0.1:18090 \
+  -e OUF_SCHEMA_GOV_GATEWAY_AUTH_ENABLED=true \
+  -e OUF_SCHEMA_GOV_TOKEN_ENDPOINT=https://127.0.0.1:18090/fixture/oauth/token \
+  -e OUF_SCHEMA_GOV_CLIENT_ID=fixture-semantic \
+  -e OUF_SCHEMA_GOV_CLIENT_SECRET_FILE=/fixture/client-secret \
+  -e OUF_SCHEMA_GOV_WORKLOAD_SCOPE=fixture.gateway.invoke \
+  -e JAVA_TOOL_OPTIONS='-Djavax.net.ssl.trustStore=/fixture/trust.p12 -Djavax.net.ssl.trustStorePassword=fixture-password' \
+  --mount type=bind,src="$fixture_auth_dir/client-secret",dst=/fixture/client-secret,readonly \
+  --mount type=bind,src="$fixture_auth_dir/trust.p12",dst=/fixture/trust.p12,readonly \
   -e OUF_DISCOVERY_WORKER_ENABLED=true \
   -e OUF_DISCOVERY_WORKER_DELAY=200ms \
   ouf-semantic-pairwise >/dev/null
@@ -115,7 +152,7 @@ python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["semantic_id"]=="h
 
 cat >"$evidence_dir/results.tap" <<'TAP'
 TAP version 13
-1..9
+1..10
 ok 1 - official schema.gov.it SPARQL endpoint reached live
 ok 2 - Gateway fixture healthy as separate process
 ok 3 - Semantic Registry healthy with PostgreSQL 17
@@ -125,12 +162,13 @@ ok 6 - live candidate was adopted as DRAFT and read back
 ok 7 - missing credentials and forged identity header rejected
 ok 8 - invalid credentials rejected
 ok 9 - service identity denied human approval
+ok 10 - HTTPS workload token transport and missing/invalid Gateway bearer denial
 TAP
 python3 - "$evidence_dir/summary.json" "$request_id" "$candidate_id" "$artifact_id" <<'PY'
 import json,sys,datetime
 out={
   'schemaVersion':'1.0', 'pairwiseId':'semantic-gateway-live-v1',
-  'status':'PASS', 'tests':{'catalogued':9,'executed':9,'passed':9,'failed':0,'skipped':0},
+  'status':'PASS', 'tests':{'catalogued':10,'executed':10,'passed':10,'failed':0,'skipped':0},
   'modules':['Semantic Model Registry','minimal Gateway fixture'],
   'runtime':{'java':'21','postgresql':'17','deployment':'separate containers'},
   'externalDependency':{'name':'schema.gov.it','mode':'LIVE','endpoint':'https://schema.gov.it/sparql'},
@@ -138,7 +176,7 @@ out={
   'productionReady':False,
   'identityMode':'TEST_ONLY_AUTHENTICATED_SERVICE',
   'normativeBaseline':'Reality Baseline v1.7 / Semantic PET v1.3 / Matrix v1.7',
-  'limitations':['minimal Gateway fixture, not the full Urban API Gateway','test-only ephemeral service credential and fixed bounded policy; no production IAM/SSO','no Kubernetes or HA test'],
+  'limitations':['minimal Gateway fixture, not the full Urban API Gateway','test-only ephemeral service credential, TLS issuer and fixed bounded policy; no production IAM/SSO','no Kubernetes or HA test'],
   'completedAt':datetime.datetime.now(datetime.timezone.utc).isoformat()
 }
 open(sys.argv[1],'w').write(json.dumps(out,indent=2,ensure_ascii=False)+'\n')
