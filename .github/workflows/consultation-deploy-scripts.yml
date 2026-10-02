@@ -8,6 +8,8 @@ on:
       - 'tests/test_*semantic_consultation.py'
       - 'tests/test_consultation_runtime_preflight.py'
       - 'tests/test_consultation_policy_inventory.py'
+      - 'scripts/r4a_*semantic_rdf_read.py'
+      - 'tests/test_*semantic_rdf_read.py'
       - '.github/workflows/consultation-deploy-scripts.yml'
   workflow_dispatch:
 permissions:
@@ -27,3 +29,6 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_consultation_runtime_preflight.py'
       - name: Verify read-only owner policy inventory
         run: python3 -m unittest discover -s tests -p 'test_consultation_policy_inventory.py'
+
+      - name: Verify Semantic-only RDF stage and release
+        run: python3 -B -m unittest discover -s tests -p 'test_*semantic_rdf_read.py'
