@@ -24,6 +24,10 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
       - name: Execute bounded live pairwise
         run: timeout --signal=TERM --kill-after=30s 30m ./pairwise/run-semantic-gateway-live.sh
       - name: Upload pairwise evidence
