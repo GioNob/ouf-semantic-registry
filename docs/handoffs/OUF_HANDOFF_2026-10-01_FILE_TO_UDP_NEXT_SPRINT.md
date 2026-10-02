@@ -293,3 +293,11 @@ Receipt e status riletti: proposalId 4b59b8ab-5063-442b-973f-e52b49768d3b, revis
 THS: https://api.ouf-lab.it/trusted-human/authorization/?proposal=4b59b8ab-5063-442b-973f-e52b49768d3b
 
 Prossimo passo: conferma/reiezione dell'operatore sulla THS autenticata, poi rilettura receipt e grant attivi (non presumere versione37), refresh token OAuth/discovery e prove positive semantic.search/get. Se scade o la policy cambia, rileggere la policy e preparare nuova proposta solo se ancora necessaria; non ripetere alla cieca. Non approvare via chatbot né inviare bearer HUMAN al modello. Nessuna source/run avviata, nessun gate E2E chiuso.
+
+## Checkpoint 2026-10-02 10:38 Europe/Rome — grant read pubblicato, policy37 riletta
+
+Operatore conferma pubblicazione sulla THS. Verifica indipendente tramite plugin OUF - MCP Server/account ouf-admin: proposal4b59b8ab-5063-442b-973f-e52b49768d3b revision1 state=PUBLISHED finalPolicyRef=ouf-lab-authorization:37. Read configured grants restituisce policy37, nextAfter=null, grant-semantic-read-human-admin presente con capability ouf.semantic.read, tenant ouf-lab e subject admin b93d8cf6-cd14-4ee6-91d7-84cd76c4f500; servicePrincipalId/organizationId null, validità invariata rispetto alla proposta. Stato PENDING precedente superato; non ripetere registrazione, proposta o pubblicazione.
+
+Restano distinti configured grant e prova positiva di owner authorization. Il registry di tool disponibile nella conversazione non espone ancora semantic.search/get. Prossimo passo: rinnovo autenticazione della connessione OUF come ouf-admin per ottenere token OAuth con i due scope DEFAULT appena associati a ouf-chatgpt e aggiornare discovery, poi chiamate positive search e get con triple esatte ottenute dai risultati autorizzati. Se il client mantiene discovery in cache, diagnosticare il client/server prima di altri cambiamenti software. Nessun bearer umano va riportato in chat. In alternativa il probe MCP pubblico con HUMAN device flow deve riusare il client/protocollo già testato e non avviare source/run.
+
+NESSUNA prova positiva semantica ancora acquisita; nessun gate E2E completo chiuso. Container e flow pregressi non ritestati.
