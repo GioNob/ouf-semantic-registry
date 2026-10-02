@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Read-only Docker topology inventory; never prints secrets, addresses or host paths."""
+import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -23,11 +25,13 @@ def summary(row):
         'privileged':row.get('HostConfig',{}).get('Privileged',False)}
 
 
-def inventory(run=docker):
+def inventory(roles,run=docker):
+    if set(roles)-{'semantic','gateway','proxy','gatewayState','southbound'} or not {'semantic','gateway'}.issubset(roles):raise RuntimeError('ROLE_BINDINGS_INVALID')
+    if len(set(roles.values()))!=len(roles) or any(not isinstance(n,str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}',n) for n in roles.values()):raise RuntimeError('CONTAINER_BINDINGS_INVALID')
     ids=run('ps','-q').split()
     if not ids:raise RuntimeError('NO_RUNNING_CONTAINERS')
     rows=json.loads(run('inspect',*ids))
-    required={'ouf-semantic','ouf-apisix','ouf-caddy','ouf-etcd'}
+    required=set(roles.values())
     relevant=[r for r in rows if r['Name'].lstrip('/') in required
         or 'apisix' in r.get('Config',{}).get('Image','').lower()
         or 'apisix' in r['Name'].lower()]
@@ -37,18 +41,26 @@ def inventory(run=docker):
     fresh=json.loads(run('inspect',*(r['Id'] for r in relevant)))
     def stable(r):return r['Id'],r['Image'],r['State']['Running'],r['State']['StartedAt'],r.get('Config'),r.get('HostConfig'),r.get('Mounts'),r.get('NetworkSettings')
     if sorted(map(stable,relevant),key=lambda x:x[0])!=sorted(map(stable,fresh),key=lambda x:x[0]):raise RuntimeError('TOPOLOGY_CHANGED_DURING_INVENTORY')
-    southbound=any('southbound' in r['Name'].lower() or (r.get('Config',{}).get('Labels') or {}).get('ouf.component')=='apisix-southbound' for r in relevant)
+    southbound='southbound' in roles or any((r.get('Config',{}).get('Labels') or {}).get('ouf.component')=='apisix-southbound' for r in relevant)
     return {'containers':[summary(r) for r in sorted(relevant,key=lambda r:r['Name'])],
         'networks':[{'name':n['Name'],'driver':n['Driver'],'internal':n.get('Internal',False),'ipv6Enabled':n.get('EnableIPv6',False)} for n in networks],
-        'dedicatedSouthboundContainerObserved':southbound,
+        'roleBindings':roles,'dedicatedSouthboundContainerObserved':southbound,
         'tlsConfigurationProven':False,'egressDefaultDenyProven':False,'workloadAuthenticationProven':False,
         'providerCalls':0,'readOnly':True,'noSecretsPrinted':True}
 
 
 if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--semantic-container',required=True)
+    parser.add_argument('--gateway-container',required=True)
+    parser.add_argument('--proxy-container')
+    parser.add_argument('--gateway-state-container')
+    parser.add_argument('--southbound-container')
+    args=parser.parse_args()
+    roles={role:value for role,value in [('semantic',args.semantic_container),('gateway',args.gateway_container),('proxy',args.proxy_container),('gatewayState',args.gateway_state_container),('southbound',args.southbound_container)] if value is not None}
     try:
         if os.geteuid()!=0:raise RuntimeError('ROOT_REQUIRED')
-        print('SEMANTIC_SOUTHBOUND_TOPOLOGY='+json.dumps(inventory(),sort_keys=True),flush=True)
+        print('SEMANTIC_SOUTHBOUND_TOPOLOGY='+json.dumps(inventory(roles),sort_keys=True),flush=True)
         print('SEMANTIC_SOUTHBOUND_TOPOLOGY_INVENTORY=PASS NO_CONTAINER_CHANGED=true NO_ROUTE_CHANGED=true NO_PROVIDER_CALL=true NO_SECRETS_PRINTED=true',flush=True)
     except Exception as error:
         code=str(error) if isinstance(error,RuntimeError) else type(error).__name__
