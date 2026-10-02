@@ -409,3 +409,23 @@ Prossimo comando operatore: scaricare i tre helper stage/prepare/release al pin 
 Il piano ricontrolla live/candidati/route/chiave/config, readiness e migration history. Apply comporta una breve interruzione di MCP/Semantic/Gateway per switch e dump privati dei DB Semantic/MCP, con TOC verificata; non è una prova di restore. Conserva i container correnti per recupero, aggiorna soltanto `mcp-semantic-search` e `mcp-semantic-get` e verifica readiness, denial e history invariata. Nessun nuovo software APISIX, nessuna policy publication né source run; Onboarding/Ingestion/UDP invariati. Recupero automatico previsto solo se il rilascio fallisce; i nomi rollback, su PASS, indicano container conservati e non un rollback eseguito.
 
 Esito richiesto: `CONSULTATION_RELEASE=PASS CONTAINERS=3 UPDATED_ROUTES=2 NEW_ROUTES=0 MIGRATION_HISTORY_UNCHANGED=true POLICY_PUBLICATION_NOT_CALLED=true NO_SOURCE_RUN=true POSITIVE_HUMAN_NOT_PROVEN=true`, con ricevuta privata `.../prepared/release-receipt.json`. Non ancora ricevuto. Interruzioni/esiti incerti richiedono riconciliazione, non nuova apply cieca. Dopo release PASS va eseguita la prova positiva HUMAN MCP search/get sul riferimento esatto già pubblicato. Restano congelati i test Cinema/Teatri e aperti tutti gli altri gate PET/end-to-end.
+
+
+### 2026-10-02 12:01 Europe/Rome — Rilascio HUMAN consultation PASS; positivo MCP prossimo
+
+Ricevuta operatore: plan PASS, apply PASS, backup Semantic e MCP PASS con TOC_VERIFIED=true/PRIVATE=true; readiness e denial PASS. Release `PASS CONTAINERS=3 UPDATED_ROUTES=2 NEW_ROUTES=0 MIGRATION_HISTORY_UNCHANGED=true POLICY_PUBLICATION_NOT_CALLED=true NO_SOURCE_RUN=true POSITIVE_HUMAN_NOT_PROVEN=true`. Ricevuta privata `/etc/ouf/deploy-snapshots/consultation-human-read-20261002-1153/prepared/release-receipt.json`.
+
+Questo checkpoint supera lo stato cronologico «candidati spenti / release non ricevuta». Sono attivi i candidati preparati: Semantic `025a542bfe6c76d8c45ee5af668b7cb7bb0de0d6` (image809462b5), MCP `98e0c7a03d3be38458282250c71f678b9619ae62` (image7a8d7f86), APISIX stessa image84e6b5e7, due route di consultazione compilate da Gateway `c14d3f230684e3cb42c283b52f4210d5bfff3dc7`. Le route estranee alla consultazione sono preservate; nessuna migration nuova e nessun software Onboarding/Ingestion/UDP modificato. La policy corrente resta `ouf-lab-authorization:38`.
+
+Container della release precedente conservati:
+- `ouf-apisix-consultation-rollback-a076e563ab55`
+- `ouf-mcp-consultation-rollback-e3e4d3e5ec5e`
+- `ouf-semantic-consultation-rollback-e32dd8c43b7b`
+
+Non è stato eseguito un rollback su questo PASS. Restano conservati anche i container originari della prima release, senza cancellazione. TOC del backup verificata non equivale a prova di restore.
+
+Prossimo passo: prova positiva READ ONLY via MCP pubblico con `r4a_probe_semantic_human_mcp.py` e dipendenza `r4a_admin_permission_proposal.py`, entrambi pinned `9dec9601cb22a941495ed17f232692abdaca2324`. Esecuzione Python -B senza sudo, issuer `https://auth.ouf-lab.it/realms/ouf`, mcp-url `https://api.ouf-lab.it/mcp`, client `ouf-human-admin`, subject `b93d8cf6-cd14-4ee6-91d7-84cd76c4f500`, tenant `ouf-lab`, audience `ouf-api-gateway`, query `Cinema` sui dati già esistenti. Un login Device Flow HUMAN; tools/list, search limit1, get sul riferimento semanticId/revisionId/publicationSetId esatto restituito dalla ricerca. Token solo in memoria, nessun bearer o payload semantico stampato. Nessuna nuova source, onboarding, mapping, pubblicazione, ingestion, retry o materializzazione. Scope richiesti rimangono mcp.connect/ouf.semantic.search/ouf.semantic.read; tool semantic.get usa capability HUMAN distinta già pubblicata.
+
+Esito richiesto `SEMANTIC_HUMAN_MCP=PASS READ_ONLY=true NO_SOURCE_RUN=true NO_SECRETS_PRINTED=true`, preceduto da discovery entrambe true, SEARCH PASS e GET PASS EXACT_REFERENCE_MATCH=true. Non ancora dimostrato. Ricerca vuota prova search ma lascia get non provato; non creare fixture di produzione per far passare il probe. Il tool registry di questa chat continua a non esporre semantic.search/get alla rilettura dei metadati: distinguere cache del chatbot e discovery effettiva del server. Aggiornamento/riconnessione del connector e prova tramite chatbot restano successivi alla verifica del MCP pubblico.
+
+Consultazione HUMAN positiva, disponibilità per i chatbot e tutti gli altri gate PET/end-to-end restano aperti nel rispettivo ambito. Cinema/Teatri storici preservati senza replay.
