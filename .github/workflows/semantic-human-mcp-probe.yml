@@ -1,0 +1,25 @@
+name: Semantic HUMAN MCP probe tests
+on:
+  push:
+    paths:
+      - 'scripts/r4a_probe_semantic_human_mcp.py'
+      - 'scripts/r4a_admin_permission_proposal.py'
+      - 'tests/test_semantic_human_mcp_probe.py'
+      - '.github/workflows/semantic-human-mcp-probe.yml'
+  pull_request:
+    paths:
+      - 'scripts/r4a_probe_semantic_human_mcp.py'
+      - 'scripts/r4a_admin_permission_proposal.py'
+      - 'tests/test_semantic_human_mcp_probe.py'
+      - '.github/workflows/semantic-human-mcp-probe.yml'
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -B -m unittest discover -s tests -p test_semantic_human_mcp_probe.py
