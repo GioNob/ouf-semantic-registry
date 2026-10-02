@@ -151,3 +151,7 @@ L'utente conferma l'obiettivo completo MCP/channel-neutral e distingue il trigge
 MCP live non ancora riconciliato: prima del suo rilascio richiedere un readback limitato di revision/image/running dei container, senza env/mount/log/segreti. Non scegliere il branch deployed-baseline-8599843 soltanto dal nome: il manifest embedded sorgente non contiene managed upload. Mancano SSH diretto e tool amministrativo di deploy in questa sessione; GitHub write disponibile tramite connector. Tutti i gate ereditati e la prova Cinema rimangono invariati.
 
 Pin sorgente candidato Semantic: `527fe074a7f6fb9c2990aac2fc9a7a98b8e97e4f` (CI da verificare; nessun deploy).
+
+### Verifica candidato Semantic — 2026-10-02
+
+Commit sorgente `527fe074a7f6fb9c2990aac2fc9a7a98b8e97e4f`: job Java21/PostgreSQL17 PASS (nuovi test SemanticReadRuntimeTest inclusi nel verify), recovery-cycle-scripts PASS e i due workflow Authorization pairwise SUCCESS. [CI runtime](https://github.com/GioNob/ouf-semantic-registry/actions/runs/36972327013): container-smoke SUCCESS, workflow completo SUCCESS. Nessun rollout. Lettura live necessaria di running/image/revision dei cinque container MCP/Semantic/Onboarding/Ingestion/UDP prima del deploy MCP: usare docker inspect con template limitato; non esporre env, mount sources, token o log.

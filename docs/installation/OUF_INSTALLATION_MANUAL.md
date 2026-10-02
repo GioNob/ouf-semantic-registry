@@ -4034,3 +4034,7 @@ Prima del collegamento MCP riconciliare revision/immagine/manifest effettivi pre
 File: compatibilità e ACTIVE prima del trigger una tantum automatico; retry/timeout con intent/readback e stessa idempotenza, senza scheduler ricorrente inventato. Verticali: endpoint e credenziali soltanto in THS/secret manager, THS profilo estrazione e configurazione cadence/timezone/misfire/retry/timeout nel bundle; Ingestion fa scheduling. Il controllo doppioni resta UDP post-handoff in entrambi i percorsi. Configurazione/publish richiedono le decisioni HUMAN previste.
 
 Pin sorgente candidato Semantic: `527fe074a7f6fb9c2990aac2fc9a7a98b8e97e4f` (CI da verificare; nessun deploy).
+
+### Verifica candidato Semantic — 2026-10-02
+
+Commit sorgente `527fe074a7f6fb9c2990aac2fc9a7a98b8e97e4f`: job Java21/PostgreSQL17 PASS (nuovi test SemanticReadRuntimeTest inclusi nel verify), recovery-cycle-scripts PASS e i due workflow Authorization pairwise SUCCESS. [CI runtime](https://github.com/GioNob/ouf-semantic-registry/actions/runs/36972327013): container-smoke SUCCESS, workflow completo SUCCESS. Nessun rollout. Lettura live necessaria di running/image/revision dei cinque container MCP/Semantic/Onboarding/Ingestion/UDP prima del deploy MCP: usare docker inspect con template limitato; non esporre env, mount sources, token o log.

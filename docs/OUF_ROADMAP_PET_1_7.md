@@ -3323,3 +3323,7 @@ Questa registrazione è piano operativo, non dichiarazione di capacità end-to-e
 [Sprint completo](sprints/OUF_ACQUISITION_TO_UDP_2026-10-02.md). File: trigger automatico una tantum dopo onboarding approvato/ACTIVE. Verticale: THS endpoint/credenziali → THS scelta profilo estrazione → scheduler governato; Ingestion alle scadenze del bundle. Mapping/review/UDP comuni e chatbot-neutral. Incremento Semantic search/exact-read candidato, non deployed e non acceptance finale. Preservare tutte le prove/gate già tracciati.
 
 Pin sorgente candidato Semantic: `527fe074a7f6fb9c2990aac2fc9a7a98b8e97e4f` (CI da verificare; nessun deploy).
+
+### Verifica candidato Semantic — 2026-10-02
+
+Commit sorgente `527fe074a7f6fb9c2990aac2fc9a7a98b8e97e4f`: job Java21/PostgreSQL17 PASS (nuovi test SemanticReadRuntimeTest inclusi nel verify), recovery-cycle-scripts PASS e i due workflow Authorization pairwise SUCCESS. [CI runtime](https://github.com/GioNob/ouf-semantic-registry/actions/runs/36972327013): container-smoke SUCCESS, workflow completo SUCCESS. Nessun rollout. Lettura live necessaria di running/image/revision dei cinque container MCP/Semantic/Onboarding/Ingestion/UDP prima del deploy MCP: usare docker inspect con template limitato; non esporre env, mount sources, token o log.

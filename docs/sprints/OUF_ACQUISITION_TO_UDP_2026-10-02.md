@@ -37,3 +37,7 @@ Test nuovi Java/PostgreSQL/HTTP: label e alias diversi da ID, filtro type/domain
 Nessun gate ereditato chiuso per omissione: R-SMOKE, seconda fonte sovrapposta, storage/hash/replay, portabilità/R-INSTALL, TLS/reti, performance e awareness restano OPEN negli ambiti già tracciati.
 
 Pin sorgente candidato Semantic: `527fe074a7f6fb9c2990aac2fc9a7a98b8e97e4f` (CI da verificare; nessun deploy).
+
+### Verifica candidato Semantic — 2026-10-02
+
+Commit sorgente `527fe074a7f6fb9c2990aac2fc9a7a98b8e97e4f`: job Java21/PostgreSQL17 PASS (nuovi test SemanticReadRuntimeTest inclusi nel verify), recovery-cycle-scripts PASS e i due workflow Authorization pairwise SUCCESS. [CI runtime](https://github.com/GioNob/ouf-semantic-registry/actions/runs/36972327013): container-smoke SUCCESS, workflow completo SUCCESS. Nessun rollout. Lettura live necessaria di running/image/revision dei cinque container MCP/Semantic/Onboarding/Ingestion/UDP prima del deploy MCP: usare docker inspect con template limitato; non esporre env, mount sources, token o log.
