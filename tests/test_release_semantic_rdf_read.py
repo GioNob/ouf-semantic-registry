@@ -100,5 +100,53 @@ class ReleaseTest(unittest.TestCase):
             script.verify_new(before,prepared,{})
             self.assertEqual(matches.call_args.args[4],mounts)
             self.assertEqual(probe.call_count,4)
+            for call,name in zip(probe.call_args_list[::2],('search','get')):
+                self.assertEqual(call.args[3],'/api/internal/v1/semantic/consultation/'+name)
+                self.assertEqual(call.args[5],{'Content-Type':'application/json','X-OUF-Semantic-Read-Receipt':'invalid'})
+            for call,name in zip(probe.call_args_list[1::2],('search','get')):
+                self.assertEqual(call.args[3],'/internal/capabilities/v1/execute/semantic/'+name)
+    def test_missing_owner_route_is_not_accepted_as_security_denial(self):
+        with patch.object(script.release,'http_code',return_value=404),contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaisesRegex(RuntimeError,'FORGED_DIRECT_REQUEST_NOT_DENIED'):
+                script.denial({'routes':[]},'candidate')
+    def reconciliation(self,failure=None):
+        import copy
+        with tempfile.TemporaryDirectory() as folder:
+            base=Path(folder);root=base/'attempt';root.mkdir();retry=base/'retry'
+            old={'Id':'old-id','Image':'original','Name':'/ouf-semantic','Config':{},'Mounts':[],
+                'HostConfig':{'RestartPolicy':{'Name':'unless-stopped','MaximumRetryCount':0}},
+                'State':{'Running':True,'StartedAt':'before'}}
+            current=copy.deepcopy(old);current['State']['StartedAt']='after-rollback'
+            if failure=='original':current['Image']='unexpected'
+            failed={'Id':'new-id','Image':script.IMAGE,'Name':'/ouf-semantic-rdf-read-failed-new-id','State':{'Running':False}}
+            history=[{'version':'1','success':True}]
+            before={'live':{'ouf-semantic':old,'ouf-mcp':{}},'routes':[]}
+            state={'status':'SEMANTIC_RESTORED_RECONCILIATION_REQUIRED','oldId':'old-id','commit':script.PIN,
+                'image':script.IMAGE,'candidate':{'id':'new-id'},'postgresId':'pg','history':history}
+            (root/'rdf-release-receipt.json').write_text(json.dumps(state))
+            (root/'image-receipt.json').write_text(json.dumps({'status':'PASS','commit':script.PIN,'image':script.IMAGE}))
+            def inspect(name):return failed if name=='new-id' else current
+            error=None
+            with patch.object(script,'ROOT',base),patch.object(script.prep,'private'),\
+                patch.object(script.stage,'inspect',side_effect=inspect),patch.object(script,'unchanged'),\
+                patch.object(script.release,'databases',return_value=({'Id':'pg'},'user',{'semantic':'db'})),\
+                patch.object(script.release,'history',return_value=[] if failure=='history' else history),\
+                patch.object(script.release,'ready'),patch.object(script,'denial'),contextlib.redirect_stdout(io.StringIO()):
+                try:script.reconcile(root,before,{},'pg',retry)
+                except RuntimeError as exc:error=str(exc)
+            renewed=json.loads((retry/'runtime-snapshot.json').read_text()) if retry.exists() else None
+            self.assertEqual(json.loads((root/'rdf-release-receipt.json').read_text()),state)
+            return error,renewed
+    def test_reconciliation_preserves_failed_receipt_and_rebases_only_verified_restart(self):
+        error,renewed=self.reconciliation()
+        self.assertIsNone(error)
+        self.assertEqual(renewed['live']['ouf-semantic']['Id'],'old-id')
+        self.assertEqual(renewed['live']['ouf-semantic']['State']['StartedAt'],'after-rollback')
+    def test_reconciliation_blocks_changed_original(self):
+        error,renewed=self.reconciliation('original')
+        self.assertEqual(error,'ORIGINAL_NOT_EXACTLY_RESTORED');self.assertIsNone(renewed)
+    def test_reconciliation_blocks_migration_drift_without_creating_retry(self):
+        error,renewed=self.reconciliation('history')
+        self.assertEqual(error,'RECONCILIATION_MIGRATION_DRIFT');self.assertIsNone(renewed)
 
 if __name__=='__main__':unittest.main()

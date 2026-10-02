@@ -33,7 +33,7 @@ def unchanged(before,semantic=True):
     require(stage.routes(before['gatewayConfig'],stage.inspect('ouf-apisix'))==before['routes'],'ROUTES_CHANGED_SINCE_STAGE')
 
 
-def load(root):
+def load(root,reconcile=False):
     require(root.parent==ROOT,'STAGE_PARENT_INVALID');prep.private(root,0o700)
     for name in ('runtime-snapshot.json','image-receipt.json'):prep.private(root/name,0o600)
     before=json.loads((root/'runtime-snapshot.json').read_text())
@@ -42,13 +42,15 @@ def load(root):
         and receipt.get('noContainersCreated') is True,'STAGE_NOT_PASS')
     require(receipt.get('commit')==PIN and receipt.get('image')==IMAGE,'CANDIDATE_PIN_INVALID')
     require(receipt['oldId']==before['live']['ouf-semantic']['Id'],'ORIGINAL_ID_DRIFT')
-    source=root/'semantic'
+    source=Path(receipt.get('sourceRoot',str(root/'semantic')))
+    require(source.name=='semantic' and source.parent.parent==ROOT,'SOURCE_ROOT_INVALID')
+    prep.private(source.parent,0o700)
     require(stage.run(['git','-C',str(source),'rev-parse','HEAD'])==PIN
         and not stage.run(['git','-C',str(source),'status','--porcelain']),'PINNED_SOURCE_DRIFT')
     image=stage.inspect(IMAGE)
     require((image['Config'].get('Labels') or {}).get('org.opencontainers.image.revision')==PIN,'IMAGE_REVISION_DRIFT')
     prep.launch_guard(before['live']['ouf-semantic'],image)
-    unchanged(before)
+    if not reconcile:unchanged(before)
     return before,image
 
 
@@ -114,16 +116,60 @@ def verify_new(before,prepared,image):
     view=copy.deepcopy(row);view['State']={'Status':'created','Running':False};view['HostConfig']['RestartPolicy']['Name']='no'
     prep.matches(view,old,image,prepared['environment'],prepared['mounts'])
     release.ready(candidate['id'],'http://127.0.0.1:8080','/actuator/health/readiness',200)
+    denial(before,candidate['id'])
+    unchanged(before,semantic=False)
+
+
+def denial(before,container):
     for name,cap in [('search','ouf.semantic.search'),('get','ouf.semantic.consultation.read')]:
         body=release.probe_body(name,'READ',cap)
-        require(release.http_code(candidate['id'],'http://127.0.0.1:8080','POST',
-            '/internal/capabilities/v1/execute/semantic/'+name,body) in (401,403),'FORGED_DIRECT_REQUEST_NOT_DENIED')
+        code=release.http_code(container,'http://127.0.0.1:8080','POST',
+            '/api/internal/v1/semantic/consultation/'+name,body,
+            {'Content-Type':'application/json','X-OUF-Semantic-Read-Receipt':'invalid'})
+        print('SEMANTIC_RDF_READ_DENIAL='+json.dumps({'boundary':'owner','tool':name,'httpStatus':code}),flush=True)
+        require(code in (401,403),'FORGED_DIRECT_REQUEST_NOT_DENIED')
         route=next(r for r in before['routes'] if r.get('uri')=='/internal/capabilities/v1/execute/semantic/'+name)
         headers={'Content-Type':'application/json'};host=route.get('host') or (route.get('hosts') or [None])[0]
         if host:headers['Host']=host.replace('*','probe')
-        require(release.http_code('ouf-apisix','http://127.0.0.1:9080','POST',
-            '/internal/capabilities/v1/execute/semantic/'+name,body,headers) in (401,403),'ANONYMOUS_GATEWAY_REQUEST_NOT_DENIED')
+        code=release.http_code('ouf-apisix','http://127.0.0.1:9080','POST',
+            '/internal/capabilities/v1/execute/semantic/'+name,body,headers)
+        print('SEMANTIC_RDF_READ_DENIAL='+json.dumps({'boundary':'gateway','tool':name,'httpStatus':code}),flush=True)
+        require(code in (401,403),'ANONYMOUS_GATEWAY_REQUEST_NOT_DENIED')
+
+
+def reconcile(root,before,image,pgname,retry):
+    require(retry is not None and retry.parent==ROOT and retry!=root,'RETRY_ROOT_INVALID')
+    path=root/'rdf-release-receipt.json';prep.private(path,0o600)
+    state=json.loads(path.read_text());old=before['live']['ouf-semantic']
+    require(state.get('status')=='SEMANTIC_RESTORED_RECONCILIATION_REQUIRED'
+        and state.get('oldId')==old['Id'] and state.get('commit')==PIN and state.get('image')==IMAGE,'RESTORED_STATE_NOT_EXPECTED')
+    current=stage.inspect('ouf-semantic')
+    require(current['Id']==old['Id'] and current['Name']==old['Name'] and current['State']['Running']
+        and release.stable_except_restart(current)==release.stable_except_restart(old)
+        and current['HostConfig']['RestartPolicy']==old['HostConfig']['RestartPolicy'],'ORIGINAL_NOT_EXACTLY_RESTORED')
+    failed=stage.inspect(state['candidate']['id'])
+    require(failed['Image']==IMAGE and not failed['State']['Running']
+        and failed['Name'].lstrip('/')=='ouf-semantic-rdf-read-failed-'+failed['Id'][:12],'FAILED_CANDIDATE_NOT_RETAINED')
     unchanged(before,semantic=False)
+    pg,user,dbs=release.databases(SimpleNamespace(postgres_container=pgname),
+        {'semantic':current,'mcp':before['live']['ouf-mcp']})
+    require(pg['Id']==state['postgresId'] and release.history(pgname,user,dbs['semantic'],'semantic')==state['history'],
+        'RECONCILIATION_MIGRATION_DRIFT')
+    release.ready(current['Id'],'http://127.0.0.1:8080','/actuator/health/readiness',200)
+    denial(before,current['Id'])
+    require(release.stable_except_restart(stage.inspect('ouf-semantic'))==release.stable_except_restart(current),
+        'ORIGINAL_CHANGED_DURING_RECONCILIATION')
+    unchanged(before,semantic=False)
+    # Preserve every failed-attempt artifact; rebase only the verified restart timestamp in a new root.
+    retry.mkdir(mode=0o700,exist_ok=False)
+    renewed=copy.deepcopy(before);renewed['live']['ouf-semantic']=current
+    receipt=json.loads((root/'image-receipt.json').read_text())
+    receipt['sourceRoot']=str(Path(receipt.get('sourceRoot',str(root/'semantic'))))
+    receipt['reconciledFrom']=str(root)
+    stage.save(retry/'runtime-snapshot.json',renewed);stage.save(retry/'image-receipt.json',receipt)
+    stage.save(retry/'reconciliation-receipt.json',{'status':'PASS','previousRoot':str(root),'oldId':old['Id'],
+        'failedCandidateId':failed['Id'],'commit':PIN,'image':IMAGE,'historyUnchanged':True})
+    print('SEMANTIC_RDF_READ_RECONCILIATION=PASS ORIGINAL_ID_CONFIG_VERIFIED=true HISTORY_UNCHANGED=true FAILED_ARTIFACTS_RETAINED=true NO_REBUILD=true NO_SWITCH=true RETRY_ROOT='+str(retry),flush=True)
 
 
 def apply(root,before,image,prepared,pg,user,database,history,backup,failed,pgname):
@@ -170,7 +216,8 @@ def main(args):
     fd=os.open(args.stage_root/'rdf-operation.lock',os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW,0o600)
     try:
         fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
-        before,image=load(args.stage_root)
+        before,image=load(args.stage_root,args.mode=='reconcile')
+        if args.mode=='reconcile':reconcile(args.stage_root,before,image,args.postgres_container,args.retry_root);return
         if args.mode=='prepare':prepare(args.stage_root,before,image);return
         values=planned(args.stage_root,before,image,args.postgres_container)
         if args.mode=='apply':apply(args.stage_root,before,image,*values,args.postgres_container)
@@ -179,9 +226,10 @@ def main(args):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('mode',choices=('prepare','plan','apply'))
+    p.add_argument('mode',choices=('reconcile','prepare','plan','apply'))
     p.add_argument('--stage-root',type=Path,required=True)
     p.add_argument('--postgres-container',required=True)
+    p.add_argument('--retry-root',type=Path)
     try:main(p.parse_args())
     except BaseException as error:
         if isinstance(error,SystemExit) and error.code==0:raise
