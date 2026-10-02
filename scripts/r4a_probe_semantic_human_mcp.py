@@ -8,13 +8,47 @@ from urllib.parse import urlsplit
 import r4a_admin_permission_proposal as client
 
 
-def payload(result):
+def payload(result, tool=None):
     if result.get('isError'):
+        # Never print arbitrary backend messages, detail, or unknown code strings.
+        safe={'tool':tool if tool in ('semantic.search','semantic.get') else 'unknown',
+              'code':'UNCLASSIFIED_TOOL_ERROR'}
+        try:
+            blocks=result.get('content',[])
+            if len(blocks)!=1 or blocks[0].get('type')!='text':raise ValueError()
+            error=json.loads(blocks[0]['text'])
+            if not isinstance(error,dict):raise ValueError()
+            code=error.get('code',error.get('Code'))
+            known={'authorization denied':'MCP_AUTHORIZATION_DENIED',
+                   'UNAUTHENTICATED':'UNAUTHENTICATED',
+                   'MCP_1A_BACKEND_NOT_BOUND':'MCP_1A_BACKEND_NOT_BOUND',
+                   'SEM_READ_RECEIPT_OR_POLICY_DENIED':'SEM_READ_RECEIPT_OR_POLICY_DENIED',
+                   'NOT_AUTHORIZED':'NOT_AUTHORIZED','UPSTREAM_ERROR':'UPSTREAM_ERROR',
+                   'BAD_REQUEST':'BAD_REQUEST','RESULT_LIMIT_EXCEEDED':'RESULT_LIMIT_EXCEEDED'}
+            if isinstance(code,str) and code in known:safe['code']=known[code]
+            status=error.get('status',error.get('Status'))
+            if type(status) is int and 100<=status<=599:safe['httpStatus']=status
+        except (ValueError,TypeError,KeyError,IndexError):pass
+        print('SEMANTIC_TOOL_ERROR='+json.dumps(safe,sort_keys=True),flush=True)
         raise ValueError('MCP_TOOL_DENIED')
     blocks = result.get('content', [])
     if len(blocks) != 1 or blocks[0].get('type') != 'text':
         raise ValueError('MCP_RESULT_INVALID')
     return json.loads(blocks[0]['text'])
+
+
+def tool_call(token,name,arguments,request_id):
+    correlation=str(uuid.uuid4())
+    original=client.mcp_headers
+    def headers(*args,**kwargs):
+        value=original(*args,**kwargs);value['X-Correlation-ID']=correlation;return value
+    print('SEMANTIC_PROBE_REQUEST='+json.dumps({'tool':name,'correlationId':correlation}),flush=True)
+    client.mcp_headers=headers
+    try:
+        result=client.rpc(token,'tools/call',{'name':name,'arguments':arguments},request_id,
+                          name.replace('.','-')+'-'+uuid.uuid4().hex)
+    finally:client.mcp_headers=original
+    return payload(result,name)
 
 
 def probe(token, query):
@@ -24,9 +58,7 @@ def probe(token, query):
     print('SEMANTIC_MCP_DISCOVERY=' + json.dumps(available), flush=True)
     if not all(available.values()):
         raise ValueError('SEMANTIC_TOOLS_MISSING_FROM_SERVER_DISCOVERY')
-    rows = payload(client.rpc(token, 'tools/call', {
-        'name': 'semantic.search', 'arguments': {'q': query, 'limit': 1}},
-        2, 'semantic-search-' + uuid.uuid4().hex))
+    rows = tool_call(token,'semantic.search',{'q':query,'limit':1},2)
     if not isinstance(rows, list):
         raise ValueError('SEARCH_RESULT_NOT_LIST')
     print('SEMANTIC_SEARCH=PASS RESULT_COUNT=' + str(len(rows)), flush=True)
@@ -37,9 +69,7 @@ def probe(token, query):
                  'publicationSetId': row['publication_set_id']}
     if not all(isinstance(v, str) and v for v in arguments.values()):
         raise ValueError('SEARCH_REFERENCE_INVALID')
-    resolved = payload(client.rpc(token, 'tools/call', {
-        'name': 'semantic.get', 'arguments': arguments},
-        3, 'semantic-get-' + uuid.uuid4().hex))
+    resolved = tool_call(token,'semantic.get',arguments,3)
     if not isinstance(resolved, dict) or any(resolved.get(k) != row[k]
             for k in ('semantic_id', 'revision_id', 'publication_set_id')):
         raise ValueError('EXACT_REFERENCE_MISMATCH')

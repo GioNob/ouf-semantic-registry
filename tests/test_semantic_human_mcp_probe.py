@@ -11,6 +11,32 @@ import r4a_probe_semantic_human_mcp as probe
 
 
 class ProbeTests(unittest.TestCase):
+    def test_error_reports_only_known_code_and_http_status(self):
+        for value,expected in (({'Code':'','Status':400,'Detail':'Bearer private-token'},'UNCLASSIFIED_TOOL_ERROR'),
+                               ({'code':'authorization denied','detail':'private-token'},'MCP_AUTHORIZATION_DENIED')):
+            output=io.StringIO()
+            with contextlib.redirect_stdout(output),self.assertRaisesRegex(ValueError,'MCP_TOOL_DENIED'):
+                probe.payload({**self.result(value),'isError':True},'semantic.search')
+            text=output.getvalue();self.assertIn(expected,text);self.assertNotIn('private-token',text)
+            if value.get('Status'):self.assertIn('400',text)
+    def test_unknown_or_malformed_error_cannot_print_backend_content(self):
+        for value in ({'code':'secret-token','status':True},['private-token']):
+            output=io.StringIO()
+            with contextlib.redirect_stdout(output),self.assertRaises(ValueError):
+                probe.payload({**self.result(value),'isError':True},'semantic.search')
+            self.assertNotIn('secret-token',output.getvalue());self.assertNotIn('private-token',output.getvalue())
+    def test_probe_sends_printed_correlation_and_restores_header_builder_on_error(self):
+        original=probe.client.mcp_headers;seen=[]
+        def rpc(*args):
+            seen.append(probe.client.mcp_headers('memory-token','tools/call',{'name':'semantic.search'}))
+            return {**self.result({'Status':400}),'isError':True}
+        output=io.StringIO()
+        with patch.object(probe.client,'rpc',side_effect=rpc),contextlib.redirect_stdout(output),self.assertRaises(ValueError):
+            probe.tool_call('memory-token','semantic.search',{'q':'Cinema','limit':1},2)
+        self.assertIs(probe.client.mcp_headers,original)
+        self.assertIn(seen[0]['X-Correlation-ID'],output.getvalue())
+        self.assertNotIn('memory-token',output.getvalue())
+
     def test_policy_login_requests_only_policy_scope_and_validates_human_context(self):
         a=SimpleNamespace(issuer='https://issuer/realms/ouf',subject='admin',client='ouf-human-admin',tenant='tenant-a',audience='gateway')
         scopes={'authorization.policy.admin'}
