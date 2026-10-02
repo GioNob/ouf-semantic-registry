@@ -1,9 +1,9 @@
 name: MCP-only semantic byte fix staging
 on:
   push:
-    paths: ['scripts/r4a_stage_semantic_mcp_byte_fix.py', 'scripts/r4a_stage_semantic_consultation.py', 'tests/test_semantic_mcp_byte_fix.py', '.github/workflows/semantic-mcp-byte-fix.yml']
+    paths: ['scripts/r4a_stage_semantic_mcp_byte_fix.py', 'scripts/r4a_rollout_semantic_mcp_byte_fix.py', 'scripts/r4a_prepare_semantic_consultation.py', 'scripts/r4a_release_semantic_consultation.py', 'tests/test_rollout_semantic_mcp_byte_fix.py', 'scripts/r4a_stage_semantic_consultation.py', 'tests/test_semantic_mcp_byte_fix.py', '.github/workflows/semantic-mcp-byte-fix.yml']
   pull_request:
-    paths: ['scripts/r4a_stage_semantic_mcp_byte_fix.py', 'scripts/r4a_stage_semantic_consultation.py', 'tests/test_semantic_mcp_byte_fix.py', '.github/workflows/semantic-mcp-byte-fix.yml']
+    paths: ['scripts/r4a_stage_semantic_mcp_byte_fix.py', 'scripts/r4a_rollout_semantic_mcp_byte_fix.py', 'scripts/r4a_prepare_semantic_consultation.py', 'scripts/r4a_release_semantic_consultation.py', 'tests/test_rollout_semantic_mcp_byte_fix.py', 'scripts/r4a_stage_semantic_consultation.py', 'tests/test_semantic_mcp_byte_fix.py', '.github/workflows/semantic-mcp-byte-fix.yml']
 permissions: {contents: read}
 jobs:
   staging:
@@ -17,5 +17,5 @@ jobs:
           path: .pairwise/mcp
       - uses: actions/setup-python@v5
         with: {python-version: '3.13'}
-      - run: PYTHONPATH="$PWD/.pairwise/mcp" python -B -m unittest discover -s tests -p test_semantic_mcp_byte_fix.py
-      - run: python -B -c "import ast,pathlib; ast.parse(pathlib.Path('scripts/r4a_stage_semantic_mcp_byte_fix.py').read_text())"
+      - run: PYTHONPATH="$PWD/.pairwise/mcp" python -B -m unittest discover -s tests -p '*semantic_mcp_byte_fix.py'
+      - run: python -B -c "import ast,pathlib; [ast.parse(pathlib.Path(p).read_text()) for p in ('scripts/r4a_stage_semantic_mcp_byte_fix.py','scripts/r4a_rollout_semantic_mcp_byte_fix.py')]"
