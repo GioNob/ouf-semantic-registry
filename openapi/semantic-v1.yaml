@@ -8,7 +8,21 @@ paths:
   /api/semantic/v1/artifacts/{id}:
     get: {operationId: getSemanticArtifact, responses: {'200': {description: Artifact detail}}}
   /api/semantic/v1/search:
-    get: {operationId: searchSemanticArtifacts, responses: {'200': {description: Search results}}}
+    get:
+      operationId: searchSemanticArtifacts
+      description: Internal search only. ACTIVE returns the current published revision with an exact revision/publication pin. Non-ACTIVE reads retain the additional draft/review authorization guard.
+      parameters:
+        - {name: q, in: query, required: true, schema: {type: string, minLength: 1, maxLength: 256}}
+        - {name: status, in: query, schema: {type: string, enum: [ACTIVE, DEPRECATED, RETIRED, DRAFT, UNDER_REVIEW], default: ACTIVE}}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 20}}
+        - {name: type, in: query, schema: {type: string, enum: [CLASS, PROPERTY, RELATIONSHIP, VOCABULARY, CONCEPT, ONTOLOGY]}}
+        - {name: namespace, in: query, schema: {type: string, minLength: 1, maxLength: 512}}
+        - {name: domain, in: query, schema: {type: string, minLength: 1, maxLength: 2048}}
+        - {name: range, in: query, schema: {type: string, minLength: 1, maxLength: 2048}}
+      responses:
+        '200': {description: Ranked results with native JSON label/description/definition and publication checksum; no external provider call}
+        '400': {description: Invalid input or response exceeds the configured owner byte limit}
+        '403': {$ref: '#/components/responses/Problem'}
   /api/semantic/v1/revisions/{id}:
     patch:
       operationId: editSemanticDraft
@@ -35,7 +49,18 @@ paths:
   /api/semantic/v1/impact-reports/{id}:
     get: {operationId: getSemanticImpactReport, responses: {'200': {description: Impact report}}}
   /api/semantic/v1/references:resolve:
-    get: {operationId: resolveSemanticReference, responses: {'200': {description: Exact resolution}}}
+    get:
+      operationId: resolveSemanticReference
+      description: Exact immutable publication membership. Never substitutes the latest or ACTIVE revision. Historical RETIRED refs remain readable for audit. Definition includes domain/range, datatype, vocabulary and constraint metadata as published.
+      parameters:
+        - {name: semanticId, in: query, required: true, schema: {type: string, minLength: 1, maxLength: 2048}}
+        - {name: revisionId, in: query, required: true, schema: {type: string, format: uuid}}
+        - {name: publicationSetId, in: query, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200': {description: Exact detail with JSON label/description/definition, content and publication checksum, ownership/provenance kind and up to 100 dependencies; dependencies_partial signals overflow}
+        '400': {description: Invalid input or response exceeds the configured owner byte limit}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {description: Exact reference absent from the specified PUBLISHED set}
   /api/semantic/v1/consumer-references:
     put: {operationId: registerSemanticConsumerReference, responses: {'204': {description: Registered}}}
   /api/semantic/v1/discovery:

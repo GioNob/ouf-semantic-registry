@@ -4024,3 +4024,11 @@ Prima di predisporre il candidato riconciliare revisioni/loader/overlay MCP: mai
 Ricerca Semantic esistente limitata a semantic_id; latest artifact GET non equivale a pinned historical read. references:resolve ha membership exact ma risposta metadata ridotta. Completare il contratto utile al mapping prima di dichiarare il collegamento operativo.
 
 Installer del nuovo collegamento dovrà ricevere esplicitamente binding di tenant/Ente, domini, host/porte/reti, TLS trust, issuer/audience, principal/client/delegation/scopes, secret refs e routes; release manifest e immagini pinned, plan/apply/verify idempotenti, drift fail-closed e rollback circoscritto. Catalogo/proiezione MCP convergono sullo stesso owner via Gateway; decisioni HUMAN restano THS. Provider esterni parametrizzati e on demand; nessun Ontopia endpoint provato da questa analisi. R-INSTALL resta OPEN.
+
+## 2026-10-02 — deploy del percorso comune file e verticale
+
+[Sprint/pin e stato](../sprints/OUF_ACQUISITION_TO_UDP_2026-10-02.md). Il candidato Semantic è additivo rispetto agli endpoint esistenti, senza migration. Parametro nuovo: `ouf.semantic.read.max-result-bytes` (env Spring `OUF_SEMANTIC_READ_MAX_RESULT_BYTES`), byte/integer/startup-only, default 262144, min1024/max1048576; invalido blocca startup, overflow produce SEM_READ_RESULT_TOO_LARGE. Non confondere incremento sorgente con rollout live.
+
+Prima del collegamento MCP riconciliare revision/immagine/manifest effettivi preservando upload e Search; installare le projection search/get con owner capabilities e references:resolve exact. Secrets, URL, identity, tenant, route/scopes/policy/TLS rimangono nei binding parametrizzati. Non usare get latest come semantic.get. Non modificare frozen migration o riattivare la fixture Cinema.
+
+File: compatibilità e ACTIVE prima del trigger una tantum automatico; retry/timeout con intent/readback e stessa idempotenza, senza scheduler ricorrente inventato. Verticali: endpoint e credenziali soltanto in THS/secret manager, THS profilo estrazione e configurazione cadence/timezone/misfire/retry/timeout nel bundle; Ingestion fa scheduling. Il controllo doppioni resta UDP post-handoff in entrambi i percorsi. Configurazione/publish richiedono le decisioni HUMAN previste.

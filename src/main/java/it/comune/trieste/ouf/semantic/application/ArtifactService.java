@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ArtifactService {
-  private final JdbcClient db; private final ObjectMapper json;
-  public ArtifactService(JdbcClient db,ObjectMapper json){this.db=db;this.json=json;}
+  private final JdbcClient db; private final ObjectMapper json; private final SemanticReadService reads;
+  public ArtifactService(JdbcClient db,ObjectMapper json,SemanticReadService reads){this.db=db;this.json=json;this.reads=reads;}
   private String j(Object o){try{return json.writeValueAsString(o==null?Map.of():o);}catch(JsonProcessingException e){throw new IllegalArgumentException(e);}}
   @Transactional
   public Map<String,Object> create(CreateArtifact c,String actor,String actorType,String correlation){
@@ -29,7 +29,8 @@ public class ArtifactService {
     return Map.of("artifactId",a,"revisionId",r,"semanticId",c.semanticId(),"status","DRAFT","etag","\"0\"");
   }
   public Map<String,Object> get(UUID id){return db.sql("select a.artifact_id,a.semantic_id,a.artifact_type,r.revision_id,r.lifecycle_status status,r.row_version from ouf_sem.semantic_artifact a join lateral (select * from ouf_sem.artifact_revision r where r.artifact_id=a.artifact_id order by r.revision_no desc limit 1) r on true where a.artifact_id=:id").param("id",id).query().singleRow();}
-  public List<Map<String,Object>> search(String q,String status,int limit){if(limit<1||limit>100)throw new IllegalArgumentException("limit");return db.sql("select a.semantic_id,a.artifact_id,r.revision_id,r.lifecycle_status status,similarity(a.semantic_id,:q) score from ouf_sem.semantic_artifact a join ouf_sem.artifact_revision r on r.artifact_id=a.artifact_id where r.lifecycle_status=:s and a.semantic_id % :q order by score desc,a.semantic_id limit :n").param("q",q).param("s",status).param("n",limit).query().listOfRows();}
+  public List<Map<String,Object>> search(String q,String status,int limit){return search(q,status,limit,null,null,null,null);}
+  public List<Map<String,Object>> search(String q,String status,int limit,String type,String namespace,String domain,String range){return reads.search(q,status,limit,type,namespace,domain,range);}
   @Transactional public Map<String,Object> patch(UUID id,String etag,PatchRevision p,String actor,String actorType,String correlation){
     final long expected;
     try{expected=Long.parseLong(etag.replace("\"",""));}
