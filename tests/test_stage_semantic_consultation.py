@@ -40,7 +40,7 @@ class StageTest(unittest.TestCase):
             self.assertTrue(json.loads((root/'image-receipt.json').read_text())['noContainersCreated'])
             self.assertEqual((root/'runtime-snapshot.json').stat().st_mode&0o777,0o600)
             self.assertFalse(any(any(x in command for x in ('start','stop','rename','create','PUT')) for command in calls))
-            with self.assertRaises(FileExistsError):m.main(cfg)
+            with patch.object(m.os,'geteuid',return_value=0),self.assertRaises(FileExistsError):m.main(cfg)
     def test_live_pin_drift_prevents_build(self):
         with tempfile.TemporaryDirectory() as d:
             cfg=self.config(Path(d)/'stage');cfg['images'][0]['liveRevision']='c'*40
