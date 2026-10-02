@@ -1,0 +1,42 @@
+name: Semantic read Gateway owner pairwise
+on:
+  push:
+    branches: [codex/file-to-udp-semantic-delegation]
+  pull_request:
+permissions: {contents: read}
+jobs:
+  actual-lua-java-postgresql:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env: {POSTGRES_DB: ouf_semantic, POSTGRES_USER: ouf_semantic, POSTGRES_PASSWORD: ci-only-password}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ouf_semantic -d ouf_semantic" --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      OUF_SEM_DB_URL: jdbc:postgresql://127.0.0.1:5432/ouf_semantic
+      OUF_SEM_DB_USER: ouf_semantic
+      OUF_SEM_DB_PASSWORD: ci-only-password
+      OUF_DISCOVERY_WORKER_ENABLED: 'false'
+      OUF_SEMANTIC_GATEWAY_PAIRWISE_ROOT: ${{ github.workspace }}/.pairwise/gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: GioNob/ouf-api-gateway
+          ref: e8ef4b72093f4138d0efe78e9947ddfc4b471e27
+          path: .pairwise/gateway
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21', cache: maven}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.13'}
+      - run: pip install -r .pairwise/gateway/requirements-dev.txt
+      - run: bash scripts/install-authorization-sdk.sh
+      - run: timeout --signal=TERM --kill-after=30s 15m mvn -B -ntp -Dtest=SemanticConsultationTest test
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-read-gateway-owner-pairwise-${{ github.run_id }}
+          path: target/surefire-reports/

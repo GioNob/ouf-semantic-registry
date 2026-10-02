@@ -49,6 +49,24 @@ class SemanticConsultationTest {
     var req=new MockHttpServletRequest("POST",path);req.addHeader("X-OUF-Semantic-Read-Receipt",proof);
     TestAuthorization.bind(req,"reader","HUMAN",grants);return req;
   }
+  @Test void actualGatewayLuaReceiptIsAcceptedByJavaOwner() throws Exception {
+    String gateway=System.getenv("OUF_SEMANTIC_GATEWAY_PAIRWISE_ROOT");
+    org.junit.jupiter.api.Assumptions.assumeTrue(gateway!=null&&!gateway.isBlank());
+    Path fixture=tmp.resolve("gateway-receipt.json");
+    var builder=new ProcessBuilder("python3",Path.of(gateway,"scripts/export_semantic_read_pairwise.py").toString(),"--output",fixture.toString());
+    builder.environment().put("PYTHONPATH",gateway);
+    var process=builder.redirectErrorStream(true).start();
+    assertThat(process.waitFor(10,java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+    assertThat(process.exitValue()).isZero();
+    var f=json.readTree(Files.readString(fixture));
+    Path file=tmp.resolve("pairwise-key");Files.writeString(file,key);
+    var v=new SemanticReadDelegation(json,file.toString(),"https://auth.test/realms/ouf","gateway","workload");
+    byte[] raw=f.required("body").asText().getBytes(StandardCharsets.UTF_8);
+    var req=new MockHttpServletRequest("POST",path);
+    req.addHeader("X-OUF-Semantic-Read-Receipt",f.required("receipt").asText());
+    TestAuthorization.bind(req,"human-a","HUMAN",Set.of(cap));
+    assertThat(new SemanticConsultationApi(v,reads,json).search(raw,req)).isInstanceOf(List.class);
+  }
   @Test void signedGatewayReadStillRequiresOwnerPolicyAndClosedArguments() throws Exception {
     var v=verifier();var api=new SemanticConsultationApi(v,reads,json);
     byte[] raw=body(Map.of("q","no-match-"+UUID.randomUUID()));String proof=sign(receipt(raw));
