@@ -56,6 +56,16 @@ class PreparationTest(unittest.TestCase):
     def test_duplicate_env_fails(self):
         row=self.row();row['Config']['Env'].append('SECRET=another')
         with self.assertRaisesRegex(RuntimeError,'ENV_INVALID'):m.env(row)
+    def test_replacement_requires_exact_previous_route_ownership(self):
+        expected=[{'id':'search','uri':'/semantic/search','plugins':{'signed':'old'}}]
+        baseline=[dict(expected[0],name='search',desc='Governed bounded semantic consultation',create_time=1)]
+        m.check_replaced_routes(baseline,expected)
+        baseline[0]['plugins']={'signed':'different-owner'}
+        with self.assertRaisesRegex(RuntimeError,'EXISTING_SEMANTIC_ROUTE_OWNERSHIP_DRIFT'):
+            m.check_replaced_routes(baseline,expected)
+    def test_missing_route_cannot_be_treated_as_owned_replacement(self):
+        with self.assertRaisesRegex(RuntimeError,'EXISTING_SEMANTIC_ROUTE_OWNERSHIP_DRIFT'):
+            m.check_replaced_routes([], [{'id':'search','uri':'/semantic/search'}])
 
 
 if __name__=='__main__':unittest.main()

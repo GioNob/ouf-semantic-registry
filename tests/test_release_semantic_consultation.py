@@ -83,6 +83,35 @@ class ReleaseTest(unittest.TestCase):
             self.assertEqual(body['Owner'],'semantic');self.assertIn(body['OperationClass'],('SEARCH','READ'))
             self.assertEqual(body['MaxResultBytes'],262144)
             self.assertNotIn('approve',body['CapabilityID'])
+    def existing(self):
+        gateway=Gateway()
+        for name in ('search','get'):
+            gateway.data[name]={'id':name,'uri':'/semantic/'+name,'operation':'OLD'}
+        return gateway,gateway.rows(),{name:{'uri':'/semantic/'+name,'operation':'READ'} for name in ('search','get')}
+    def test_existing_routes_updated_and_exact_originals_restored_without_delete(self):
+        gateway,baseline,wanted=self.existing();state={'routesAttempted':[]}
+        with patch.object(m.prep,'checkpoint'):
+            m.install_routes(gateway,baseline,wanted,state,Path('/private'))
+        m.readback(gateway,baseline,wanted,['search','get'])
+        m.delete_routes(gateway,baseline,wanted,state['routesAttempted'])
+        self.assertEqual(m.index(gateway.rows()),m.index(baseline))
+        self.assertFalse(any(verb=='DELETE' or ident=='upload' and verb=='PUT' for verb,ident in gateway.calls))
+    def test_lost_existing_put_response_restores_both_originals(self):
+        gateway,baseline,wanted=self.existing();state={'routesAttempted':[]};gateway.lose_put='get'
+        with patch.object(m.prep,'checkpoint'):
+            with self.assertRaises(TimeoutError):m.install_routes(gateway,baseline,wanted,state,Path('/private'))
+        # Restoration PUT may itself lose its response; exact GET readback resolves it.
+        m.delete_routes(gateway,baseline,wanted,state['routesAttempted'])
+        self.assertEqual(m.index(gateway.rows()),m.index(baseline))
+        self.assertFalse(any(verb=='DELETE' for verb,_ in gateway.calls))
+    def test_third_party_change_blocks_existing_route_restore(self):
+        gateway,baseline,wanted=self.existing()
+        gateway.data['search']={'id':'search','uri':'/third-party'}
+        with self.assertRaisesRegex(RuntimeError,'ROLLBACK_ROUTE_OWNERSHIP_DRIFT'):
+            m.delete_routes(gateway,baseline,wanted,['search'])
+        self.assertFalse(any(verb in ('PUT','DELETE') for verb,_ in gateway.calls))
+    def test_read_probe_matches_corrected_route_contract(self):
+        self.assertEqual(json.loads(m.probe_body('search','READ'))['OperationClass'],'READ')
 
 
 if __name__=='__main__':unittest.main()

@@ -4,7 +4,6 @@ import argparse
 import copy
 import fcntl
 import hashlib
-import importlib
 import json
 import os
 from pathlib import Path
@@ -72,15 +71,18 @@ def one(doc):
 
 def readback(gateway,baseline,wanted,installed):
     current=index(gateway.rows());original=index(baseline)
-    require({k:v for k,v in current.items() if k not in wanted}==original,'EXISTING_ROUTES_DRIFT')
+    require({k:v for k,v in current.items() if k not in wanted}=={k:v for k,v in original.items() if k not in wanted},'EXISTING_ROUTES_DRIFT')
     for ident in wanted:
-        require((current.get(ident)==wanted[ident]) if ident in installed else ident not in current,'NEW_ROUTE_DRIFT')
+        expected=wanted[ident] if ident in installed else original.get(ident)
+        require(current.get(ident)==expected,'NEW_ROUTE_DRIFT')
 
 
 def install_routes(gateway,baseline,wanted,state,path):
     readback(gateway,baseline,wanted,[])
+    original=index(baseline)
     for ident,body in wanted.items():
-        require(gateway.api('GET','routes/'+ident,statuses=(200,404))[1]==404,'ROUTE_ID_OCCUPIED')
+        doc,status=gateway.api('GET','routes/'+ident,statuses=(200,404))
+        require((status==200 and one(doc)==original[ident]) if ident in original else status==404,'ROUTE_ID_OCCUPIED')
         state['routesAttempted'].append(ident);prep.checkpoint(path,state)
         gateway.api('PUT','routes/'+ident,body,statuses=(200,201))
         readback(gateway,baseline,wanted,state['routesAttempted'])
@@ -88,8 +90,18 @@ def install_routes(gateway,baseline,wanted,state,path):
 
 def delete_routes(gateway,baseline,wanted,attempted):
     # GET before DELETE reconciles PUT/DELETE responses lost in transit.
+    original=index(baseline)
     for ident in reversed(attempted):
         doc,status=gateway.api('GET','routes/'+ident,statuses=(200,404))
+        if ident in original:
+            require(status==200,'ROLLBACK_EXISTING_ROUTE_MISSING')
+            if one(doc)==original[ident]:continue
+            require(one(doc)==wanted[ident],'ROLLBACK_ROUTE_OWNERSHIP_DRIFT')
+            try:gateway.api('PUT','routes/'+ident,original[ident],statuses=(200,201))
+            except Exception:
+                require(one(gateway.api('GET','routes/'+ident)[0])==original[ident],'RESTORE_OUTCOME_UNCERTAIN')
+            require(one(gateway.api('GET','routes/'+ident)[0])==original[ident],'RESTORE_NOT_VERIFIED')
+            continue
         if status==404:continue
         require(one(doc)==wanted[ident],'ROLLBACK_ROUTE_OWNERSHIP_DRIFT')
         try:gateway.api('DELETE','routes/'+ident,statuses=(200,204))
@@ -166,10 +178,10 @@ def switch(role,old,candidate,state,path):
     stage.run(['docker','start',candidate['id']],60)
 
 
-def probe_body(name):
+def probe_body(name,operation=None):
     cap='ouf.semantic.search' if name=='search' else 'ouf.semantic.read'
     return json.dumps({'GatewayBindingRef':'capability://'+cap,'CapabilityID':cap,'Owner':'semantic',
-      'OperationClass':'SEARCH' if name=='search' else 'READ','Arguments':{'q':'consultation-denial-probe','limit':1} if name=='search' else {'semanticId':'probe:unpublished','revisionId':'11111111-1111-4111-8111-111111111111','publicationSetId':'22222222-2222-4222-8222-222222222222'},
+      'OperationClass':operation or ('SEARCH' if name=='search' else 'READ'),'Arguments':{'q':'consultation-denial-probe','limit':1} if name=='search' else {'semanticId':'probe:unpublished','revisionId':'11111111-1111-4111-8111-111111111111','publicationSetId':'22222222-2222-4222-8222-222222222222'},
       'Identity':{'ServicePrincipalID':'probe','PrincipalID':'probe','TenantID':'probe','ActorType':'HUMAN','AuthenticationContextRef':'probe'},
       'AuthorizationDecisionRef':'probe','CorrelationID':'probe','IdempotencyKey':'probe','AttemptID':'33333333-3333-4333-8333-333333333333','RequestHash':'0'*64,'MaxResultBytes':262144})
 
@@ -184,17 +196,25 @@ def configuration(args):
     source=folder/'gateway-source'
     require(stage.run(['git','-C',str(source),'rev-parse','HEAD'])==prepared['gatewayRevision']
             and not stage.run(['git','-C',str(source),'status','--porcelain']),'GATEWAY_SOURCE_ARTIFACT_DRIFT')
-    sys.path.insert(0,str(source))
-    materialize=importlib.import_module('tools.materialize_semantic_read').materialize
     b=prep.bindings(before['routes'])
     upstreams=[r['upstream'] for r in before['routes'] if r.get('uri')=='/api/semantic/v1/search' and r.get('status',1)==1]
     require(len(upstreams)==1 and len(raw)==2,'PREPARED_SOURCE_BINDING_INVALID')
     ids={r['uri'].rsplit('/',1)[-1]:r['id'] for r in raw}
-    regenerated=materialize({'routes':before['routes']},prepared['installation'],b['DELEGATION_KEY_ENV'],prepared['keyEnv'],upstreams[0],ids)['routes'][-2:]
+    replacing=prepared.get('replaceExisting',False)
+    route_base=before['routes']
+    if replacing:
+        prior=folder/'gateway-previous-source'
+        require(stage.run(['git','-C',str(prior),'rev-parse','HEAD'])==prepared['previousGatewayRevision']
+                and not stage.run(['git','-C',str(prior),'status','--porcelain']),'PREVIOUS_GATEWAY_SOURCE_ARTIFACT_DRIFT')
+        route_base=[r for r in route_base if str(r['id']) not in ids.values()]
+        expected=prep.render_routes(prior,route_base,prepared['installation'],b['DELEGATION_KEY_ENV'],prepared['keyEnv'],upstreams[0],ids)
+        prep.check_replaced_routes(before['routes'],expected)
+    regenerated=prep.render_routes(source,route_base,prepared['installation'],b['DELEGATION_KEY_ENV'],prepared['keyEnv'],upstreams[0],ids)
     require(raw==regenerated,'DESIRED_ROUTE_ARTIFACT_DRIFT')
     wanted={str(r['id']):comparable(r) for r in raw}
     require(len(wanted)==2 and {r['uri'] for r in raw}=={'/internal/capabilities/v1/execute/semantic/search','/internal/capabilities/v1/execute/semantic/get'},'DESIRED_ROUTES_INVALID')
     for ident,body in wanted.items():body['name']=ident;body['desc']='Governed bounded semantic consultation'
+    require(replacing or not set(wanted)&set(index(before['routes'])),'ADD_ONLY_ROUTE_ID_ALREADY_PRESENT')
     gateway=Gateway(old['gateway']['Name'].lstrip('/'),before['config']['gateway'])
     return folder,before,prepared,old,candidates,wanted,gateway
 
@@ -225,12 +245,13 @@ def verify_live(args,before,prepared,candidates,wanted,gateway):
     ready(candidates['semantic']['id'],args.semantic_origin,'/actuator/health/readiness',200)
     ready(candidates['mcp']['id'],args.mcp_origin,'/health/ready',204)
     for name in ('search','get'):
-        owner=http_code(candidates['semantic']['id'],args.semantic_origin,'POST','/api/internal/v1/semantic/consultation/'+name,probe_body(name),{'Content-Type':'application/json','X-OUF-Semantic-Read-Receipt':'invalid'})
+        body=probe_body(name,'READ' if prepared.get('replaceExisting') else None)
+        owner=http_code(candidates['semantic']['id'],args.semantic_origin,'POST','/api/internal/v1/semantic/consultation/'+name,body,{'Content-Type':'application/json','X-OUF-Semantic-Read-Receipt':'invalid'})
         route=next(r for r in wanted.values() if r['uri'].endswith('/'+name))
         headers={'Content-Type':'application/json'}
         host=route.get('host') or (route.get('hosts') or [None])[0]
         if host:headers['Host']=host.replace('*','probe')
-        gw=http_code(candidates['gateway']['id'],args.gateway_origin,'POST','/internal/capabilities/v1/execute/semantic/'+name,probe_body(name),headers)
+        gw=http_code(candidates['gateway']['id'],args.gateway_origin,'POST','/internal/capabilities/v1/execute/semantic/'+name,body,headers)
         require(owner in (401,403) and gw in (401,403),'ANONYMOUS_OR_FORGED_REQUEST_NOT_DENIED')
     print('CONSULTATION_READINESS_AND_DENIAL=PASS POSITIVE_HUMAN_NOT_PROVEN=true',flush=True)
 
@@ -258,7 +279,10 @@ def main(args):
         require(not key.is_symlink() and (meta.st_uid,meta.st_gid,meta.st_mode&0o777)==(uid,gid,0o400),'OWNER_KEY_PERMISSION_DRIFT')
         require(key.read_text().strip()==prepared['expectedEnvironments']['gateway'][prepared['keyEnv']],'OWNER_GATEWAY_KEY_DRIFT')
         original_config=[m for m in old['gateway']['Mounts'] if m['Destination']==before['config']['gateway']['configDestination']]
-        require(len(original_config)==1 and (folder/'apisix-config.yaml').read_text()==prep.patch_yaml(Path(original_config[0]['Source']).read_text(),prepared['keyEnv']),'GATEWAY_CONFIG_DRIFT')
+        require(len(original_config)==1,'GATEWAY_CONFIG_BIND_DRIFT')
+        config_text=Path(original_config[0]['Source']).read_text()
+        expected_config=config_text if prepared.get('replaceExisting') else prep.patch_yaml(config_text,prepared['keyEnv'])
+        require((folder/'apisix-config.yaml').read_text()==expected_config,'GATEWAY_CONFIG_DRIFT')
         pg,user,db=databases(args,old);hist={r:history(args.postgres_container,user,db[r],r) for r in db}
         require(all(hist.values()) and all(x.get('success',True) for x in hist['semantic']),'MIGRATION_HISTORY_INVALID')
         rollback_names={r:x['Name'].lstrip('/')+'-consultation-rollback-'+x['Id'][:12] for r,x in old.items()}
@@ -312,7 +336,8 @@ def main(args):
             except Exception:print('CONSULTATION_RECEIPT_PERSISTENCE_FAILED=true',flush=True)
             print('CONSULTATION_ROLLBACK='+state['status']+' DB_NOT_AUTOMATICALLY_RESTORED=true',flush=True)
             raise
-        print('CONSULTATION_RELEASE=PASS CONTAINERS=3 NEW_ROUTES=2 MIGRATION_HISTORY_UNCHANGED=true POLICY_PUBLICATION_NOT_CALLED=true NO_SOURCE_RUN=true POSITIVE_HUMAN_NOT_PROVEN=true',flush=True)
+        route_result='UPDATED_ROUTES=2 NEW_ROUTES=0' if prepared.get('replaceExisting') else 'NEW_ROUTES=2'
+        print('CONSULTATION_RELEASE=PASS CONTAINERS=3 '+route_result+' MIGRATION_HISTORY_UNCHANGED=true POLICY_PUBLICATION_NOT_CALLED=true NO_SOURCE_RUN=true POSITIVE_HUMAN_NOT_PROVEN=true',flush=True)
         print('CONSULTATION_ROLLBACK_CONTAINERS='+json.dumps(rollback_names,sort_keys=True),flush=True)
         print('CONSULTATION_RELEASE_RECEIPT='+str(path)+' PRIVATE=true',flush=True)
 

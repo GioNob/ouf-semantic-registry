@@ -4,8 +4,10 @@ on:
     paths:
       - 'scripts/r4a_*semantic_consultation.py'
       - 'scripts/r4a_consultation_runtime_preflight.py'
+      - 'scripts/r4a_semantic_consultation_policy_inventory.py'
       - 'tests/test_*semantic_consultation.py'
       - 'tests/test_consultation_runtime_preflight.py'
+      - 'tests/test_consultation_policy_inventory.py'
       - '.github/workflows/consultation-deploy-scripts.yml'
   workflow_dispatch:
 permissions:
@@ -23,3 +25,5 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_*semantic_consultation.py'
       - name: Verify runtime metadata redaction
         run: python3 -m unittest discover -s tests -p 'test_consultation_runtime_preflight.py'
+      - name: Verify read-only owner policy inventory
+        run: python3 -m unittest discover -s tests -p 'test_consultation_policy_inventory.py'
