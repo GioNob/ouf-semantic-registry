@@ -18,6 +18,8 @@ on:
       - 'tests/test_semantic_provider_iam_inventory.py'
       - 'scripts/r4a_prepare_semantic_provider_iam.py'
       - 'tests/test_prepare_semantic_provider_iam.py'
+      - 'scripts/r4a_semantic_provider_runtime_bindings.py'
+      - 'tests/test_semantic_provider_runtime_bindings.py'
       - '.github/workflows/consultation-deploy-scripts.yml'
   workflow_dispatch:
 permissions:
@@ -52,3 +54,6 @@ jobs:
 
       - name: Verify additive service IAM preparation and no mapper/secret mutation
         run: python3 -B -m unittest discover -s tests -p 'test_prepare_semantic_provider_iam.py'
+
+      - name: Verify parameterized runtime endpoint inventory and secret redaction
+        run: python3 -B -m unittest discover -s tests -p 'test_semantic_provider_runtime_bindings.py'
