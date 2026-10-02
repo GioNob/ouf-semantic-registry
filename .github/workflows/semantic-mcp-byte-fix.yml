@@ -1,0 +1,21 @@
+name: MCP-only semantic byte fix staging
+on:
+  push:
+    paths: ['scripts/r4a_stage_semantic_mcp_byte_fix.py', 'scripts/r4a_stage_semantic_consultation.py', 'tests/test_semantic_mcp_byte_fix.py', '.github/workflows/semantic-mcp-byte-fix.yml']
+  pull_request:
+    paths: ['scripts/r4a_stage_semantic_mcp_byte_fix.py', 'scripts/r4a_stage_semantic_consultation.py', 'tests/test_semantic_mcp_byte_fix.py', '.github/workflows/semantic-mcp-byte-fix.yml']
+permissions: {contents: read}
+jobs:
+  staging:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: GioNob/ouf-mcp-server
+          ref: 394b4b1540b575564f0ba58541df9d7efc59fb87
+          path: .pairwise/mcp
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.13'}
+      - run: PYTHONPATH="$PWD/.pairwise/mcp" python -B -m unittest discover -s tests -p test_semantic_mcp_byte_fix.py
+      - run: python -B -c "import ast,pathlib; ast.parse(pathlib.Path('scripts/r4a_stage_semantic_mcp_byte_fix.py').read_text())"
