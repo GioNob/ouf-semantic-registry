@@ -78,6 +78,26 @@ class SemanticConsultationTest {
     byte[] fractional=body(Map.of("q","x","limit",1.5));String fracProof=sign(receipt(fractional));
     assertThatThrownBy(()->api.search(fractional,request(fracProof,Set.of(cap)))).isInstanceOf(IllegalArgumentException.class);
   }
+  @Test void humanGetUsesSeparateCapabilityAndExistingReadScope() throws Exception {
+    String humanCap="ouf.semantic.consultation.read",nativeCap="ouf.semantic.read";
+    String getPath="/api/internal/v1/semantic/consultation/get";
+    byte[] raw=json.writeValueAsBytes(Map.of("CapabilityID",humanCap,"GatewayBindingRef","capability://"+humanCap,
+      "Owner","semantic","OperationClass","READ","Arguments",Map.of("semanticId","no-match:"+UUID.randomUUID(),
+        "revisionId",UUID.randomUUID().toString(),"publicationSetId",UUID.randomUUID().toString())));
+    var r=receipt(raw);r.put("path",getPath);r.put("capability",humanCap);r.put("scope",nativeCap);
+    var v=verifier();String proof=sign(r);
+    assertThat(v.verify(proof,getPath,humanCap,raw).actorType()).isEqualTo(it.comune.trieste.ouf.authorization.PrincipalContext.ActorType.HUMAN);
+    assertThatThrownBy(()->v.verify(proof,getPath,nativeCap,raw)).isInstanceOf(SecurityException.class);
+    var api=new SemanticConsultationApi(v,reads,json);
+    var req=new MockHttpServletRequest("POST",getPath);req.addHeader("X-OUF-Semantic-Read-Receipt",proof);
+    TestAuthorization.bind(req,"reader","HUMAN",Set.of(nativeCap));
+    assertThatThrownBy(()->api.get(raw,req)).isInstanceOf(SecurityException.class);
+    var allowed=new MockHttpServletRequest("POST",getPath);allowed.addHeader("X-OUF-Semantic-Read-Receipt",proof);
+    TestAuthorization.bind(allowed,"reader","HUMAN",Set.of(humanCap));
+    assertThatThrownBy(()->api.get(raw,allowed)).isInstanceOf(NoSuchElementException.class);
+    r.put("scope",humanCap);String wrongScope=sign(r);
+    assertThatThrownBy(()->v.verify(wrongScope,getPath,humanCap,raw)).isInstanceOf(SecurityException.class);
+  }
   @Test void receiptsFailClosedOnWrongBindingSignatureScopeTenantOrExpiry() throws Exception {
     var v=verifier();byte[] raw=body(Map.of("q","x"));
     String good=sign(receipt(raw));assertThat(v.verify(good,path,cap,raw).tenantId()).isEqualTo("tenant-a");

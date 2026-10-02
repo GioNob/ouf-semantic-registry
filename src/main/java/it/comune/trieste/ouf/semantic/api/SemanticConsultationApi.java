@@ -37,7 +37,7 @@ public class SemanticConsultationApi {
     return reads.search(text(a,"q",true),"ACTIVE",limit,text(a,"type",false),text(a,"namespace",false),text(a,"domain",false),text(a,"range",false));
   }
   @PostMapping("/get") public Object get(@RequestBody byte[] raw,HttpServletRequest request) {
-    var a=arguments(raw,request,"ouf.semantic.read","READ","semantic.validation",Set.of("semanticId","revisionId","publicationSetId"));
+    var a=arguments(raw,request,"ouf.semantic.consultation.read","READ","semantic.validation",Set.of("semanticId","revisionId","publicationSetId"));
     return reads.resolve(text(a,"semanticId",true),UUID.fromString(text(a,"revisionId",true)),UUID.fromString(text(a,"publicationSetId",true)));
   }
   private static String text(JsonNode node,String key,boolean required){

@@ -37,7 +37,7 @@ public class SemanticReadDelegation {
   }
   public PrincipalContext verify(String proof,String path,String capability,byte[] body) {
     try {
-      if(key.length!=64 || !Set.of("ouf.semantic.search","ouf.semantic.read").contains(capability)
+      if(key.length!=64 || !Set.of("ouf.semantic.search","ouf.semantic.consultation.read").contains(capability)
           ||proof==null||proof.length()>16384||body.length>65536)throw new SecurityException();
       var parts=proof.split("\\.",-1);
       if(parts.length!=2||!parts[0].matches("[A-Za-z0-9_-]+")||!parts[1].matches("[A-Za-z0-9_-]+"))throw new SecurityException();
@@ -56,7 +56,8 @@ public class SemanticReadDelegation {
         if(!role.matches("[A-Za-z0-9][A-Za-z0-9._:/@-]{0,127}")||!roles.add(role)||roles.size()>32)throw new SecurityException();
       }
       var scopes=new HashSet<>(Arrays.asList(r.scope().split(" +")));
-      if(!scopes.contains(capability))throw new SecurityException();
+      String scope="ouf.semantic.consultation.read".equals(capability)?"ouf.semantic.read":capability;
+      if(!scopes.contains(scope))throw new SecurityException();
       return new PrincipalContext(r.subject(),r.tenant(),PrincipalContext.ActorType.HUMAN,r.workload(),r.acr(),
           r.issuer(),r.audience(),scopes,new PrincipalContext.IdentityClaims(roles,r.acr(),Set.of(),null));
     }catch(Exception e){throw new SecurityException("SEM_READ_RECEIPT_INVALID");}
