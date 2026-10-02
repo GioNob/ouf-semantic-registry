@@ -33,7 +33,7 @@ class CredentialPreparationTest(unittest.TestCase):
         self.args = SimpleNamespace(mode='apply', realm='realm-custom', client_id='service-custom',
             audience='gateway-custom', tenant='tenant-custom', provider_scope='custom.invoke',
             issuer='https://iam.example:9443/realms/custom', token_endpoint='https://iam.example:9443/token',
-            introspection_endpoint='https://iam.example:9443/introspect', actor_claim='actor', tenant_claim='tenant',
+            jwks_endpoint='https://iam.example:9443/jwks', openssl_path=shutil.which('openssl'), actor_claim='actor', tenant_claim='tenant',
             credential_file=self.target, iam_container='iam-custom', kcadm_path='/custom/kcadm.sh',
             semantic_container='semantic-custom', expected_semantic_id='a' * 64, ca_file=None, timeout=2)
         self.binding = {'id': 'a' * 64, 'uid': 10071, 'gid': 10071, 'issuer': self.args.issuer}
@@ -41,7 +41,7 @@ class CredentialPreparationTest(unittest.TestCase):
         self.workload.inspect_state.return_value = {'exists': True, 'internalId': 'custom-internal-id', 'drift': []}
         self.workload.get_json.return_value = {'value': 'private-secret'}
         self.metadata = {'issuer': self.args.issuer, 'token_endpoint': self.args.token_endpoint,
-                         'introspection_endpoint': self.args.introspection_endpoint}
+                         'jwks_uri': self.args.jwks_endpoint}
         # Leaf permissions/atomic creation use real files. Ancestor metadata is tested separately;
         # GitHub runners keep their checkout under a non-root-owned home directory.
         probe = Path(self.directory.name) / 'ownership-probe'
@@ -67,7 +67,7 @@ class CredentialPreparationTest(unittest.TestCase):
     def token(self, value=None, header=None):
         def enc(value):
             return base64.urlsafe_b64encode(json.dumps(value).encode()).decode().rstrip('=')
-        return enc(header or {'alg': 'RS256'}) + '.' + enc(value or self.valid_claims()) + '.fixture'
+        return enc(header or {'alg': 'RS256', 'kid': 'fixture'}) + '.' + enc(value or self.valid_claims()) + '.fixture'
 
     def response(self):
         return {'access_token': self.token(), 'token_type': 'Bearer', 'scope': self.args.provider_scope, 'expires_in': 300}
@@ -118,11 +118,11 @@ class CredentialPreparationTest(unittest.TestCase):
             self.prepare()
         self.assertEqual(module.local_secret(self.target, 10071, 10071), 'private-secret')
 
-    def test_inactive_introspection_prevents_any_persistent_write(self):
+    def test_invalid_signature_prevents_any_persistent_write(self):
         with patch.object(module, 'semantic_binding', return_value=self.binding), \
              patch.object(module, 'http_json', return_value=self.metadata), \
-             patch.object(module, 'token_acceptance', side_effect=module.Blocked('TOKEN_INTROSPECTION_INACTIVE')):
-            with self.assertRaisesRegex(module.Blocked, 'TOKEN_INTROSPECTION_INACTIVE'):
+             patch.object(module, 'token_acceptance', side_effect=module.Blocked('TOKEN_SIGNATURE_INVALID')):
+            with self.assertRaisesRegex(module.Blocked, 'TOKEN_SIGNATURE_INVALID'):
                 module.prepare(self.args, self.workload)
         self.assertFalse(self.target.parent.exists())
 
@@ -150,15 +150,16 @@ class CredentialPreparationTest(unittest.TestCase):
                 module.prepare(self.args, self.workload)
         self.workload.get_json.assert_not_called()
 
-    def test_token_request_and_authority_validation_bind_exact_context(self):
-        claims = self.valid_claims()
-        with patch.object(module, 'http_json', side_effect=[self.response(), dict(claims, active=True)]) as request:
+    def test_token_request_and_signature_validation_bind_exact_context(self):
+        with patch.object(module, 'http_json', return_value=self.response()) as request, \
+             patch.object(module, 'verify_signature') as verify:
             ttl = module.token_acceptance(self.args, 'secret-only-in-memory')
         self.assertGreaterEqual(ttl, 290)
-        self.assertEqual(request.call_args_list[0].args[1], self.args.token_endpoint)
-        self.assertEqual(request.call_args_list[0].args[2]['scope'], 'custom.invoke')
-        self.assertEqual(request.call_args_list[1].args[1], self.args.introspection_endpoint)
-        self.assertNotIn('secret-only-in-memory', request.call_args_list[0].args[1])
+        self.assertEqual(request.call_count, 1)
+        self.assertEqual(request.call_args.args[1], self.args.token_endpoint)
+        self.assertEqual(request.call_args.args[2]['scope'], 'custom.invoke')
+        self.assertNotIn('secret-only-in-memory', request.call_args.args[1])
+        verify.assert_called_once()
 
     def test_claim_mismatches_and_expiry_are_rejected(self):
         now = time.time()
@@ -169,14 +170,25 @@ class CredentialPreparationTest(unittest.TestCase):
             with self.subTest(name=name, value=value), self.assertRaisesRegex(module.Blocked, 'TOKEN_CLAIMS_INVALID'):
                 module.claims(self.args, claims, now)
 
-    def test_inactive_or_conflicting_authority_and_unsigned_token_rejected(self):
-        for authority in [dict(self.valid_claims(), active=False), dict(self.valid_claims(), active=True, sub='different')]:
-            with patch.object(module, 'http_json', side_effect=[self.response(), authority]), self.assertRaises(module.Blocked):
+    def test_signature_failure_and_unsigned_token_rejected(self):
+        with patch.object(module, 'http_json', return_value=self.response()), \
+             patch.object(module, 'verify_signature', side_effect=module.Blocked('TOKEN_SIGNATURE_INVALID')):
+            with self.assertRaisesRegex(module.Blocked, 'TOKEN_SIGNATURE_INVALID'):
                 module.token_acceptance(self.args, 'secret')
         response = self.response(); response['access_token'] = self.token(header={'alg': 'none'})
         with patch.object(module, 'http_json', return_value=response) as request, self.assertRaisesRegex(module.Blocked, 'TOKEN_RESPONSE_INVALID'):
             module.token_acceptance(self.args, 'secret')
         self.assertEqual(request.call_count, 1)
+
+    def test_unknown_or_ambiguous_key_and_bad_jwk_fail_closed(self):
+        header = {'alg': 'RS256', 'kid': 'fixture'}
+        for keys in [[], [{'kid': 'other'}], [{'kid': 'fixture'}, {'kid': 'fixture'}]]:
+            with patch.object(module, 'http_json', return_value={'keys': keys}), self.assertRaises(module.Blocked):
+                module.verify_signature(self.args, self.token(), header)
+        for key in [{'kty': 'oct'}, {'kty': 'RSA', 'alg': 'HS256'}, {'kty': 'RSA', 'use': 'enc'},
+                    {'kty': 'RSA', 'd': 'private'}, {'kty': 'RSA', 'key_ops': ['sign']}]:
+            with self.assertRaises(module.Blocked):
+                module.public_key(key)
 
     def test_deadline_interrupts_body_receipt(self):
         started = time.monotonic()
@@ -276,6 +288,11 @@ class TLSAuthorityTest(unittest.TestCase):
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *args):
                 pass
+            def do_GET(self):
+                owner.requests.append((self.path, {}))
+                raw = json.dumps({'keys': [owner.jwk]}).encode()
+                self.send_response(200); self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(raw))); self.end_headers(); self.wfile.write(raw)
             def do_POST(self):
                 body = self.rfile.read(int(self.headers.get('Content-Length', '0')))
                 form = parse_qs(body.decode()); owner.requests.append((self.path, form))
@@ -299,7 +316,7 @@ class TLSAuthorityTest(unittest.TestCase):
         self.addCleanup(self.server.server_close); self.addCleanup(self.server.shutdown)
         base = 'https://127.0.0.1:' + str(self.server.server_port)
         self.args = SimpleNamespace(issuer=base + '/realm', token_endpoint=base + '/token',
-            introspection_endpoint=base + '/introspect', client_id='service-custom', audience='gateway-custom',
+            jwks_endpoint=base + '/jwks', openssl_path=shutil.which('openssl'), client_id='service-custom', audience='gateway-custom',
             tenant='tenant-custom', actor_claim='actor', tenant_claim='tenant', provider_scope='custom.invoke',
             ca_file=str(cert), timeout=2)
         now = int(time.time()); self.active = True
@@ -308,16 +325,35 @@ class TLSAuthorityTest(unittest.TestCase):
                        'sub': 'fixture-service', 'acr': '1', 'iat': now, 'exp': now + 300}
         def enc(value):
             return base64.urlsafe_b64encode(json.dumps(value).encode()).decode().rstrip('=')
-        self.token = enc({'alg': 'RS256'}) + '.' + enc(self.claims) + '.fixture'
+        modulus = subprocess.run(['openssl', 'rsa', '-in', str(key), '-noout', '-modulus'],
+                                 capture_output=True, check=True, timeout=10).stdout.decode().strip().split('=', 1)[1]
+        self.jwk = {'kid': 'fixture', 'kty': 'RSA', 'use': 'sig', 'alg': 'RS256',
+                    'n': base64.urlsafe_b64encode(bytes.fromhex(modulus)).decode().rstrip('='), 'e': 'AQAB'}
+        message = enc({'alg': 'RS256', 'kid': 'fixture'}) + '.' + enc(self.claims)
+        signature = subprocess.run(['openssl', 'dgst', '-sha256', '-sign', str(key)],
+                                  input=message.encode(), capture_output=True, check=True, timeout=10).stdout
+        self.token = message + '.' + base64.urlsafe_b64encode(signature).decode().rstrip('=')
 
-    def test_real_trusted_tls_token_and_introspection(self):
+    def test_real_trusted_tls_jwks_and_valid_signature(self):
         self.assertGreaterEqual(module.token_acceptance(self.args, 'fixture-secret'), 290)
-        self.assertEqual([r[0] for r in self.requests], ['/token', '/introspect'])
+        self.assertEqual([r[0] for r in self.requests], ['/token', '/jwks'])
         self.assertEqual(self.requests[0][1]['grant_type'], ['client_credentials'])
-        self.assertEqual(self.requests[1][1]['token_type_hint'], ['access_token'])
-        self.active = False
-        with self.assertRaisesRegex(module.Blocked, 'TOKEN_INTROSPECTION_INACTIVE'):
+        pieces = self.token.split('.')
+        changed = dict(self.claims, scope='custom.invoke extra.read')
+        pieces[1] = base64.urlsafe_b64encode(json.dumps(changed).encode()).decode().rstrip('=')
+        self.token = '.'.join(pieces)
+        with self.assertRaisesRegex(module.Blocked, 'TOKEN_SIGNATURE_INVALID'):
             module.token_acceptance(self.args, 'fixture-secret')
+
+    def test_real_wrong_key_and_duplicate_key_are_rejected(self):
+        original = self.jwk.copy()
+        self.jwk['n'] = base64.urlsafe_b64encode(b'\xff' * 256).decode().rstrip('=')
+        with self.assertRaisesRegex(module.Blocked, 'TOKEN_SIGNATURE_INVALID'):
+            module.token_acceptance(self.args, 'fixture-secret')
+        self.jwk = original
+        with patch.object(module, 'http_json', return_value={'keys': [original, original]}):
+            with self.assertRaisesRegex(module.Blocked, 'JWKS_KEY_MISSING_OR_AMBIGUOUS'):
+                module.verify_signature(self.args, self.token, {'kid': 'fixture'})
 
     def test_untrusted_tls_and_redirect_are_not_followed(self):
         ca = self.args.ca_file; self.args.ca_file = None

@@ -60,5 +60,5 @@ jobs:
       - name: Verify parameterized runtime endpoint inventory and secret redaction
         run: python3 -B -m unittest discover -s tests -p 'test_semantic_provider_runtime_bindings.py'
 
-      - name: Verify private existing credentials and TLS authority token acceptance
+      - name: Verify private existing credentials and TLS JWKS token signature acceptance
         run: sudo env OUF_REQUIRE_CREDENTIAL_OWNERSHIP_TESTS=1 python3 -B -m unittest discover -s tests -p 'test_prepare_semantic_provider_credentials.py'

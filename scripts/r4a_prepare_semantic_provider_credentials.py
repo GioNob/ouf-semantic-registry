@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage an existing Semantic workload secret after TLS token/introspection acceptance.
+"""Stage an existing Semantic workload secret after TLS/JWKS token signature acceptance.
 
 No secret rotation, IAM configuration writes, container/route switch or provider call.
 """
@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import re
 import signal
+import shutil
 import ssl
 import stat
 import subprocess
@@ -223,33 +224,85 @@ def claims(args, value, now):
     return int(expires - now)
 
 
+def b64url(value):
+    if not isinstance(value, str) or not re.fullmatch(r'[A-Za-z0-9_-]+', value):
+        raise Blocked('TOKEN_SIGNATURE_INVALID')
+    return base64.b64decode(value + '=' * (-len(value) % 4), altchars=b'-_', validate=True)
+
+
+def der(tag, value):
+    size = len(value)
+    length = bytes([size]) if size < 128 else size.to_bytes((size.bit_length() + 7) // 8, 'big')
+    if size >= 128:
+        length = bytes([0x80 | len(length)]) + length
+    return bytes([tag]) + length + value
+
+
+def public_key(jwk):
+    if (jwk.get('kty') != 'RSA' or jwk.get('use', 'sig') != 'sig'
+            or jwk.get('alg', 'RS256') != 'RS256'
+            or ('key_ops' in jwk and (not isinstance(jwk['key_ops'], list) or 'verify' not in jwk['key_ops']))
+            or any(field in jwk for field in ('d', 'p', 'q', 'dp', 'dq', 'qi'))):
+        raise Blocked('JWKS_KEY_REJECTED')
+    n, e = b64url(jwk.get('n')), b64url(jwk.get('e'))
+    if len(n) > 1024 or not 2048 <= int.from_bytes(n, 'big').bit_length() <= 8192 or not 3 <= int.from_bytes(e, 'big') <= 0xffffffff or int.from_bytes(e, 'big') % 2 == 0:
+        raise Blocked('JWKS_KEY_REJECTED')
+    def integer(value):
+        value = value.lstrip(bytes([0])) or bytes([0])
+        return der(2, (bytes([0]) if value[0] & 128 else b'') + value)
+    rsa = der(48, integer(n) + integer(e))
+    algorithm = bytes.fromhex('300d06092a864886f70d0101010500')
+    # ASN.1 encoding only; signature verification is delegated to OpenSSL.
+    return der(48, algorithm + der(3, bytes([0]) + rsa))
+
+
+def verify_signature(args, token, header):
+    kid = header.get('kid')
+    if not isinstance(kid, str) or not re.fullmatch(r'[A-Za-z0-9._:-]{1,128}', kid):
+        raise Blocked('TOKEN_KEY_ID_INVALID')
+    jwks = http_json(args, args.jwks_endpoint)
+    keys = jwks.get('keys')
+    if not isinstance(keys, list) or not 1 <= len(keys) <= 64 or any(not isinstance(key, dict) for key in keys):
+        raise Blocked('JWKS_RESPONSE_INVALID')
+    selected = [key for key in keys if key.get('kid') == kid]
+    if len(selected) != 1:
+        raise Blocked('JWKS_KEY_MISSING_OR_AMBIGUOUS')
+    key = public_key(selected[0])
+    parts = token.split('.')
+    signature = b64url(parts[2])
+    if len(signature) != len(b64url(selected[0]['n'])):
+        raise Blocked('TOKEN_SIGNATURE_INVALID')
+    with tempfile.TemporaryDirectory(prefix='ouf-jwt-verify-') as directory:
+        directory = Path(directory)
+        key_file, signature_file = directory / 'public.der', directory / 'signature.bin'
+        key_file.write_bytes(key); signature_file.write_bytes(signature)
+        result = subprocess.run([args.openssl_path, 'dgst', '-sha256', '-verify', str(key_file),
+            '-keyform', 'DER', '-signature', str(signature_file)],
+            input=(parts[0] + '.' + parts[1]).encode('ascii'), capture_output=True, timeout=args.timeout)
+        if result.returncode:
+            raise Blocked('TOKEN_SIGNATURE_INVALID')
+
+
 def token_acceptance(args, secret):
     payload = http_json(args, args.token_endpoint, {'grant_type': 'client_credentials',
         'client_id': args.client_id, 'client_secret': secret, 'scope': args.provider_scope})
     token = payload.get('access_token')
-    if (payload.get('token_type', '').lower() != 'bearer' or not isinstance(token, str)
+    if (not isinstance(payload.get('token_type'), str) or payload['token_type'].lower() != 'bearer' or not isinstance(token, str)
             or len(token) > 16384 or not re.fullmatch(r'[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+', token)
             or type(payload.get('expires_in')) is not int or not 60 <= payload['expires_in'] <= 86400
             or not isinstance(payload.get('scope'), str) or args.provider_scope not in payload['scope'].split()):
         raise Blocked('TOKEN_RESPONSE_INVALID')
     try:
         parts = token.split('.')
-        header = json.loads(base64.urlsafe_b64decode(parts[0] + '=' * (-len(parts[0]) % 4)), object_pairs_hook=unique_object)
-        decoded = json.loads(base64.urlsafe_b64decode(parts[1] + '=' * (-len(parts[1]) % 4)), object_pairs_hook=unique_object)
+        header = json.loads(b64url(parts[0]), object_pairs_hook=unique_object)
+        decoded = json.loads(b64url(parts[1]), object_pairs_hook=unique_object)
         if not isinstance(header, dict) or header.get('alg') != 'RS256' or header.get('crit'):
             raise ValueError()
     except Exception:
         raise Blocked('TOKEN_RESPONSE_INVALID') from None
-    ttl = claims(args, decoded, time.time())
-    authority = http_json(args, args.introspection_endpoint, {'token': token, 'token_type_hint': 'access_token',
-        'client_id': args.client_id, 'client_secret': secret})
-    if authority.get('active') is not True:
-        raise Blocked('TOKEN_INTROSPECTION_INACTIVE')
-    authority_ttl = claims(args, authority, time.time())
-    for name in ('iss', 'sub', 'exp', 'iat', args.actor_claim, args.tenant_claim):
-        if authority.get(name) != decoded.get(name):
-            raise Blocked('TOKEN_INTROSPECTION_CONTEXT_MISMATCH')
-    return min(ttl, authority_ttl)
+    # No introspection as the issuing workload: it is not the resource audience.
+    verify_signature(args, token, header)
+    return claims(args, decoded, time.time())
 
 
 def install_secret(args, secret, binding):
@@ -282,7 +335,7 @@ def prepare(args, workload):
     existed = private_target(args.credential_file, binding['uid'], binding['gid'])
     metadata = http_json(args, args.issuer.rstrip('/') + '/.well-known/openid-configuration')
     if (metadata.get('issuer') != args.issuer or metadata.get('token_endpoint') != args.token_endpoint
-            or metadata.get('introspection_endpoint') != args.introspection_endpoint):
+            or metadata.get('jwks_uri') != args.jwks_endpoint):
         raise Blocked('OIDC_ENDPOINT_BINDING_MISMATCH')
     if args.mode == 'plan':
         print('SEMANTIC_PROVIDER_CREDENTIAL_PLAN=' + json.dumps({'mode': 'plan', 'existingCredential': existed,
@@ -304,7 +357,7 @@ def prepare(args, workload):
     if not hmac.compare_digest(current, secret):
         raise Blocked('IAM_CREDENTIAL_CHANGED_DURING_PREPARATION')
     created = install_secret(args, secret, binding) if args.mode == 'apply' else False
-    print('SEMANTIC_PROVIDER_TOKEN_CONTEXT=PASS AUTHORITY_INTROSPECTION_ACTIVE=true TTL_SECONDS=' + str(ttl)
+    print('SEMANTIC_PROVIDER_TOKEN_CONTEXT=PASS SIGNATURE_VERIFIED=true INTROSPECTION_NOT_CALLED=true REVOCATION_NOT_PROVEN=true TTL_SECONDS=' + str(ttl)
           + ' ACTOR=SERVICE NO_SECRETS_PRINTED=true GATEWAY_ADMISSION_NOT_PROVEN=true')
     print('SEMANTIC_PROVIDER_CREDENTIAL_PREPARE=PASS MODE=' + args.mode + ' PRIVATE_COPY_CREATED=' + str(created).lower()
           + ' SECRET_ROTATED=false IAM_CONFIGURATION_UNCHANGED=true CONTAINERS_UNCHANGED=true ROUTES_UNCHANGED=true'
@@ -316,9 +369,10 @@ def parse_args():
     parser.add_argument('mode', choices=('plan', 'apply', 'verify'))
     for option in ('iam-container', 'kcadm-path', 'realm', 'client-id', 'audience', 'tenant',
                    'provider-scope', 'semantic-container', 'expected-semantic-id', 'issuer',
-                   'token-endpoint', 'introspection-endpoint'):
+                   'token-endpoint', 'jwks-endpoint'):
         parser.add_argument('--' + option, required=True)
     parser.add_argument('--credential-file', type=Path, required=True)
+    parser.add_argument('--openssl-path', default=None)
     parser.add_argument('--actor-claim', default='ouf_actor_type')
     parser.add_argument('--tenant-claim', default='tenant_id')
     parser.add_argument('--ca-file', default=None)
@@ -333,8 +387,11 @@ def parse_args():
         raise Blocked('INSTALLATION_BINDING_INVALID')
     if not args.kcadm_path.startswith('/') or '..' in Path(args.kcadm_path).parts:
         raise Blocked('KCADM_PATH_INVALID')
-    for url in (args.issuer, args.token_endpoint, args.introspection_endpoint):
+    for url in (args.issuer, args.token_endpoint, args.jwks_endpoint):
         https_url(url)
+    args.openssl_path = args.openssl_path or shutil.which('openssl')
+    if not args.openssl_path or not Path(args.openssl_path).is_absolute() or not os.access(args.openssl_path, os.X_OK):
+        raise Blocked('OPENSSL_REQUIRED')
     return args
 
 
