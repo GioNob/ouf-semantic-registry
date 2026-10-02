@@ -22,3 +22,10 @@ argument, fractional limit, wrong receipt or denied local policy fails closed.
 New Java tests exercise actual HMAC, wrong domain/bindings/body/expiry/scope, tenant and
 local-policy denial, malformed arguments and unconfigured key; tests are candidate evidence
 until CI passes the resulting commit. No database migration or existing payload mutation.
+
+
+## Imported RDF consultation
+
+Exact reads optionally include `rdf_snapshot` from the immutable revision interchange snapshot. The stored RDF hash and statement count are verified before returning typed subject/predicate/object statements. Original JSON label/description/definition remain unchanged; import currently stores the graph separately and does not populate those fields. No revision/publication rewrite, migration, policy change, discovery, adoption, remote fetch or inference occurs.
+
+The projection contains at most 1000 asserted statements and reports `partial`; the existing entire-response byte budget still fails closed on overflow. Blank node identifiers are scoped to this response. Terms retain the containing artifact revision and publication pins; they are not separately registered artifacts or independent publication references. An incomplete projection cannot establish complete mapping constraints. Remote JSON-LD contexts/imports are rejected before parsing. Search continues to search registered artifacts; it does not invent CLASS entries for ontology members. Large-graph paging and governed discovery remain separate gates.
