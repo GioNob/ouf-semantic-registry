@@ -46,7 +46,7 @@ class SemanticConsultationTest {
     return payload+"."+b64.encodeToString(mac.doFinal(("ouf-semantic-read-owner-v1."+payload).getBytes(StandardCharsets.US_ASCII)));
   }
   MockHttpServletRequest request(String proof,Set<String> grants) {
-    var req=new MockHttpServletRequest("POST",path);req.addHeader("X-OUF-Semantic-Read-Receipt",proof);
+    var req=new MockHttpServletRequest("POST",path);if(proof!=null)req.addHeader("X-OUF-Semantic-Read-Receipt",proof);
     TestAuthorization.bind(req,"reader","HUMAN",grants);return req;
   }
   @Test void actualGatewayLuaReceiptIsAcceptedByJavaOwner() throws Exception {
