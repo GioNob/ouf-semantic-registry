@@ -47,24 +47,9 @@ def probe(token, query):
     print('SEMANTIC_HUMAN_MCP=PASS READ_ONLY=true NO_SOURCE_RUN=true NO_SECRETS_PRINTED=true', flush=True)
 
 
-def main():
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--issuer', required=True)
-    p.add_argument('--mcp-url', required=True)
-    p.add_argument('--client', required=True)
-    p.add_argument('--subject', required=True)
-    p.add_argument('--tenant', required=True)
-    p.add_argument('--audience', required=True)
-    p.add_argument('--query', required=True)
-    a = p.parse_args()
-    for value in (a.issuer, a.mcp_url):
-        u = urlsplit(value)
-        if u.scheme != 'https' or not u.hostname or u.username or u.password or u.query or u.fragment:
-            raise ValueError('HTTPS_ENDPOINT_REQUIRED')
-    if not a.query.strip() or len(a.query) > 256:
-        raise ValueError('QUERY_INVALID')
-    scopes = {'mcp.connect', 'ouf.semantic.search', 'ouf.semantic.read'}
-    client.ISSUER, client.MCP_URL, client.ADMIN_SUB = a.issuer.rstrip('/'), a.mcp_url, a.subject
+def human_login(a, scopes):
+    client.ISSUER, client.ADMIN_SUB = a.issuer.rstrip('/'), a.subject
+    if getattr(a, "mcp_url", None):client.MCP_URL = a.mcp_url
     client.REQUIRED_SCOPES = scopes
     original_post = client.oidc_post
     def post(url, fields):
@@ -83,7 +68,27 @@ def main():
             raise ValueError('HUMAN_TOKEN_CONTEXT_MISMATCH')
         return True
     client.oidc_post, client.validate_admin_claims = post, validate
-    token = client.device_login()
+    return client.device_login()
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--issuer', required=True)
+    p.add_argument('--mcp-url', required=True)
+    p.add_argument('--client', required=True)
+    p.add_argument('--subject', required=True)
+    p.add_argument('--tenant', required=True)
+    p.add_argument('--audience', required=True)
+    p.add_argument('--query', required=True)
+    a = p.parse_args()
+    for value in (a.issuer, a.mcp_url):
+        u = urlsplit(value)
+        if u.scheme != 'https' or not u.hostname or u.username or u.password or u.query or u.fragment:
+            raise ValueError('HTTPS_ENDPOINT_REQUIRED')
+    if not a.query.strip() or len(a.query) > 256:
+        raise ValueError('QUERY_INVALID')
+    scopes = {'mcp.connect', 'ouf.semantic.search', 'ouf.semantic.read'}
+    token = human_login(a, scopes)
     print('SEMANTIC_HUMAN_TOKEN_CONTEXT=PASS', flush=True)
     probe(token, a.query)
 

@@ -112,6 +112,9 @@ class ReleaseTest(unittest.TestCase):
         self.assertFalse(any(verb in ('PUT','DELETE') for verb,_ in gateway.calls))
     def test_read_probe_matches_corrected_route_contract(self):
         self.assertEqual(json.loads(m.probe_body('search','READ'))['OperationClass'],'READ')
+        body=json.loads(m.probe_body('get','READ','ouf.semantic.consultation.read'))
+        self.assertEqual(body['CapabilityID'],'ouf.semantic.consultation.read')
+        self.assertEqual(body['GatewayBindingRef'],'capability://ouf.semantic.consultation.read')
 
 
 if __name__=='__main__':unittest.main()

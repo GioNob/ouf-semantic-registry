@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read only the two consultation descriptors from registry and active policy."""
+"""Read only native SERVICE and HUMAN consultation descriptors from registry and active policy."""
 import argparse
 import json
 import os
@@ -15,13 +15,13 @@ select jsonb_build_object(
    'capabilityId',c->>'capabilityId','operation',c->>'operation',
    'requiredScope',c->>'requiredScope','allowedActors',c->'allowedActors')),'[]'::jsonb)
    from jsonb_array_elements(p.bundle_payload->'capabilities') c
-   where c->>'capabilityId' in ('ouf.semantic.search','ouf.semantic.read')),
+   where c->>'capabilityId' in ('ouf.semantic.search','ouf.semantic.read','ouf.semantic.consultation.read')),
  'registeredDescriptors',(select coalesce(jsonb_agg(jsonb_build_object(
    'capabilityId',r.capability_id,'ownerRef',r.owner_ref,
    'operation',r.descriptor->>'operation','requiredScope',r.descriptor->>'requiredScope',
    'allowedActors',r.descriptor->'allowedActors')),'[]'::jsonb)
    from ouf_authorization.capability_registration r
-   where r.capability_id in ('ouf.semantic.search','ouf.semantic.read')))
+   where r.capability_id in ('ouf.semantic.search','ouf.semantic.read','ouf.semantic.consultation.read')))
 from ouf_authorization.active_policy_bundle a
 join ouf_authorization.policy_bundle p on p.bundle_id=a.bundle_id and p.version=a.version
 where a.singleton_key=true;

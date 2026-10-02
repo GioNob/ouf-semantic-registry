@@ -178,8 +178,8 @@ def switch(role,old,candidate,state,path):
     stage.run(['docker','start',candidate['id']],60)
 
 
-def probe_body(name,operation=None):
-    cap='ouf.semantic.search' if name=='search' else 'ouf.semantic.read'
+def probe_body(name,operation=None,capability=None):
+    cap=capability or ('ouf.semantic.search' if name=='search' else 'ouf.semantic.read')
     return json.dumps({'GatewayBindingRef':'capability://'+cap,'CapabilityID':cap,'Owner':'semantic',
       'OperationClass':operation or ('SEARCH' if name=='search' else 'READ'),'Arguments':{'q':'consultation-denial-probe','limit':1} if name=='search' else {'semanticId':'probe:unpublished','revisionId':'11111111-1111-4111-8111-111111111111','publicationSetId':'22222222-2222-4222-8222-222222222222'},
       'Identity':{'ServicePrincipalID':'probe','PrincipalID':'probe','TenantID':'probe','ActorType':'HUMAN','AuthenticationContextRef':'probe'},
@@ -245,9 +245,10 @@ def verify_live(args,before,prepared,candidates,wanted,gateway):
     ready(candidates['semantic']['id'],args.semantic_origin,'/actuator/health/readiness',200)
     ready(candidates['mcp']['id'],args.mcp_origin,'/health/ready',204)
     for name in ('search','get'):
-        body=probe_body(name,'READ' if prepared.get('replaceExisting') else None)
-        owner=http_code(candidates['semantic']['id'],args.semantic_origin,'POST','/api/internal/v1/semantic/consultation/'+name,body,{'Content-Type':'application/json','X-OUF-Semantic-Read-Receipt':'invalid'})
         route=next(r for r in wanted.values() if r['uri'].endswith('/'+name))
+        schema=route['plugins']['request-validation']['body_schema']['properties']
+        body=probe_body(name,schema['OperationClass']['const'],schema['CapabilityID']['const'])
+        owner=http_code(candidates['semantic']['id'],args.semantic_origin,'POST','/api/internal/v1/semantic/consultation/'+name,body,{'Content-Type':'application/json','X-OUF-Semantic-Read-Receipt':'invalid'})
         headers={'Content-Type':'application/json'}
         host=route.get('host') or (route.get('hosts') or [None])[0]
         if host:headers['Host']=host.replace('*','probe')

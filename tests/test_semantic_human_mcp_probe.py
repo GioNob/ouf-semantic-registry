@@ -1,6 +1,7 @@
 import contextlib
 import io
 from pathlib import Path
+from types import SimpleNamespace
 import sys
 import unittest
 from unittest.mock import patch
@@ -10,6 +11,22 @@ import r4a_probe_semantic_human_mcp as probe
 
 
 class ProbeTests(unittest.TestCase):
+    def test_policy_login_requests_only_policy_scope_and_validates_human_context(self):
+        a=SimpleNamespace(issuer='https://issuer/realms/ouf',subject='admin',client='ouf-human-admin',tenant='tenant-a',audience='gateway')
+        scopes={'authorization.policy.admin'}
+        claims={'iss':a.issuer,'sub':a.subject,'azp':a.client,'tenant_id':a.tenant,'ouf_actor_type':'HUMAN',
+            'aud':a.audience,'scope':'openid authorization.policy.admin','acr':'1','exp':probe.client.time.time()+300}
+        original=probe.client.validate_admin_claims
+        def login():
+            probe.client.oidc_post(a.issuer+'/device',{'client_id':'default','scope':'default'})
+            self.assertTrue(probe.client.validate_admin_claims(claims))
+            for altered in ({**claims,'sub':'other'},{**claims,'ouf_actor_type':'SERVICE'},{**claims,'scope':'mcp.connect'}):
+                with self.assertRaisesRegex(ValueError,'CONTEXT_MISMATCH'):probe.client.validate_admin_claims(altered)
+            return 'memory-token'
+        with patch.object(probe.client,'oidc_post',return_value=(200,{})) as post,patch.object(probe.client,'device_login',side_effect=login),patch.object(probe.client,'validate_admin_claims',original),patch.object(probe.client,'ISSUER',probe.client.ISSUER),patch.object(probe.client,'ADMIN_SUB',probe.client.ADMIN_SUB),patch.object(probe.client,'REQUIRED_SCOPES',probe.client.REQUIRED_SCOPES):
+            self.assertEqual(probe.human_login(a,scopes),'memory-token')
+        self.assertEqual(post.call_args.args[1],{'client_id':a.client,'scope':'openid authorization.policy.admin'})
+
     def result(self, value):
         return {'content': [{'type': 'text', 'text': probe.json.dumps(value)}]}
 

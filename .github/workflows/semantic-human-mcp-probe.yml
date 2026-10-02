@@ -3,12 +3,18 @@ on:
   push:
     paths:
       - 'scripts/r4a_probe_semantic_human_mcp.py'
+      - 'scripts/r4a_semantic_human_read_policy.py'
+      - 'scripts/r4a_authorization_lifecycle.py'
+      - 'tests/test_semantic_human_read_policy.py'
       - 'scripts/r4a_admin_permission_proposal.py'
       - 'tests/test_semantic_human_mcp_probe.py'
       - '.github/workflows/semantic-human-mcp-probe.yml'
   pull_request:
     paths:
       - 'scripts/r4a_probe_semantic_human_mcp.py'
+      - 'scripts/r4a_semantic_human_read_policy.py'
+      - 'scripts/r4a_authorization_lifecycle.py'
+      - 'tests/test_semantic_human_read_policy.py'
       - 'scripts/r4a_admin_permission_proposal.py'
       - 'tests/test_semantic_human_mcp_probe.py'
       - '.github/workflows/semantic-human-mcp-probe.yml'
@@ -22,4 +28,4 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - run: python -B -m unittest discover -s tests -p test_semantic_human_mcp_probe.py
+      - run: python -B -m unittest discover -s tests -p 'test_semantic_human*.py'
