@@ -89,6 +89,29 @@ class SemanticReadRuntimeTest {
   }
 
   private record Fixture(UUID artifact,UUID revision,UUID publication,String semanticId,String localName,String label,String alias,String description,String domain,String range){}
+  @Test void exactReadProjectsOnlyItsOwnImmutableImportedSnapshot() {
+    var f=fixture();
+    byte[] bytes=("<"+f.semanticId+"> <http://www.w3.org/2000/01/rdf-schema#label> \"RDF storico\"@it .")
+      .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    var parsed=new it.comune.trieste.ouf.semantic.domain.SafeRdfParser().parse(bytes,"text/turtle");
+    db.sql("insert into ouf_sem.revision_interchange_snapshot values(:r,'text/turtle',:h,:b,:n,'tester',transaction_timestamp())")
+      .param("r",f.revision).param("h",parsed.contentHash()).param("b",bytes).param("n",parsed.statementCount()).update();
+    var read=reads.resolve(f.semanticId,f.revision,f.publication);
+    assertThat((Map<String,Object>)read.get("rdf_snapshot"))
+      .containsEntry("content_hash",parsed.contentHash()).containsEntry("partial",false);
+    assertThat(((Map<?,?>)read.get("label")).get("it")).isEqualTo(f.label);
+    assertThatThrownBy(()->reads.resolve("urn:other",f.revision,f.publication))
+      .isInstanceOf(NoSuchElementException.class);
+    UUID next=UUID.randomUUID(),set=UUID.randomUUID();
+    revision(f.artifact,next,2,f.label,"replacement",f.domain,f.range);
+    publication(set,next,f.semanticId);
+    assertThat(reads.resolve(f.semanticId,next,set)).doesNotContainKey("rdf_snapshot");
+    assertThat((Map<String,Object>)reads.resolve(f.semanticId,f.revision,f.publication).get("rdf_snapshot"))
+      .containsEntry("content_hash",parsed.contentHash());
+    var small=new SemanticReadService(db,json,1024);
+    assertThatThrownBy(()->small.resolve(f.semanticId,f.revision,f.publication))
+      .hasMessage("SEM_READ_RESULT_TOO_LARGE");
+  }
   private Fixture fixture() {
     String suffix=UUID.randomUUID().toString().replace("-","");
     var f=new Fixture(UUID.randomUUID(),UUID.randomUUID(),UUID.randomUUID(),"test:read:"+suffix,

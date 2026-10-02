@@ -102,6 +102,20 @@ public class SemanticReadService {
         """).param("r",revision).query().listOfRows();
     row.put("dependencies",dependencies.subList(0,Math.min(100,dependencies.size())));
     row.put("dependencies_partial",dependencies.size()>100);
+    var snapshots=db.sql("""
+        select media_type,content_hash,statement_count,
+          octet_length(content_bytes) byte_count,
+          case when octet_length(content_bytes)<=8388608 then content_bytes end content_bytes
+        from ouf_sem.revision_interchange_snapshot where revision_id=:r
+        """).param("r",revision).query().listOfRows();
+    if(!snapshots.isEmpty()) {
+      var snapshot=snapshots.get(0);
+      if(((Number)snapshot.get("byte_count")).longValue()>8388608)
+        throw new IllegalArgumentException("SEM_READ_RDF_SIZE_LIMIT");
+      row.put("rdf_snapshot",new PublishedRdfSnapshot().project((byte[])snapshot.get("content_bytes"),
+        (String)snapshot.get("media_type"),snapshot.get("content_hash").toString().strip(),
+        ((Number)snapshot.get("statement_count")).longValue()));
+    }
     return boundedResult(row);
   }
 
