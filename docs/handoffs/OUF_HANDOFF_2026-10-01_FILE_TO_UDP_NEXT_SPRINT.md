@@ -141,3 +141,13 @@ Verifica sorgente Semantic al checkpoint be76527e: search esiste ma usa soltanto
 Catalogo di questa chat ancora privo di semantic.search/get. Manifest MCP main, attachment e object-search esaminati mostrano superfici differenti: nessuno dei singoli manifest esaminati riproduce da solo upload+search disponibili qui. Riconciliare loader/overlay/receipt e pin effettivo prima di scegliere la base, preservando managed-file, owner auth e search già corretti. Gateway main dichiara ouf.semantic.read ACTIVE/toolEligible=false: configurazione sorgente, non readback live.
 
 Prossimo passo: verificare contratti di lettura semantica completa e baseline MCP, implementare collegamento governato con deploy parametrico, poi proporre il mapping dello stesso asset/profile Teatri. Nessun IRI inventato/manuale, nessun AI interno a Onboarding e nessuna conferma HUMAN MCP. Tutti i gate della tabella ereditata restano tracciati, con stati invariati.
+
+## Sprint acquisizione comune — decisione 2026-10-02
+
+L'utente conferma l'obiettivo completo MCP/channel-neutral e distingue il trigger: file → dopo onboarding approvato/bundle ACTIVE acquisizione automatica una tantum e poi resolution UDP; verticale → THS endpoint/credenziali, THS profilo di estrazione, configurazione scheduler, ingestion automatica alle scadenze pubblicate. Il resto del percorso e le ownership restano comuni. Credenziali esclusivamente THS/secret manager; nessun materiale sensibile nel chatbot.
+
+[Piano concreto e incremento Semantic](../sprints/OUF_ACQUISITION_TO_UDP_2026-10-02.md): branch candidato `codex/file-to-udp-semantic-read` dalla baseline b50f3d88…, ricerca label/alias/definizione con pin della revisione ACTIVE corrente e risoluzione storica exact arricchita. Test nuovi Java/PostgreSQL/HTTP predisposti, esecuzione CI da verificare sul pin risultante. Check locali Python inventory (2 test), registro PET e checksum PASS. Nessun rollout, nuova source/run/approval o materializzazione.
+
+MCP live non ancora riconciliato: prima del suo rilascio richiedere un readback limitato di revision/image/running dei container, senza env/mount/log/segreti. Non scegliere il branch deployed-baseline-8599843 soltanto dal nome: il manifest embedded sorgente non contiene managed upload. Mancano SSH diretto e tool amministrativo di deploy in questa sessione; GitHub write disponibile tramite connector. Tutti i gate ereditati e la prova Cinema rimangono invariati.
+
+Pin sorgente candidato Semantic: `527fe074a7f6fb9c2990aac2fc9a7a98b8e97e4f` (CI da verificare; nessun deploy).
