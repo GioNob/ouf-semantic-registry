@@ -24,6 +24,7 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
   public SchemaGovProvider(SchemaGovProperties cfg,ObjectMapper json){this(cfg,new BoundedGatewayClient(cfg.connectTimeout()),json,Clock.systemUTC());}
   SchemaGovProvider(SchemaGovProperties cfg,BoundedGatewayClient client,ObjectMapper json,Clock clock){this.cfg=cfg;this.client=client;this.json=json;this.clock=clock;}
   public String providerId(){return "SCHEMA_GOV_IT";}
+  @Override public boolean enabled(){return cfg.enabled();}
   public List<Candidate> search(Query q){
     if(!cfg.enabled())return List.of();
     Instant blockedUntil=openUntil.get();if(blockedUntil!=null&&clock.instant().isBefore(blockedUntil))throw new BoundedGatewayClient.ProviderFailure("SCHEMA_GOV_CIRCUIT_OPEN");
