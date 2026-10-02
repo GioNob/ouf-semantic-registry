@@ -20,6 +20,8 @@ on:
       - 'tests/test_prepare_semantic_provider_iam.py'
       - 'scripts/r4a_semantic_provider_runtime_bindings.py'
       - 'tests/test_semantic_provider_runtime_bindings.py'
+      - 'scripts/r4a_prepare_semantic_provider_credentials.py'
+      - 'tests/test_prepare_semantic_provider_credentials.py'
       - '.github/workflows/consultation-deploy-scripts.yml'
   workflow_dispatch:
 permissions:
@@ -57,3 +59,6 @@ jobs:
 
       - name: Verify parameterized runtime endpoint inventory and secret redaction
         run: python3 -B -m unittest discover -s tests -p 'test_semantic_provider_runtime_bindings.py'
+
+      - name: Verify private existing credentials and TLS authority token acceptance
+        run: sudo env OUF_REQUIRE_CREDENTIAL_OWNERSHIP_TESTS=1 python3 -B -m unittest discover -s tests -p 'test_prepare_semantic_provider_credentials.py'
