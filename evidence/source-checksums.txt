@@ -79,5 +79,5 @@ d311bfb9ed1c78317d91d2bc60ca7ca2bc7764d1609003801b9b5e1a60012583  src/main/java/
 6a81ec53eb84ecab52b2458776d204c96294ea74ed4745306eb66aa7fa967353  src/test/java/it/comune/trieste/ouf/semantic/SemanticReadRuntimeTest.java
 d4604c31193bfe03d0fee1d4a3ec81796595ce51dda99cc14239689dc9481d33  src/main/java/it/comune/trieste/ouf/semantic/api/SemanticReadDelegation.java
 5ce46c01f6ecd55542074f1fe2f5db78c5725d37790a275478bda84d290ce02b  src/main/java/it/comune/trieste/ouf/semantic/api/SemanticConsultationApi.java
-3a25292f59c2fb4767b12c0882d9c757d890496233615150b50abbe588c39cc6  src/test/java/it/comune/trieste/ouf/semantic/SemanticConsultationTest.java
+fbd4b120ea8af292e429ccecbb3d8734d2068fc9d879111d0516cd166f86641f  src/test/java/it/comune/trieste/ouf/semantic/SemanticConsultationTest.java
 a3849051b639c115605e10112c7f10e9fb5a2d34086ba61a07e68e718359eea1  .github/workflows/semantic-read-gateway-pairwise.yml

@@ -93,15 +93,15 @@ class SemanticConsultationTest {
     TestAuthorization.bind(req,"reader","HUMAN",Set.of(nativeCap));
     assertThatThrownBy(()->api.get(raw,req)).isInstanceOf(SecurityException.class);
     var allowed=new MockHttpServletRequest("POST",getPath);allowed.addHeader("X-OUF-Semantic-Read-Receipt",proof);
-    TestAuthorization.bind(allowed,"reader","HUMAN",Set.of(nativeCap));
     var now=Instant.now();
     var descriptor=new it.comune.trieste.ouf.authorization.AuthorizationPolicy.CapabilityDescriptor(
       humanCap,"READ",nativeCap,Set.of(it.comune.trieste.ouf.authorization.PrincipalContext.ActorType.HUMAN));
     var grant=new it.comune.trieste.ouf.authorization.AuthorizationPolicy.Grant(
       "human-read",humanCap,"tenant-a","reader",null,null,now.minusSeconds(60),now.plusSeconds(3600));
-    TestAuthorization.install((it.comune.trieste.ouf.authorization.LocalAuthorization)allowed.getServletContext()
-      .getAttribute(it.comune.trieste.ouf.authorization.ServletAuthorization.RUNTIME),
+    var runtime=new it.comune.trieste.ouf.authorization.LocalAuthorization(java.time.Clock.systemUTC(),java.time.Duration.ofHours(1));
+    TestAuthorization.install(runtime,
       new it.comune.trieste.ouf.authorization.AuthorizationPolicy.PolicyBundle("human-read-fixture",1,now,List.of(descriptor),List.of(grant)));
+    allowed.getServletContext().setAttribute(it.comune.trieste.ouf.authorization.ServletAuthorization.RUNTIME,runtime);
     assertThatThrownBy(()->api.get(raw,allowed)).isInstanceOf(NoSuchElementException.class);
     r.put("scope",humanCap);String wrongScope=sign(r);
     assertThatThrownBy(()->v.verify(wrongScope,getPath,humanCap,raw)).isInstanceOf(SecurityException.class);
