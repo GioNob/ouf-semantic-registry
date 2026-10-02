@@ -106,3 +106,17 @@ Test locali cumulativi stage+prepare: 8 PASS; preflight 2 PASS. Nuovo workflow C
 ### CI preparazione verificata — 2026-10-02
 
 [Consultation deploy scripts](https://github.com/GioNob/ouf-semantic-registry/actions/runs/36977385047) SUCCESS sul commit 72ab11dee9b670c58cc04dd06c82e244dbb188df: otto test stage/prepare e due preflight eseguiti. Corretto il test di reentry per runner non-root; nessun cambiamento alle immagini applicative già staged. Comando operatore di preparazione deve usare i due helper pinned a questo commit; risultato VPS dei tre candidati ancora da acquisire. Non dichiara PASS il futuro switch o la filiera complessiva.
+
+
+## Candidati VPS pronti e rilascio coordinato — 2026-10-02
+
+Operatore CONSULTATION_PREPARE=PASS: tre candidati created/fermi, live/routes/policy invariati, nessuna nuova source/run. Receipt privata /etc/ouf/deploy-snapshots/consultation-20261002-0850/prepared/prepare-receipt.json.
+- Semantic e32dd8c43b7b56bdff2c04ac4d9f34619fea2ab0be045f61d1a034beff8f1af6; immagine sha256:6a13b3fe2febad93d23e8c699f1139cfd616a29598b406f0a46a6534631a9555.
+- MCP e3e4d3e5ec5efc6556ed9d0033c5433ffbc0424de2f41d7976080242689f79d6; immagine sha256:eb6169e33d6d50ba25ea100a11898dee26a0eb1f993ec8ce8ea33e32b8c40808.
+- APISIX a076e563ab558277b1ee718c7aac0be26ac4ee8fc543fbd6582fa9cf30d642ed; stessa immagine live sha256:84e6b5e787e9f889ebff88161cb9a16599bafcffa236c6b54c7f779a0655940d.
+
+Errore finale rm esclusivamente sul pycache root del download temporaneo /tmp/tmp.JP4RJSnZeW; preparazione PASS non invalidata. Per i successivi helper eseguire Python con -B, anche nei subprocess nsenter. Pulizia limitata a quella cartella temporanea creata dal comando precedente; snapshot/key/receipt restano nella directory privata persistente.
+
+Nuovo scripts/r4a_release_semantic_consultation.py, dipendenze sibling stage e prepare: modalità plan/apply/verify, parametri espliciti stage-root/PostgreSQL container e origini loopback dei tre servizi. Plan rigenera le route dal sorgente Gateway pinned/clean, confronta artefatti e stato live/candidati/secret binding, controlla readiness preesistente e legge history migration. Apply ferma MCP/Semantic, crea dump privati completi dei due DB identificati dagli env e controlla pg_restore --list (TOC, non restore reale), attiva Semantic/Gateway, aggiunge soltanto due route, poi attiva MCP. Confronta migration history, env/mount/alias/resource config e readiness, nega richieste anonime e ricevute false. Non pubblica policy, non chiama approvazioni o nuove source/run, non pretende verifica HUMAN positiva.
+
+Originali conservati con restart=no per rollback. Intent prima di switch/PUT; rename e risposte DELETE perse riconciliate con GET/readback. Recupero per container ID e cancellazione soltanto delle route nuove ancora esattamente possedute; nessun restore automatico dei DB, nessuna cancellazione dei container originali. Receipt esistente blocca apply; errore mantiene receipt e richiede readback invece di rilancio cieco. Test locali cumulativi stage/prepare/release 14 PASS, preflight 2 PASS; workflow deploy script deve essere verificato sul nuovo commit prima dell'esecuzione operatore. Tutti i gate ereditati invariati; rilascio effettivo, accesso HUMAN/scopes/catalog/policy e percorso completo restano da acquisire.
