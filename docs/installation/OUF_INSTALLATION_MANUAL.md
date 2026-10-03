@@ -1,6 +1,26 @@
 # OUF — Manuale di installazione e bootstrap
 
-## Checkpoint corrente — custody PASS, transition intent pendente
+## Checkpoint corrente — intent target PASS; software runtime verificato, staging target pendente
+
+Il 3 ottobre 2026 l'operatore ha restituito PASS per `prepare_semantic_provider_transition_intent.py` nei tre modi `plan/apply/verify`. Root privato attestato: `/etc/ouf/deploy-snapshots/semantic-provider-transition-intent-20261003-151036/prepared`. Il boot lock è stato riusato; sono stati scritti soltanto artefatti privati. Nessuna regola runtime, unità o container modificata; `startAuthorized=false`, `providerCalls=0`, `notReleaseAcceptance=true`. Questa prova supera le diciture intent pendente sotto, conservate come cronologia; non ripetere l'intent come passo autonomo.
+
+Gateway PR56, ancora aperta/draft: commit `ef2270a57446da1f23a58548aa4d44920e578fe0`, **32/32 check run completed/success**, nessun pending/failure. Il log del job `provider-runtime-transition` 111236177469 attesta **11 test PASS senza skip**: 8 prove di file privati/lock e 3 fixture native con Docker/nft/systemd. Le fixture provano staging, apply/verify, ripristino delle sole tabelle vuote, blocco di tabelle estranee/parziali, riconciliazione esplicita degli handle, gate persistente dopo crash/reload fallita, rollback degli artefatti posseduti e rifiuto atomico nft con conservazione delle due tabelle precedenti. Queste sono prove CI, non prove sul VPS.
+
+| Source fissato nel commit Gateway | SHA256 |
+| --- | --- |
+| `scripts/restore_semantic_runtime_boot_guard.py` | `cceab662620d1abf97c09be1147c79e4e43022298cb0560dc604ed4bdeb6a606` |
+| `scripts/stage_semantic_runtime_transition.py` | `f88740a293d78906b0a4c8915cc6b760a2dc3f9ab97f110cbb4308e950e519dd` |
+| `scripts/transition_semantic_runtime_guard.py` | `a3818878086a40377125816b776606f936ad02496d891f4bc72477c4c731ecf4` |
+
+Lo staging prepara esclusivamente file root privati e compila il template nft in un namespace di rete isolato tramite `unshare`; non installa unità/regole host e non avvia container. L'installer runtime è implementato con journal persistente e recovery/rollback, ma **né staging né transizione runtime sono stati eseguiti sul VPS**. Il target resta DENY_ONLY, senza kernel lease, con due candidati mai avviati e avvio non autorizzato.
+
+Prossimo passo target: solo staging privato `plan/apply/verify`, dopo ripresa esplicita della sessione, con i pin sopra e l'intent attestato. Parametri espliciti: `--source-commit ef2270a57446da1f23a58548aa4d44920e578fe0`, `--intent-source-commit 392234edc50c6e8cd19a3028b3e9e19d6f1955b4`, `--intent-source-sha256 f1cc60568118387cad11a8546f3b0c2c64941c6a51a28611e4c62a009db57422`, `--runtime-guard-sha256 cceab662620d1abf97c09be1147c79e4e43022298cb0560dc604ed4bdeb6a606`, nuovo `--snapshot-root /etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-<UTC>/prepared` esclusivo, `--docker-path /usr/bin/docker`, `--nft-path /usr/sbin/nft`, `--systemctl-path /usr/bin/systemctl`, `--unshare-path /usr/bin/unshare`, `--python-path /usr/bin/python3`, `--provider-endpoint-ref schema-gov`, `--resolution-evidence-ref fresh-lease-owner`, `--lease-seconds 30`. Conservare i tre source verificati sotto il nuovo parent `source/scripts` (directory root 0700, file root 0600). Procedura software: [runbook Gateway fissato](https://github.com/GioNob/ouf-api-gateway/blob/ef2270a57446da1f23a58548aa4d44920e578fe0/docs/SEMANTIC_PROVIDER_BOOT_RUNTIME_TRANSITION.md). Nessun runtime apply host è il passo corrente.
+
+Restano aperti prima dell'avvio: prova target, autorità infrastrutturale/live namespace e pacchetti, profilo IPv6, admission/start, lifecycle lease attiva, riconciliazione lease degli handle ricreati e reboot reale. Il profilo vuoto rifiuta lease attive; non le adotta né le svuota. I gate PET Gateway v1.5 T11/T11.3 GW-NET01..05 e Semantic v1.3 §§9.2/10–11 restano invariati: chatbot propone, THS adotta con autorità prevista. Non modificare main/live, non eseguire merge, replay dei run Cinema/Teatri, upload/job o ricreazione delle reti di produzione.
+
+L'operatore ha interrotto la sessione per apparente loop/problema dell'interfaccia. Dopo l'interruzione sono stati verificati soltanto la CI e questo checkpoint documentale; nessun nuovo sviluppo o comando VPS è stato avviato.
+
+## Cronologia — custody PASS, prima dell'esecuzione dell'intent
 
 Il 3 ottobre 2026 l'operatore ha eseguito il blocco custody del §6 dell'handoff e restituito `SEMANTIC_PROVIDER_GUARD_CUSTODY_INVENTORY=PASS`. Questa prova **supera le precedenti diciture NON ESEGUITO/custody pending**, mantenute sotto come cronologia. Nessun replay del comando custody è richiesto come passo autonomo.
 
