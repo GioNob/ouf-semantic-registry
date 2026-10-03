@@ -1,14 +1,22 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint software OCI — correzione pubblicata, verifica nativa in corso
+## Checkpoint corrente — driver OCI standalone e source staging verificati; prossimo intervento VPS privato
 
-Gateway PR56 head `ce6d950f3f97c29336149737ede27159751e245e` aggiunge backend nativo prepared-namespace, driver root-private source-sealed, source-only package stager e prova OCI reale. Il precedente 80c4841 ha eseguito 29 test root e le tre prove native di protocollo, ma **la nuova prova OCI è FALLITA per timeout nel caso positivo** (job 111271343429). I casi negativi arrivavano al rifiuto atteso; non equivalgono al superamento dell'intera prova. Correzione pubblicata: output di runc create su file temporaneo invece di pipe ereditabili dal processo init, e import fixture senza discovery duplicata/skip. **Nuova CI ancora in corso, non dichiarata PASS.**
+Gateway PR56 head `1a020edea42cdf60a38298bec2ffebc97b3fad02`. **Job dedicati 111273368756 e 111273359644 completed/success**: ciascuno **29 test (28 regressioni + 1 Docker reale), 3 prove native di rete e 1 prova OCI reale senza skip**; log letti. Entrambi riportano **runc version 1.5.1**, la stessa versione standalone rilevata sul VPS. **CI complessiva al checkpoint: 33/34 success, summary-stack ancora in corso, nessuna failure; non dichiarata 34/34 PASS.** Localmente 28 PASS + 1 Docker opt-in skip, con dipendenze riallineate all'esatto source remoto. Undici sorgenti del package letti da GitHub e confrontati esattamente; comando staging controllato con bash -n.
 
-Localmente, su dipendenze riallineate all'esatto source remoto: **28 PASS + 1 Docker opt-in skip**; runc/nft non sono disponibili nel workspace e la prova OCI deve essere eseguita realmente in CI. Il software precedente 82d1db7 resta la baseline 34/34 verde, senza trasferirne il risultato al nuovo head.
+La nuova prova esegue il driver source-sealed con runc, nft, namespace/veth, lock e journal privati reali. Source tamper, start authority assente, lease non quiescente, MAC/bundle drift impediscono l'applicazione; create valido lascia assente il marker fino allo start esplicito; rollback con generazione viva e nuova creazione con handle estranei sono rifiutati. Fixture con sola shell statica e authority sintetica, nessun provider chiamato. Corrette le dipendenze CI senza rimpiazzare il runtime Docker del runner e l'isolamento stdio/dev della fixture. I fallimenti delle revisioni precedenti sono storici, non PASS retroattivi.
 
-Nuovi moduli: `tools/semantic_provider_preexec_native.py`, `scripts/semantic_provider_preexec_hook.py`, `scripts/stage_semantic_preexec_package.py`; il driver verifica dieci sorgenti root:root 0600/hash prima degli import, bundle privato, namespace inode, coppie veth/ifindex, bridge, MAC/IP e generazione PID/start ticks. Regole dopo createRuntime che potrebbero cambiare rete sono rifiutate. Staging sigilla undici sorgenti, senza driver profile/journal/runtime registration, hook installato, regole/unit/container o avvio. Native backend ha capture su file, bound di output e deadline cumulativa. Authority fixture sintetica, nessun provider chiamato.
+| Componente nuovo | SHA256 |
+| --- | --- |
+| `scripts/stage_semantic_preexec_package.py` | `bf86bc438c39a1f8f7752797110bcfcf18b9e7deb23a662f850fffb900df2fd8` |
+| `scripts/semantic_provider_preexec_hook.py` | `e904774d50626e3ce93d6bcd187571b03d0698ad6a7472a7b6a862b4816eb850` |
+| `tools/semantic_provider_preexec_native.py` | `c45d343308a311790bcd5c9ed9687925d4af0fec59f96fc79f4af7a685b8c70f` |
 
-Il prossimo intervento VPS previsto è **solo source package staging privato**, NON ESEGUITO e da consegnare dopo la prova OCI PASS. Vecchi cohort/candidati/EMPTY_ONLY conservati. L'aggancio standalone runc non prova integrazione Docker: default runc, daemon/runtime registration e nuovi cohort restano decisioni/azioni separate, senza reload/restart impliciti. Il PASS dell'inventario VPS del 3 ottobre è registrato sotto e §19 è ESEGUITO.
+Decisione: prepared-namespace/static IPv4 come primo backend sincrono, separato dal contratto di identity/authority/flow e lifecycle. Il driver root/Python -I -B verifica dieci sorgenti prima degli import, bundle privato, namespace inode, veth peer/ifindex, bridge, MAC/IP e PID/start ticks; rifiuta hook successivi capaci di modificare la rete. Nessuna assunzione Docker/IP/bridge fixture diventa default di piattaforma. Migliaia di Enti e distribuzione/co-localizzazione rimangono invarianti permanenti.
+
+**Prossimo intervento operatore: §20, nuovo source package privato plan/apply/verify, NON ESEGUITO.** Undici file pin/hash, receipt esclusiva/fsynced e tool availability/Python version rilevati via metadata. Non crea profilo driver, namespace, coordination journal, hook OCI installato, tabelle, unità, runtime registration o container. Non avvia processi applicativi/owner; source staging non abilita lease. Il source receipt non è acceptance, tool presence non prova static busybox né backend target utilizzabile.
+
+**Limiti aperti:** la prova è standalone runc in CI, non Docker del VPS né startup/admission target. Occorrono profilo/binding/authority reali, template indipendente, integration/wrapper o shim con registrazione esplicita, gestione cohort e lifecycle servizi/reboot. Default runtime e vecchi candidati restano invariati; nessun reload/restart, merge o replay impliciti. Target resta RUNTIME_EMPTY/EMPTY_ONLY, due candidati mai avviati, providerCalls=0/startAuthorized=false. Inventario VPS §19 **ESEGUITO PASS**, source `semantic-preexec-runtime-inventory-20261003-183915`, Docker 29.8.1/default runc e runc standalone 1.5.1; il percorso invocato da Docker non è dimostrato dal numero di versione.
 
 ## Inventario runtime VPS — ESEGUITO, PASS (3 ottobre 2026)
 
@@ -731,3 +739,61 @@ sudo /usr/bin/python3 -I -B \
 ```
 
 Esito atteso: JSON schema ouf.semantic-preexec-runtime-inventory.v1 seguito da PASS READ_ONLY=true OCI_HOOK_INTEGRATION_PROVEN=false START_AUTHORIZED=false. **ESEGUITO, PASS:** output operatore e source root riportati sopra; quattro documenti aggiornati. Non ripetere il blocco storico. Nessuna successiva installazione o applicazione implicita.
+
+## 20. Source package preexec privato — NON ESEGUITO; plan/apply/verify pronti
+
+Il comando seguente prepara soltanto un nuovo source snapshot. L'apply è **pubblicazione della receipt privata**, non installazione di regole/hook/unit/runtime o start. Non modifica il package lease9, cohort runtime, reti, candidati, daemon Docker o journal già esistenti. Pinna undici file del commit Gateway `1a020edea42cdf60a38298bec2ffebc97b3fad02` e verifica ciascun SHA256 prima di copiarlo in root:root 0600. Il nuovo stager è provato con plan/apply/verify, rifiuto replay e source drift; la prova OCI con runc 1.5.1 è PASS nei due job del checkpoint. Non trasferire questa prova CI al VPS.
+
+Atteso PASS per tutti e tre i modi con PRIVATE_SOURCE_ONLY=true RUNTIME_REGISTERED=false START_AUTHORIZED=false. JSON contiene Python version e disponibilità di strumenti root-owned: può essere PASS anche se busybox/tool opzionali sono assenti, perché il source staging non prova la readiness del runtime. Riportare l'intero output e PACKAGE_ROOT. Su BLOCKED conservare snapshot/output; niente replay apply, rimozione dei cohort o apt/restart per convenienza. Non richiede login Keycloak.
+
+```bash
+(
+set -euo pipefail
+OUF_PREEXEC_PKG_TMP=$(mktemp -d)
+trap 'rm -rf -- "$OUF_PREEXEC_PKG_TMP"' EXIT
+
+cat > "$OUF_PREEXEC_PKG_TMP/sources.sha256" <<'OUF_PREEXEC_SHA'
+bf86bc438c39a1f8f7752797110bcfcf18b9e7deb23a662f850fffb900df2fd8  scripts/stage_semantic_preexec_package.py
+e904774d50626e3ce93d6bcd187571b03d0698ad6a7472a7b6a862b4816eb850  scripts/semantic_provider_preexec_hook.py
+98e3004300226fecd509a46c009585df14021927f20d4e5c82d8ff7a8a8180de  tools/materialize_southbound_kernel.py
+1c0d7f1243752fe216ef62eefbc2e3253b8f2503b518fafe11277e4d7721a084  tools/materialize_southbound_lease_refresh.py
+c466172113d1ffe850bf2c69762113b55fbc65d9091c96dca98a74548fddf930  tools/semantic_provider_dns.py
+7a5f2b21c096228a3e4d298674e380f667c3004dd6d8ec19934a2302844c0f93  tools/semantic_provider_lease_nft.py
+92736eebeccf344e565186bce94d29c65ffe1d50638d57eae81486e7b26e884d  tools/semantic_provider_lease_owner.py
+b97f31cc17c22abbb7a021c274be73816f649196762f9c6dfcc54a58d8382e8a  tools/materialize_semantic_shared_faces.py
+25c6df90d33e39fe83321df6ab9e5c38d4c33bcd290ad57c7a85c03b1bb8ba78  tools/semantic_provider_lease_coordination.py
+5086f893ac22e962816e76709883c9c7f341989919339c579a4f28bfbd403804  tools/semantic_provider_preexec.py
+c45d343308a311790bcd5c9ed9687925d4af0fec59f96fc79f4af7a685b8c70f  tools/semantic_provider_preexec_native.py
+OUF_PREEXEC_SHA
+
+while read -r OUF_PREEXEC_HASH OUF_PREEXEC_FILE; do
+  mkdir -p -- "$OUF_PREEXEC_PKG_TMP/$(dirname -- "$OUF_PREEXEC_FILE")"
+  curl --fail --silent --show-error --proto '=https' --max-time 30 \
+    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/1a020edea42cdf60a38298bec2ffebc97b3fad02/$OUF_PREEXEC_FILE" \
+    -o "$OUF_PREEXEC_PKG_TMP/$OUF_PREEXEC_FILE"
+done < "$OUF_PREEXEC_PKG_TMP/sources.sha256"
+
+(cd "$OUF_PREEXEC_PKG_TMP"; sha256sum -c sources.sha256)
+
+OUF_PREEXEC_PKG_ROOT="/etc/ouf/deploy-snapshots/semantic-preexec-package-$(date -u +%Y%m%d-%H%M%S)"
+sudo mkdir -m 0700 -- "$OUF_PREEXEC_PKG_ROOT"
+sudo install -d -m 0700 -o root -g root \
+  "$OUF_PREEXEC_PKG_ROOT/source/scripts" "$OUF_PREEXEC_PKG_ROOT/source/tools"
+while read -r OUF_PREEXEC_HASH OUF_PREEXEC_FILE; do
+  sudo install -m 0600 -o root -g root \
+    "$OUF_PREEXEC_PKG_TMP/$OUF_PREEXEC_FILE" "$OUF_PREEXEC_PKG_ROOT/source/$OUF_PREEXEC_FILE"
+done < "$OUF_PREEXEC_PKG_TMP/sources.sha256"
+printf 'SEMANTIC_PREEXEC_PACKAGE_ROOT=%s\n' "$OUF_PREEXEC_PKG_ROOT"
+
+for OUF_PREEXEC_PKG_MODE in plan apply verify; do
+  sudo /usr/bin/python3 -I -B \
+    "$OUF_PREEXEC_PKG_ROOT/source/scripts/stage_semantic_preexec_package.py" \
+    --mode "$OUF_PREEXEC_PKG_MODE" \
+    --package-root "$OUF_PREEXEC_PKG_ROOT" \
+    --source-commit 1a020edea42cdf60a38298bec2ffebc97b3fad02 \
+    --hook-source-sha256 e904774d50626e3ce93d6bcd187571b03d0698ad6a7472a7b6a862b4816eb850
+done
+)
+```
+
+**NON ESEGUITO:** aggiornare immediatamente handoff/roadmap/manuale/sprint dopo output operatore. Per il passo successivo restano authority e profilo target/generazione/runtime integration, senza avvii o registrazioni impliciti.
