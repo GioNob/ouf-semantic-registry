@@ -1,0 +1,53 @@
+{
+  "schema": "ouf.operator-source-stage-attestation.v1",
+  "evidenceSource": "Operator terminal output provided in this conversation",
+  "receivedAt": "2026-10-03T21:31:07Z",
+  "packageRoot": "/etc/ouf/deploy-snapshots/semantic-preexec-adapter-package-20261003-213033",
+  "reportedModes": {
+    "plan": "PASS",
+    "apply": "PASS",
+    "verify": "PASS"
+  },
+  "reportedSourceChecksumsOk": 12,
+  "attestedReceipt": {
+    "admissionPreparerInstalled": false,
+    "containersChanged": false,
+    "noSecretsPrinted": true,
+    "notReleaseAcceptance": true,
+    "providerCalls": 0,
+    "pythonVersion": "3.13.5",
+    "rulesChanged": false,
+    "runtimeAdapterInstalled": false,
+    "runtimeRegistered": false,
+    "schema": "ouf.semantic-preexec-source-package.v2",
+    "sourceCommit": "b5260260fff1adf798626f12e24323c20ae1bb2e",
+    "sourceHashes": {
+      "scripts/stage_semantic_preexec_package.py": "3fb04519de05131087a5bd12095b42f97026e7c5826d5f8f3845608404008f95",
+      "scripts/semantic_provider_docker_runtime.py": "f4185658a7a9a1190cd9ee85ed6f6397de5344bad15a6d3078d765f88c914093",
+      "scripts/semantic_provider_preexec_hook.py": "2da64dc68707fb694a49656562800d733184a21845293fee172a6f99167534b3",
+      "tools/materialize_southbound_kernel.py": "98e3004300226fecd509a46c009585df14021927f20d4e5c82d8ff7a8a8180de",
+      "tools/materialize_southbound_lease_refresh.py": "1c0d7f1243752fe216ef62eefbc2e3253b8f2503b518fafe11277e4d7721a084",
+      "tools/semantic_provider_dns.py": "c466172113d1ffe850bf2c69762113b55fbc65d9091c96dca98a74548fddf930",
+      "tools/semantic_provider_lease_nft.py": "7a5f2b21c096228a3e4d298674e380f667c3004dd6d8ec19934a2302844c0f93",
+      "tools/semantic_provider_lease_owner.py": "92736eebeccf344e565186bce94d29c65ffe1d50638d57eae81486e7b26e884d",
+      "tools/materialize_semantic_shared_faces.py": "b97f31cc17c22abbb7a021c274be73816f649196762f9c6dfcc54a58d8382e8a",
+      "tools/semantic_provider_lease_coordination.py": "25c6df90d33e39fe83321df6ab9e5c38d4c33bcd290ad57c7a85c03b1bb8ba78",
+      "tools/semantic_provider_preexec.py": "f541eca6bee47a68a08d06ad7b577a3a7894ca02d8674d97e36d6cb2bafe0fcd",
+      "tools/semantic_provider_preexec_native.py": "b6b09ef5209d92405d85ef4161b671ade10c300b797569362c301ae9293b6ac0"
+    },
+    "startAuthorized": false,
+    "trustedToolsAvailable": {
+      "busybox": true,
+      "ip": true,
+      "nft": true,
+      "nsenter": true,
+      "python": true,
+      "runc": true,
+      "unshare": true
+    },
+    "unitsChanged": false
+  },
+  "independentVpsReadPerformed": false,
+  "receiptFileDigestProvided": false,
+  "notReleaseAcceptance": true
+}

@@ -1,3 +1,6 @@
+# HISTORICAL: operator executed plan/apply/verify PASS on 2026-10-03.
+# Attested root: /etc/ouf/deploy-snapshots/semantic-preexec-adapter-package-20261003-213033
+# Preserve the completed snapshot; do not replay this command automatically.
 (
 set -euo pipefail
 OUF_PREEXEC_PKG_TMP=$(mktemp -d)
