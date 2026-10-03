@@ -2,7 +2,7 @@
 
 ## Checkpoint corrente — driver OCI standalone e source staging verificati; prossimo intervento VPS privato
 
-Gateway PR56 head `1a020edea42cdf60a38298bec2ffebc97b3fad02`. **Job dedicati 111273368756 e 111273359644 completed/success**: ciascuno **29 test (28 regressioni + 1 Docker reale), 3 prove native di rete e 1 prova OCI reale senza skip**; log letti. Entrambi riportano **runc version 1.5.1**, la stessa versione standalone rilevata sul VPS. **CI complessiva al checkpoint: 33/34 success, summary-stack ancora in corso, nessuna failure; non dichiarata 34/34 PASS.** Localmente 28 PASS + 1 Docker opt-in skip, con dipendenze riallineate all'esatto source remoto. Undici sorgenti del package letti da GitHub e confrontati esattamente; comando staging controllato con bash -n.
+Gateway PR56 head `1a020edea42cdf60a38298bec2ffebc97b3fad02`. **Job dedicati 111273368756 e 111273359644 completed/success**: ciascuno **29 test (28 regressioni + 1 Docker reale), 3 prove native di rete e 1 prova OCI reale senza skip**; log letti. Entrambi riportano **runc version 1.5.1**, la stessa versione standalone rilevata sul VPS. **CI complessiva verificata sull'esatto head: 34/34 completed/success, nessun pending/failure.** Localmente 28 PASS + 1 Docker opt-in skip, con dipendenze riallineate all'esatto source remoto. Undici sorgenti del package letti da GitHub e confrontati esattamente; comando staging controllato con bash -n.
 
 La nuova prova esegue il driver source-sealed con runc, nft, namespace/veth, lock e journal privati reali. Source tamper, start authority assente, lease non quiescente, MAC/bundle drift impediscono l'applicazione; create valido lascia assente il marker fino allo start esplicito; rollback con generazione viva e nuova creazione con handle estranei sono rifiutati. Fixture con sola shell statica e authority sintetica, nessun provider chiamato. Corrette le dipendenze CI senza rimpiazzare il runtime Docker del runner e l'isolamento stdio/dev della fixture. I fallimenti delle revisioni precedenti sono storici, non PASS retroattivi.
 
@@ -24,7 +24,7 @@ Output operatore ricevuto: source root `/etc/ouf/deploy-snapshots/semantic-preex
 
 **Comando §19 ESEGUITO: conservarlo come registro, non ripeterlo.** Il binario runc locale non è prova che Docker utilizzi quel percorso; l'inventario non autorizza registrazione runtime, avvio o restart. Prossimo lavoro autonomo: backend con binding live e verifica sincrona OCI prima del processo, prove positive/negative reali e nuovo staging sealed; Docker target e authority rimangono gate separati.
 
-## Checkpoint corrente — core install/recovery e inventario runtime verificati; inventario VPS PASS; integrazione OCI in sviluppo
+## Checkpoint precedente — core install/recovery e inventario runtime (82d1db7)
 
 Core Gateway `a0473e397d90d46cda2ca33404670c514dd435c9`: **34/34 check completed/success**, nessun pending/failure; job 111261718405 e 111261707562 ciascuno **19 regressioni + 3 prove native PASS senza skip**. Head corrente Gateway PR56 `82d1db716b1015dac52feca217af1c5ed600a520`: job dedicato 111264097837 **PASS, 24 test (23 regressioni + 1 Docker reale) e 3 prove native senza skip**, log controllato. È PASS anche il job 111263877173 del precedente d0fa3d1. **Verifica successiva sull'esatto head: CI complessiva 34/34 completed/success, nessun pending/failure.** Validazione locale: 23 PASS e 1 Docker reale skip perché assente nel workspace. Readback dei file pubblicati e dei quattro documenti verificato.
 
