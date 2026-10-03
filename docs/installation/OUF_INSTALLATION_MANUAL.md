@@ -1,16 +1,16 @@
 # OUF — Manuale di installazione e bootstrap
 
-## Checkpoint corrente — adapter scritto; nuova prova Docker pendente dopo correzione lifecycle
+## Checkpoint corrente — adapter Docker e coordinazione guard/lease validati; staging sorgenti VPS pendente
 
-Gateway PR56 head `41c983ac31933237028f2eea5a9035623622c8a6`. **Task non ancora completato: la nuova prova Docker positiva deve passare.** Codice adapter nominato/scoped, registry CID espliciti, source/binary/config hash e journal persistenti; driver v2 mantiene common lock guard/lease fino al real runc start. Locale: 36 PASS + 3 Docker opt-in skip (Docker assente). Nessuna nuova acceptance target o autorizzazione runtime/start.
+Gateway PR56 commit `b5260260fff1adf798626f12e24323c20ae1bb2e`. **Completato il blocco adapter nominato e verifica CI; rollout/admission di produzione non completati.** Locale: 39 test eseguiti, 36 PASS e 3 opt-in Docker skip perché Docker assente. CI sull'head: 36/36 check success (push e PR); job Docker 3 test senza skip su entrambe le esecuzioni, 38 regressioni/inventari Docker + 3 native rete/lease + 1 OCI reale per esecuzione. Prova Docker positiva con programma marker, negative per assenza di start authority e lease QUIESCING con generation assente; controllo PROTECTED e assenza di errori preparer dimostrano che i casi negativi raggiungono i gate previsti. Cleanup positivo DELETED/ROLLED_BACK e namespace anchor rimosso; default daemon preservato/ripristinato. Native shared-face prova stessa sottorete, routed, host-local, peer estranei preservati, IP/MAC/peer/port spoof e IPv6 selezionato negati. Tutte queste prove sono CI sintetica, non acceptance VPS.
 
-Le revisioni 375387f9/3eb5f36b/583cb972/3074df9e/3dc855f0/78f53a55 non hanno superato la prova Docker positiva. Le regressioni native rete/OCI sono passate su revisioni precedenti, ma non sostituiscono il check sull'head corrente. Diagnostica redatta ha prima rilevato antenati dell'interprete CI non root-owned: fixture passata al Python di sistema root-owned, senza indebolire metadata checks. Poi Docker ha rifiutato DOCKER_PREPARED_NAMESPACE_REQUIRED: il suo percorso reale presenta un namespace OCI creato nel lifecycle, non già disponibile prima di runc create.
+**Decisione lifecycle verificata:** Docker esegue NewTask → initializeCreatedTask → Task.Start; createRuntime risultava troppo presto per il binding della veth. Adapter crea un bundle shadow privato, risolve il rootfs relativo entro il bundle approvato, crea il task senza rilasciare l'applicazione. Al proprio start legge stato runc created e prepara/verifica protection, authority, CID/bundle/PID/namespace live tramite preparer sigillato; driver v2 ricontrolla generazione/owned tables/lease e mantiene common guard/lease lock fino al real runc start. Nessun proprio createRuntime hook ricorsivo; per-CID lock separato e fasi persistenti impediscono replay impliciti. Profile v2 distingue OCI_CREATED/PREPARED; driver v1 resta compatibile. Delete richiede prova di morte generazione e owned handles; fasi incomplete restano recovery esplicita. Le revisioni precedenti con fallimento Docker non vengono dichiarate PASS retroattivamente.
 
-**Correzione implementata, da validare in CI:** la diagnostica su 78f53a55 mostra StopIteration nella ricerca della veth: al createRuntime il namespace contiene ancora solo loopback. Il sorgente Docker conferma NewTask → initializeCreatedTask → Task.Start. L'adapter ora copia un bundle shadow privato e crea il task senza avviare l'applicazione; all'ingresso start legge stato runc created e chiama il preparer sigillato dopo il setup della rete. Valida CID/bundle/PID/authority, driver v2 e binding live, quindi esegue admission e runc start sotto common guard/lease lock per la verifica finale/release FIFO. Non inserisce un proprio createRuntime hook; lock per CID resta acquisito senza ricorsione. Profile v2 distingue OCI_CREATED/PREPARED; fixture CI fissa un namespace nsfs proprio, non è un production preparer. Delete verifica morte generazione/owned handles prima del rollback; fasi incomplete richiedono recovery esplicita. Default/cohort target invariati.
+**Ultimo target:** §20 ESEGUITO plan/apply/verify PASS, undici sorgenti v1 in `/etc/ouf/deploy-snapshots/semantic-preexec-package-20261003-195926`. §21 ESEGUITO PASS, source `/etc/ouf/deploy-snapshots/semantic-preexec-candidate-inventory-20261003-203221`; due candidati runc mai avviati, tre reti configurate, zero SandboxKey, bindingHash `0337655a5c3d6d80653aca363d8479ce10e6d27cde024518060a6c628e542aeb`. Ultimo guard attestato RUNTIME_EMPTY/EMPTY_ONLY; providerCalls=0, runtime registration/start authority false. Nessuna nuova modifica/reload/restart/registrazione/ricreazione/avvio/merge/replay VPS.
 
-**Ultimo target invariato:** §20 ESEGUITO plan/apply/verify PASS, source package v1 undici file semantic-preexec-package-20261003-195926. §21 ESEGUITO PASS, source semantic-preexec-candidate-inventory-20261003-203221; due candidati runc mai avviati, tre reti configurate, zero SandboxKey, bindingHash `0337655a5c3d6d80653aca363d8479ce10e6d27cde024518060a6c628e542aeb`. Ultimo guard attestato RUNTIME_EMPTY/EMPTY_ONLY; providerCalls=0, startup/start authority false. Inventory non prova full creation acceptance, atomicità o namespace live. Nessuna registrazione/reload/restart/ricreazione/avvio/merge/replay VPS.
+**Prossimo passo preciso, richiede operatore VPS:** handoff §22, **NON ESEGUITO**, nuovo staging privato source-only v2 di dodici file, pin commit/hash verificati 12/12 contro GitHub e sintassi bash validata. Nuova radice `semantic-preexec-adapter-package-<UTC>`, snapshot v1 immutabile. Atteso plan/apply/verify PASS e schema v2; runtimeAdapterInstalled=false, admissionPreparerInstalled=false, runtimeRegistered=false, startAuthorized=false, regole/unità/container invariati, providerCalls=0. Il comando non include fixture CI, profile o broker installabile. Su BLOCKED conservare root/output e non ripetere automaticamente. Registrare l'output effettivo prima di segnare §22 ESEGUITO.
 
-**Prossimo passo preciso:** controllare CI esatta di 41c983ac, leggere i log Docker e risolvere gli eventuali errori restanti. Non presentare staging/registrazione target come pronti finché non passano prova positiva/negative Docker e regressioni native. Solo dopo preparare nuovo source-only package v2 a dodici file con pin/hash, radice separata e adapter/preparer/runtime non installati. Production admission preparer, template indipendente, infrastructure authority reale, OIDC/purpose/TLS/revoca, lease attiva e reboot rimangono dipendenze/gate aperti. Default runtime/cohort e snapshot vecchi restano immutabili; migliaia di Enti, distribuzione e co-localizzazione su rete/sottorete condivisa restano invarianti.
+**Dipendenze/gate residui:** production admission preparer e compilazione footprint indipendente non implementati dalla fixture, infrastructure authority reale, full creation acceptance, atomic snapshot, OIDC/purpose/TLS/revoca, lease attiva, integrazione runtime VPS e reboot non provati. Nessuna attivazione implicita. Lock comune coordina gli attori cooperanti; modifiche privilegiate esterne non sono escluse. Migliaia di Enti e servizi distribuiti oppure co-localizzati nella stessa rete/sottorete restano vincoli; Docker e IP della fixture non sono default della piattaforma.
 
 ## Checkpoint precedente — inventario candidati VPS ESEGUITO; adapter Docker da implementare
 
@@ -5246,3 +5246,62 @@ Next boundary: coordinate the installed deny-only boot guard with the future emp
 
 
 Custody helper pinned revision: Gateway `85914e39bd0aa9f8e7a0a0a9d3b9db6007633ff8`; SHA-256 `fabd47c6ce8919bc7a910cbaf63f66f1fb786b00c239ae41757c1fd0df829b8d`. All 28 check runs on this revision completed successfully (push and PR); config-contract recorded 454 passed / 64 opt-in skips, with native Docker/kernel/TLS/systemd jobs green separately. This proves CI behavior, not target custody or startup acceptance. Next user action is read-only target invocation with the five exact receipt/journal roots, creation revision `93e861fe8c8a43912f0cb78a74adceb2db509dd9`, and explicit Docker/nft/systemctl paths; no Keycloak renewal is needed for this helper.
+
+## Staging sorgenti adapter v2 — handoff §22. Nuovo source package adapter v2 privato — NON ESEGUITO; intervento operatore pendente
+
+Prerequisito CI sul commit `b5260260fff1adf798626f12e24323c20ae1bb2e`: 36/36 success, Docker adapter positivo/negative/cleanup e regressioni native senza skip; dodici contenuti e SHA256 verificati contro GitHub. Sintassi del comando verificata con bash -n. Questa è preparazione dei soli sorgenti: non registra né installa un runtime, broker o profilo, non modifica regole/unità/container e non avvia candidati. Il precedente package v1 resta immutabile. Non include il preparer sintetico CI. Docker integration su runner non autorizza l'integrazione target.
+
+Il comando crea una radice esclusiva nuova con directory root 0700 e file root 0600. Esegue plan/apply/verify e salva il receipt v2 privato; trustedToolsAvailable è solo metadata, non prova funzionale. Atteso runtimeAdapterInstalled=false, admissionPreparerInstalled=false, runtimeRegistered=false, startAuthorized=false, providerCalls=0 e notReleaseAcceptance=true. Su BLOCKED conservare radice/output, niente replay o riparazione automatica. Riportare package root e intero output redatto.
+
+```bash
+(
+set -euo pipefail
+OUF_PREEXEC_PKG_TMP=$(mktemp -d)
+trap 'rm -rf -- "$OUF_PREEXEC_PKG_TMP"' EXIT
+
+cat > "$OUF_PREEXEC_PKG_TMP/sources.sha256" <<'OUF_PREEXEC_SHA'
+3fb04519de05131087a5bd12095b42f97026e7c5826d5f8f3845608404008f95  scripts/stage_semantic_preexec_package.py
+f4185658a7a9a1190cd9ee85ed6f6397de5344bad15a6d3078d765f88c914093  scripts/semantic_provider_docker_runtime.py
+2da64dc68707fb694a49656562800d733184a21845293fee172a6f99167534b3  scripts/semantic_provider_preexec_hook.py
+98e3004300226fecd509a46c009585df14021927f20d4e5c82d8ff7a8a8180de  tools/materialize_southbound_kernel.py
+1c0d7f1243752fe216ef62eefbc2e3253b8f2503b518fafe11277e4d7721a084  tools/materialize_southbound_lease_refresh.py
+c466172113d1ffe850bf2c69762113b55fbc65d9091c96dca98a74548fddf930  tools/semantic_provider_dns.py
+7a5f2b21c096228a3e4d298674e380f667c3004dd6d8ec19934a2302844c0f93  tools/semantic_provider_lease_nft.py
+92736eebeccf344e565186bce94d29c65ffe1d50638d57eae81486e7b26e884d  tools/semantic_provider_lease_owner.py
+b97f31cc17c22abbb7a021c274be73816f649196762f9c6dfcc54a58d8382e8a  tools/materialize_semantic_shared_faces.py
+25c6df90d33e39fe83321df6ab9e5c38d4c33bcd290ad57c7a85c03b1bb8ba78  tools/semantic_provider_lease_coordination.py
+f541eca6bee47a68a08d06ad7b577a3a7894ca02d8674d97e36d6cb2bafe0fcd  tools/semantic_provider_preexec.py
+b6b09ef5209d92405d85ef4161b671ade10c300b797569362c301ae9293b6ac0  tools/semantic_provider_preexec_native.py
+OUF_PREEXEC_SHA
+
+while read -r OUF_PREEXEC_HASH OUF_PREEXEC_FILE; do
+  mkdir -p -- "$OUF_PREEXEC_PKG_TMP/$(dirname -- "$OUF_PREEXEC_FILE")"
+  curl --fail --silent --show-error --proto '=https' --max-time 30 \
+    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/b5260260fff1adf798626f12e24323c20ae1bb2e/$OUF_PREEXEC_FILE" \
+    -o "$OUF_PREEXEC_PKG_TMP/$OUF_PREEXEC_FILE"
+done < "$OUF_PREEXEC_PKG_TMP/sources.sha256"
+
+(cd "$OUF_PREEXEC_PKG_TMP"; sha256sum -c sources.sha256)
+
+OUF_PREEXEC_PKG_ROOT="/etc/ouf/deploy-snapshots/semantic-preexec-adapter-package-$(date -u +%Y%m%d-%H%M%S)"
+sudo mkdir -m 0700 -- "$OUF_PREEXEC_PKG_ROOT"
+sudo install -d -m 0700 -o root -g root \
+  "$OUF_PREEXEC_PKG_ROOT/source/scripts" "$OUF_PREEXEC_PKG_ROOT/source/tools"
+while read -r OUF_PREEXEC_HASH OUF_PREEXEC_FILE; do
+  sudo install -m 0600 -o root -g root \
+    "$OUF_PREEXEC_PKG_TMP/$OUF_PREEXEC_FILE" "$OUF_PREEXEC_PKG_ROOT/source/$OUF_PREEXEC_FILE"
+done < "$OUF_PREEXEC_PKG_TMP/sources.sha256"
+printf 'SEMANTIC_PREEXEC_PACKAGE_ROOT=%s\n' "$OUF_PREEXEC_PKG_ROOT"
+
+for OUF_PREEXEC_PKG_MODE in plan apply verify; do
+  sudo /usr/bin/python3 -I -B \
+    "$OUF_PREEXEC_PKG_ROOT/source/scripts/stage_semantic_preexec_package.py" \
+    --mode "$OUF_PREEXEC_PKG_MODE" \
+    --package-root "$OUF_PREEXEC_PKG_ROOT" \
+    --source-commit b5260260fff1adf798626f12e24323c20ae1bb2e \
+    --hook-source-sha256 2da64dc68707fb694a49656562800d733184a21845293fee172a6f99167534b3
+done
+)
+```
+
+**NON ESEGUITO sul VPS:** comando predisposto, in attesa dell'operatore; non confonderlo con §20/§21 già ESEGUITI. Dopo output effettivo aggiornare autonomamente handoff, roadmap, manuale e sprint. Restano separati preparer/authority/footprint indipendente e piano esplicito di registrazione/cohort/recovery; questo staging non concede startup readiness.
