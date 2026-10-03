@@ -1,6 +1,18 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
-## Checkpoint corrente — runtime plan VPS ESEGUITO, PASS; apply pendente
+## Checkpoint corrente — runtime VPS ESEGUITO, PASS apply/verify, RUNTIME_EMPTY
+
+Il 3 ottobre 2026 l'operatore ha restituito entrambi gli esiti del §14: `SEMANTIC_RUNTIME_TRANSITION=PASS MODE=apply STATE=RUNTIME_EMPTY` e `SEMANTIC_RUNTIME_TRANSITION=PASS MODE=verify STATE=RUNTIME_EMPTY`. Entrambi attestano `START_AUTHORIZED=false PROVIDER_CALLS=0 DOCKER_RESTARTED=false NOT_RELEASE_ACCEPTANCE=true NO_SECRETS_PRINTED=true`. Il messaggio successivo ripete gli stessi esiti; è duplicato della stessa attestazione, non evidenza di un secondo apply.
+
+Stage/transaction root: `/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211/prepared`; journal `transition-journal.json` sotto tale root; source Gateway `ef2270a57446da1f23a58548aa4d44920e578fe0`. Intent precedente `/etc/ouf/deploy-snapshots/semantic-provider-transition-intent-20261003-151036/prepared` conservato. Custody, intent, staging, plan e apply/verify sono completati nel loro scope. **Non ripetere i comandi §§6,11–14.**
+
+Stato host corrente: guard/drop-in runtime installati e caricati tramite daemon-reload; le due tabelle possedute sono nel profilo runtime con insiemi provider vuoti, footprint e binding leaseStructureHash verificati e journal completato RUNTIME_EMPTY. Il precedente DENY_ONLY è baseline storica conservata, non il profilo host attuale. Docker non riavviato, due candidati mai avviati, nessuna chiamata provider, avvio non autorizzato. Gli insiemi timeout vuoti non attestano installazione/attivazione del lease owner o lease attive.
+
+Prossimo lavoro: chiudere i gate residui di authority infrastrutturale, namespace/source/live IP e pacchetti/spoof/direct bypass/IPv6, admission OIDC/purpose/TLS/revocation e lifecycle lease prima di proporre startup. Il guard attuale è empty-only e rifiuta elementi lease attivi: non installare/attivare una lease owner sotto questo profilo senza transizione coordinata e prove. Reboot reale, rollout Semantic migration-aware, Discovery/THS, mapping Teatri e percorso file/API→UDP/Search restano aperti. Nessun nuovo comando VPS/start/restart/reboot è predisposto in questo checkpoint. Main/live software e run business conservati; nessun merge.
+
+L'apply host è una prova target della transizione vuota, non release acceptance né prova di provider operativo/reboot. Conservare gli originali sealed e questo journal. In caso di drift/interruzione futura usare diagnosi e reconcile/rollback espliciti, mai replay apply. Una ricreazione delle tabelle cambia gli handle e richiede riconciliazione del binding lease; il rollback logico non fabbrica un nuovo PASS custody legacy.
+
+## Cronologia — runtime plan PASS, prima di apply/verify
 
 Il 3 ottobre 2026 l'operatore ha restituito `SEMANTIC_RUNTIME_TRANSITION=PASS MODE=plan STATE=PREPARING START_AUTHORIZED=false PROVIDER_CALLS=0 DOCKER_RESTARTED=false NOT_RELEASE_ACCEPTANCE=true NO_SECRETS_PRINTED=true` per il §13 dell'handoff, sullo stage `/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211/prepared`, source Gateway `ef2270a57446da1f23a58548aa4d44920e578fe0`. **Plan eseguito; non ripeterlo come passo autonomo.** `PREPARING` è il record restituito dal plan: il codice ritorna prima di scrivere il journal e prima di qualsiasi installazione; non prova una transizione apply iniziata.
 
