@@ -1,6 +1,6 @@
 # OUF — Manuale di installazione e bootstrap
 
-## Checkpoint corrente — driver OCI standalone e source staging verificati; prossimo intervento VPS privato
+## Checkpoint corrente — source package VPS ESEGUITO; integrazione Docker da verificare
 
 Gateway PR56 head `1a020edea42cdf60a38298bec2ffebc97b3fad02`. **Job dedicati 111273368756 e 111273359644 completed/success**: ciascuno **29 test (28 regressioni + 1 Docker reale), 3 prove native di rete e 1 prova OCI reale senza skip**; log letti. Entrambi riportano **runc version 1.5.1**, la stessa versione standalone rilevata sul VPS. **CI complessiva verificata sull'esatto head: 34/34 completed/success, nessun pending/failure.** Localmente 28 PASS + 1 Docker opt-in skip, con dipendenze riallineate all'esatto source remoto. Undici sorgenti del package letti da GitHub e confrontati esattamente; comando staging controllato con bash -n.
 
@@ -14,9 +14,18 @@ La nuova prova esegue il driver source-sealed con runc, nft, namespace/veth, loc
 
 Decisione: prepared-namespace/static IPv4 come primo backend sincrono, separato dal contratto di identity/authority/flow e lifecycle. Il driver root/Python -I -B verifica dieci sorgenti prima degli import, bundle privato, namespace inode, veth peer/ifindex, bridge, MAC/IP e PID/start ticks; rifiuta hook successivi capaci di modificare la rete. Nessuna assunzione Docker/IP/bridge fixture diventa default di piattaforma. Migliaia di Enti e distribuzione/co-localizzazione rimangono invarianti permanenti.
 
-**Prossimo intervento operatore: §20, nuovo source package privato plan/apply/verify, NON ESEGUITO.** Undici file pin/hash, receipt esclusiva/fsynced e tool availability/Python version rilevati via metadata. Non crea profilo driver, namespace, coordination journal, hook OCI installato, tabelle, unità, runtime registration o container. Non avvia processi applicativi/owner; source staging non abilita lease. Il source receipt non è acceptance, tool presence non prova static busybox né backend target utilizzabile.
+**Ultimo intervento operatore: §20 ESEGUITO, plan/apply/verify PASS; package `semantic-preexec-package-20261003-195926`.** Undici file pin/hash, receipt esclusiva/fsynced e tool availability/Python version rilevati via metadata. Non crea profilo driver, namespace, coordination journal, hook OCI installato, tabelle, unità, runtime registration o container. Non avvia processi applicativi/owner; source staging non abilita lease. Il source receipt non è acceptance, tool presence non prova static busybox né backend target utilizzabile.
 
 **Limiti aperti:** la prova è standalone runc in CI, non Docker del VPS né startup/admission target. Occorrono profilo/binding/authority reali, template indipendente, integration/wrapper o shim con registrazione esplicita, gestione cohort e lifecycle servizi/reboot. Default runtime e vecchi candidati restano invariati; nessun reload/restart, merge o replay impliciti. Target resta RUNTIME_EMPTY/EMPTY_ONLY, due candidati mai avviati, providerCalls=0/startAuthorized=false. Inventario VPS §19 **ESEGUITO PASS**, source `semantic-preexec-runtime-inventory-20261003-183915`, Docker 29.8.1/default runc e runc standalone 1.5.1; il percorso invocato da Docker non è dimostrato dal numero di versione.
+
+## Source package VPS — ESEGUITO, PASS (3 ottobre 2026)
+
+Output operatore ricevuto e registrato: **plan/apply/verify PASS**, tutti gli undici SHA256 OK. Package root `/etc/ouf/deploy-snapshots/semantic-preexec-package-20261003-195926`; receipt `source-package-receipt.json`, schema `ouf.semantic-preexec-source-package.v1`, source commit Gateway `1a020edea42cdf60a38298bec2ffebc97b3fad02`. Python **3.13.5**; busybox/ip/nft/nsenter/python/runc/unshare risultano tutti disponibili secondo il controllo metadata dello stager.
+
+**Comando handoff §20 ESEGUITO: conservarlo come registro, non ripetere apply.** PRIVATE_SOURCE_ONLY=true; runtimeRegistered=false, startAuthorized=false, rulesChanged=false, unitsChanged=false, containersChanged=false, providerCalls=0, notReleaseAcceptance=true, noSecretsPrinted=true in tutti i modi. Evidenza ricevuta dall'operatore, distinta dalle prove CI: nessuna verifica dell'integrazione Docker o dell'admission target può essere dichiarata superata da questa receipt.
+
+**Prossimo passo preciso:** preparare e verificare il contratto di integrazione Docker e un inventario privato dei binding dei candidati fermi e delle reti, vincolato ai manifest/journal già sigillati. Il successivo comando VPS dovrà essere di sola lettura e pubblicazione di evidenza privata, senza registrazione runtime, reload/restart, modifica cohort o avvio. Namespace live, authority di infrastruttura, admission OIDC/purpose/TLS/revoca, coordinazione lease attiva e reboot restano gate aperti. Nessun indirizzo o bridge osservato diventa default di piattaforma; restano obbligatorie topologie distribuite e co-localizzate per migliaia di Enti.
+
 
 ## Inventario runtime VPS — ESEGUITO, PASS (3 ottobre 2026)
 
