@@ -1,5 +1,8 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+> **Ripartenza aggiornata — 2026-10-03 16:14 Europe/Rome:** leggere prima il [nuovo handoff completo](handoffs/OUF_HANDOFF_2026-10-03_STOPPED_PROVIDER_CUSTODY_NEXT.md). Ultimo VPS PASS: due provider candidate `CREATED_STOPPED`, mai avviati. **Il comando `inventory_semantic_provider_guard_custody.py` NON è stato eseguito dall'utente**; blocco pinned completo nel §6 del nuovo handoff, nessun esito target da presumere. Gateway PR56 `85914e39bd0aa9f8e7a0a0a9d3b9db6007633ff8`: 28/28 check SUCCESS; Semantic PR30 `c2b4ae5abed1236378c7060b3eb3dac126672cbc`: 14/14 SUCCESS, incremento non deployed. Prima delle regole runtime coordinare boot custody/empty sets; non startare né ricreare le reti, non replay Cinema/Teatri. Cronologia e gate ereditati sotto restano conservati; i pin live e gli stati attuali sono nel nuovo handoff.
+
+
 > **Ripresa 2026-10-01 20:54:** PET allegati verificati (323 checksum, zero mismatch); [inventario iniziale file → UDP](audits/OUF_FILE_TO_UDP_INITIAL_INVENTORY_2026-10-01.md) acquisito. API Semantic presenti ma ricerca/lettura attuali non forniscono ancora tutto il necessario al mapping pinned; baseline MCP da riconciliare tra managed-file e object-search. Nessun rollout o nuova esecuzione; tutti i gate ereditati invariati.
 
 > **Continuità verificata — 2026-10-01 20:33:** il [checkpoint della nuova chat](handoffs/OUF_HANDOFF_2026-10-01_FILE_TO_UDP_NEXT_SPRINT.md) contiene ora il registro esplicito di tutti i gate ereditati e la regola d'identità concordata nell'handoff 29/09. R-SMOKE completo e R-INSTALL restano OPEN; 8/8 chiude solo consegna/materializzazione della fixture. Nessuna issue si chiude per omissione dal prossimo sprint.

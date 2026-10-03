@@ -1,4 +1,7 @@
 # OUF — handoff per nuova chat: prossimo sprint file → UDP
+
+> **Ripartenza aggiornata — 2026-10-03 16:14 Europe/Rome:** leggere prima il [nuovo handoff completo](OUF_HANDOFF_2026-10-03_STOPPED_PROVIDER_CUSTODY_NEXT.md). Ultimo VPS PASS: due provider candidate `CREATED_STOPPED`, mai avviati. **Il comando `inventory_semantic_provider_guard_custody.py` NON è stato eseguito dall'utente**; blocco pinned completo nel §6 del nuovo handoff, nessun esito target da presumere. Gateway PR56 `85914e39bd0aa9f8e7a0a0a9d3b9db6007633ff8`: 28/28 check SUCCESS; Semantic PR30 `c2b4ae5abed1236378c7060b3eb3dac126672cbc`: 14/14 SUCCESS, incremento non deployed. Prima delle regole runtime coordinare boot custody/empty sets; non startare né ricreare le reti, non replay Cinema/Teatri. Cronologia e gate ereditati sotto restano conservati; i pin live e gli stati attuali sono nel nuovo handoff.
+
 Data checkpoint: 2026-10-01, 20:24 Europe/Rome.
 
 ## Ripartenza e vincoli dell'utente
