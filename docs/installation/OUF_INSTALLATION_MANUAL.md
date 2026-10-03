@@ -1,5 +1,26 @@
 # OUF — Manuale di installazione e bootstrap
 
+## Checkpoint corrente — shared-face compiler e core guard/lease verificati; integrazione target pendente
+
+Dopo la richiesta dell'operatore «Proseguiamo con enforcement sulle interfacce condivise e coordinazione guard/lease», Gateway PR56 contiene il commit `d38289132e49c9e9be4cb6245bb70a63cfaa82dc` (precedente `2a4499fb17e174f57c5f557d1fdaace793e8ec06`). **CI sull'esatto head: 34/34 completed/success**, nessun pending/failure. I job `shared-face-lease-coordination` 111254451253 e 111254440087 hanno eseguito ciascuno **9 regressioni + 2 prove native PASS senza skip**. Readback esatto dei sei file nuovi/modificati. Nuovi test locali: 9 eseguiti PASS, 2 native skip perché questo workspace non ha nft/ip/netns; la prova nativa è CI, non VPS. Nessun merge.
+
+| Componente software nuovo | SHA256 / risultato |
+| --- | --- |
+| `tools/materialize_semantic_shared_faces.py` | `b97f31cc17c22abbb7a021c274be73816f649196762f9c6dfcc54a58d8382e8a` |
+| `tools/semantic_provider_lease_coordination.py` | `25c6df90d33e39fe83321df6ab9e5c38d4c33bcd290ad57c7a85c03b1bb8ba78` |
+| Fixture shared faces | Same-subnet, routed-network e host-local positivi; porte/peer non governati, spoof IP/MAC e peer port negati; altri peer IPv4/IPv6 conservati; rinomina conserva binding ifindex |
+| Fixture coordination | DNS locale fresco A+AAAA, nft timeout sets, flock comune e journal root privato/fsynced reali; quiesce/revoke, nuova risoluzione dopo riattivazione esplicita, gate incompleto e handle ricreati negati |
+
+Decisione architetturale coerente con scala di qualche migliaio di Enti e topologie distribuite/co-localizzate: contratti identity/authority/flow e lifecycle separati dal backend di enforcement. Il backend Linux seleziona port ifindex+bridge+MAC+IPv4 dei workload e ingress kind/index del peer, senza applicare default-deny all'intero bridge shared. Ogni flow dichiara authorityRef e coppia/protocollo/porta esatti; un ref dichiarato non prova approval. IPv6/VLAN/data non governati sono negati sulle porte selezionate in questo backend iniziale IPv4, preservati sugli altri peer. Fixture routed non prova multi-server/tenant acceptance né SLO a migliaia di Enti.
+
+Il core `Coordinator` usa il medesimo boot lock durante DNS fresco/apply/readback/pubblicazione. Fasi LEASE_READY → LEASE_UPDATING → LEASE_READY; QUIESCING prima della revoca e QUIESCED soltanto dopo empty readback; BLOCKED su failure. `PrivateJournal` compare-and-replace/fsync sotto lock, root:root0600/nofollow/single-link/bounds/duplicate checks; lock inode esistente riusato, non creato. Config/DNS/hash handle dell'owner congelati e ricontrollati; membership autorizzata dal receipt dell'ultimo ciclo, TTL finita, niente cached TTL replay, auto-reactivation o ricreazione/rebinding automatico. startAuthorized resta sempre false. Il journal attuale EMPTY_ONLY non è adottato da questo protocollo nuovo.
+
+**Questi componenti non sono installati sul VPS e non costituiscono ancora un nuovo profilo deploy completo.** Il target resta al §16 PASS: RUNTIME_EMPTY, guard EMPTY_ONLY, 2 candidati mai avviati, provider sets vuoti, zero DNS/provider calls, avvio non autorizzato; source cohort target `ef2270a57446da1f23a58548aa4d44920e578fe0` e hash config/journal/lease attestati invariati. Nessun comando VPS, restart, reboot, start o lease activation eseguito in questa fase.
+
+Gate di integrazione concreto: il binding namespace/ifindex/iflink/parent/MAC/IP/generazione deve essere verificato e protetto **prima dell'esecuzione applicativa**. Un listener Docker post-start sarebbe una finestra di bypass e non viene scelto. I candidati mai avviati attuali non forniscono tale prova o il lifecycle di ricreazione delle porte. Occorre integrare un meccanismo runtime sincrono network-before-process e un nuovo installer sealed con recovery/rollback, owner/guard service lifecycle e migrazione dall'EMPTY_ONLY; non cambiare cohort/manifests/reti produttive per comodità. Nessun nuovo apply target è predisposto.
+
+Protocollo e limiti: [documento Gateway fissato](https://github.com/GioNob/ouf-api-gateway/blob/d38289132e49c9e9be4cb6245bb70a63cfaa82dc/docs/SEMANTIC_PROVIDER_SHARED_FACE_LEASE_PROTOCOL.md). Rischi verificati: spoof da porta distinta anche con IP+MAC falsificati; port rename/reparent; race restore vs writer (lock denial), incomplete gate e revoca fallita; source/authority injection, journal/config/DNS/handle drift; foreign journal preservato. Restano authority/shared-face live binding, bootstrap pre-process, real IPv6 dove richiesto, OIDC/purpose/TLS/revocation admission, real reboot, tenant/distributed/load acceptance e gate Semantic/Discovery/THS/file/API→UDP/Search. PET e business evidence conservati.
+
 ## Requisito architetturale permanente e vincolante — scala Enti e topologie indipendenti
 
 **Istruzione esplicita dell'operatore, 3 ottobre 2026: OUF sarà ragionevolmente adottata da qualche migliaio di Enti. Deve supportare microservizi su reti e server differenti e installazioni su un unico server nella stessa rete/sottorete. Questo requisito governa ogni scelta architetturale, implementazione, test e procedura di installazione futura.**
@@ -15,7 +36,7 @@ La previsione di qualche migliaio di Enti non impone automaticamente migliaia di
 
 Questo requisito si aggiunge alle regole permanenti di validazione/autonomia/checkpoint e va conservato in ogni nuovo handoff. Registrazione documentale: nessuna modifica al runtime VPS e nessuna nuova prova di scala/topologia dichiarata.
 
-## Checkpoint corrente — inventario readiness VPS ESEGUITO, PASS; gate startup aperti
+## Checkpoint target attestato — inventario readiness VPS ESEGUITO, PASS; gate startup aperti
 
 Il 3 ottobre 2026 alle 16:54 UTC (18:54 Europe/Rome) l'operatore ha eseguito il comando §16 e restituito `SEMANTIC_RUNTIME_READINESS_INVENTORY=PASS READ_ONLY=true STARTUP_READY=false START_AUTHORIZED=false NO_IAM_OR_DNS_CALL=true NO_RULE_UNIT_CONTAINER_CHANGED=true NO_SECRETS_PRINTED=true`. Source snapshot attestato: `/etc/ouf/deploy-snapshots/semantic-runtime-readiness-20261003-165430`. Helper Gateway `4daad06b71695ad839d1865e55d5aeaf765df861`, checksum `ecb0326b9f97f76598d9bad56aa241b01802bf0a601f4eda38fef41fb15c655a`; runtime cohort originale resta `ef2270a57446da1f23a58548aa4d44920e578fe0`.
 
