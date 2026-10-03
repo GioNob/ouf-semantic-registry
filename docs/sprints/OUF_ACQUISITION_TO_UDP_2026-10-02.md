@@ -1,6 +1,14 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
-## Checkpoint corrente — staging privato VPS ESEGUITO, PASS plan/apply/verify
+## Checkpoint corrente — runtime plan VPS ESEGUITO, PASS; apply pendente
+
+Il 3 ottobre 2026 l'operatore ha restituito `SEMANTIC_RUNTIME_TRANSITION=PASS MODE=plan STATE=PREPARING START_AUTHORIZED=false PROVIDER_CALLS=0 DOCKER_RESTARTED=false NOT_RELEASE_ACCEPTANCE=true NO_SECRETS_PRINTED=true` per il §13 dell'handoff, sullo stage `/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211/prepared`, source Gateway `ef2270a57446da1f23a58548aa4d44920e578fe0`. **Plan eseguito; non ripeterlo come passo autonomo.** `PREPARING` è il record restituito dal plan: il codice ritorna prima di scrivere il journal e prima di qualsiasi installazione; non prova una transizione apply iniziata.
+
+Custody, intent e staging privato già PASS; nessuna regola/unità/container host modificata da questo plan. Host ancora DENY_ONLY, kernel lease assente, due candidati mai avviati, avvio non autorizzato. Prossimo comando pendente: transizione runtime `apply` seguita da `verify`, §14 dell'handoff. Questo successivo apply sostituisce soltanto le due tabelle possedute con il profilo runtime a provider set vuoti e gli artefatti guard/drop-in posseduti, con journal persistente e `systemctl daemon-reload`; non riavvia Docker/container e non autorizza start né installa/attiva lease. Non è release acceptance.
+
+Runtime apply/verify target **NON ESEGUITI**. Se BLOCKED o interruzione, conservare snapshot/journal e non rieseguire apply: diagnosticare per reconcile/rollback espliciti. Tutti i gate PET, authority, namespace/pacchetti/IPv6, admission/lease lifecycle/reboot e business acceptance restano aperti; main/live e run Cinema/Teatri invariati. CI software già verificata 32/32 e job runtime 11 test senza skip.
+
+## Cronologia — staging privato PASS, prima del runtime plan
 
 Il 3 ottobre 2026 alle 16:02 UTC (18:02 Europe/Rome) l'operatore ha eseguito il blocco staging del §12 dell'handoff. I tre checksum source sono OK; `SEMANTIC_RUNTIME_TRANSITION_STAGE=PASS` nei modi `plan/apply/verify`. Root del tentativo: `/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211`; root preparato privato: `/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211/prepared`.
 
