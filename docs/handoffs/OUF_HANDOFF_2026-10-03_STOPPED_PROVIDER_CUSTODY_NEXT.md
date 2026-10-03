@@ -1,16 +1,18 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — install/recovery core verificato; inventario runtime in validazione
+## Checkpoint corrente — core install/recovery e inventario runtime verificati; prossimo passo VPS read-only
 
-**Stato al 3 ottobre 2026, ore 20:20 Europe/Rome.** Core Gateway completato nel commit `a0473e397d90d46cda2ca33404670c514dd435c9`: **34/34 check completed/success**, nessun pending/failure. Job dedicati 111261718405 e 111261707562: ciascuno **19 regressioni + 3 prove native PASS senza skip**, log controllati. Head successivo PR56 `d0fa3d1ff8c2fe5b7f15754e7b4ff2cbf2acab4a` aggiunge l'inventario runtime read-only; **CI di questo ultimo head ancora in corso, non dichiarata PASS**. Le revisioni 957f942/e72f2b9 avevano un test reale BLOCKED RUNTIME_NAMES_UNPROVEN; è stata pubblicata la normalizzazione dei soli newline finali del formatter Docker, mantenendo il rifiuto di nomi vuoti interni/duplicati/non validi. Il successivo head 9d29dba superava il parser ma il test reale ha rilevato DOCKER_SOCKET_METADATA_CHANGED: il confronto includeva gli access timestamp modificati dalle connessioni dell'inventario stesso. Il nuovo head confronta device/inode/tipo/mode/uid/gid/nlink e testa che una modifica dell'identità o dei permessi resti negata. Questa correzione attende ancora la propria CI. Validazione locale corrente: 23 PASS, 1 test Docker reale skip (Docker assente nel workspace). La CI precedente verde non viene trasferita al nuovo head.
+Core Gateway `a0473e397d90d46cda2ca33404670c514dd435c9`: **34/34 check completed/success**, nessun pending/failure; job 111261718405 e 111261707562 ciascuno **19 regressioni + 3 prove native PASS senza skip**. Head corrente Gateway PR56 `82d1db716b1015dac52feca217af1c5ed600a520`: job dedicato 111264097837 **PASS, 24 test (23 regressioni + 1 Docker reale) e 3 prove native senza skip**, log controllato. È PASS anche il job 111263877173 del precedente d0fa3d1. **CI complessiva al checkpoint: 33/34 completed/success, request-boundary ancora in corso, zero failure. Non dichiarata 34/34 PASS.** Validazione locale: 23 PASS e 1 Docker reale skip perché assente nel workspace. Readback dei file pubblicati e dei quattro documenti verificato.
 
-Il nuovo core `tools/semantic_provider_preexec.py` (SHA256 `5086f893ac22e962816e76709883c9c7f341989919339c579a4f28bfbd403804`) implementa STAGED/INSTALLING/PROTECTED/REMOVING/ROLLED_BACK, installazione esclusiva atomica delle due tabelle, ownership/readback, journal fsynced e lock comune con coordination, recupero esplicito dopo crash e rollback solo con generazione provata morta. Un risultato liveness sconosciuto non equivale a morte. Rifiuta replay apply, tabelle/handle estranei, footprint/binding/generazione alterati e lease non quiescenti. Footprint indipendente e commento transaction univoco sono prerequisiti del driver.
+Il nuovo core `tools/semantic_provider_preexec.py` (SHA256 `5086f893ac22e962816e76709883c9c7f341989919339c579a4f28bfbd403804`) implementa STAGED/INSTALLING/PROTECTED/REMOVING/ROLLED_BACK, installazione esclusiva atomica delle due tabelle, ownership/readback, journal fsynced e lock comune con coordination, recupero esplicito dopo crash e rollback solo con generazione provata morta. Liveness sconosciuta non equivale a morte. Rifiuta replay apply, tabelle/handle estranei, footprint/binding/generazione alterati e lease non quiescenti. Footprint indipendente e commento transaction univoco sono prerequisiti del driver.
 
-**Limite esplicito:** è un core con backend/driver iniettati, non un hook OCI distribuito né una registrazione Docker. La prova nativa del lifecycle usa un processo fixture già vivo e verifica namespace/PID/start ticks; **non prova protezione prima dell'esecuzione dell'applicazione**. Non risultano completati source-sealed driver/staging, aggancio OCI reale, integrazione/runtime registration target o migrazione dei servizi guard/owner.
+Il helper `scripts/inventory_semantic_preexec_runtime.py` è ora verificato con Docker reale in CI. Legge soltanto serverVersion/defaultRuntime/runtimeNames e versione runc locale, da socket locale root-owned e CLI configuration privato vuoto. Non eredita DOCKER_HOST/proxy/credential helper e non stampa daemon config/argomenti/credenziali. Corrette e testate due incompatibilità emerse in CI: newline finale aggiuntivo del formatter Docker e timestamp di accesso del socket; resta controllata l'identità device/inode/mode/uid/gid/nlink. SHA256 helper `5caf118353fbb49457ad083bdcf26e778413ba9ea699978ce52465a8480860e1`.
 
-Prossimo passo preciso: chiudere il test reale del helper `scripts/inventory_semantic_preexec_runtime.py` sul nuovo head; solo dopo PASS predisporre l'invocazione read-only sul VPS per conoscere serverVersion/defaultRuntime/runtimeNames e versione runc locale. SHA256 helper corrente `5caf118353fbb49457ad083bdcf26e778413ba9ea699978ce52465a8480860e1`. Nessuna versione locale prova che Docker usi quel binario, nessuna lettura stabile prova snapshot atomico o compatibilità OCI. **Questo nuovo inventario VPS è NON ESEGUITO; nessun comando target consegnato in questo checkpoint mentre la sua CI resta aperta.**
+**Limite esplicito:** core con backend/driver iniettati, non hook OCI distribuito né registrazione Docker. La prova nativa del lifecycle usa un processo fixture già vivo e verifica namespace/PID/start ticks; **non prova protezione prima dell'esecuzione dell'applicazione**. Restano source-sealed driver/staging, aggancio OCI reale, integrazione runtime target e migrazione servizi guard/owner. Una versione runc locale non prova che Docker usi quel binario; letture stabili non provano snapshot atomico o compatibilità OCI.
 
-Restano attestati i comandi VPS già ESEGUITI ai §§11–16: intent privato, staging, runtime plan/apply/verify RUNTIME_EMPTY e readiness read-only PASS. Stage `semantic-runtime-transition-stage-20261003-160211/prepared`, readiness source `semantic-runtime-readiness-20261003-165430`; profilo **EMPTY_ONLY**, due candidati mai avviati, zero provider call, start non autorizzato. Nessun merge, avvio/replay, Docker restart, mutazione target o riattivazione lease eseguiti da questo lavoro. Scala di migliaia di Enti e topologie distribuite/co-localizzate restano vincoli permanenti; backend Linux non diventa default universale. PET e business acceptance precedenti conservati.
+**Prossimo passo indispensabile sul VPS: inventario read-only del §19 dell'handoff, NON ESEGUITO.** Il comando è ora predisposto e pinna source/hash verificati. Conservare output e nuovo source root, fermarsi su BLOCKED senza replay di runtime apply. Serve conoscere il runtime effettivo prima di scegliere il driver e i suoi prerequisiti infrastrutturali. Nessuna registrazione/avvio/restart autorizzati dall'inventario.
+
+Restano attestati i comandi VPS già **ESEGUITI** ai §§11–16: intent privato, staging, runtime plan/apply/verify RUNTIME_EMPTY e readiness read-only PASS. Stage `semantic-runtime-transition-stage-20261003-160211/prepared`, readiness source `semantic-runtime-readiness-20261003-165430`; **EMPTY_ONLY**, due candidati mai avviati, zero provider call, start non autorizzato. Nessun merge, avvio/replay, Docker restart, mutazione target o riattivazione lease eseguiti da questo lavoro. Scala di migliaia di Enti e topologie distribuite/co-localizzate rimangono vincoli permanenti; backend Linux non diventa default universale. PET e business acceptance conservati.
 
 ## Checkpoint precedente — shared-face compiler e core guard/lease verificati (d382891)
 
@@ -676,6 +678,38 @@ I componenti e le fixture §17 sono PASS; nessun comando host da eseguire è anc
 
 Completare poi nuovo installer sealed/profile migrator, journal e artefatti guard/owner con lo stesso lock, bounded contention, service stop/restart/quiesce, readback/rollback e autorità infrastrutturale. Nessuna auto-adoption del vecchio journal o binding lease; il journal di coordination ha schema nuovo e startAuthorized=false. Non attivare il package lease9 sotto il guard EMPTY_ONLY attuale. Conservare tutti i cohort originali; le prove native nuove sono isolate, non prove di startup/admission del VPS. Aggiornare autonomamente handoff/roadmap/manuale/sprint/PR dopo ogni esito.
 
-## 19. Inventario runtime preexec — NON ESEGUITO, validazione CI in corso
+## 19. Inventario runtime preexec — NON ESEGUITO; comando read-only pronto
 
-Nuovo helper root-private read-only al commit Gateway `d0fa3d1ff8c2fe5b7f15754e7b4ff2cbf2acab4a`, SHA256 sopra. Test Docker reale del nuovo head pendente dopo correzione formatter: non usare la CI di a0473e3 come prova del helper. Non è ancora pubblicato un comando VPS eseguibile. Dopo PASS, predisporre nuovo source snapshot privato e invocazione con Docker/runc assoluti e socket locale root-owned; non leggere/stampare daemon config, argomenti runtime o credenziali. Il helper chiama soltanto info/version, non inspect/start/exec/restart o registrazione runtime. Aggiornare immediatamente questa sezione e i quattro documenti dopo il prossimo risultato. Il requisito target indispensabile è conoscere il runtime effettivo prima di scegliere il driver; startup/admission/infrastructure authority restano gate separati.
+Helper verificato nel job CI 111264097837 dell'esatto head Gateway `82d1db716b1015dac52feca217af1c5ed600a520`: 24 test e 3 native PASS senza skip. Suite complessiva: 33/34 success, request-boundary ancora in corso al checkpoint; non attribuire a questo head i 34/34 della precedente revisione core. Nessuna prova target inventata.
+
+Questo blocco prepara soltanto un nuovo source snapshot root privato e legge informazioni pubbliche/sanitizzate del runtime locale. **Non cambia nft/unit/container, non registra runtime e non esegue inspect/start/exec/restart/DNS/IAM/provider.** Non richiede rinnovo Keycloak. Se /usr/bin/runc non è il binario disponibile o un dato/metadata non è provato, il helper restituisce BLOCKED con motivo non sensibile: conservare output e source root, non cambiare il daemon e non ripetere vecchi apply. La versione standalone non prova il binario usato da Docker.
+
+```bash
+(
+set -euo pipefail
+OUF_PREEXEC_INV_TMP=$(mktemp -d)
+trap 'rm -rf -- "$OUF_PREEXEC_INV_TMP"' EXIT
+
+curl --fail --silent --show-error --proto '=https' --max-time 30 \
+  https://raw.githubusercontent.com/GioNob/ouf-api-gateway/82d1db716b1015dac52feca217af1c5ed600a520/scripts/inventory_semantic_preexec_runtime.py \
+  -o "$OUF_PREEXEC_INV_TMP/inventory_semantic_preexec_runtime.py"
+
+printf '%s  %s\n' \
+  5caf118353fbb49457ad083bdcf26e778413ba9ea699978ce52465a8480860e1 \
+  "$OUF_PREEXEC_INV_TMP/inventory_semantic_preexec_runtime.py" | sha256sum -c -
+
+OUF_PREEXEC_INV_ROOT="/etc/ouf/deploy-snapshots/semantic-preexec-runtime-inventory-$(date -u +%Y%m%d-%H%M%S)"
+sudo mkdir -m 0700 -- "$OUF_PREEXEC_INV_ROOT"
+sudo install -d -m 0700 -o root -g root "$OUF_PREEXEC_INV_ROOT/source/scripts"
+sudo install -m 0600 -o root -g root \
+  "$OUF_PREEXEC_INV_TMP/inventory_semantic_preexec_runtime.py" "$OUF_PREEXEC_INV_ROOT/source/scripts/"
+printf 'SEMANTIC_PREEXEC_RUNTIME_SOURCE_ROOT=%s\n' "$OUF_PREEXEC_INV_ROOT"
+
+sudo /usr/bin/python3 -I -B \
+  "$OUF_PREEXEC_INV_ROOT/source/scripts/inventory_semantic_preexec_runtime.py" \
+  --docker-path /usr/bin/docker \
+  --runc-path /usr/bin/runc
+)
+```
+
+Esito atteso: JSON schema ouf.semantic-preexec-runtime-inventory.v1 seguito da PASS READ_ONLY=true OCI_HOOK_INTEGRATION_PROVEN=false START_AUTHORIZED=false. **NON ESEGUITO:** aggiornare questa sezione e handoff/roadmap/manuale/sprint dopo l'output operatore. Nessuna successiva installazione o applicazione implicita.
