@@ -1,5 +1,15 @@
 # OUF — Manuale di installazione e bootstrap
 
+## Checkpoint software OCI — correzione pubblicata, verifica nativa in corso
+
+Gateway PR56 head `ce6d950f3f97c29336149737ede27159751e245e` aggiunge backend nativo prepared-namespace, driver root-private source-sealed, source-only package stager e prova OCI reale. Il precedente 80c4841 ha eseguito 29 test root e le tre prove native di protocollo, ma **la nuova prova OCI è FALLITA per timeout nel caso positivo** (job 111271343429). I casi negativi arrivavano al rifiuto atteso; non equivalgono al superamento dell'intera prova. Correzione pubblicata: output di runc create su file temporaneo invece di pipe ereditabili dal processo init, e import fixture senza discovery duplicata/skip. **Nuova CI ancora in corso, non dichiarata PASS.**
+
+Localmente, su dipendenze riallineate all'esatto source remoto: **28 PASS + 1 Docker opt-in skip**; runc/nft non sono disponibili nel workspace e la prova OCI deve essere eseguita realmente in CI. Il software precedente 82d1db7 resta la baseline 34/34 verde, senza trasferirne il risultato al nuovo head.
+
+Nuovi moduli: `tools/semantic_provider_preexec_native.py`, `scripts/semantic_provider_preexec_hook.py`, `scripts/stage_semantic_preexec_package.py`; il driver verifica dieci sorgenti root:root 0600/hash prima degli import, bundle privato, namespace inode, coppie veth/ifindex, bridge, MAC/IP e generazione PID/start ticks. Regole dopo createRuntime che potrebbero cambiare rete sono rifiutate. Staging sigilla undici sorgenti, senza driver profile/journal/runtime registration, hook installato, regole/unit/container o avvio. Native backend ha capture su file, bound di output e deadline cumulativa. Authority fixture sintetica, nessun provider chiamato.
+
+Il prossimo intervento VPS previsto è **solo source package staging privato**, NON ESEGUITO e da consegnare dopo la prova OCI PASS. Vecchi cohort/candidati/EMPTY_ONLY conservati. L'aggancio standalone runc non prova integrazione Docker: default runc, daemon/runtime registration e nuovi cohort restano decisioni/azioni separate, senza reload/restart impliciti. Il PASS dell'inventario VPS del 3 ottobre è registrato sotto e §19 è ESEGUITO.
+
 ## Inventario runtime VPS — ESEGUITO, PASS (3 ottobre 2026)
 
 Output operatore ricevuto: source root `/etc/ouf/deploy-snapshots/semantic-preexec-runtime-inventory-20261003-183915`. Schema `ouf.semantic-preexec-runtime-inventory.v1`, Docker serverVersion **29.8.1**, defaultRuntime **runc**, runtimeNames **io.containerd.runc.v2, runc**, runcBinaryVersion **1.5.1**. READ_ONLY=true, stableAcrossReads=true, atomicSnapshotProven=false, ociHookIntegrationProven=false, runtimeRegistrationAuthorized=false, startAuthorized=false, providerCalls=0, notReleaseAcceptance=true, noSecretsPrinted=true. Righe JSON e PASS attestate dall'operatore; nessuna modifica rule/unit/container.
