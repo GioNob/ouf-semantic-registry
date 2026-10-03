@@ -1,16 +1,35 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — inventario candidati pronto; prossimo intervento VPS §21
+## Checkpoint corrente — inventario candidati VPS ESEGUITO; adapter Docker da implementare
 
 Gateway PR56 head `6e84e5ca1134cd8e26b603380a0adcb06a15fb0c`. Helper nuovo `scripts/inventory_semantic_preexec_candidates.py`, SHA256 `63fb3da6682861cd033c236a2830668bb4648b27ddc139799a05a8c62652f0bb`. Readback di helper, test, workflow e protocollo su GitHub verificato. Locale: **32 PASS + 2 Docker opt-in skip**, Docker assente nel workspace. **Job dedicati 111284288072 e 111284295941 completed/success**, log letti: ciascuno **34 test (32 regressioni + 2 Docker reali), 3 prove native di rete e 1 prova OCI reale senza skip**; runc 1.5.1. **CI complessiva verificata sull'esatto head: 34/34 completed/success, nessun pending/failure.**
 
 Ultimo intervento VPS §20 **ESEGUITO plan/apply/verify PASS**, undici hash OK; package root `/etc/ouf/deploy-snapshots/semantic-preexec-package-20261003-195926`, source `1a020edea42cdf60a38298bec2ffebc97b3fad02`, Python 3.13.5, strumenti metadata tutti presenti. Il package sigillato resta immutabile, runtimeRegistered/startAuthorized=false e nessuna modifica di rule/unit/container.
 
-**Prossimo intervento operatore: handoff §21, inventario candidati di sola lettura, NON ESEGUITO.** Il comando pubblica un nuovo snapshot privato del solo helper e legge candidati/reti tramite socket Docker locale, CLI config privata vuota, ambiente minimale e proiezioni allowlist. Lega manifest/creation journal agli hash attestati e network receipt al manifest; controlla custody CREATED/PID zero/mai avviato/restart no, runtime assegnato, network/IPAM/alias configurati, owner/bridge e assenza di membri estranei sulle sole reti dedicate. Due letture concordanti e rilettura dei file attestano stabilità osservata, mai atomicità. Output ridotto a hash/runtime/conteggi, niente Env/mount/comandi/indirizzi o namespace path. Non usa il vecchio inventario DENY_ONLY per accettare il nuovo guard RUNTIME_EMPTY.
+**Ultimo intervento operatore: handoff §21 ESEGUITO, inventario candidati PASS; source root `semantic-preexec-candidate-inventory-20261003-203221`.** Il comando pubblica un nuovo snapshot privato del solo helper e legge candidati/reti tramite socket Docker locale, CLI config privata vuota, ambiente minimale e proiezioni allowlist. Lega manifest/creation journal agli hash attestati e network receipt al manifest; controlla custody CREATED/PID zero/mai avviato/restart no, runtime assegnato, network/IPAM/alias configurati, owner/bridge e assenza di membri estranei sulle sole reti dedicate. Due letture concordanti e rilettura dei file attestano stabilità osservata, mai atomicità. Output ridotto a hash/runtime/conteggi, niente Env/mount/comandi/indirizzi o namespace path. Non usa il vecchio inventario DENY_ONLY per accettare il nuovo guard RUNTIME_EMPTY.
 
 **Rischi e decisione documentati prima dell'implementazione:** (1) endpoint configurati differiti non sono namespace live: NetworkID vuoto ammesso con verifica separata del network ID e liveNamespaceBindingProven=false; (2) letture Docker multiple non sono atomiche: drift blocca ma atomicSnapshotProven=false; (3) inspect integrale/ambiente ereditato/output illimitato potrebbero esporre segreti, selezionare host remoto o consumare memoria: proiezioni allowlist, socket locale, configurazione privata vuota, output 128 KiB e deadline totale 30 s. Test negativi coprono start/drift/ownership/IPAM, duplicati JSON, output e deadline; Docker reale prova il helper CLI con due nuovi candidati sintetici mai avviati, ripuliti dopo la prova.
 
 La documentazione ufficiale Docker richiede registrazione esplicita per runtime drop-in runc o integrazione shim containerd: [Alternative runtimes](https://docs.docker.com/engine/daemon/alternative-runtimes/). Decisione ordinaria: progettare un'integrazione nominata e scoped, preservando default/cohort; nessun cambio globale per aggirare binding non provati. Runtime osservato non prova che il gate sia invocato. Il wrapper/shim di integrazione Docker **non è ancora implementato né provato**. Authority reale, binding namespace/PID/veth live, admission OIDC/purpose/TLS/revoca, lease attiva e reboot rimangono aperti. Nessuna registrazione/reload/restart/ricreazione/start/merge/replay impliciti. Topologie distribuite e co-localizzate, migliaia di Enti e assenza di default IP/bridge fixture restano requisiti permanenti.
+
+## Inventario candidati VPS — ESEGUITO, PASS (3 ottobre 2026)
+
+Output operatore ricevuto alle 22:32 Europe/Rome: source root `/etc/ouf/deploy-snapshots/semantic-preexec-candidate-inventory-20261003-203221`. SHA256 del helper OK; schema `ouf.semantic-preexec-candidate-inventory.v1`, **PASS READ_ONLY=true**. Due candidati, candidateRuntimes=[runc], candidatesNeverStarted=true, configuredBindingsMatchManifest=true, configuredNetworkCount=3, sandboxKeyPresentCount=0 e stableAcrossReads=true. Tre reti configurate non implicano tre interfacce live; l'assenza di SandboxKey nell'inspect non prova l'assenza di ogni namespace sul sistema.
+
+| Binding verificato dall'inventario | SHA256 |
+| --- | --- |
+| bindingHash | `0337655a5c3d6d80653aca363d8479ce10e6d27cde024518060a6c628e542aeb` |
+| manifestHash | `052b46a56ea666971f135c75af48b3342dbeb68e2f17f1f16263a99351df88bd` |
+| creationJournalHash | `a1c2acd9924fc0f924ded7c2d59f128ef2d8b8dd11c62484a901f628022aaae7` |
+
+atomicSnapshotProven=false, fullCreationAcceptanceProven=false, liveNamespaceBindingProven=false, ociHookIntegrationProven=false, runtimeRegistrationAuthorized=false, startAuthorized=false; providerCalls=0, notReleaseAcceptance=true, noSecretsPrinted=true. Nessuna modifica rule/unit/container attestata dall'operatore. Questa è evidenza del comando di inventario sul target, non una nuova verifica del guard runtime o acceptance di avvio.
+
+**Handoff §21 ESEGUITO: conservarne il comando come registro, non rieseguirlo automaticamente.** §20 resta ESEGUITO PASS, package e vecchi cohort immutabili. Ultimo guard runtime attestato RUNTIME_EMPTY/EMPTY_ONLY; questo inventario non lo aggiorna né lo riconferma atomicamente.
+
+**Prossimo passo autonomo preciso:** implementare e provare in CI un adapter Docker nominato e scoped che colleghi la preparazione del bundle/namespace al gate OCI prima del processo applicativo, con binding indipendente al manifest approvato, common lock e journal di guard/lease. Le prove positive/negative devono usare cohort sintetici separati, coprire create/start/delete e crash/rollback, dimostrare che gli errori del gate impediscano il processo e preservare default runtime/cohort esistenti. Solo dopo codice e CI verificati preparare un nuovo package privato e il relativo piano target reviewable. Non c'è un nuovo comando VPS pronto in questo checkpoint.
+
+**Decisione derivata dall'evidenza:** non costruire un profilo prepared-namespace target da indirizzi soltanto configurati o da un SandboxKey assente, e non assumere che i candidati assegnati a runc invochino il driver standalone sigillato. L'eventuale registrazione runtime, reload e gestione del nuovo cohort saranno azioni target esplicite e separate; nessun avvio, ricreazione, replay o merge implicito. Authority di infrastruttura e admission reale non sono conferite da questo PASS e restano gate aperti insieme a coordinazione lease attiva e reboot. Distribuzione su reti/host differenti e co-localizzazione nella stessa rete/sottorete per migliaia di Enti restano vincoli permanenti.
+
 
 ## Checkpoint precedente — source package VPS ESEGUITO; integrazione Docker da verificare
 
@@ -819,7 +838,7 @@ done
 
 **ESEGUITO:** output operatore plan/apply/verify PASS ricevuto; handoff/roadmap/manuale/sprint aggiornati con package root e receipt. Il comando sopra è storico, non da rieseguire. Per il passo successivo restano authority e profilo target/generazione/runtime integration, senza avvii o registrazioni impliciti.
 
-## 21. Inventario runtime/binding dei candidati fermi — NON ESEGUITO; comando di sola lettura
+## 21. Inventario runtime/binding dei candidati fermi — ESEGUITO, PASS; comando storico di sola lettura
 
 Prerequisiti attestati: §20 ESEGUITO PASS e candidati mai avviati; manifest/creation journal pin agli hash seguenti. Lo snapshot del helper è nuovo e privato, separato dal package preexec sigillato. Il helper non scrive receipt/journal o regole e non interroga IAM/DNS/provider. Nessun login Keycloak necessario. Non verifica l'intera configurazione della creazione né il guard runtime attuale.
 
@@ -853,5 +872,5 @@ sudo /usr/bin/python3 -I -B "$OUF_CANDIDATE_INV_ROOT/source/inventory_semantic_p
 )
 ```
 
-**NON ESEGUITO sul VPS:** attendere output operatore e aggiornare autonomamente handoff/roadmap/manuale/sprint. Dopo il risultato, definire l'adapter Docker contro il binding osservato, mantenendo separata l'authority di infrastruttura dal semplice inventario.
+**ESEGUITO sul VPS:** output operatore PASS ricevuto e registrato in handoff/roadmap/manuale/sprint. Runtime runc, due candidati mai avviati, tre reti configurate, SandboxKey presenti zero; bindingHash `0337655a5c3d6d80653aca363d8479ce10e6d27cde024518060a6c628e542aeb`. Il comando sopra è storico e non da rieseguire. Prossimo lavoro: adapter Docker e prove CI, mantenendo separata l'authority di infrastruttura dal semplice inventario.
 
