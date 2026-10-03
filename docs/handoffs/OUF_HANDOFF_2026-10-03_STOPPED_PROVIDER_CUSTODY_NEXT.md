@@ -417,3 +417,58 @@ done
 **NON ESEGUITO.** È il prossimo passo dopo l'intent PASS del §11. Usare gli helper e i parametri fissati nel checkpoint corrente iniziale e nel runbook Gateway al commit `ef2270a57446da1f23a58548aa4d44920e578fe0`; preparare un nuovo snapshot esclusivo root privato e verificare i tre checksum prima dell'esecuzione. Modi `plan/apply/verify` dello staging: scrittura di soli artefatti privati e compilazione nft in namespace isolato tramite `unshare`; nessuna installazione di regole/unità host o avvio container. Restituire solo output redatto, conservare root/parziali in caso di BLOCKED, non ripetere apply alla cieca. Nessuna transizione runtime host o autorizzazione startup è inclusa in questo passo.
 
 Regola permanente di documentazione: dopo ogni risultato comunicato dall'operatore, aggiornare autonomamente checkpoint, sezione del comando, checklist e prossimo passo nei documenti canonici applicabili. Le procedure superate vanno marcate come cronologia/comandi già eseguiti; un PASS nel checkpoint non basta a lasciare pendente la relativa sezione operativa.
+
+### Blocco staging privato pronto — NON ESEGUITO
+
+Richiesto dall'operatore il 3 ottobre 2026 dopo l'intent PASS. Eseguire in SSH come oufadmin; non richiede Keycloak. Il root del tentativo viene stampato prima della preparazione per conservare il binding anche in caso di BLOCKED. Nessun installer runtime è invocato. Aggiornare questa sezione con output e root effettivo al ricevimento dell'esito; non presumere PASS.
+
+```bash
+(
+set -euo pipefail
+OUF_RUNTIME_TMP=$(mktemp -d)
+trap 'rm -rf -- "$OUF_RUNTIME_TMP"' EXIT
+
+for OUF_RUNTIME_SCRIPT in \
+  restore_semantic_runtime_boot_guard.py \
+  stage_semantic_runtime_transition.py \
+  transition_semantic_runtime_guard.py; do
+  curl --fail --silent --show-error --proto '=https' --max-time 30 \
+    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/ef2270a57446da1f23a58548aa4d44920e578fe0/scripts/$OUF_RUNTIME_SCRIPT" \
+    -o "$OUF_RUNTIME_TMP/$OUF_RUNTIME_SCRIPT"
+done
+
+printf '%s  %s\n' \
+  cceab662620d1abf97c09be1147c79e4e43022298cb0560dc604ed4bdeb6a606 \
+  "$OUF_RUNTIME_TMP/restore_semantic_runtime_boot_guard.py" \
+  f88740a293d78906b0a4c8915cc6b760a2dc3f9ab97f110cbb4308e950e519dd \
+  "$OUF_RUNTIME_TMP/stage_semantic_runtime_transition.py" \
+  a3818878086a40377125816b776606f936ad02496d891f4bc72477c4c731ecf4 \
+  "$OUF_RUNTIME_TMP/transition_semantic_runtime_guard.py" | sha256sum -c -
+
+OUF_RUNTIME_ROOT="/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-$(date -u +%Y%m%d-%H%M%S)"
+sudo mkdir -m 0700 -- "$OUF_RUNTIME_ROOT"
+printf 'SEMANTIC_RUNTIME_STAGE_ATTEMPT_ROOT=%s\n' "$OUF_RUNTIME_ROOT"
+sudo install -d -m 0700 -o root -g root "$OUF_RUNTIME_ROOT/source/scripts"
+sudo install -m 0600 -o root -g root \
+  "$OUF_RUNTIME_TMP/"*.py "$OUF_RUNTIME_ROOT/source/scripts/"
+
+for OUF_RUNTIME_MODE in plan apply verify; do
+  sudo /usr/bin/python3 -B "$OUF_RUNTIME_ROOT/source/scripts/stage_semantic_runtime_transition.py" \
+    --mode "$OUF_RUNTIME_MODE" \
+    --source-commit ef2270a57446da1f23a58548aa4d44920e578fe0 \
+    --intent-root /etc/ouf/deploy-snapshots/semantic-provider-transition-intent-20261003-151036/prepared \
+    --intent-source-commit 392234edc50c6e8cd19a3028b3e9e19d6f1955b4 \
+    --intent-source-sha256 f1cc60568118387cad11a8546f3b0c2c64941c6a51a28611e4c62a009db57422 \
+    --runtime-guard-sha256 cceab662620d1abf97c09be1147c79e4e43022298cb0560dc604ed4bdeb6a606 \
+    --snapshot-root "$OUF_RUNTIME_ROOT/prepared" \
+    --docker-path /usr/bin/docker \
+    --nft-path /usr/sbin/nft \
+    --systemctl-path /usr/bin/systemctl \
+    --unshare-path /usr/bin/unshare \
+    --python-path /usr/bin/python3 \
+    --provider-endpoint-ref schema-gov \
+    --resolution-evidence-ref fresh-lease-owner \
+    --lease-seconds 30
+done
+)
+```
