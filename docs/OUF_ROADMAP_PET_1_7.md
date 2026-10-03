@@ -1,5 +1,12 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+## Ripresa del 3 ottobre 2026 — custody target ancora pendente
+
+Baseline PET allegata verificata: 323 checksum, zero mismatch; SHA256 archivio `e63df67e8817eec38a9d4b3eb736b020f693b932f3360dc02f4555330f2201ce`. Pin correnti riletti tramite connector: Gateway PR56 `85914e39…` (28/28 SUCCESS), Semantic PR30 `c2b4ae5a…` (14/14 SUCCESS); PR27/28, MCP PR48 e Gateway PR55 sono OPEN DRAFT. PR30 eredita PR28 (ahead3/behind0); main, PR e ultima prova live sono distinti. Registro completo e pin nel [handoff corrente](handoffs/OUF_HANDOFF_2026-10-03_STOPPED_PROVIDER_CUSTODY_NEXT.md).
+
+**Il blocco §6 dell'handoff resta il primo intervento VPS, NON ESEGUITO e senza PASS presunto.** Helper e checksum verificati; nessun login Keycloak necessario. Ultimo target PASS: due candidati CREATED_STOPPED, mai avviati. Attendere l'output redatto dell'operatore prima di ammettere la transizione coordinata boot/runtime/empty sets. Profilo nuovo sealed, journal/lock, fail-closed, rollback dei parziali e hash boot/lease distinti sono precondizioni; nessun helper di transizione o start è attestato qui. Tutti i binding restano parametri. Percorso file immediate ingestion dopo ACTIVE e API scheduler-before-ingestion invariati, con mapping assistito e decisioni THS. Gate ereditati e prove Cinema/Teatri preservati, nessun replay o nuova risorsa.
+
+
 > **Ripartenza aggiornata — 2026-10-03 16:14 Europe/Rome:** leggere prima il [nuovo handoff completo](handoffs/OUF_HANDOFF_2026-10-03_STOPPED_PROVIDER_CUSTODY_NEXT.md). Ultimo VPS PASS: due provider candidate `CREATED_STOPPED`, mai avviati. **Il comando `inventory_semantic_provider_guard_custody.py` NON è stato eseguito dall'utente**; blocco pinned completo nel §6 del nuovo handoff, nessun esito target da presumere. Gateway PR56 `85914e39bd0aa9f8e7a0a0a9d3b9db6007633ff8`: 28/28 check SUCCESS; Semantic PR30 `c2b4ae5abed1236378c7060b3eb3dac126672cbc`: 14/14 SUCCESS, incremento non deployed. Prima delle regole runtime coordinare boot custody/empty sets; non startare né ricreare le reti, non replay Cinema/Teatri. Cronologia e gate ereditati sotto restano conservati; i pin live e gli stati attuali sono nel nuovo handoff.
 
 

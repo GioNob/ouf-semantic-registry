@@ -1,5 +1,34 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
+## Ripresa verificata — 3 ottobre 2026, nuova sessione
+
+Letto integralmente questo handoff al commit `381fc2ae00c52f1952e941edbc43d7fda7fa01be` attraverso il connector GitHub; acquisiti roadmap, manuale, sprint, registro ereditato del 1 ottobre e riferimenti storici 25/27/29/30 settembre e audit 27 settembre. La cronologia resta preservata: nessun gate chiuso per omissione.
+
+Baseline allegata `OUF_Reality_Baseline_Package_v1_7(20261003-142932).zip`: SHA256 `e63df67e8817eec38a9d4b3eb736b020f693b932f3360dc02f4555330f2201ce`; tutti i 323 checksum interni coincidono. Il contenuto dell'archivio coincide con la baseline citata al §3 anche se il nome di upload differisce. Consultati Matrix L0 v1.7, Onboarding v1.6 §§92–92.2, Semantic v1.3 §§9.2/10–11/17–18, UDP v1.3 §§21–22/109.2/109.6–109.9, Authorization v1.5 §36.10 e confini MCP v1.4/Gateway v1.5. Mapping assistito esterno, autorità THS, ingestion file dopo ACTIVE e scheduler governato per API rimangono il percorso concordato.
+
+### Pin riletti dal connector
+
+| Repository / PR | HEAD verificato | Stato |
+| --- | --- | --- |
+| Gateway PR56 | `85914e39bd0aa9f8e7a0a0a9d3b9db6007633ff8` | OPEN DRAFT, 28/28 check run completed/success |
+| Semantic PR30 | `c2b4ae5abed1236378c7060b3eb3dac126672cbc` | OPEN DRAFT, 14/14 check run completed/success |
+| Semantic PR26 | `381fc2ae00c52f1952e941edbc43d7fda7fa01be` | OPEN DRAFT; pin di ingresso prima di questo aggiornamento documentale |
+| Semantic PR27 | `e7bc5190f9e6afbbc4cf3c90d5d4970afbfad14b` | OPEN DRAFT; coincide con ultima revisione live riferita, senza nuova prova target |
+| Semantic PR28 | `bf35e930fb239c61ea8ceebb41e187d653a3d96a` | OPEN DRAFT |
+| MCP PR48 | `d7d5330d2b2588b3f896ea23e2c47e19b7b905a1` | OPEN DRAFT |
+| Gateway PR55 | `b368284b3f6a7675863f85eeafc42d67bf9187dc` | OPEN DRAFT |
+
+Main riletti separatamente: Semantic `d188e5e727eca7a22f414f43f164f85c31411bcf`, Gateway `dbdc24b5481dc9473b21b360ab1142c9aef0194b`, MCP `5615fdcad8cbcad9ff41ec3d0ad2ccbf9423c042`. Nessun merge o spostamento di main. Compare PR28→PR30: ahead 3, behind 0, merge-base uguale al pin PR28; la correzione disponibilità Discovery è ereditata. Il delta include V10 e rimane candidato software, non rollout. Gli stati live al §5 sono ultima evidenza operatore, non una nuova interrogazione VPS.
+
+### Primo intervento e dipendenza target
+
+Scaricato e letto l'helper custody dal pin Gateway sopra; byte UTF-8 verificati SHA256 `fabd47c6ce8919bc7a910cbaf63f66f1fb786b00c239ae41757c1fd0df829b8d`. Il blocco §6 è riproposto invariato come primo intervento VPS; controllo sintattico shell riuscito. **NON ESEGUITO sul target; nessun PASS custody, nuovo snapshot host o autorizzazione start è attestato.** Nessun accesso SSH è disponibile in questa sessione: l'operatore esegue il blocco e restituisce solo output redatto.
+
+Dopo l'esito target: se BLOCKED, isolare read-only la differenza senza replay create/apply; se PASS, usare i journal/hash restituiti come precondizioni di un nuovo piano boot/runtime. La transizione richiede profilo nuovo sealed, intent/journal e lock comune con la custodia boot, stato fail-closed ad ogni fase, provider sets inizialmente vuoti, verifica della struttura condivisa e del Docker pre-start, rollback/reconciliation dei parziali. Conservare separati footprint boot e hash struttura lease; non riusare una vecchia osservazione DNS come lease. Nessun helper di transizione è dichiarato implementato o target-verified da questa ripresa. Start/daemon/provider admission e reboot restano gate distinti successivi, con binding d'installazione espliciti.
+
+Cinema/Teatri, asset/profile/job, reti, immagini, credenziali, policy38, receipt originali e backup restano preservati; nessuna mutazione VPS, nuova ingestion o chiamata provider eseguita in questa sessione.
+
+
 Checkpoint: **2026-10-03, 16:14 Europe/Rome**. L'utente interrompe la chat per lentezza, non interrompe il progetto. Questo è il punto di ingresso della nuova chat. Conserva e integra il registro storico del [1 ottobre](OUF_HANDOFF_2026-10-01_FILE_TO_UDP_NEXT_SPRINT.md), senza chiudere gate per omissione.
 
 ## 1. Punto esatto di arresto: il prossimo comando NON è stato eseguito
