@@ -1,0 +1,27 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix schema: <https://schema.org/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix cinema: <https://api.ouf-lab.it/semantic/cinema#> .
+
+<https://api.ouf-lab.it/semantic/cinema> a owl:Ontology ;
+    rdfs:label "Modello proposto per i cinema del file gestito"@it ;
+    rdfs:comment "Bozza per revisione HUMAN; nessuna decisione su chiave o classificazione dei campi e' implicita nella pubblicazione."@it ;
+    dct:source <profile://managed-files/8ec8ae90-808a-4d9e-907c-d56de119e376/profiles/4462692b-9c85-446b-b6fd-779f01eab64d> .
+
+cinema:Cinema a owl:Class ;
+    rdfs:label "Cinema"@it ;
+    rdfs:subClassOf schema:MovieTheater .
+
+cinema:nome a owl:DatatypeProperty ;
+    rdfs:label "Nome del cinema"@it ;
+    rdfs:subPropertyOf schema:name ;
+    rdfs:domain cinema:Cinema ;
+    rdfs:range xsd:string .
+
+cinema:indirizzo a owl:DatatypeProperty ;
+    rdfs:label "Indirizzo del cinema"@it ;
+    rdfs:subPropertyOf schema:address ;
+    rdfs:domain cinema:Cinema ;
+    rdfs:range xsd:string .

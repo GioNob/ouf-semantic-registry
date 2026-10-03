@@ -1,0 +1,69 @@
+name: Consultation deploy scripts
+on:
+  push:
+    paths:
+      - 'scripts/r4a_*semantic_consultation.py'
+      - 'scripts/r4a_consultation_runtime_preflight.py'
+      - 'scripts/r4a_semantic_consultation_policy_inventory.py'
+      - 'tests/test_*semantic_consultation.py'
+      - 'tests/test_consultation_runtime_preflight.py'
+      - 'tests/test_consultation_policy_inventory.py'
+      - 'scripts/r4a_*semantic_rdf_read.py'
+      - 'tests/test_*semantic_rdf_read.py'
+      - 'scripts/r4a_semantic_discovery_preflight.py'
+      - 'tests/test_semantic_discovery_preflight.py'
+      - 'scripts/r4a_semantic_southbound_topology.py'
+      - 'tests/test_semantic_southbound_topology.py'
+      - 'scripts/r4a_semantic_provider_iam_inventory.py'
+      - 'tests/test_semantic_provider_iam_inventory.py'
+      - 'scripts/r4a_prepare_semantic_provider_iam.py'
+      - 'tests/test_prepare_semantic_provider_iam.py'
+      - 'scripts/r4a_semantic_provider_runtime_bindings.py'
+      - 'tests/test_semantic_provider_runtime_bindings.py'
+      - 'scripts/r4a_prepare_semantic_provider_credentials.py'
+      - 'tests/test_prepare_semantic_provider_credentials.py'
+      - 'scripts/r4a_semantic_southbound_host_inventory.py'
+      - 'tests/test_semantic_southbound_host_inventory.py'
+      - '.github/workflows/consultation-deploy-scripts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preparation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify image stage and stopped candidates
+        run: python3 -m unittest discover -s tests -p 'test_*semantic_consultation.py'
+      - name: Verify runtime metadata redaction
+        run: python3 -m unittest discover -s tests -p 'test_consultation_runtime_preflight.py'
+      - name: Verify read-only owner policy inventory
+        run: python3 -m unittest discover -s tests -p 'test_consultation_policy_inventory.py'
+
+      - name: Verify Semantic-only RDF stage and release
+        run: python3 -B -m unittest discover -s tests -p 'test_*semantic_rdf_read.py'
+
+      - name: Verify read-only Semantic discovery configuration inventory
+        run: python3 -B -m unittest discover -s tests -p 'test_semantic_discovery_preflight.py'
+
+      - name: Verify read-only southbound topology and redaction
+        run: python3 -B -m unittest discover -s tests -p 'test_semantic_southbound_topology.py'
+
+      - name: Verify read-only service IAM inventory and session redaction
+        run: python3 -B -m unittest discover -s tests -p 'test_semantic_provider_iam_inventory.py'
+
+      - name: Verify additive service IAM preparation and no mapper/secret mutation
+        run: python3 -B -m unittest discover -s tests -p 'test_prepare_semantic_provider_iam.py'
+
+      - name: Verify parameterized runtime endpoint inventory and secret redaction
+        run: python3 -B -m unittest discover -s tests -p 'test_semantic_provider_runtime_bindings.py'
+
+      - name: Verify private existing credentials and TLS JWKS token signature acceptance
+        run: sudo env OUF_REQUIRE_CREDENTIAL_OWNERSHIP_TESTS=1 python3 -B -m unittest discover -s tests -p 'test_prepare_semantic_provider_credentials.py'
+
+      - name: Verify read-only southbound host capability metadata and firewall redaction
+        run: python3 -B -m unittest discover -s tests -p 'test_semantic_southbound_host_inventory.py'

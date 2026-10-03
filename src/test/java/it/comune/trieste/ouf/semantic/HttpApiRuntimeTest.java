@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,6 +26,39 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 class HttpApiRuntimeTest {
   @Autowired MockMvc http;
   @Autowired ObjectMapper json;
+
+  @Test
+  void importedRdfIsVisibleToTheHumanBeforeApproval() throws Exception {
+    String semanticId="https://example.test/semantic/"+UUID.randomUUID();
+    String turtle="@prefix owl: <http://www.w3.org/2002/07/owl#> . <"+semanticId+"> a owl:Ontology .";
+    byte[] bytes=turtle.getBytes(StandardCharsets.UTF_8);
+    String rdfHash=HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+    JsonNode imported=body(http.perform(post("/api/semantic/v1/imports")
+        .queryParam("semanticId",semanticId).queryParam("artifactType","ONTOLOGY")
+        .queryParam("namespace","test").queryParam("localName","RdfReview")
+        .queryParam("ownerRef","owner").queryParam("authorityRef","authority")
+        .queryParam("semanticVersion","1.0.0")
+        .with(actor("author","OUF_HUMAN_USER",Set.of("ouf.semantic.propose")))
+        .contentType("text/turtle").content(bytes))
+        .andExpect(status().isOk()).andReturn());
+    UUID revision=UUID.fromString(imported.get("revisionId").asText());
+    JsonNode validation=body(http.perform(post("/api/semantic/v1/revisions/{id}:validate",revision)
+        .with(actor("author","OUF_HUMAN_USER",Set.of("ouf.semantic.review.prepare"))))
+        .andExpect(status().isOk()).andReturn());
+    String hash=validation.get("validated_content_hash").asText();
+    JsonNode challenge=body(http.perform(post("/api/semantic/v1/approval-challenges")
+        .with(actor("author","OUF_HUMAN_USER",Set.of("ouf.semantic.approval.request")))
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(json.writeValueAsBytes(java.util.Map.of("revisionId",revision,"contentHash",hash))))
+        .andExpect(status().isCreated()).andReturn());
+    UUID challengeId=UUID.fromString(challenge.get("challengeId").asText());
+    http.perform(get("/api/trusted-human/v1/semantic-approval-challenges/{id}",challengeId)
+        .with(actor("reviewer","OUF_HUMAN_USER",Set.of("ouf.semantic.review"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.interchangeSnapshot.content").value(turtle))
+        .andExpect(jsonPath("$.interchangeSnapshot.contentHash").value(rdfHash))
+        .andExpect(jsonPath("$.interchangeSnapshot.statementCount").value(1));
+  }
 
   @Test
   void artifactLifecycleRunsThroughHttpToPostgresql() throws Exception {
