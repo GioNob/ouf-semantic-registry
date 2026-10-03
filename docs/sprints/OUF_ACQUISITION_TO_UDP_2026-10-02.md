@@ -1,6 +1,28 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
-## Checkpoint corrente — RUNTIME_EMPTY conservato; readiness software PASS, inventario VPS pendente
+## Checkpoint corrente — inventario readiness VPS ESEGUITO, PASS; gate startup aperti
+
+Il 3 ottobre 2026 alle 16:54 UTC (18:54 Europe/Rome) l'operatore ha eseguito il comando §16 e restituito `SEMANTIC_RUNTIME_READINESS_INVENTORY=PASS READ_ONLY=true STARTUP_READY=false START_AUTHORIZED=false NO_IAM_OR_DNS_CALL=true NO_RULE_UNIT_CONTAINER_CHANGED=true NO_SECRETS_PRINTED=true`. Source snapshot attestato: `/etc/ouf/deploy-snapshots/semantic-runtime-readiness-20261003-165430`. Helper Gateway `4daad06b71695ad839d1865e55d5aeaf765df861`, checksum `ecb0326b9f97f76598d9bad56aa241b01802bf0a601f4eda38fef41fb15c655a`; runtime cohort originale resta `ef2270a57446da1f23a58548aa4d44920e578fe0`.
+
+| Binding runtime attestato | Valore |
+| --- | --- |
+| Stage root | `/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211/prepared` |
+| configurationHash | `24968cf990a32b87f3169b9226fe63d224c93a403540afec197011fbd670b0bb` |
+| journalHash | `4ccb05b0a28b6e7e823de3d9af81f29255d60b38271d0a74a00f64e2e5828a74` |
+| leaseStructureHash | `26f6f80af9d1e4898c1a6fe6dc8721cd6f67f1ceed05c7eea35e3b9f4a040e54` |
+| Custody / stato / guard | runtimeCustodyVerified=true, RUNTIME_EMPTY, EMPTY_ONLY |
+| Candidati | 2, candidatesNeverStarted=true |
+| Regole statiche | 9; purpose DNS e GATEWAY_ADAPTER |
+| Provider / interfacce | 1 provider flow, insiemi vuoti; 2 guarded interfaces, 4 shared interfaces escluse |
+| Limiti | stableAcrossReads=true, atomicSnapshotProven=false; startupReady=false, activeLeaseLifecycleReady=false; DNS/provider calls 0; notReleaseAcceptance=true |
+
+**Custody, intent, staging, runtime plan/apply/verify e readiness sono completati nel proprio scope. Non ripetere §§6,11–16.** L'inventario ha verificato binding e stato corrente senza promuoverli ad authority/startup/packet acceptance. In particolare le 9 staticFlows non contengono WORKLOAD_GATEWAY o IDENTITY; l'assenza di tali purpose non prova da sola l'assenza di ogni percorso host, ma richiede un piano autoritativo per i percorsi necessari e l'enforcement sulle shared faces. Nessuna regola shared o permesso è stato inventato.
+
+Restano sette gate esplicitamente non provati: INFRASTRUCTURE_AUTHORITY, SHARED_FACE_SOURCE_ENFORCEMENT, LIVE_NAMESPACE_ADDRESS_BINDING, PACKET_SPOOF_BYPASS_IPV6, OIDC_PURPOSE_TLS_REVOCATION_ADMISSION, ACTIVE_LEASE_GUARD_COORDINATION, REAL_REBOOT. Il prossimo lavoro indipendente è il piano di enforcement source-specific sulle shared faces e il protocollo guard/lease attivo, da validare con fixture native prima di un nuovo staging/apply target. Il lease owner isolato esistente non può essere attivato sotto EMPTY_ONLY: quando popola gli insiemi il guard attuale lo rifiuta; inoltre ricreazione tabelle e handle rebinding devono essere serializzati contro i writer, senza replay TTL.
+
+Ciò non cambia i gate Semantic rollout migration-aware, Discovery governata/THS, mapping Teatri e file immediate ingestion o API scheduler-before-ingestion → UDP/Search. Main/live software, run business e cohort storici preservati; niente merge/restart/reboot/provider start/lease activation. CI sul software readiness già verificata 32/32 success, job root 16 test senza skip; questa nuova prova VPS è distinta dalla CI. Aggiornamento documentale del presente esito: nessun nuovo codice o nuovo comando VPS eseguito dopo l'inventario.
+
+## Cronologia — readiness software PASS, prima dell'inventario VPS
 
 Dopo il comando `prosegui`, è stato implementato `scripts/inventory_semantic_runtime_readiness.py` in Gateway PR56, commit `4daad06b71695ad839d1865e55d5aeaf765df861`, SHA256 `ecb0326b9f97f76598d9bad56aa241b01802bf0a601f4eda38fef41fb15c655a`. **CI sull'esatto head: 32/32 completed/success**, nessun pending/failure. Il job root nativo 111247226355 ha eseguito **16 test PASS senza skip**, con `RUNTIME_READINESS_NATIVE=PASS READ_ONLY=true STARTUP_READY=false DNS_CALLS=0`. Locale: 13 test eseguiti PASS, 3 fixture native saltate perché Docker/nft/systemd assenti. Readback esatto dei cinque file modificati, sintassi shell del comando target verificata. PR56 descrizione riallineata alla transizione target; nessun merge.
 
