@@ -1,6 +1,34 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Ripresa verificata — 3 ottobre 2026, nuova sessione
+## Checkpoint corrente — custody PASS, transition intent pendente
+
+Il 3 ottobre 2026 l'operatore ha eseguito il blocco custody del §6 dell'handoff e restituito `SEMANTIC_PROVIDER_GUARD_CUSTODY_INVENTORY=PASS`. Questa prova **supera le precedenti diciture NON ESEGUITO/custody pending**, mantenute sotto come cronologia. Nessun replay del comando custody è richiesto come passo autonomo.
+
+| Evidenza target | Valore |
+| --- | --- |
+| Schema | `ouf.semantic-provider-guard-custody.v1` |
+| Manifest hash | `052b46a56ea666971f135c75af48b3342dbeb68e2f17f1f16263a99351df88bd` |
+| Creation journal hash | `a1c2acd9924fc0f924ded7c2d59f128ef2d8b8dd11c62484a901f628022aaae7` |
+| Boot install journal hash | `44dfac2145f509c8fb0b66983630616d25958b40f3ffc811074ebb9b3c1edda5` |
+| Candidati / start | 2, neverStarted=true, startAuthorized=false |
+| Boot / lease | DENY_ONLY, kernelLeaseInstalled=false, bootTransitionRequiredBeforeRuntimeRules=true |
+| Effetti | Read-only; no IAM/DNS/provider calls; nessun container/regola modificato; nessun segreto stampato |
+
+Non è release acceptance né snapshot atomico: l'helper custody non prende lock. Il path timestamped del suo source snapshot non compare nell'output fornito e non viene inventato. Gli hash sopra e i journal originali sono sufficienti a vincolare il nuovo preflight.
+
+Gateway PR56 ora contiene `392234edc50c6e8cd19a3028b3e9e19d6f1955b4`: helper `prepare_semantic_provider_transition_intent.py`, SHA256 `f1cc60568118387cad11a8546f3b0c2c64941c6a51a28611e4c62a009db57422`. Readback esatto dei quattro file modificati; 8 test locali PASS senza skip, con file privati/flock reali e readback host simulati. CI Gateway sul nuovo head: **30/30 check run completed/success** (push e PR); i due job root intent hanno eseguito 8/8 test senza skip (0.079s/0.078s). Semantic PR30 resta `c2b4ae5abed1236378c7060b3eb3dac126672cbc`, OPEN DRAFT, 14/14 completed/success. CI non equivale a target transition acceptance. Nessun software live sostituito, merge o cambio main.
+
+[Protocollo completo e limiti](https://github.com/GioNob/ouf-api-gateway/blob/392234edc50c6e8cd19a3028b3e9e19d6f1955b4/docs/SEMANTIC_PROVIDER_BOOT_RUNTIME_TRANSITION.md). Il restore deny-only installato rifiuta i set: non basta sostituire le regole nft. Il prossimo passo prende lo **stesso lock inode del boot guard**, revalida gli hash custody, il runtime sealed e il cohort lease9, poi registra due readback bounded di struttura propria/condivisa in un nuovo intent root-private. Plan non crea intent; apply scrive **soltanto tre file privati**; verify ricontrolla tutto. Nessuna modifica nft/unit/Docker, nessun login KC, DNS, lease o provider call. Il lock boot non serializza scrittori esterni: globalAtomicSnapshotProven=false. Collisioni, lock conteso/assente/symlink, drift e parziali bloccano; conservare la prova senza retry apply cieco.
+
+**NON ESEGUITO sul VPS:** transition intent plan/apply/verify. **Non implementato:** nuovo runtime restore guard e apply coordinato. Il protocollo richiede gate persistente nel Docker pre-start prima delle mutazioni, intent/journal fsynced e lock comune, sostituzione atomica delle sole due tabelle con empty provider sets, confronto readback con struttura compilata attendibile, verifica shared/PID/pre-start, rollback per fase e nuova attestazione hash lease dopo ricreazione. Native failure/recovery tests prima di host apply; niente seed storico DNS né adozione cieca di hash osservati. Start/daemon/provider admission/reboot restano distinti.
+
+Il primo head di questa sessione `844ebb1979196e847061f82ebb6cdab66948ea19` ha passato il job root intent (8/8 senza skip), ma request-boundary/config-contract non privilegiati hanno raccolto gli stessi fixture root e fallito. Head `392234edc50c6e8cd19a3028b3e9e19d6f1955b4` corregge esclusivamente test/workflow: opt-in/skip nel discovery generale e OUF_TRANSITION_FULL_OWNER_TEST=1 nel job root, che deve fallire se non è davvero root. Helper e SHA256 restano identici; nessuna attenuazione del controllo root in produzione.
+
+Il pacchetto PET autorizzato è presente nel workspace: SHA256 `e63df67e8817eec38a9d4b3eb736b020f693b932f3360dc02f4555330f2201ce`, 323 checksum interni riletti, zero mismatch. Consultati i testi Gateway v1.5 T11/T11.3/GW-NET-01..05 e Semantic v1.3 §§9.2/10–11: default-deny cumulativo, endpoint governati, confini north/south, discovery on-demand, mapping proposto dal chatbot e autorità THS invariati. Nessuna nuova API/identity authority introdotta.
+
+Cinema/Teatri, reti/immagini/trust/credenziali, policy38, receipt/backup e tutti i gate ereditati restano preservati. File: ingestion immediata dopo onboarding/ACTIVE; API: endpoint/credenziali/extraction profile/onboarding/scheduler prima dell'ingestion automatica. Nessun gate di startup, rete runtime o filiera completa chiuso da questo PASS.
+
+## Cronologia — ripresa verificata precedente
 
 Letto integralmente questo handoff al commit `381fc2ae00c52f1952e941edbc43d7fda7fa01be` attraverso il connector GitHub; acquisiti roadmap, manuale, sprint, registro ereditato del 1 ottobre e riferimenti storici 25/27/29/30 settembre e audit 27 settembre. La cronologia resta preservata: nessun gate chiuso per omissione.
 
@@ -31,7 +59,7 @@ Cinema/Teatri, asset/profile/job, reti, immagini, credenziali, policy38, receipt
 
 Checkpoint: **2026-10-03, 16:14 Europe/Rome**. L'utente interrompe la chat per lentezza, non interrompe il progetto. Questo è il punto di ingresso della nuova chat. Conserva e integra il registro storico del [1 ottobre](OUF_HANDOFF_2026-10-01_FILE_TO_UDP_NEXT_SPRINT.md), senza chiudere gate per omissione.
 
-## 1. Punto esatto di arresto: il prossimo comando NON è stato eseguito
+## 1. Checkpoint storico 16:14 — il custody allora non era eseguito
 
 Ultima azione sul VPS provata dall'output dell'utente: `create_semantic_provider_stopped_candidates.py`, plan/apply/verify PASS. Journal:
 
@@ -156,7 +184,7 @@ IPAM pitfall resolved: one CI daemon rejected static IP on an auto-allocated sub
 | prepare_semantic_southbound_validator_credentials.py | `faaf43748648207f51edee890be4b3dc6592cfc5` | `3d349fd816c1c04091daada0c20eefae7b41396230e89fb7dcc46cb427aace31` |
 | inventory_semantic_provider_candidate_inputs.py | `840abe970bde4ab1edc1c6aeecd84eee9d1fc5a8` | `7bbf6a50722f475323b33568e3bc875b57d7f3e3de78d62c8f7410442c48c6c9` |
 | inventory_semantic_provider_static_ipam.py | `8c04d8fb6dd251407e8c86c583d40b53a66f1179` | `426d3aab4c05bb24a46b2c41279a6f6fc847b85d3fc6c2954d236200a4cc68a3` |
-| inventory_semantic_provider_guard_custody.py — pending host | `85914e39bd0aa9f8e7a0a0a9d3b9db6007633ff8` | `fabd47c6ce8919bc7a910cbaf63f66f1fb786b00c239ae41757c1fd0df829b8d` |
+| inventory_semantic_provider_guard_custody.py — target PASS | `85914e39bd0aa9f8e7a0a0a9d3b9db6007633ff8` | `fabd47c6ce8919bc7a910cbaf63f66f1fb786b00c239ae41757c1fd0df829b8d` |
 
 Frozen lease cohort source `7a81cc344b513d04fd276cd1923a9c23197aceee`: scripts stage_semantic_lease_package.py/run_semantic_provider_lease_owner.py/prepare_semantic_provider_trust.py; tools materialize_semantic_lease_service.py/materialize_southbound_kernel.py/materialize_southbound_lease_refresh.py/semantic_provider_dns.py/semantic_provider_lease_owner.py/semantic_provider_lease_nft.py. Nine root0600 files in source/scripts and source/tools; no daemon/API started.
 
@@ -191,9 +219,9 @@ Boot guard installed targets `/etc/systemd/system/ouf-semantic-boot-guard.servic
 - Boot/systemd native CI restore/dependency/foreign/partial recovery, no Docker restart/PID change. Actual host boot install PASS; **real reboot not proven**.
 - Target embedded DockerDNS fixture at `semantic-docker-dns-20261003-105129`: source `b4c2faefb7a526c3455632212275633c60d826e7`; UDP/TCPA+AAAA, forwarded source bound to container, selected resolver/default deny/unregistered denial/flow removal, shared structure unchanged, own cleanup,15.661s. **provider0/externalDNS0**; isolated fixture, not production packet acceptance.
 - Real Docker stopped-create tests4 and target static-IPAM admission tests4, plus root role-owned launch/trust/credential fixtures in CI. Target creation itself now PASS.
-- Current custody helper7 fixture tests pass; native jobs inherited unchanged are green. **Custody inventory target pending**.
+- Current custody helper7 fixture tests pass; native jobs inherited unchanged are green. **Custody inventory target PASS ora registrato nel checkpoint corrente; intent target ancora pendente**.
 
-## 6. Primo comando rimasto: NON ESEGUITO dall'utente
+## 6. Comando custody storico — ora eseguito con PASS
 
 Questa è la riproduzione completa dell'ultimo comando proposto. Fa download checksum-pinned e installa un nuovo helper root0600 in snapshot privato, poi legge stato Docker/reti/nft/systemd e ricevute. **Nessuna IAM/DNS/provider call, nessuno start o cambiamento container/regole/route. Non necessita refresh kcadm.** L'utente ha esplicitamente rinviato l'intero blocco alla nuova chat.
 
@@ -236,7 +264,7 @@ Il helper è **custody inventory**, non sostituisce il readback completo config/
 
 ## 7. Cosa fare dopo il readback, senza rifare lavoro precedente
 
-1. **Riconciliare custody** dal §6; non chiamare i vecchi stage/cold verifiers che pretendono nomi assenti/reti vuote. Se drift, isolare la differenza conservando journal e container.
+1. **Custody PASS riconciliato** nel checkpoint corrente: prossimo intervento è il transition intent §11, non un replay autonomo del §6. Non chiamare i vecchi stage/cold verifiers che pretendono nomi assenti/reti vuote. Se drift nel preflight, isolare la differenza conservando journal e container.
 2. **Preparare una transizione coordinata** dalle tabelle deny-only al profilo statico/empty provider sets, insieme alla custodia boot/systemd. Non basta applicare nft: il boot guard attuale verifica la vecchia struttura e bloccherebbe un futuro Docker start. Nessun helper di transizione è stato implementato o eseguito in questa chat: la frase «preparo regole/insiemi» era direzione di lavoro, non prova di completamento. Definire intent/journal, fail-closed tra ogni step, rollback/partial reconciliation, lettura shared structure, compatibilità daemon/reboot prima di host apply. Non alterare gli originali sealed in place.
 3. Riusare kernel compiler/lease9cohort. `materialize(..., empty_provider_sets=True)` emette insiemi timeout **vuoti** in inet+bridge; static exact flows per gateway→adapter, DNS e infrastruttura autorizzata. `guardedInterfaces` soltanto dedicate; mai aprire broad egress né scambiare eccezione indirizzo privato per authority. Governare distintamente identity/JWKS e provider esterno. Resolver/endpoint/source/IP/port e private exception espliciti, nessun seed dai vecchi DNS. LeaseOwner query fresh A+AAAA a tutti i resolver selezionati, TTL bounded/tempo sottratto, apply atomico entrambe famiglie/readback, revoca su failure/stop/start. Finite expiry nega anche established.
 4. Prima di start/daemon: provare namespace/IP/bridge source binding e confini/pacchetti/DNS/direct bypass/spoof/IPv6 nel perimetro effettivamente scelto. Valutare con attenzione due funzioni diverse di hash: boot footprint elimina handles/metainfo; NftBackend structure hash mantiene metadata/handles e rimuove set elem. Ricreazione tabelle e leases attivi richiedono binding coerenti, non riutilizzo cieco di un expected hash né accettazione automatica di struttura estranea. Non dichiarare supporto reboot sulla sola CI.
@@ -289,7 +317,75 @@ Identità: source-row key distinta da canonical UDP identity. Motore class-neutr
 
 - Leggere questo file e il registro ereditato; verificare PET realmente disponibili. Riassumere brevemente obiettivo e ultimoPASS, senza rifare inventario completo manuale.
 - Rileggere pin GitHub/PR/CI correnti con connector, senza assumere che HEAD/main/live coincidano. Timeout non è assenza. Niente merge automatico.
-- Ricordare esplicitamente **comando §6 NON ESEGUITO**: riproporlo come primo intervento VPS necessario, dopo verifica checksum/pin correnti. Nessun nuovo loginKC per questa operazione.
-- Se l'utente consegna PASS, registrare output e preparare autonomamente il piano concreto boot/runtime/emptysets/lease custody; non limitarsi a promettere il passo successivo.
+- Il comando custody §6 è stato eseguito con PASS; il primo intervento ora pendente è il transition intent §11. Non riproporre un replay custody autonomo né presumere un PASS intent.
+- Custody PASS registrato: proseguire dal preflight intent e protocollo boot/runtime/emptysets/lease, con implementazione e native tests prima di attivazione.
 - Se serve HUMAN decision/login o SSH reale, preparare prima il risultato verificabile. Non chiedere permessi già conferiti per codice/test/read-only/aggiornamento docs.
 - Conservare e aggiornare questo handoff come punto di ingresso insieme ai quattro documenti canonici. Questa chat ha eseguito solo aggiornamenti GitHub nella fase di handoff, non azioni VPS.
+
+
+## 11. Primo intervento VPS pendente — solo transition intent privato
+
+NON ESEGUITO. Su VPS/sessione SSH oufadmin; non richiede login Keycloak. Incollare solo output redatto, senza leggere i tre file privati. Apply qui significa esclusivamente scrittura di nuovi file di evidenza; non modifica regole/unit/container. In caso di BLOCKED conservare root e parziali, non rieseguire apply.
+
+```bash
+(
+set -euo pipefail
+OUF_TRANSITION_TMP=$(mktemp -d)
+trap 'rm -rf -- "$OUF_TRANSITION_TMP"' EXIT
+
+curl --fail --silent --show-error --proto '=https' --max-time 30 \
+  https://raw.githubusercontent.com/GioNob/ouf-api-gateway/392234edc50c6e8cd19a3028b3e9e19d6f1955b4/scripts/prepare_semantic_provider_transition_intent.py \
+  -o "$OUF_TRANSITION_TMP/prepare_semantic_provider_transition_intent.py"
+curl --fail --silent --show-error --proto '=https' --max-time 30 \
+  https://raw.githubusercontent.com/GioNob/ouf-api-gateway/85914e39bd0aa9f8e7a0a0a9d3b9db6007633ff8/scripts/inventory_semantic_provider_guard_custody.py \
+  -o "$OUF_TRANSITION_TMP/inventory_semantic_provider_guard_custody.py"
+
+printf '%s  %s\n' \
+  f1cc60568118387cad11a8546f3b0c2c64941c6a51a28611e4c62a009db57422 \
+  "$OUF_TRANSITION_TMP/prepare_semantic_provider_transition_intent.py" \
+  fabd47c6ce8919bc7a910cbaf63f66f1fb786b00c239ae41757c1fd0df829b8d \
+  "$OUF_TRANSITION_TMP/inventory_semantic_provider_guard_custody.py" | sha256sum -c -
+
+OUF_TRANSITION_ROOT="/etc/ouf/deploy-snapshots/semantic-provider-transition-intent-$(date -u +%Y%m%d-%H%M%S)"
+sudo mkdir -m 0700 -- "$OUF_TRANSITION_ROOT"
+sudo install -d -m 0700 -o root -g root "$OUF_TRANSITION_ROOT/source/scripts"
+sudo install -m 0600 -o root -g root \
+  "$OUF_TRANSITION_TMP/"*.py "$OUF_TRANSITION_ROOT/source/scripts/"
+
+OUF_TRANSITION_LOCK=$(sudo /usr/bin/python3 -B - <<'PY'
+import json
+from pathlib import Path
+import re
+p=Path('/etc/ouf/deploy-snapshots/semantic-boot-guard-20261003-083310/boot-stage-receipt.json')
+v=json.loads(p.read_bytes())['profile']['runtimeDirectory']
+if not isinstance(v,str) or not re.fullmatch('[A-Za-z][A-Za-z0-9_-]{0,63}',v):
+    raise SystemExit('BOOT_LOCK_BINDING_BLOCKED')
+print('/run/'+v+'/guard.lock')
+PY
+)
+
+for OUF_TRANSITION_MODE in plan apply verify; do
+  sudo /usr/bin/python3 -B "$OUF_TRANSITION_ROOT/source/scripts/prepare_semantic_provider_transition_intent.py" \
+    --mode "$OUF_TRANSITION_MODE" \
+    --source-commit 392234edc50c6e8cd19a3028b3e9e19d6f1955b4 \
+    --custody-source-sha256 fabd47c6ce8919bc7a910cbaf63f66f1fb786b00c239ae41757c1fd0df829b8d \
+    --manifest-root /etc/ouf/deploy-snapshots/semantic-provider-candidate-manifest-20261003-130410/prepared \
+    --creation-root /etc/ouf/deploy-snapshots/semantic-provider-stopped-create-20261003-135106/prepared \
+    --network-root /etc/ouf/deploy-snapshots/semantic-provider-networks-20261003-072023/prepared \
+    --boot-stage-root /etc/ouf/deploy-snapshots/semantic-boot-guard-20261003-083310 \
+    --boot-install-root /etc/ouf/deploy-snapshots/semantic-boot-install-20261003-103547 \
+    --runtime-root /etc/ouf/deploy-snapshots/semantic-provider-runtime-20261002-222530 \
+    --lease-package-root /etc/ouf/deploy-snapshots/semantic-lease-package-20261003-075940 \
+    --snapshot-root "$OUF_TRANSITION_ROOT/prepared" \
+    --boot-lock-file "$OUF_TRANSITION_LOCK" \
+    --lease-source-commit 7a81cc344b513d04fd276cd1923a9c23197aceee \
+    --creation-source-commit 93e861fe8c8a43912f0cb78a74adceb2db509dd9 \
+    --expected-manifest-hash 052b46a56ea666971f135c75af48b3342dbeb68e2f17f1f16263a99351df88bd \
+    --expected-creation-journal-hash a1c2acd9924fc0f924ded7c2d59f128ef2d8b8dd11c62484a901f628022aaae7 \
+    --expected-boot-install-journal-hash 44dfac2145f509c8fb0b66983630616d25958b40f3ffc811074ebb9b3c1edda5 \
+    --docker-path /usr/bin/docker \
+    --nft-path /usr/sbin/nft \
+    --systemctl-path /usr/bin/systemctl
+done
+)
+```
