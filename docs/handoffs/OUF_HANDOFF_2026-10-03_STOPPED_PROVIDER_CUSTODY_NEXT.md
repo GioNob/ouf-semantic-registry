@@ -1,5 +1,17 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
+## Checkpoint corrente — RUNTIME_EMPTY conservato; readiness software PASS, inventario VPS pendente
+
+Dopo il comando `prosegui`, è stato implementato `scripts/inventory_semantic_runtime_readiness.py` in Gateway PR56, commit `4daad06b71695ad839d1865e55d5aeaf765df861`, SHA256 `ecb0326b9f97f76598d9bad56aa241b01802bf0a601f4eda38fef41fb15c655a`. **CI sull'esatto head: 32/32 completed/success**, nessun pending/failure. Il job root nativo 111247226355 ha eseguito **16 test PASS senza skip**, con `RUNTIME_READINESS_NATIVE=PASS READ_ONLY=true STARTUP_READY=false DNS_CALLS=0`. Locale: 13 test eseguiti PASS, 3 fixture native saltate perché Docker/nft/systemd assenti. Readback esatto dei cinque file modificati, sintassi shell del comando target verificata. PR56 descrizione riallineata alla transizione target; nessun merge.
+
+Il target resta al risultato già attestato: apply/verify PASS RUNTIME_EMPTY sul root `/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211/prepared`; due candidati mai avviati, avvio non autorizzato, zero chiamate provider, Docker non riavviato. **Il nuovo inventario readiness sul VPS NON È ESEGUITO.** Prossimo intervento: soltanto il comando read-only §16 dell'handoff. La preparazione salva un nuovo source snapshot root privato, senza modificare il cohort runtime esistente; l'inventario non scrive regole/unità/container/journal e non chiama DNS/IAM/provider.
+
+Decisione tecnica: riusare l'installer sealed del cohort originale attraverso SHA256 esplicito `a3818878086a40377125816b776606f936ad02496d891f4bc72477c4c731ecf4` e source commit target `ef2270a57446da1f23a58548aa4d44920e578fe0`. Il nuovo commit dell'inventario non sostituisce i source installati. Evitare il vecchio custody deny-only/intent verifier dopo la transizione, perché attendono tabelle originali. Il nuovo helper valida receipt/source/config/artifact, journal completo, footprint e hash lease con handle, unità installate/caricate, shared structure/PID Docker/candidati/input immutabili e ripete i readback sotto lo stesso boot lock. Stable read non è snapshot host globalmente atomico.
+
+Rischi affrontati e verificati: import di source alterato o non privato (hash/mode/owner/nofollow/nlink/bounds), promozione di journal incompleto o lease/handle estranei (blocco senza flush), drift tra letture e divulgazione di config/errori (blocco redatto). La fixture nativa attesta inventario dopo transizione reale con entrambi i readback nft, journal e PID invariati. L'output espone soltanto hash/count/purpose e gate non provati; `staticPurposes` non è prova di authority e `startupReady=false` resta obbligatorio.
+
+Vincolo verificato nel codice: guard installato EMPTY_ONLY, mentre lease owner isolato popola insiemi con DNS fresco. **Lifecycle attivo ancora da implementare/integrare col guard, non attivare il lease owner attuale.** La futura transizione deve coordinare gate persistente, owner writer e ricreazione/handle rebinding, pre-start Docker, revoca stop/failure/restart, expiry finita e nessun replay TTL. Restano inoltre authority/shared-face enforcement, live namespace/IP e pacchetti/spoof/bypass/IPv6, OIDC/purpose/TLS/revocation, reboot reale, rollout Semantic migration-aware, Discovery/THS e acceptance file/API→UDP/Search. PET Gateway v1.5 T11/T11.3 GW-NET-01..05 e Semantic v1.3 §§9.2/10–11 riletti; nessuna modifica ai confini dominio/THS e al requisito di egress cumulativo. Nessun provider start/restart/reboot, upload/job replay o alterazione business evidence eseguito.
+
 ## Regole permanenti di esecuzione — adottate dall'operatore il 3 ottobre 2026
 
 **Validazione obbligatoria.** Prima dell’implementazione, verifica il flusso, le dipendenze e i principali rischi logici, di concorrenza, memoria e compatibilità. Correggi autonomamente i problemi individuati e valida il risultato con test pertinenti e CI. Presenta il codice completato insieme alle verifiche eseguite e agli eventuali limiti residui. Non dichiarare superata una verifica basandoti soltanto sull’auto-revisione.
@@ -10,7 +22,7 @@
 
 Queste regole si applicano alla continuazione del progetto e alle nuove chat. Il prossimo lavoro tecnico rimane la preparazione dei gate rete/authority e del lifecycle lease dopo RUNTIME_EMPTY (§15 dell'handoff). La loro adozione non attesta verifiche aggiuntive e non conferisce autorizzazione startup, merge, replay o restart. Stato target confermato: apply/verify PASS RUNTIME_EMPTY, startAuthorized=false. Nessun nuovo codice, test/CI o comando VPS eseguito in questo checkpoint di regole.
 
-## Checkpoint corrente — runtime VPS ESEGUITO, PASS apply/verify, RUNTIME_EMPTY
+## Checkpoint target attestato — runtime VPS ESEGUITO, PASS apply/verify, RUNTIME_EMPTY
 
 Il 3 ottobre 2026 l'operatore ha restituito entrambi gli esiti del §14: `SEMANTIC_RUNTIME_TRANSITION=PASS MODE=apply STATE=RUNTIME_EMPTY` e `SEMANTIC_RUNTIME_TRANSITION=PASS MODE=verify STATE=RUNTIME_EMPTY`. Entrambi attestano `START_AUTHORIZED=false PROVIDER_CALLS=0 DOCKER_RESTARTED=false NOT_RELEASE_ACCEPTANCE=true NO_SECRETS_PRINTED=true`. Il messaggio successivo ripete gli stessi esiti; è duplicato della stessa attestazione, non evidenza di un secondo apply.
 
@@ -18,7 +30,7 @@ Stage/transaction root: `/etc/ouf/deploy-snapshots/semantic-runtime-transition-s
 
 Stato host corrente: guard/drop-in runtime installati e caricati tramite daemon-reload; le due tabelle possedute sono nel profilo runtime con insiemi provider vuoti, footprint e binding leaseStructureHash verificati e journal completato RUNTIME_EMPTY. Il precedente DENY_ONLY è baseline storica conservata, non il profilo host attuale. Docker non riavviato, due candidati mai avviati, nessuna chiamata provider, avvio non autorizzato. Gli insiemi timeout vuoti non attestano installazione/attivazione del lease owner o lease attive.
 
-Prossimo lavoro: chiudere i gate residui di authority infrastrutturale, namespace/source/live IP e pacchetti/spoof/direct bypass/IPv6, admission OIDC/purpose/TLS/revocation e lifecycle lease prima di proporre startup. Il guard attuale è empty-only e rifiuta elementi lease attivi: non installare/attivare una lease owner sotto questo profilo senza transizione coordinata e prove. Reboot reale, rollout Semantic migration-aware, Discovery/THS, mapping Teatri e percorso file/API→UDP/Search restano aperti. Nessun nuovo comando VPS/start/restart/reboot è predisposto in questo checkpoint. Main/live software e run business conservati; nessun merge.
+Prossimo lavoro: chiudere i gate residui di authority infrastrutturale, namespace/source/live IP e pacchetti/spoof/direct bypass/IPv6, admission OIDC/purpose/TLS/revocation e lifecycle lease prima di proporre startup. Il guard attuale è empty-only e rifiuta elementi lease attivi: non installare/attivare una lease owner sotto questo profilo senza transizione coordinata e prove. Reboot reale, rollout Semantic migration-aware, Discovery/THS, mapping Teatri e percorso file/API→UDP/Search restano aperti. Il comando read-only readiness §16 è ora predisposto e pendente; nessun comando start/restart/reboot. Main/live software e run business conservati; nessun merge.
 
 L'apply host è una prova target della transizione vuota, non release acceptance né prova di provider operativo/reboot. Conservare gli originali sealed e questo journal. In caso di drift/interruzione futura usare diagnosi e reconcile/rollback espliciti, mai replay apply. Una ricreazione delle tabelle cambia gli handle e richiede riconciliazione del binding lease; il rollback logico non fabbrica un nuovo PASS custody legacy.
 
@@ -324,7 +336,7 @@ Il helper è **custody inventory**, non sostituisce il readback completo config/
 
 ## 7. Cosa fare dopo il readback, senza rifare lavoro precedente
 
-1. **Custody e transition intent PASS riconciliati** nel checkpoint corrente: apply/verify runtime §14 sono PASS RUNTIME_EMPTY; proseguire dai gate §15. I comandi §6, §11 e §12 sono già eseguiti con PASS; non ripeterli come passi autonomi. Non chiamare i vecchi stage/cold verifiers che pretendono nomi assenti/reti vuote. Se drift nel preflight, isolare la differenza conservando journal e container.
+1. **Custody e transition intent PASS riconciliati** nel checkpoint corrente: apply/verify runtime §14 sono PASS RUNTIME_EMPTY; proseguire dall'inventario readiness §16 e dai gate §15. I comandi §6, §11 e §12 sono già eseguiti con PASS; non ripeterli come passi autonomi. Non chiamare i vecchi stage/cold verifiers che pretendono nomi assenti/reti vuote. Se drift nel preflight, isolare la differenza conservando journal e container.
 2. **Preparare una transizione coordinata** dalle tabelle deny-only al profilo statico/empty provider sets, insieme alla custodia boot/systemd. La precedente incompatibilità del boot guard deny-only è stata risolta dalla transizione coordinata §14; il nuovo guard verifica il profilo runtime vuoto e il journal completo, senza autorizzare startup. Gli helper di staging, guard e transizione sono implementati nel commit Gateway `ef2270a57446da1f23a58548aa4d44920e578fe0`, con journal persistente, fail-closed, recovery/rollback e CI 32/32 PASS. Staging sul VPS PASS al root `semantic-runtime-transition-stage-20261003-160211/prepared`; runtime apply/verify sul VPS PASS RUNTIME_EMPTY; il guard runtime vuoto è installato; compatibilità target/reboot e gate di avvio non sono provati dalla CI. Non alterare gli originali sealed in place.
 3. Riusare kernel compiler/lease9cohort. `materialize(..., empty_provider_sets=True)` emette insiemi timeout **vuoti** in inet+bridge; static exact flows per gateway→adapter, DNS e infrastruttura autorizzata. `guardedInterfaces` soltanto dedicate; mai aprire broad egress né scambiare eccezione indirizzo privato per authority. Governare distintamente identity/JWKS e provider esterno. Resolver/endpoint/source/IP/port e private exception espliciti, nessun seed dai vecchi DNS. LeaseOwner query fresh A+AAAA a tutti i resolver selezionati, TTL bounded/tempo sottratto, apply atomico entrambe famiglie/readback, revoca su failure/stop/start. Finite expiry nega anche established.
 4. Prima di start/daemon: provare namespace/IP/bridge source binding e confini/pacchetti/DNS/direct bypass/spoof/IPv6 nel perimetro effettivamente scelto. Valutare con attenzione due funzioni diverse di hash: boot footprint elimina handles/metainfo; NftBackend structure hash mantiene metadata/handles e rimuove set elem. Ricreazione tabelle e leases attivi richiedono binding coerenti, non riutilizzo cieco di un expected hash né accettazione automatica di struttura estranea. Non dichiarare supporto reboot sulla sola CI.
@@ -377,7 +389,7 @@ Identità: source-row key distinta da canonical UDP identity. Motore class-neutr
 
 - Leggere questo file e il registro ereditato; verificare PET realmente disponibili. Riassumere brevemente obiettivo e ultimoPASS, senza rifare inventario completo manuale.
 - Rileggere pin GitHub/PR/CI correnti con connector, senza assumere che HEAD/main/live coincidano. Timeout non è assenza. Niente merge automatico.
-- I comandi custody §6 e transition intent §11 sono eseguiti con PASS. Staging §12 eseguito con PASS. Il plan §13 è PASS; apply/verify §14 sono PASS RUNTIME_EMPTY. Non riproporre custody, intent, staging, plan o apply; riprendere dai gate §15.
+- I comandi custody §6 e transition intent §11 sono eseguiti con PASS. Staging §12 eseguito con PASS. Il plan §13 è PASS; apply/verify §14 sono PASS RUNTIME_EMPTY. Non riproporre custody, intent, staging, plan o apply; riprendere dall'inventario readiness §16 e dai gate §15.
 - Custody e intent PASS registrati; helper boot/runtime/emptysets con native tests PASS. Staging privato target PASS: apply/verify runtime §14 PASS: riprendere dai gate §15, conservando i gate lease/admission/start prima di attivazione.
 - Se serve HUMAN decision/login o SSH reale, preparare prima il risultato verificabile. Non chiedere permessi già conferiti per codice/test/read-only/aggiornamento docs.
 - Conservare e aggiornare questo handoff come punto di ingresso insieme ai quattro documenti canonici. Questa chat ha eseguito solo aggiornamenti GitHub nella fase di handoff, non azioni VPS.
@@ -454,7 +466,7 @@ done
 
 ## 12. Staging runtime privato — ESEGUITO, PASS plan/apply/verify
 
-**ESEGUITO il 3 ottobre 2026: PASS plan/apply/verify.** Root privato attestato: `/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211/prepared`. I tre checksum sono OK. Il blocco sotto è registro storico: non rieseguirlo. Il plan §13 e apply/verify §14 sono ora PASS; prossimo lavoro ai gate §15. Usare gli helper e i parametri fissati nel checkpoint corrente iniziale e nel runbook Gateway al commit `ef2270a57446da1f23a58548aa4d44920e578fe0`; preparare un nuovo snapshot esclusivo root privato e verificare i tre checksum prima dell'esecuzione. Modi `plan/apply/verify` dello staging: scrittura di soli artefatti privati e compilazione nft in namespace isolato tramite `unshare`; nessuna installazione di regole/unità host o avvio container. Restituire solo output redatto, conservare root/parziali in caso di BLOCKED, non ripetere apply alla cieca. Nessuna transizione runtime host o autorizzazione startup è inclusa in questo passo.
+**ESEGUITO il 3 ottobre 2026: PASS plan/apply/verify.** Root privato attestato: `/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211/prepared`. I tre checksum sono OK. Il blocco sotto è registro storico: non rieseguirlo. Il plan §13 e apply/verify §14 sono ora PASS; prossimo intervento inventario readiness §16; gate §15 restano aperti. Usare gli helper e i parametri fissati nel checkpoint corrente iniziale e nel runbook Gateway al commit `ef2270a57446da1f23a58548aa4d44920e578fe0`; preparare un nuovo snapshot esclusivo root privato e verificare i tre checksum prima dell'esecuzione. Modi `plan/apply/verify` dello staging: scrittura di soli artefatti privati e compilazione nft in namespace isolato tramite `unshare`; nessuna installazione di regole/unità host o avvio container. Restituire solo output redatto, conservare root/parziali in caso di BLOCKED, non ripetere apply alla cieca. Nessuna transizione runtime host o autorizzazione startup è inclusa in questo passo.
 
 Regola permanente di documentazione: dopo ogni risultato comunicato dall'operatore, aggiornare autonomamente checkpoint, sezione del comando, checklist e prossimo passo nei documenti canonici applicabili. Le procedure superate vanno marcate come cronologia/comandi già eseguiti; un PASS nel checkpoint non basta a lasciare pendente la relativa sezione operativa.
 
@@ -546,4 +558,38 @@ done
 
 ## 15. Gate successivi dopo RUNTIME_EMPTY — startup non autorizzato
 
-Apply/verify §14 completati. Non ci sono comandi da ripetere. Prima del prossimo intervento target preparare e verificare il piano per authority infrastrutturale e source-specific shared faces, namespace/live binding, pacchetti/DNS/spoof/bypass/IPv6, admission/TLS/purpose/revocation e transizione del guard empty-only verso lifecycle lease governata. Il template e la transizione vuota non chiudono questi gate. Nessun Docker restart/reboot/provider start/lease activation autorizzato dal PASS RUNTIME_EMPTY. Preservare business evidence, journal e vecchi cohort; aggiornare autonomamente checkpoint e sezioni operative dopo ogni nuovo esito.
+Apply/verify §14 completati. Non ci sono comandi da ripetere. Prossimo intervento read-only §16 già preparato e verificato in CI. Preparare e verificare il piano per authority infrastrutturale e source-specific shared faces, namespace/live binding, pacchetti/DNS/spoof/bypass/IPv6, admission/TLS/purpose/revocation e transizione del guard empty-only verso lifecycle lease governata. Il template e la transizione vuota non chiudono questi gate. Nessun Docker restart/reboot/provider start/lease activation autorizzato dal PASS RUNTIME_EMPTY. Preservare business evidence, journal e vecchi cohort; aggiornare autonomamente checkpoint e sezioni operative dopo ogni nuovo esito.
+
+## 16. Prossimo intervento VPS pendente — inventario readiness runtime read-only
+
+**NON ESEGUITO.** Helper nuovo, source commit `4daad06b71695ad839d1865e55d5aeaf765df861`, hash `ecb0326b9f97f76598d9bad56aa241b01802bf0a601f4eda38fef41fb15c655a`. Il source runtime installato resta al vecchio commit `ef2270a57446da1f23a58548aa4d44920e578fe0`; non confondere i due pin. Non richiede login Keycloak. La preparazione scrive solo un nuovo source snapshot privato; il helper esegue read-only sulle evidenze e sullo stato host, sotto lock già esistente. Non applica nft, non crea journal, non chiama DNS/IAM, non esegue Docker start/exec/restart. Il risultato atteso è inventory PASS con startupReady=false, non startup/admission acceptance. In caso di BLOCKED conservare output/source root e cohort; niente replay runtime apply o reconcile/rollback alla cieca.
+
+```bash
+(
+set -euo pipefail
+OUF_READINESS_TMP=$(mktemp -d)
+trap 'rm -rf -- "$OUF_READINESS_TMP"' EXIT
+
+curl --fail --silent --show-error --proto '=https' --max-time 30 \
+  https://raw.githubusercontent.com/GioNob/ouf-api-gateway/4daad06b71695ad839d1865e55d5aeaf765df861/scripts/inventory_semantic_runtime_readiness.py \
+  -o "$OUF_READINESS_TMP/inventory_semantic_runtime_readiness.py"
+
+printf '%s  %s\n' \
+  ecb0326b9f97f76598d9bad56aa241b01802bf0a601f4eda38fef41fb15c655a \
+  "$OUF_READINESS_TMP/inventory_semantic_runtime_readiness.py" | sha256sum -c -
+
+OUF_READINESS_ROOT="/etc/ouf/deploy-snapshots/semantic-runtime-readiness-$(date -u +%Y%m%d-%H%M%S)"
+sudo mkdir -m 0700 -- "$OUF_READINESS_ROOT"
+printf 'SEMANTIC_RUNTIME_READINESS_SOURCE_ROOT=%s\n' "$OUF_READINESS_ROOT"
+sudo install -d -m 0700 -o root -g root "$OUF_READINESS_ROOT/source/scripts"
+sudo install -m 0600 -o root -g root \
+  "$OUF_READINESS_TMP/inventory_semantic_runtime_readiness.py" "$OUF_READINESS_ROOT/source/scripts/"
+
+sudo /usr/bin/python3 -B "$OUF_READINESS_ROOT/source/scripts/inventory_semantic_runtime_readiness.py" \
+  --stage-root /etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211/prepared \
+  --stage-source-commit ef2270a57446da1f23a58548aa4d44920e578fe0 \
+  --installer-sha256 a3818878086a40377125816b776606f936ad02496d891f4bc72477c4c731ecf4
+)
+```
+
+Riportare l'output JSON redatto e la riga finale. Aggiornare autonomamente questa sezione, checkpoint, checklist e documenti canonici con l'esito; non presumere PASS. Le quantità e i purpose stampati aiutano a vincolare il piano successivo; non inventare indirizzi/namespace o authority dalla configurazione pianificata.
