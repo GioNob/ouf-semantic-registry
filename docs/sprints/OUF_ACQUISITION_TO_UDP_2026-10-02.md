@@ -1,5 +1,15 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
+## Regole permanenti di esecuzione — adottate dall'operatore il 3 ottobre 2026
+
+**Validazione obbligatoria.** Prima dell’implementazione, verifica il flusso, le dipendenze e i principali rischi logici, di concorrenza, memoria e compatibilità. Correggi autonomamente i problemi individuati e valida il risultato con test pertinenti e CI. Presenta il codice completato insieme alle verifiche eseguite e agli eventuali limiti residui. Non dichiarare superata una verifica basandoti soltanto sull’auto-revisione.
+
+**Autonomia e completamento.** Procedi autonomamente entro l’obiettivo concordato. Risolvi le scelte tecniche privilegiando coerenza con PET e repository, semplicità, reversibilità e scalabilità necessaria; documenta le decisioni nell’handoff senza fermarti per scelte ordinarie. Mantieni aggiornati handoff, roadmap, manuale e sprint, comprese le sezioni dei comandi eseguiti. Fermati soltanto quando serve un’azione sul VPS, un’informazione indispensabile o una decisione di autorità non già conferita. Niente merge, avvii o replay impliciti.
+
+**Checkpoint.** Lascia sempre un risultato verificabile: commit, stato dei test/CI, lavoro completato, questioni aperte e prossimo passo preciso. Se un blocco impedisce una parte, completa comunque le attività indipendenti.
+
+Queste regole si applicano alla continuazione del progetto e alle nuove chat. Il prossimo lavoro tecnico rimane la preparazione dei gate rete/authority e del lifecycle lease dopo RUNTIME_EMPTY (§15 dell'handoff). La loro adozione non attesta verifiche aggiuntive e non conferisce autorizzazione startup, merge, replay o restart. Stato target confermato: apply/verify PASS RUNTIME_EMPTY, startAuthorized=false. Nessun nuovo codice, test/CI o comando VPS eseguito in questo checkpoint di regole.
+
 ## Checkpoint corrente — runtime VPS ESEGUITO, PASS apply/verify, RUNTIME_EMPTY
 
 Il 3 ottobre 2026 l'operatore ha restituito entrambi gli esiti del §14: `SEMANTIC_RUNTIME_TRANSITION=PASS MODE=apply STATE=RUNTIME_EMPTY` e `SEMANTIC_RUNTIME_TRANSITION=PASS MODE=verify STATE=RUNTIME_EMPTY`. Entrambi attestano `START_AUTHORIZED=false PROVIDER_CALLS=0 DOCKER_RESTARTED=false NOT_RELEASE_ACCEPTANCE=true NO_SECRETS_PRINTED=true`. Il messaggio successivo ripete gli stessi esiti; è duplicato della stessa attestazione, non evidenza di un secondo apply.
