@@ -1,6 +1,12 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — core install/recovery e inventario runtime verificati; prossimo passo VPS read-only
+## Inventario runtime VPS — ESEGUITO, PASS (3 ottobre 2026)
+
+Output operatore ricevuto: source root `/etc/ouf/deploy-snapshots/semantic-preexec-runtime-inventory-20261003-183915`. Schema `ouf.semantic-preexec-runtime-inventory.v1`, Docker serverVersion **29.8.1**, defaultRuntime **runc**, runtimeNames **io.containerd.runc.v2, runc**, runcBinaryVersion **1.5.1**. READ_ONLY=true, stableAcrossReads=true, atomicSnapshotProven=false, ociHookIntegrationProven=false, runtimeRegistrationAuthorized=false, startAuthorized=false, providerCalls=0, notReleaseAcceptance=true, noSecretsPrinted=true. Righe JSON e PASS attestate dall'operatore; nessuna modifica rule/unit/container.
+
+**Comando §19 ESEGUITO: conservarlo come registro, non ripeterlo.** Il binario runc locale non è prova che Docker utilizzi quel percorso; l'inventario non autorizza registrazione runtime, avvio o restart. Prossimo lavoro autonomo: backend con binding live e verifica sincrona OCI prima del processo, prove positive/negative reali e nuovo staging sealed; Docker target e authority rimangono gate separati.
+
+## Checkpoint corrente — core install/recovery e inventario runtime verificati; inventario VPS PASS; integrazione OCI in sviluppo
 
 Core Gateway `a0473e397d90d46cda2ca33404670c514dd435c9`: **34/34 check completed/success**, nessun pending/failure; job 111261718405 e 111261707562 ciascuno **19 regressioni + 3 prove native PASS senza skip**. Head corrente Gateway PR56 `82d1db716b1015dac52feca217af1c5ed600a520`: job dedicato 111264097837 **PASS, 24 test (23 regressioni + 1 Docker reale) e 3 prove native senza skip**, log controllato. È PASS anche il job 111263877173 del precedente d0fa3d1. **Verifica successiva sull'esatto head: CI complessiva 34/34 completed/success, nessun pending/failure.** Validazione locale: 23 PASS e 1 Docker reale skip perché assente nel workspace. Readback dei file pubblicati e dei quattro documenti verificato.
 
@@ -10,7 +16,7 @@ Il helper `scripts/inventory_semantic_preexec_runtime.py` è ora verificato con 
 
 **Limite esplicito:** core con backend/driver iniettati, non hook OCI distribuito né registrazione Docker. La prova nativa del lifecycle usa un processo fixture già vivo e verifica namespace/PID/start ticks; **non prova protezione prima dell'esecuzione dell'applicazione**. Restano source-sealed driver/staging, aggancio OCI reale, integrazione runtime target e migrazione servizi guard/owner. Una versione runc locale non prova che Docker usi quel binario; letture stabili non provano snapshot atomico o compatibilità OCI.
 
-**Prossimo passo indispensabile sul VPS: inventario read-only del §19 dell'handoff, NON ESEGUITO.** Il comando è ora predisposto e pinna source/hash verificati. Conservare output e nuovo source root, fermarsi su BLOCKED senza replay di runtime apply. Serve conoscere il runtime effettivo prima di scegliere il driver e i suoi prerequisiti infrastrutturali. Nessuna registrazione/avvio/restart autorizzati dall'inventario.
+**Inventario read-only del §19 ESEGUITO, PASS:** output e source root nel nuovo checkpoint sopra. Il comando è registro storico e pinna source/hash verificati; non ripeterlo. Conservare output e nuovo source root, fermarsi su BLOCKED senza replay di runtime apply. Runtime rilevato: Docker 29.8.1/default runc, versione standalone 1.5.1. Integrare e provare il driver; l'inventario non dimostra il percorso binario usato da Docker. Nessuna registrazione/avvio/restart autorizzati dall'inventario.
 
 Restano attestati i comandi VPS già **ESEGUITI** ai §§11–16: intent privato, staging, runtime plan/apply/verify RUNTIME_EMPTY e readiness read-only PASS. Stage `semantic-runtime-transition-stage-20261003-160211/prepared`, readiness source `semantic-runtime-readiness-20261003-165430`; **EMPTY_ONLY**, due candidati mai avviati, zero provider call, start non autorizzato. Nessun merge, avvio/replay, Docker restart, mutazione target o riattivazione lease eseguiti da questo lavoro. Scala di migliaia di Enti e topologie distribuite/co-localizzate rimangono vincoli permanenti; backend Linux non diventa default universale. PET e business acceptance conservati.
 
@@ -680,7 +686,7 @@ I componenti e le fixture §17 sono PASS; nessun comando host da eseguire è anc
 
 Completare poi nuovo installer sealed/profile migrator, journal e artefatti guard/owner con lo stesso lock, bounded contention, service stop/restart/quiesce, readback/rollback e autorità infrastrutturale. Nessuna auto-adoption del vecchio journal o binding lease; il journal di coordination ha schema nuovo e startAuthorized=false. Non attivare il package lease9 sotto il guard EMPTY_ONLY attuale. Conservare tutti i cohort originali; le prove native nuove sono isolate, non prove di startup/admission del VPS. Aggiornare autonomamente handoff/roadmap/manuale/sprint/PR dopo ogni esito.
 
-## 19. Inventario runtime preexec — NON ESEGUITO; comando read-only pronto
+## 19. Inventario runtime preexec — ESEGUITO, PASS
 
 Helper verificato nel job CI 111264097837 dell'esatto head Gateway `82d1db716b1015dac52feca217af1c5ed600a520`: 24 test e 3 native PASS senza skip. Suite complessiva verificata sull'esatto head: 34/34 completed/success, nessun pending/failure; prova distinta dalla precedente revisione core. Nessuna prova target inventata.
 
@@ -714,4 +720,4 @@ sudo /usr/bin/python3 -I -B \
 )
 ```
 
-Esito atteso: JSON schema ouf.semantic-preexec-runtime-inventory.v1 seguito da PASS READ_ONLY=true OCI_HOOK_INTEGRATION_PROVEN=false START_AUTHORIZED=false. **NON ESEGUITO:** aggiornare questa sezione e handoff/roadmap/manuale/sprint dopo l'output operatore. Nessuna successiva installazione o applicazione implicita.
+Esito atteso: JSON schema ouf.semantic-preexec-runtime-inventory.v1 seguito da PASS READ_ONLY=true OCI_HOOK_INTEGRATION_PROVEN=false START_AUTHORIZED=false. **ESEGUITO, PASS:** output operatore e source root riportati sopra; quattro documenti aggiornati. Non ripetere il blocco storico. Nessuna successiva installazione o applicazione implicita.
