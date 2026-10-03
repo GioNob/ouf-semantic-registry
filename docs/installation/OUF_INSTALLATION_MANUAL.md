@@ -1,6 +1,18 @@
 # OUF — Manuale di installazione e bootstrap
 
-## Checkpoint corrente — inventario candidati VPS ESEGUITO; adapter Docker da implementare
+## Checkpoint corrente — adapter Docker implementato; integrazione CI non ancora PASS
+
+Gateway PR56 head `583cb972bbd48b83a8960b72a448acd16d6b07e7`. Nuovo `scripts/semantic_provider_docker_runtime.py`: relay nominato con CID espliciti, broker di admission sigillato, shadow bundle privato, journal per CID e driver v2 con runtime path/SHA/state root. Create/start senza replay, comandi run/exec/restore rifiutati; verifica e runc start sotto common lock guard/lease. Rollback dopo morte provata non richiede un namespace già rimosso, ma conserva verifica di ownership/handle e rifiuto generazioni vive o sconosciute. Source stager v2: dodici file, adapter/preparer/runtime non installati, startAuthorized=false. Snapshot VPS v1 a undici file resta immutabile.
+
+Validazione locale: **36 PASS e 3 Docker opt-in skip**, Docker assente. Le regressioni native rete/OCI del precedente head 3eb5f36b sono completed/success nei job 111292474624 e 111292484244; **la prova Docker nominata NON è PASS**: fallita nei job 111292474626 e 111292484221 con ADAPTER_BINDING_UNPROVEN. Aggiunta diagnostica redatta e nuova CI avviata su 583cb972bbd48b83a8960b72a448acd16d6b07e7; non attribuire i PASS del vecchio 6e84e5ca a questo nuovo codice. Nessun comando VPS nuovo pronto né autorizzazione target.
+
+Ultimo target: §21 **ESEGUITO PASS**, due candidati runc mai avviati, tre reti configurate coerenti, zero SandboxKey, bindingHash `0337655a5c3d6d80653aca363d8479ce10e6d27cde024518060a6c628e542aeb`. Full creation acceptance, atomic snapshot, binding namespace live, OCI/Docker integration e runtime registration/start authority restano false/non provati. Ultimo guard attestato RUNTIME_EMPTY/EMPTY_ONLY, providerCalls=0. §20 ESEGUITO PASS, source package `semantic-preexec-package-20261003-195926`.
+
+**Prossimo passo autonomo preciso:** leggere la nuova diagnostica CI, correggere l'incompatibilità dell'integrazione reale, ottenere prove positive/negative Docker e regressioni native senza skip, verificare tutti i check sull'esatto head e solo dopo pubblicare il nuovo staging source-only pin/hash in una radice separata. Non registrare runtime/reload/ricreare/avviare i candidati o inferire un PASS dalle sole prove locali. Il broker fixture `tests/fixtures/semantic_docker_admission_fixture.py` usa authority sintetica e calibrazione footprint per CI: NON è un preparer di admission target, NON deve entrare nel package VPS. Il production preparer e l'authority/template indipendente rimangono dipendenze aperte esplicite.
+
+Scelte: adapter nominato/scoped, bundle Docker originale preservato, rootfs relativo risolto soltanto entro il bundle approvato, root-private error log redatto compatibile con runc. Lock per CID distinto dal common guard lock, così l'hook non acquisisce ricorsivamente lo stesso lock. Fasi incomplete senza risultato driver sigillato richiedono recovery esplicito; niente pulizia/adoption/replay automatici. Distribuzione e co-localizzazione su rete/sottorete condivisa per migliaia di Enti restano invarianti; nessun IP/bridge fixture diventa default.
+
+## Checkpoint precedente — inventario candidati VPS ESEGUITO; adapter Docker da implementare
 
 Gateway PR56 head `6e84e5ca1134cd8e26b603380a0adcb06a15fb0c`. Helper nuovo `scripts/inventory_semantic_preexec_candidates.py`, SHA256 `63fb3da6682861cd033c236a2830668bb4648b27ddc139799a05a8c62652f0bb`. Readback di helper, test, workflow e protocollo su GitHub verificato. Locale: **32 PASS + 2 Docker opt-in skip**, Docker assente nel workspace. **Job dedicati 111284288072 e 111284295941 completed/success**, log letti: ciascuno **34 test (32 regressioni + 2 Docker reali), 3 prove native di rete e 1 prova OCI reale senza skip**; runc 1.5.1. **CI complessiva verificata sull'esatto head: 34/34 completed/success, nessun pending/failure.**
 
