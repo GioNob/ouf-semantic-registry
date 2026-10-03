@@ -8,7 +8,7 @@ cat > "$OUF_PREEXEC_PKG_TMP/sources.sha256" <<'OUF_PREEXEC_SHA'
 3fb04519de05131087a5bd12095b42f97026e7c5826d5f8f3845608404008f95  scripts/stage_semantic_preexec_package.py
 3106ade7c32e5d37ce7aa0214726907a3422c2850741168b7ee7d273b98b00fb  scripts/semantic_provider_docker_runtime.py
 5f38532f73f620cbbc9980b02a2e29cd8a4cdabafce370aba5a8a50e330065a5  scripts/semantic_provider_preexec_hook.py
-cda07e7b47f04a360ea12de1b78e1eb8546a8e63cc9bcd6e3f771275531e3629  scripts/semantic_provider_admission_preparer.py
+5b31650fddb0d47dad99f128d0d8775bde56a2f7489b0f5476956e17eaba125d  scripts/semantic_provider_admission_preparer.py
 98e3004300226fecd509a46c009585df14021927f20d4e5c82d8ff7a8a8180de  tools/materialize_southbound_kernel.py
 1c0d7f1243752fe216ef62eefbc2e3253b8f2503b518fafe11277e4d7721a084  tools/materialize_southbound_lease_refresh.py
 c466172113d1ffe850bf2c69762113b55fbc65d9091c96dca98a74548fddf930  tools/semantic_provider_dns.py
@@ -24,7 +24,7 @@ OUF_PREEXEC_SHA
 while read -r OUF_PREEXEC_HASH OUF_PREEXEC_FILE; do
   mkdir -p -- "$OUF_PREEXEC_PKG_TMP/$(dirname -- "$OUF_PREEXEC_FILE")"
   curl --fail --silent --show-error --proto '=https' --max-time 30 \
-    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/2020a6d274e5a45f1ef0ed2208c2d6acc980342e/$OUF_PREEXEC_FILE" \
+    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/ed6fab81acc17591a1087761266701f877233799/$OUF_PREEXEC_FILE" \
     -o "$OUF_PREEXEC_PKG_TMP/$OUF_PREEXEC_FILE"
 done < "$OUF_PREEXEC_PKG_TMP/sources.sha256"
 
@@ -45,7 +45,7 @@ for OUF_PREEXEC_PKG_MODE in plan apply verify; do
     "$OUF_PREEXEC_PKG_ROOT/source/scripts/stage_semantic_admission_package.py" \
     --mode "$OUF_PREEXEC_PKG_MODE" \
     --package-root "$OUF_PREEXEC_PKG_ROOT" \
-    --source-commit 2020a6d274e5a45f1ef0ed2208c2d6acc980342e \
+    --source-commit ed6fab81acc17591a1087761266701f877233799 \
     --hook-source-sha256 5f38532f73f620cbbc9980b02a2e29cd8a4cdabafce370aba5a8a50e330065a5
 done
 )

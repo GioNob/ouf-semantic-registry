@@ -2,11 +2,11 @@
 
 ## Checkpoint corrente — preparer e footprint indipendente validati; §23 staging source-only v3 NON ESEGUITO
 
-Gateway PR56 commit `2020a6d274e5a45f1ef0ed2208c2d6acc980342e`, **38/38 CI check completed/success** (push e PR), log delle sei esecuzioni pertinenti letti. Locale: 51 test, 46 PASS e 5 native/Docker opt-in skip. Nuovo job preparer: 8 test unitari/source-package e 2 native senza skip; namespace PREPARED e OCI_CREATED, template isolato con host rules invariati, sorgente alterato negato, preparer sigillato, runc/nft reali, revoca prima del start negata, rollback live negato e cleanup owned. Shared job: 40 regressioni/inventari + 3 native rete/lease + 1 OCI reale senza skip. Docker job: 4 test, named runtime legacy positivo/negative/cleanup/default preservato. Queste sono prove sintetiche CI, non release acceptance VPS.
+Gateway PR56 commit `ed6fab81acc17591a1087761266701f877233799`, **38/38 CI check completed/success** (push e PR), log delle sei esecuzioni pertinenti letti. Locale: 51 test, 46 PASS e 5 native/Docker opt-in skip. Nuovo job preparer: 8 test unitari/source-package e 2 native senza skip; namespace PREPARED e OCI_CREATED, template isolato con host rules invariati, sorgente alterato negato, preparer sigillato, runc/nft reali, revoca prima del start negata, rollback live negato e cleanup owned. Shared job: 40 regressioni/inventari + 3 native rete/lease + 1 OCI reale senza skip. Docker job: 4 test, named runtime legacy positivo/negative/cleanup/default preservato. Queste sono prove sintetiche CI, non release acceptance VPS.
 
 **Implementazione:** `scripts/semantic_provider_admission_preparer.py`, `tools/semantic_provider_deployment_admission.py`, `scripts/stage_semantic_admission_package.py`. Preparer source-sealed a dodici sorgenti e comandi con hash; intent per CID con intero documento OCI, receipt esterno di creation acceptance, approval esterna per issuer/Ente/installazione/CID/transaction/application/transport/creation hash, ACTIVE e validità massima 300s. Riutilizza soltanto lease custody/journal/common lock esistenti, QUIESCED e provider sets vuoti. Rifiuta NIC non approvate, MAC/IP/bridge/peer/runtime/PID drift. Non emette approval, non interroga IAM/DNS/provider, non è authorization applicativa. Driver v3 ricontrolla approval hash/scopo/expiry sotto common lock prima della release FIFO; v1/v2 restano compatibili. Revoca cooperante deve usare lo stesso lock; mutazioni privilegiate esterne non sono escluse.
 
-**Footprint indipendente:** compilato in un namespace network nuovo con mirror bounded di nomi/indici approvati, non ricavato calibrando regole host. Worker rifiuta namespace del chiamante prima di ogni write. Binding live usa query ai soli indici selezionati, evitando inventari globali di migliaia di NIC. Adapter schema v2 effettua dispatch del preparer/config hash per CID e richiede grant v3/approval SHA corrispondente; un solo runtime/cohort nominato può servire candidati diversi. Dispatch v2 coperto dai contract test; la prova Docker completa resta sul percorso legacy e le prove v3 complete sono runc native. L'integrazione Docker v2/v3 target non è dichiarata provata.
+**Footprint indipendente:** compilato in un namespace network nuovo con mirror bounded di nomi/indici approvati, non ricavato calibrando regole host. Worker rifiuta namespace del chiamante prima di ogni write. Configurazione lega anche hostNetworkNamespace: prepare/cleanup richiedono la custody host esatta, worker richiede parentNamespace uguale al valore sigillato e namespace corrente diverso. CI prova diniego dell'invocazione diretta host e parent falsificato, con host rules invariati. Binding live usa query ai soli indici selezionati, evitando inventari globali di migliaia di NIC. Adapter schema v2 effettua dispatch del preparer/config hash per CID e richiede grant v3/approval SHA corrispondente; un solo runtime/cohort nominato può servire candidati diversi. Dispatch v2 coperto dai contract test; la prova Docker completa resta sul percorso legacy e le prove v3 complete sono runc native. L'integrazione Docker v2/v3 target non è dichiarata provata.
 
 **Recovery:** journal STAGED → PREPARING → PREPARED → PROTECTED → CLEANED; PREPARING/PREPARED interrotti non vengono adottati o ripetuti automaticamente. Cleanup richiede rollback indipendente e morte della generazione registrata anche se non ha raggiunto il hook. Recovery operativo delle fasi incomplete resta esplicito; nessun reset/rebind implicito. La CI ha corretto il confronto atime e una collisione del nome helper; l'esistente provider `tools/semantic_provider_admission.py` è ripristinato byte-per-byte, SHA256 `dca670d1f0ced678db6af9810199da07419901a21523385e0ebea623b608bbfc`. I fallimenti delle revisioni precedenti non sono PASS retroattivi.
 
@@ -964,7 +964,7 @@ done
 
 ## 23. Source package admission v3 privato — NON ESEGUITO; intervento operatore pendente
 
-Prerequisito verificato: gateway `2020a6d274e5a45f1ef0ed2208c2d6acc980342e`, CI 38/38 success e prove native senza skip. Questa operazione prepara soltanto quindici sorgenti root-private, sigilla un receipt v3 e verifica il package. Non esegue il preparer, non crea namespace o template nativi, approval, profili, journal di runtime, lease o regole, non registra runtime né modifica unità/container e non avvia applicazioni. Package v1 e v2 restano immutabili. I dodici sorgenti che il preparer verifica e gli undici del driver v3 sono sottoinsiemi espliciti del source package a quindici file.
+Prerequisito verificato: gateway `ed6fab81acc17591a1087761266701f877233799`, CI 38/38 success e prove native senza skip. Questa operazione prepara soltanto quindici sorgenti root-private, sigilla un receipt v3 e verifica il package. Non esegue il preparer, non crea namespace o template nativi, approval, profili, journal di runtime, lease o regole, non registra runtime né modifica unità/container e non avvia applicazioni. Package v1 e v2 restano immutabili. I dodici sorgenti che il preparer verifica e gli undici del driver v3 sono sottoinsiemi espliciti del source package a quindici file.
 
 Hash/contenuti verificati 15/15 contro GitHub; sintassi bash verificata. trustedToolsAvailable è metadata, non prova funzionale. Atteso schema `ouf.semantic-admission-source-package.v3`, quindici sourceHashes, plan/apply/verify PASS, runtimeAdapterInstalled/admissionPreparerInstalled/runtimeRegistered/startAuthorized/rulesChanged/unitsChanged/containersChanged=false, providerCalls=0 e notReleaseAcceptance=true. Su BLOCKED conservare root/output; non riscrivere i package vecchi, non fare replay automatico. Riportare la nuova root e tutto l'output redatto.
 
@@ -979,7 +979,7 @@ cat > "$OUF_PREEXEC_PKG_TMP/sources.sha256" <<'OUF_PREEXEC_SHA'
 3fb04519de05131087a5bd12095b42f97026e7c5826d5f8f3845608404008f95  scripts/stage_semantic_preexec_package.py
 3106ade7c32e5d37ce7aa0214726907a3422c2850741168b7ee7d273b98b00fb  scripts/semantic_provider_docker_runtime.py
 5f38532f73f620cbbc9980b02a2e29cd8a4cdabafce370aba5a8a50e330065a5  scripts/semantic_provider_preexec_hook.py
-cda07e7b47f04a360ea12de1b78e1eb8546a8e63cc9bcd6e3f771275531e3629  scripts/semantic_provider_admission_preparer.py
+5b31650fddb0d47dad99f128d0d8775bde56a2f7489b0f5476956e17eaba125d  scripts/semantic_provider_admission_preparer.py
 98e3004300226fecd509a46c009585df14021927f20d4e5c82d8ff7a8a8180de  tools/materialize_southbound_kernel.py
 1c0d7f1243752fe216ef62eefbc2e3253b8f2503b518fafe11277e4d7721a084  tools/materialize_southbound_lease_refresh.py
 c466172113d1ffe850bf2c69762113b55fbc65d9091c96dca98a74548fddf930  tools/semantic_provider_dns.py
@@ -995,7 +995,7 @@ OUF_PREEXEC_SHA
 while read -r OUF_PREEXEC_HASH OUF_PREEXEC_FILE; do
   mkdir -p -- "$OUF_PREEXEC_PKG_TMP/$(dirname -- "$OUF_PREEXEC_FILE")"
   curl --fail --silent --show-error --proto '=https' --max-time 30 \
-    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/2020a6d274e5a45f1ef0ed2208c2d6acc980342e/$OUF_PREEXEC_FILE" \
+    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/ed6fab81acc17591a1087761266701f877233799/$OUF_PREEXEC_FILE" \
     -o "$OUF_PREEXEC_PKG_TMP/$OUF_PREEXEC_FILE"
 done < "$OUF_PREEXEC_PKG_TMP/sources.sha256"
 
@@ -1016,7 +1016,7 @@ for OUF_PREEXEC_PKG_MODE in plan apply verify; do
     "$OUF_PREEXEC_PKG_ROOT/source/scripts/stage_semantic_admission_package.py" \
     --mode "$OUF_PREEXEC_PKG_MODE" \
     --package-root "$OUF_PREEXEC_PKG_ROOT" \
-    --source-commit 2020a6d274e5a45f1ef0ed2208c2d6acc980342e \
+    --source-commit ed6fab81acc17591a1087761266701f877233799 \
     --hook-source-sha256 5f38532f73f620cbbc9980b02a2e29cd8a4cdabafce370aba5a8a50e330065a5
 done
 )

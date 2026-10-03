@@ -1,6 +1,6 @@
 # Deployment admission preparer — contract and evidence boundaries
 
-Implementation pinned to gateway 2020a6d274e5a45f1ef0ed2208c2d6acc980342e. This component consumes externally approved deployment artefacts; it does not issue authority, authenticate an issuer through IAM, grant fine-grained application authorization or register a runtime. The selected Linux bridge IPv4 backend supports distributed and colocated deployments. Entity, installation, transport, executable paths and topology are explicit inputs, never defaults.
+Implementation pinned to gateway ed6fab81acc17591a1087761266701f877233799. This component consumes externally approved deployment artefacts; it does not issue authority, authenticate an issuer through IAM, grant fine-grained application authorization or register a runtime. The selected Linux bridge IPv4 backend supports distributed and colocated deployments. Entity, installation, transport, executable paths and topology are explicit inputs, never defaults.
 
 The private source package v3 has fifteen files. The preparer verifies twelve exact root-private sources before importing, the v3 driver verifies eleven, and legacy drivers keep their ten-source contract. All native executable/interpreter hashes are approved in the private configuration. Existing source snapshots are immutable. CI fixtures and synthetic approvals are excluded from this package.
 
@@ -11,6 +11,7 @@ The private source package v3 has fifteen files. The preparer verifies twelve ex
 | authorityBinding/authorityScope | External private file/hash, validity ≤300s; issuer, Ente, installation, approval, CID, transaction, OCI, transport and creation-acceptance hashes |
 | creationAcceptance | External private receipt/hash; CID/OCI/transport accepted by an approved upstream attestor |
 | runtimeBinding | Real runc path/hash and exact existing state root; independently read state must match created CID/bundle/PID |
+| hostNetworkNamespace | Explicit sealed deployment-host namespace inode; prepare/cleanup require exact custody; template must bind that parent and run in a different namespace |
 | kernel/dns/coordinationBinding | Existing immutable lease configuration and native structure receipt; no fresh DNS or lease activation |
 | coordinationJournal/lockFile | Existing root-private journal and common lock; verified QUIESCED and empty provider sets |
 | commands/commandHashes/budgetSeconds | Explicit root-owned nft/ip/nsenter/unshare/mount/umount; bounded native operations |
@@ -19,7 +20,7 @@ The complete OCI document is bound, including process, environment, capabilities
 
 For each namespace attachment, the intent explicitly approves child name, bridge, MAC, IPv4, workload and binding references. Extra non-loopback NICs, changed addresses or host-peer relationships deny preparation. Only selected indexes are queried, keeping unrelated host workloads out of a candidate's bounded output budget. An OCI-created namespace is pinned on an exclusive owned nsfs anchor after task creation; prepared namespaces retain the exact approved bundle path. Real PID/start ticks/inode are checked and journaled.
 
-The expected nft footprint is compiled from approved rules in a separate network namespace. The worker mirrors only approved interface names/indexes to reproduce nft JSON resolution. It checks isolation before any write and never samples installed host rules as the expected template. The parent validates profile binding, sets expectedFootprint from that independent result, creates only owned private driver/preexec journals, then invokes plan/apply/verify against existing lease custody. Source/runtime/approval drift denies admission.
+The expected nft footprint is compiled from approved rules in a separate network namespace. The worker mirrors only approved interface names/indexes to reproduce nft JSON resolution. It checks sealed parent namespace and isolation before any write; direct host invocation and forged parent inode are native-tested negatives. The approved host inode cannot be automatically rebound after a reboot. It never samples installed host rules as the expected template. The parent validates profile binding, sets expectedFootprint from that independent result, creates only owned private driver/preexec journals, then invokes plan/apply/verify against existing lease custody. Source/runtime/approval drift denies admission.
 
 Driver v3 checks the external approval under the existing common guard/lease lock before protection operations and twice during pre-execution admission, including immediately before real runc start. Approval expiry, scope mismatch or changed bytes deny FIFO release. A cooperating revocation publisher must use the same lock. An actor with external root privileges can mutate resources outside this cooperative protocol; that is not claimed excluded. No online IAM revocation, token verification or fine-grained application decision is substituted by this deployment fence.
 
