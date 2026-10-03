@@ -1,6 +1,16 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
-## Checkpoint corrente — intent target PASS; software runtime verificato, staging target pendente
+## Checkpoint corrente — staging privato VPS ESEGUITO, PASS plan/apply/verify
+
+Il 3 ottobre 2026 alle 16:02 UTC (18:02 Europe/Rome) l'operatore ha eseguito il blocco staging del §12 dell'handoff. I tre checksum source sono OK; `SEMANTIC_RUNTIME_TRANSITION_STAGE=PASS` nei modi `plan/apply/verify`. Root del tentativo: `/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211`; root preparato privato: `/etc/ouf/deploy-snapshots/semantic-runtime-transition-stage-20261003-160211/prepared`.
+
+Output attestato: `ISOLATED_NATIVE_TEMPLATE=true`, `HOST_RULES_UNCHANGED=true`, `UNITS_UNCHANGED=true`, `CONTAINERS_UNCHANGED=true`, `EMPTY_PROVIDER_SETS=true`, `START_AUTHORIZED=false`, `PROVIDER_CALLS=0`, `NOT_RELEASE_ACCEPTANCE=true`, `NO_SECRETS_PRINTED=true`. Il template vuoto è compilato in namespace isolato; non prova regole runtime host installate. Intent precedente PASS al root `semantic-provider-transition-intent-20261003-151036/prepared` conservato. Non ripetere custody, intent o staging come passi autonomi.
+
+Source Gateway fissato: `ef2270a57446da1f23a58548aa4d44920e578fe0`; CI software già verificata 32/32 PASS, job runtime 11 test senza skip. Main/live e business evidence Cinema/Teatri invariati. Boot host DENY_ONLY, nessuna kernel lease installata, due candidati mai avviati; avvio non autorizzato. Rimangono tutti i gate PET/admission/authority/live namespace/packets/IPv6/lease lifecycle/reboot e acceptance già elencati.
+
+**Prossimo intervento pendente: solo runtime transition `--mode plan`**, read-only sulle regole/unità/container, sullo stage attestato; comando nel §13 dell'handoff. Runtime `apply/verify/reconcile/rollback` host NON ESEGUITI. Non avviare container, non fare restart Docker/reboot e non presumere che PASS stage sia release acceptance.
+
+## Cronologia — intent PASS e software verificato, prima dello staging target
 
 Il 3 ottobre 2026 l'operatore ha restituito PASS per `prepare_semantic_provider_transition_intent.py` nei tre modi `plan/apply/verify`. Root privato attestato: `/etc/ouf/deploy-snapshots/semantic-provider-transition-intent-20261003-151036/prepared`. Il boot lock è stato riusato; sono stati scritti soltanto artefatti privati. Nessuna regola runtime, unità o container modificata; `startAuthorized=false`, `providerCalls=0`, `notReleaseAcceptance=true`. Questa prova supera le diciture intent pendente sotto, conservate come cronologia; non ripetere l'intent come passo autonomo.
 
