@@ -1,0 +1,34 @@
+# Deployment admission preparer — contract and evidence boundaries
+
+Implementation pinned to gateway 2020a6d274e5a45f1ef0ed2208c2d6acc980342e. This component consumes externally approved deployment artefacts; it does not issue authority, authenticate an issuer through IAM, grant fine-grained application authorization or register a runtime. The selected Linux bridge IPv4 backend supports distributed and colocated deployments. Entity, installation, transport, executable paths and topology are explicit inputs, never defaults.
+
+The private source package v3 has fifteen files. The preparer verifies twelve exact root-private sources before importing, the v3 driver verifies eleven, and legacy drivers keep their ten-source contract. All native executable/interpreter hashes are approved in the private configuration. Existing source snapshots are immutable. CI fixtures and synthetic approvals are excluded from this package.
+
+| Configuration | Required binding |
+| --- | --- |
+| sourceRoot/sourceHashes | Exact private source set; no import path discovery |
+| candidate | One CID, transaction, complete OCI digest, table, approved network bindings and flow/purpose authority references |
+| authorityBinding/authorityScope | External private file/hash, validity ≤300s; issuer, Ente, installation, approval, CID, transaction, OCI, transport and creation-acceptance hashes |
+| creationAcceptance | External private receipt/hash; CID/OCI/transport accepted by an approved upstream attestor |
+| runtimeBinding | Real runc path/hash and exact existing state root; independently read state must match created CID/bundle/PID |
+| kernel/dns/coordinationBinding | Existing immutable lease configuration and native structure receipt; no fresh DNS or lease activation |
+| coordinationJournal/lockFile | Existing root-private journal and common lock; verified QUIESCED and empty provider sets |
+| commands/commandHashes/budgetSeconds | Explicit root-owned nft/ip/nsenter/unshare/mount/umount; bounded native operations |
+
+The complete OCI document is bound, including process, environment, capabilities, root, mounts, Linux namespaces/devices/seccomp/sysctl and annotations. This digest binds configuration, not the bytes of an image/root filesystem. Full supply-chain/image and creation acceptance must be performed by the external approved attestor. A file with accepted=true is not a self-generated acceptance proof: the preparer never creates it.
+
+For each namespace attachment, the intent explicitly approves child name, bridge, MAC, IPv4, workload and binding references. Extra non-loopback NICs, changed addresses or host-peer relationships deny preparation. Only selected indexes are queried, keeping unrelated host workloads out of a candidate's bounded output budget. An OCI-created namespace is pinned on an exclusive owned nsfs anchor after task creation; prepared namespaces retain the exact approved bundle path. Real PID/start ticks/inode are checked and journaled.
+
+The expected nft footprint is compiled from approved rules in a separate network namespace. The worker mirrors only approved interface names/indexes to reproduce nft JSON resolution. It checks isolation before any write and never samples installed host rules as the expected template. The parent validates profile binding, sets expectedFootprint from that independent result, creates only owned private driver/preexec journals, then invokes plan/apply/verify against existing lease custody. Source/runtime/approval drift denies admission.
+
+Driver v3 checks the external approval under the existing common guard/lease lock before protection operations and twice during pre-execution admission, including immediately before real runc start. Approval expiry, scope mismatch or changed bytes deny FIFO release. A cooperating revocation publisher must use the same lock. An actor with external root privileges can mutate resources outside this cooperative protocol; that is not claimed excluded. No online IAM revocation, token verification or fine-grained application decision is substituted by this deployment fence.
+
+Adapter v2 has a shared source/runtime registry with per-CID admissionConfiguration/hash, approvalRef and bundleParents. The candidate binding excludes other entries, so adding another entity does not rebind an existing journal. Its v3 grant must match the candidate's approval SHA. Legacy adapter v1 and driver v1/v2 remain accepted. Current complete Docker runner proof exercises the legacy named-runtime path; v3 prepared/OCI-created execution is proven with real runc. Docker v2/v3 production acceptance remains a separate integration gate.
+
+The existing admission journal is provisioned STAGED by the approved installer, with transaction/configuration hash and empty driver/namespace/generation fields. PREPARING persists before any owned namespace pin; PREPARED persists after driver/config publication; PROTECTED follows verified owned rules. The preparer does not create lease custody, the boot lock or a new coordination authority. Interrupted phases do not replay: preserve artefacts and use a reviewed explicit recovery plan. Cleanup requires independent preexec rollback and actual recorded-generation death, then unmounts only its owned anchor. Expired/revoked approval does not prevent owned rollback.
+
+Validated on CI: 38/38 checks at the implementation head; eight contract/source-package tests, two native preparer cases without skips (PREPARED and OCI_CREATED), independent template with host rules unchanged, source drift denial, pre-start revocation denial, real runc/nft, live rollback denial and owned cleanup. Forty shared regressions/inventories, three native network/lease cases, one native OCI case and four named-Docker adapter cases also pass. Native approvals/creation acceptance are explicitly synthetic CI inputs; target authority remains false.
+
+Operational next step is only source package v3 staging in handoff §23, NOT EXECUTED. The operator-attested v2 package at semantic-preexec-adapter-package-20261003-213033 remains installed only as private source. Before any runtime/profile/start action, identify and approve the real deployment approval issuer and creation attestor, prove target backend compatibility/live custody and complete the remaining authentication/purpose/TLS/revocation/lease/reboot gates.
+
+Primary mechanics: [ip link explicit index](https://man7.org/linux/man-pages/man8/ip-link.8.html), [nft JSON output](https://wiki.nftables.org/wiki-nftables/index.php/Output_text_modifiers). These mechanics do not grant platform authority.

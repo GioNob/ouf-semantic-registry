@@ -1,18 +1,20 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — preparer di produzione implementato; validazione nativa CI pendente
+## Checkpoint corrente — preparer e footprint indipendente validati; §23 staging source-only v3 NON ESEGUITO
 
-Gateway PR56 commit `2020a6d274e5a45f1ef0ed2208c2d6acc980342e`. Nuovi `scripts/semantic_provider_admission_preparer.py` e `tools/semantic_provider_deployment_admission.py`; driver schema v3 aggiunge approval scope/hash/validità ricontrollati sotto common guard/lease lock prima della release FIFO, mantenendo compatibilità v1/v2. Locale: 51 test, 46 PASS e 5 native/Docker opt-in skip. **Core/preparer sul precedente 0a3db817: 38/38 CI success, due prove native PREPARED/OCI_CREATED e Docker legacy. Head corrente aggiunge dispatch adapter v2 per-CID; CI esatta ancora pendente, nessuna nuova acceptance VPS.**
+Gateway PR56 commit `2020a6d274e5a45f1ef0ed2208c2d6acc980342e`, **38/38 CI check completed/success** (push e PR), log delle sei esecuzioni pertinenti letti. Locale: 51 test, 46 PASS e 5 native/Docker opt-in skip. Nuovo job preparer: 8 test unitari/source-package e 2 native senza skip; namespace PREPARED e OCI_CREATED, template isolato con host rules invariati, sorgente alterato negato, preparer sigillato, runc/nft reali, revoca prima del start negata, rollback live negato e cleanup owned. Shared job: 40 regressioni/inventari + 3 native rete/lease + 1 OCI reale senza skip. Docker job: 4 test, named runtime legacy positivo/negative/cleanup/default preservato. Queste sono prove sintetiche CI, non release acceptance VPS.
 
-Preparer verifica dodici sorgenti root-private prima degli import e hash dei comandi, intent per candidato, intero documento OCI (inclusi devices/seccomp/sysctl/namespaces/mount/env/capabilities), binding namespace/veth/MAC/IP/bridge e stato runc letto indipendentemente. Rifiuta NIC non approvate. Usa soltanto lease/journal/common lock già esistenti e QUIESCED; non crea lease o concede authority. Approval esterna di deployment sigillata e per Ente/installazione/CID/transaction/application/transport/creation acceptance, ACTIVE, durata massima 300s; receipt di full creation acceptance anch'esso esterno e sigillato. Nessuna emissione approval, chiamata IAM/DNS/provider o equivalenza con decisioni di authorization applicativa.
+**Implementazione:** `scripts/semantic_provider_admission_preparer.py`, `tools/semantic_provider_deployment_admission.py`, `scripts/stage_semantic_admission_package.py`. Preparer source-sealed a dodici sorgenti e comandi con hash; intent per CID con intero documento OCI, receipt esterno di creation acceptance, approval esterna per issuer/Ente/installazione/CID/transaction/application/transport/creation hash, ACTIVE e validità massima 300s. Riutilizza soltanto lease custody/journal/common lock esistenti, QUIESCED e provider sets vuoti. Rifiuta NIC non approvate, MAC/IP/bridge/peer/runtime/PID drift. Non emette approval, non interroga IAM/DNS/provider, non è authorization applicativa. Driver v3 ricontrolla approval hash/scopo/expiry sotto common lock prima della release FIFO; v1/v2 restano compatibili. Revoca cooperante deve usare lo stesso lock; mutazioni privilegiate esterne non sono escluse.
 
-Footprint atteso compilato in un namespace net separato: mirror bounded di nomi/ifindex per riprodurre risoluzione nft, rules/source/profile hash legati all'intent. Nessuna calibrazione delle regole host come expected template. Worker rifiuta namespace uguale al chiamante prima di ogni scrittura. Preparer scrive soltanto propri journal/config e protezione shared owned autorizzata; fasi interrotte richiedono recovery esplicita, senza replay/adoption. Cleanup richiede rollback indipendente e prova di morte della generazione anche se l'admission non ha ancora raggiunto il hook. Revoca cooperante deve usare lo stesso common lock; mutazioni privilegiate esterne non sono escluse.
+**Footprint indipendente:** compilato in un namespace network nuovo con mirror bounded di nomi/indici approvati, non ricavato calibrando regole host. Worker rifiuta namespace del chiamante prima di ogni write. Binding live usa query ai soli indici selezionati, evitando inventari globali di migliaia di NIC. Adapter schema v2 effettua dispatch del preparer/config hash per CID e richiede grant v3/approval SHA corrispondente; un solo runtime/cohort nominato può servire candidati diversi. Dispatch v2 coperto dai contract test; la prova Docker completa resta sul percorso legacy e le prove v3 complete sono runc native. L'integrazione Docker v2/v3 target non è dichiarata provata.
 
-La CI ha rilevato e fatto correggere due problemi: atime di una lettura legittima escluso dal metadata seal (owner/inode/mode/size/mtime/ctime restano controllati), e collisione del nome helper con l'esistente `tools/semantic_provider_admission.py` del provider. Quest'ultimo è ripristinato byte-per-byte, SHA256 `dca670d1f0ced678db6af9810199da07419901a21523385e0ebea623b608bbfc`; il nuovo helper è `semantic_provider_deployment_admission.py`. Fallimenti delle revisioni precedenti non vengono trasformati retroattivamente in PASS. Binding live interroga solo indici approvati, senza inventario globale di migliaia di NIC. Adapter v2 usa admissionConfiguration/hash per CID e richiede grant driver v3 con approval SHA legato a entry.approvalRef; v1/v2 legacy driver restano supportati.
+**Recovery:** journal STAGED → PREPARING → PREPARED → PROTECTED → CLEANED; PREPARING/PREPARED interrotti non vengono adottati o ripetuti automaticamente. Cleanup richiede rollback indipendente e morte della generazione registrata anche se non ha raggiunto il hook. Recovery operativo delle fasi incomplete resta esplicito; nessun reset/rebind implicito. La CI ha corretto il confronto atime e una collisione del nome helper; l'esistente provider `tools/semantic_provider_admission.py` è ripristinato byte-per-byte, SHA256 `dca670d1f0ced678db6af9810199da07419901a21523385e0ebea623b608bbfc`. I fallimenti delle revisioni precedenti non sono PASS retroattivi.
 
-**Prossimo passo tecnico:** leggere prove CI del preparer/template/runc e regressioni Docker sull'head esatto, correggere eventuali problemi, poi predisporre package source-only separato con nuove versioni/hash. Non presentare profilo, approval o registrazione VPS come pronti. Production approval issuer/creation attestor e integrazione runtime/admission/revoca applicativa rimangono dipendenze di deployment; la fixture CI è sintetica e non installabile.
+**Ultimo VPS invariato:** §22 ESEGUITO plan/apply/verify PASS in `/etc/ouf/deploy-snapshots/semantic-preexec-adapter-package-20261003-213033`, schema v2, source `b5260260fff1adf798626f12e24323c20ae1bb2e`, Python 3.13.5. Adapter/preparer non installati, runtime non registrato, start non autorizzato, regole/unità/container invariati, providerCalls=0. §20/§21 restano ESEGUITI PASS; candidati mai avviati, ultimo guard attestato RUNTIME_EMPTY/EMPTY_ONLY. Snapshot v1/v2 immutabili.
 
-**Ultima azione VPS resta §22 ESEGUITO plan/apply/verify PASS**, package v2 `/etc/ouf/deploy-snapshots/semantic-preexec-adapter-package-20261003-213033`, source `b5260260fff1adf798626f12e24323c20ae1bb2e`; runtime/preparer/adapter non installati, start non autorizzato, regole/unità/container invariati, providerCalls=0. Snapshot sigillato immutabile, nessun nuovo comando VPS eseguito. Migliaia di Enti, distribuzione e co-localizzazione su stessa rete/sottorete restano vincoli.
+**Prossimo passo preciso che richiede operatore VPS:** handoff §23 **NON ESEGUITO**, nuovo source-only package v3 a quindici file, nuova radice `semantic-admission-package-<UTC>`. Contenuti/hash verificati contro GitHub 15/15 e sintassi bash verificata. Non include fixture, profili, approval o receipt di acceptance sintetici. Atteso schema `ouf.semantic-admission-source-package.v3`, plan/apply/verify PASS e tutti i flag installation/registration/start/rules/units/containers false. Riportare root/output; su BLOCKED preservare tutto, niente replay automatico.
+
+**Gate successivi:** issuer/attestor di deployment realmente approvati, creation acceptance completa e authority infrastructure target, profili e journal/common lock sigillati, compatibilità template/backend VPS, integrazione Docker v2/v3, atomic snapshot, OIDC/purpose/TLS/revoca applicativa, lease attiva e reboot restano aperti. Approval JSON root-private con hash è un artefatto trusted del deployer, non verifica una firma IAM o autentica da solo issuerRef; il produttore approvato deve essere identificato prima dell'uso reale. Migliaia di Enti, host/reti distribuiti e co-localizzazione nella stessa rete/sottorete restano vincoli permanenti; backend bridge IPv4 è una realizzazione, non un default della piattaforma.
 
 ## Checkpoint VPS attestato — §22 ESEGUITO; nuovo source package v2 PASS
 
@@ -959,3 +961,65 @@ done
 ```
 
 **ESEGUITO sul VPS:** output operatore ricevuto, dodici checksum OK e plan/apply/verify PASS. Package root `/etc/ouf/deploy-snapshots/semantic-preexec-adapter-package-20261003-213033`, source commit `b5260260fff1adf798626f12e24323c20ae1bb2e`, schema v2, Python 3.13.5. runtimeAdapterInstalled/admissionPreparerInstalled/runtimeRegistered/startAuthorized=false; rulesChanged/unitsChanged/containersChanged=false, providerCalls=0. Il comando sopra è storico e non da rieseguire automaticamente. Handoff, roadmap, manuale e sprint aggiornati con l'attestazione effettiva; preparer/authority/footprint indipendente e registrazione/cohort/recovery restano separati e non autorizzati dal receipt.
+
+## 23. Source package admission v3 privato — NON ESEGUITO; intervento operatore pendente
+
+Prerequisito verificato: gateway `2020a6d274e5a45f1ef0ed2208c2d6acc980342e`, CI 38/38 success e prove native senza skip. Questa operazione prepara soltanto quindici sorgenti root-private, sigilla un receipt v3 e verifica il package. Non esegue il preparer, non crea namespace o template nativi, approval, profili, journal di runtime, lease o regole, non registra runtime né modifica unità/container e non avvia applicazioni. Package v1 e v2 restano immutabili. I dodici sorgenti che il preparer verifica e gli undici del driver v3 sono sottoinsiemi espliciti del source package a quindici file.
+
+Hash/contenuti verificati 15/15 contro GitHub; sintassi bash verificata. trustedToolsAvailable è metadata, non prova funzionale. Atteso schema `ouf.semantic-admission-source-package.v3`, quindici sourceHashes, plan/apply/verify PASS, runtimeAdapterInstalled/admissionPreparerInstalled/runtimeRegistered/startAuthorized/rulesChanged/unitsChanged/containersChanged=false, providerCalls=0 e notReleaseAcceptance=true. Su BLOCKED conservare root/output; non riscrivere i package vecchi, non fare replay automatico. Riportare la nuova root e tutto l'output redatto.
+
+```bash
+(
+set -euo pipefail
+OUF_PREEXEC_PKG_TMP=$(mktemp -d)
+trap 'rm -rf -- "$OUF_PREEXEC_PKG_TMP"' EXIT
+
+cat > "$OUF_PREEXEC_PKG_TMP/sources.sha256" <<'OUF_PREEXEC_SHA'
+84f6b1fec995b9675284253321930efee0056e4546168058bae6a3667a2ff7d7  scripts/stage_semantic_admission_package.py
+3fb04519de05131087a5bd12095b42f97026e7c5826d5f8f3845608404008f95  scripts/stage_semantic_preexec_package.py
+3106ade7c32e5d37ce7aa0214726907a3422c2850741168b7ee7d273b98b00fb  scripts/semantic_provider_docker_runtime.py
+5f38532f73f620cbbc9980b02a2e29cd8a4cdabafce370aba5a8a50e330065a5  scripts/semantic_provider_preexec_hook.py
+cda07e7b47f04a360ea12de1b78e1eb8546a8e63cc9bcd6e3f771275531e3629  scripts/semantic_provider_admission_preparer.py
+98e3004300226fecd509a46c009585df14021927f20d4e5c82d8ff7a8a8180de  tools/materialize_southbound_kernel.py
+1c0d7f1243752fe216ef62eefbc2e3253b8f2503b518fafe11277e4d7721a084  tools/materialize_southbound_lease_refresh.py
+c466172113d1ffe850bf2c69762113b55fbc65d9091c96dca98a74548fddf930  tools/semantic_provider_dns.py
+7a5f2b21c096228a3e4d298674e380f667c3004dd6d8ec19934a2302844c0f93  tools/semantic_provider_lease_nft.py
+92736eebeccf344e565186bce94d29c65ffe1d50638d57eae81486e7b26e884d  tools/semantic_provider_lease_owner.py
+b97f31cc17c22abbb7a021c274be73816f649196762f9c6dfcc54a58d8382e8a  tools/materialize_semantic_shared_faces.py
+25c6df90d33e39fe83321df6ab9e5c38d4c33bcd290ad57c7a85c03b1bb8ba78  tools/semantic_provider_lease_coordination.py
+b0fc54f39ec1b650a1e51a721127cca2cda1c2cd6bd9c2179919929a1cb50bc7  tools/semantic_provider_preexec.py
+ef0b98c96879933480a26418edc2b971b21a116509ac87cbc39e3b2062e7a528  tools/semantic_provider_preexec_native.py
+4bd0051fad23acd91fc42eb9b6cd2f2dac6e8d9d960fefd391add261a3646499  tools/semantic_provider_deployment_admission.py
+OUF_PREEXEC_SHA
+
+while read -r OUF_PREEXEC_HASH OUF_PREEXEC_FILE; do
+  mkdir -p -- "$OUF_PREEXEC_PKG_TMP/$(dirname -- "$OUF_PREEXEC_FILE")"
+  curl --fail --silent --show-error --proto '=https' --max-time 30 \
+    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/2020a6d274e5a45f1ef0ed2208c2d6acc980342e/$OUF_PREEXEC_FILE" \
+    -o "$OUF_PREEXEC_PKG_TMP/$OUF_PREEXEC_FILE"
+done < "$OUF_PREEXEC_PKG_TMP/sources.sha256"
+
+(cd "$OUF_PREEXEC_PKG_TMP"; sha256sum -c sources.sha256)
+
+OUF_PREEXEC_PKG_ROOT="/etc/ouf/deploy-snapshots/semantic-admission-package-$(date -u +%Y%m%d-%H%M%S)"
+sudo mkdir -m 0700 -- "$OUF_PREEXEC_PKG_ROOT"
+sudo install -d -m 0700 -o root -g root \
+  "$OUF_PREEXEC_PKG_ROOT/source/scripts" "$OUF_PREEXEC_PKG_ROOT/source/tools"
+while read -r OUF_PREEXEC_HASH OUF_PREEXEC_FILE; do
+  sudo install -m 0600 -o root -g root \
+    "$OUF_PREEXEC_PKG_TMP/$OUF_PREEXEC_FILE" "$OUF_PREEXEC_PKG_ROOT/source/$OUF_PREEXEC_FILE"
+done < "$OUF_PREEXEC_PKG_TMP/sources.sha256"
+printf 'SEMANTIC_ADMISSION_PACKAGE_ROOT=%s\n' "$OUF_PREEXEC_PKG_ROOT"
+
+for OUF_PREEXEC_PKG_MODE in plan apply verify; do
+  sudo /usr/bin/python3 -I -B \
+    "$OUF_PREEXEC_PKG_ROOT/source/scripts/stage_semantic_admission_package.py" \
+    --mode "$OUF_PREEXEC_PKG_MODE" \
+    --package-root "$OUF_PREEXEC_PKG_ROOT" \
+    --source-commit 2020a6d274e5a45f1ef0ed2208c2d6acc980342e \
+    --hook-source-sha256 5f38532f73f620cbbc9980b02a2e29cd8a4cdabafce370aba5a8a50e330065a5
+done
+)
+```
+
+**NON ESEGUITO sul VPS:** comando predisposto, in attesa dell'operatore. §22 resta ESEGUITO PASS. Dopo receipt effettivo aggiornare autonomamente handoff/roadmap/manuale/sprint. Nessun altro comando di profile/approval/registrazione/start è implicito; il passo successivo deve legarsi ai produttori realmente autorizzati di approval e creation acceptance e alla custody target.
