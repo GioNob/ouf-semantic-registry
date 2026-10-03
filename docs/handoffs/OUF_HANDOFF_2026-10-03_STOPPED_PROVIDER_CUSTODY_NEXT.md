@@ -1,5 +1,20 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
+## Requisito architetturale permanente e vincolante — scala Enti e topologie indipendenti
+
+**Istruzione esplicita dell'operatore, 3 ottobre 2026: OUF sarà ragionevolmente adottata da qualche migliaio di Enti. Deve supportare microservizi su reti e server differenti e installazioni su un unico server nella stessa rete/sottorete. Questo requisito governa ogni scelta architetturale, implementazione, test e procedura di installazione futura.**
+
+- La posizione di rete non conferisce identità, fiducia, tenant authority o autorizzazione. I medesimi contratti di autenticazione/autorizzazione, segregazione e transito obbligatorio attraverso Gateway devono valere anche fra servizi sullo stesso host o nella stessa sottorete.
+- Endpoint, porte, service identity, trust/secret reference, tenant binding e policy devono essere parametri espliciti e governati per installazione. Nessuna dipendenza obbligatoria da IP, nomi Docker, bridge, subnet, percorsi host o domini del laboratorio.
+- Gli adapter di deployment/enforcement possono differire fra topologie, ma devono preservare invarianti di default-deny, protezione SSRF/DNS/redirect, prevenzione del bypass e isolamento applicabile fra Enti. Non assumere che firewall inter-subnet o bridge dedicati siano presenti o sufficienti.
+- Installazione, registrazione delle capability, configurazione, upgrade, riconciliazione e verifica devono essere automatizzabili e idempotenti; niente procedure manuali ripetute per ogni Ente/capability. Parametri e ownership devono permettere convivenza senza collisioni e deployment separati.
+- Validare sia topologia distribuita su host/reti distinti sia topologia co-localizzata su singolo host e stessa sottorete, includendo negative-path di accesso diretto/bypass e isolamento fra Enti dove condividono risorse. Non dedurre scalabilità o performance a migliaia di Enti da fixture del laboratorio: servono profili di carico e SLO rappresentativi.
+- Il profilo Docker/nft di ouf-lab è una realizzazione di deployment, non il contratto generale della piattaforma. Conservare le evidenze già ottenute, senza universalizzare dettagli locali né riscrivere il lavoro validato per convenienza.
+
+La previsione di qualche migliaio di Enti non impone automaticamente migliaia di tenant nella stessa istanza: cardinalità, deployment condivisi/separati, isolamento e capacità vanno dichiarati nei profili. Ogni proposta futura deve spiegare come funziona nelle due topologie, senza ampliamenti impliciti di authority o bypass dei confini PET. Se una soluzione copre soltanto il laboratorio, dichiarare il limite e mantenere il gate portabilità aperto. Non chiudere R-INSTALL o scalabilità sulla sola CI.
+
+Questo requisito si aggiunge alle regole permanenti di validazione/autonomia/checkpoint e va conservato in ogni nuovo handoff. Registrazione documentale: nessuna modifica al runtime VPS e nessuna nuova prova di scala/topologia dichiarata.
+
 ## Checkpoint corrente — inventario readiness VPS ESEGUITO, PASS; gate startup aperti
 
 Il 3 ottobre 2026 alle 16:54 UTC (18:54 Europe/Rome) l'operatore ha eseguito il comando §16 e restituito `SEMANTIC_RUNTIME_READINESS_INVENTORY=PASS READ_ONLY=true STARTUP_READY=false START_AUTHORIZED=false NO_IAM_OR_DNS_CALL=true NO_RULE_UNIT_CONTAINER_CHANGED=true NO_SECRETS_PRINTED=true`. Source snapshot attestato: `/etc/ouf/deploy-snapshots/semantic-runtime-readiness-20261003-165430`. Helper Gateway `4daad06b71695ad839d1865e55d5aeaf765df861`, checksum `ecb0326b9f97f76598d9bad56aa241b01802bf0a601f4eda38fef41fb15c655a`; runtime cohort originale resta `ef2270a57446da1f23a58548aa4d44920e578fe0`.
