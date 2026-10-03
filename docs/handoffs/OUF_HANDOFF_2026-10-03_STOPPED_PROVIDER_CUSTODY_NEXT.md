@@ -1,6 +1,18 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — §22 ESEGUITO sul VPS; nuovo source package v2 PASS
+## Checkpoint corrente — preparer di produzione implementato; validazione nativa CI pendente
+
+Gateway PR56 commit `4ebb99257abf8517c793a62cfed76c23c3f1cb95`. Nuovi `scripts/semantic_provider_admission_preparer.py` e `tools/semantic_provider_admission.py`; driver schema v3 aggiunge approval scope/hash/validità ricontrollati sotto common guard/lease lock prima della release FIFO, mantenendo compatibilità v1/v2. Locale: 46 test, 42 PASS e 4 native/Docker opt-in skip. **CI esatta ancora pendente; nessuna nuova acceptance VPS.**
+
+Preparer verifica dodici sorgenti root-private prima degli import e hash dei comandi, intent per candidato, intero documento OCI (inclusi devices/seccomp/sysctl/namespaces/mount/env/capabilities), binding namespace/veth/MAC/IP/bridge e stato runc letto indipendentemente. Rifiuta NIC non approvate. Usa soltanto lease/journal/common lock già esistenti e QUIESCED; non crea lease o concede authority. Approval esterna di deployment sigillata e per Ente/installazione/CID/transaction/application/transport/creation acceptance, ACTIVE, durata massima 300s; receipt di full creation acceptance anch'esso esterno e sigillato. Nessuna emissione approval, chiamata IAM/DNS/provider o equivalenza con decisioni di authorization applicativa.
+
+Footprint atteso compilato in un namespace net separato: mirror bounded di nomi/ifindex per riprodurre risoluzione nft, rules/source/profile hash legati all'intent. Nessuna calibrazione delle regole host come expected template. Worker rifiuta namespace uguale al chiamante prima di ogni scrittura. Preparer scrive soltanto propri journal/config e protezione shared owned autorizzata; fasi interrotte richiedono recovery esplicita, senza replay/adoption. Cleanup richiede rollback indipendente e prova di morte della generazione anche se l'admission non ha ancora raggiunto il hook. Revoca cooperante deve usare lo stesso common lock; mutazioni privilegiate esterne non sono escluse.
+
+**Prossimo passo tecnico:** leggere prove CI del preparer/template/runc e regressioni Docker sull'head esatto, correggere eventuali problemi, poi predisporre package source-only separato con nuove versioni/hash. Non presentare profilo, approval o registrazione VPS come pronti. Production approval issuer/creation attestor e integrazione runtime/admission/revoca applicativa rimangono dipendenze di deployment; la fixture CI è sintetica e non installabile.
+
+**Ultima azione VPS resta §22 ESEGUITO plan/apply/verify PASS**, package v2 `/etc/ouf/deploy-snapshots/semantic-preexec-adapter-package-20261003-213033`, source `b5260260fff1adf798626f12e24323c20ae1bb2e`; runtime/preparer/adapter non installati, start non autorizzato, regole/unità/container invariati, providerCalls=0. Snapshot sigillato immutabile, nessun nuovo comando VPS eseguito. Migliaia di Enti, distribuzione e co-localizzazione su stessa rete/sottorete restano vincoli.
+
+## Checkpoint VPS attestato — §22 ESEGUITO; nuovo source package v2 PASS
 
 Output operatore ricevuto il 3 ottobre 2026 alle 23:31 Europe/Rome: **§22 ESEGUITO, plan/apply/verify PASS**. Nuovo package `/etc/ouf/deploy-snapshots/semantic-preexec-adapter-package-20261003-213033`, schema `ouf.semantic-preexec-source-package.v2`, source commit `b5260260fff1adf798626f12e24323c20ae1bb2e`; dodici checksum iniziali OK e dodici sourceHashes attestati, Python 3.13.5. Receipt e flag concordanti nei tre output. Attestazione operatore registrata in `docs/handoffs/receipts/SEMANTIC_PREEXEC_PACKAGE_V2_2026-10-03_OPERATOR.json`; nessuna lettura indipendente del VPS né digest del receipt dichiarati.
 
