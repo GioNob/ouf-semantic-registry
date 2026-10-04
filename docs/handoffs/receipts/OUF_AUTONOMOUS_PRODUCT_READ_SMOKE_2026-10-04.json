@@ -1,0 +1,62 @@
+{
+  "schema": "ouf.autonomous-product-read-smoke.v1",
+  "observedOn": "2026-10-04",
+  "source": "direct OUF MCP connector read-only calls in this conversation",
+  "account": {
+    "linkName": "ouf-admin",
+    "subject": "b93d8cf6-cd14-4ee6-91d7-84cd76c4f500",
+    "routing": "explicit current connector link listing; no alternate-account retry"
+  },
+  "urbanObjectSearch": {
+    "arguments": {
+      "type": "https://api.ouf-lab.it/semantic/cinema",
+      "pageSize": 2
+    },
+    "isError": true,
+    "httpStatus": 503,
+    "responseFields": {
+      "Type": "",
+      "Title": "",
+      "Code": "",
+      "Detail": "",
+      "Status": 503,
+      "RetryAfter": ""
+    },
+    "itemsObserved": 0,
+    "paginationProven": false,
+    "ownerFailureCause": "UNPROVEN_NO_BACKEND_CORRELATION_RETURNED",
+    "noRetry": true
+  },
+  "semanticSearch": {
+    "arguments": {
+      "q": "Theatre",
+      "type": "CLASS",
+      "limit": 3
+    },
+    "isError": false,
+    "returnedItems": 0,
+    "scope": "bounded published internal lookup; empty result is not exhaustive class inventory or ontology closure"
+  },
+  "sourceReview": {
+    "mcpCommit": "394b4b1540b575564f0ba58541df9d7efc59fb87",
+    "udpCommit": "83249a897eb4add4289b5181b3299f48ea4c0f99",
+    "gatewayCode": "ff51ac967feb8ccd0d00924ee76eb20a613fb863",
+    "targetGatewayRouteRevision": "historical c14d3f23-derived, not reread"
+  },
+  "operations": {
+    "newUploads": 0,
+    "newProfiles": 0,
+    "newIngestionRuns": 0,
+    "canonicalMerge": 0,
+    "publication": 0,
+    "operationalSignatures": 0,
+    "targetConfigurationWrites": 0,
+    "providerCalls": 0
+  },
+  "acceptance": {
+    "rSmokeClosed": false,
+    "cinemaEightObjectHistoricalEvidencePreserved": true,
+    "teatriProposalStillPendingHumanReview": true,
+    "providerStartAuthorized": false
+  }
+}

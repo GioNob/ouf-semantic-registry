@@ -19,8 +19,10 @@ La lettura comprende tutti i bytes esportati dell'immagine, quindi **eventuali s
 
 Restano non provati: publisher/base provenance, SBOM, build riprodotta, stato target corrente, OCI effettivo, mount view, sigillo completo rootfs live, generation, snapshot atomico, readiness, acceptance e start. Gli eventuali `imageBytesVerified=true` riguardano la chiusura config/layer dell'immagine selezionata; non tutti questi altri gate.
 
-Wrapper: `docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-04.sh`; SHA256 `c8602ba1279481df8a7cbc66864bd5a978be0234678d6cc5515da6b2f7e45b57`. Pin immutabile: commit che aggiunge il wrapper, da registrare dopo pubblicazione. Scope nuovo secondo handoff §7.4: consegnare il wrapper e chiedere soltanto questa lettura privata quando l'operatore torna disponibile. Nessun comando VPS pendente.
+Wrapper: `docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-04.sh`; SHA256 `c8602ba1279481df8a7cbc66864bd5a978be0234678d6cc5515da6b2f7e45b57`. Pin immutabile: `ffe6a9bceeee08bae95c93425f646bd354780d7c` (commit che aggiunge il wrapper). Scope nuovo secondo handoff §7.4: consegnare il wrapper e chiedere soltanto questa lettura privata quando l'operatore torna disponibile. Nessun comando VPS pendente.
 
 Prove software:13 test unitari/CLI,0 skip; test CI obbligatorio con Docker vero, immagine fixture FROM scratch creata con tag casuale e mai avviata, rimossa dal test. Copre config/layer/payload drift, whiteout, symlink, extra module, tar duplicati/traversal, gzip bomb, bytes/entry/deadline, redaction e CLI config vuoto. Il test Docker non misura le due immagini VPS. Wrapper bash-n e confronto esatto col reader in CI.
 
 Fonti primarie: [Docker image save](https://docs.docker.com/reference/cli/docker/image/save/), [OCI Image Configuration v1.1.1](https://github.com/opencontainers/image-spec/blob/v1.1.1/config.md), [OCI Image Layers v1.1.1](https://github.com/opencontainers/image-spec/blob/v1.1.1/layer.md).
+
+CI del pin ffe6a9b completata:7 workflow PR success; run37232696817, job111525565709:11+7+8+13 test root OK/0 skip,4wrapper bash-n/parity PASS; job111525566149:1 Docker archive test OK/0 skip. Non è esecuzione del wrapper VPS, scope42 resta NON CONFERITO.
