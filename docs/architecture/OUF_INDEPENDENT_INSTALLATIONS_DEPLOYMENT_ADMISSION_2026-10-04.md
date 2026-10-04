@@ -1,5 +1,13 @@
 # Decisione approvata — un Ente, una installazione autonoma
 
+## Aggiornamento corrente — §26 PASS; verificatore sorgente v5, authority target non concessa
+
+Gateway `d27bf59f72470828c961d1df25d7588878b477ca`, 63 test pertinenti e CI 38/38 PASS. Verificatore scoped/detached e package v5 completati; §27 privato NON ESEGUITO, nessuna key/policy/producer o runtime installati. [Confini della verifica](../installation/SEMANTIC_DEPLOYMENT_AUTHENTICATION.md).
+
+Ricerca esterna governata da Semantic/Registry/provider adapter tramite Gateway southbound. Chatbot richiede capability tipizzate e propone; THS/owner decidono adozione/pubblicazione. Trigger gap o esplicita richiesta autorizzata; SPARQL se disponibile/configurato, nessuna query libera dall'Agent. Default modificabile `schema.gov.it` è decisione utente. [Riesame PET e collegamento allo sprint](../sprints/OUF_FILE_TO_UDP_PROVIDER_DEPENDENCY_2026-10-04.md).
+
+Le sezioni sotto conservano le decisioni e prove alle date indicate; nuovo verificatore non equivale a integrazione del broker/driver di produzione.
+
 ## Checkpoint corrente — installazioni autonome; admission a due fasi approvata e implementata come contratto
 
 **Decisione esplicita approvata dall'utente il 4 ottobre 2026:** ogni Ente installa e amministra il proprio OUF. Mille Enti significano mille installazioni indipendenti; nessuna installazione centrale multitenant, collegamento tra tenant o authority condivisa è implicita. Codice, contratti e strumenti di release sono comuni; identità, policy, configurazioni, dati e mandati infrastrutturali appartengono alla singola installazione. Dentro un'installazione i microservizi possono essere distribuiti su server/reti differenti o sullo stesso server nella stessa rete/sottorete. La scalabilità riguarda replicabilità, aggiornamenti/manutenzione automatizzati e carico locale.

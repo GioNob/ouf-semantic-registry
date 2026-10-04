@@ -1,6 +1,20 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — §26 ESEGUITO/PASS; autenticazione deployment in lavorazione
+## Checkpoint corrente — §26 ESEGUITO/PASS; §27 sorgenti v5 NON ESEGUITO
+
+§26 attestato dall'operatore in `/etc/ouf/deploy-snapshots/semantic-deployment-trust-backend-inventory-20261004-080455`: source custody 18 e stableAcrossReads PASS, receipt hash `1b5a340a11fa3a157fe83be7bddc2a4af5dd755eb78a003b7a3640e117647d0a`; OpenSSL 3.5.7, hash `f4aa15f2822f670af7b5c1043d7aa6ebbbc64229fd2fae382edfc6a4524749c1`, firma valida e due negative PASS. Authority/atomicità/runtime/start restano false; key generation/private-key reads/signature issuance/provider/DNS/IAM calls zero. Receipt operatore conservata; nessun replay §25/§26.
+
+**Codice completato:** gateway `d27bf59f72470828c961d1df25d7588878b477ca`, verificatore detached Ed25519 con scope key/role/issuer/installazione/Ente, policy esplicita hash-pinned, revoca/scadenza rilette dopo native verify bounded; nessun issuer/default/grant, signing o keygen di produzione. Nuovo source package v5 di 20 file. Locale 63 test pertinenti PASS, 13 auth nuovi + 2 package. [Contratto e limiti](../installation/SEMANTIC_DEPLOYMENT_AUTHENTICATION.md).
+
+**CI codice finale:** gateway `d27bf59f72470828c961d1df25d7588878b477ca`, 38/38 completed/success; log push/PR verificati: 63 unit/contract/package, 2 native admission, 5 Docker. Documento ricevuta §26 `e796a09c08b0c1a55e2e903cd83b12bebc03fa33`: 13/13 success dopo rerun del solo job fallito per download Maven Central HTTP403, senza modifica al codice.
+
+**Percorso confermato sui PET:** Semantic v1.3 §§10–11,17–18,25–26 e74; Onboarding v1.6 §§9.3,12–13,92; MCP v1.4 confini/catalogo. Il chatbot può richiedere discovery tipizzata e proporre mapping; Semantic/Registry governa provider adapter e candidati; egress via Gateway southbound. Trigger: match interno inadeguato **o richiesta esplicita autorizzata**. Niente SPARQL arbitrario dall'Agent, né adozione/pubblicazione/activation HUMAN via MCP. Candidato esterno non è riferimento ACTIVE finché il workflow governato non lo rende tale.
+
+**Decisione utente 4 ottobre:** provider predefinito `schema.gov.it`, modificabile per installazione (`schema.maggioli.it` è un esempio). SPARQL è il canale configurato quando disponibile, secondo Semantic §26.3; dominio non determina URL endpoint completo. Un Ente, un'installazione indipendente, servizi distribuiti o co-localizzati. [Traccia del ramo deploy rispetto a file → MCP → UDP](../sprints/OUF_FILE_TO_UDP_PROVIDER_DEPENDENCY_2026-10-04.md): non è una dipendenza universale di ogni ingestion. Guard/lease/OCI/firme sono scelte implementative per i confini PET; collaudo end-to-end resta aperto.
+
+**Prossimo intervento necessario sul VPS:** §27 **NON ESEGUITO**, [staging privato v5](commands/OUF_STAGE_AUTHENTICATED_DEPLOYMENT_PACKAGE_V5_2026-10-04.sh), soltanto compile/hash/receipt di sorgenti nuovi. Verificatore/policy/producer non installati, nessuna key/firma emessa, regole/unit/container invariati; runtimeRegistration/start false. Non applicare policy o avviare componenti. Broker/issuer/attestor reali, acceptance completa, wiring signature prima del consumo sotto common lock e provisioning per-Ente restano il lavoro successivo; nessun gate target viene chiuso da CI/package PASS.
+
+## Checkpoint precedente — §26 ESEGUITO/PASS; autenticazione allora in lavorazione
 
 **Ultimo esito VPS, 4 ottobre 2026:** `/etc/ouf/deploy-snapshots/semantic-deployment-trust-backend-inventory-20261004-080455`. Custody dei 18 sorgenti v4 e stabilità fra letture PASS; receipt hash `1b5a340a11fa3a157fe83be7bddc2a4af5dd755eb78a003b7a3640e117647d0a`. OpenSSL `3.5.7`, hash `f4aa15f2822f670af7b5c1043d7aa6ebbbc64229fd2fae382edfc6a4524749c1`: firma pubblica valida accettata, messaggio e firma alterati respinti. Evidenza operatore, non accesso indipendente al VPS.
 
@@ -1187,4 +1201,58 @@ sudo /usr/bin/python3 -I -B "$OUF_TRUST_ROOT/source/inventory.py" \
   --package-root /etc/ouf/deploy-snapshots/semantic-deployment-package-20261004-072744 \
   --operator-attestation "$OUF_TRUST_ROOT/source/operator.json" \
   --openssl-path /usr/bin/openssl
+```
+
+## 27. Primo intervento VPS pendente — package v5 soltanto sorgenti
+
+**NON ESEGUITO.** Nessuna authority, chiave o runtime installato. Nuovo snapshot, nessun replay dei vecchi package.
+
+```bash
+#!/usr/bin/env bash
+# §27 NON ESEGUITO: new private sources only. No policy/key/runtime installation.
+set -euo pipefail
+OUF_AUTH_PKG_TMP=$(mktemp -d)
+trap 'rm -rf -- "$OUF_AUTH_PKG_TMP"' EXIT
+cat > "$OUF_AUTH_PKG_TMP/sources.sha256" <<'OUF_AUTH_SHA'
+e8f6670029e6e3bf7a74e79dadd710b5a62bf31a23abd4c2785a71f36245a03c  scripts/semantic_provider_admission_preparer.py
+c05c0216c0cec774f13ab27b193ab92599dd191314a157dc76b26ad978bc215c  scripts/semantic_provider_docker_runtime.py
+a4ca047fc76dda6378e81834cac421d5d829b55d63ac62dde29a3178245aaabc  scripts/semantic_provider_preexec_hook.py
+84f6b1fec995b9675284253321930efee0056e4546168058bae6a3667a2ff7d7  scripts/stage_semantic_admission_package.py
+2be2d851db0ae5f5189c0b4c5aed27a74a7e91a58f080e5ef16d1a0bba181d9a  scripts/stage_semantic_authenticated_deployment_package.py
+e2ee1c81de0cf9004538adc0393833453d826a9e1a2533fa9baba95aab50e8b0  scripts/stage_semantic_deployment_package.py
+3fb04519de05131087a5bd12095b42f97026e7c5826d5f8f3845608404008f95  scripts/stage_semantic_preexec_package.py
+b97f31cc17c22abbb7a021c274be73816f649196762f9c6dfcc54a58d8382e8a  tools/materialize_semantic_shared_faces.py
+98e3004300226fecd509a46c009585df14021927f20d4e5c82d8ff7a8a8180de  tools/materialize_southbound_kernel.py
+1c0d7f1243752fe216ef62eefbc2e3253b8f2503b518fafe11277e4d7721a084  tools/materialize_southbound_lease_refresh.py
+4bd0051fad23acd91fc42eb9b6cd2f2dac6e8d9d960fefd391add261a3646499  tools/semantic_provider_deployment_admission.py
+1316e94949a83745701eecb40f33017dcf1461165b59c1388ad57949a96beab4  tools/semantic_provider_deployment_authentication.py
+88b848be497607a71a9fc8def9164119d8bcf74d095d906fd56e6f91b7cb642a  tools/semantic_provider_deployment_consumption.py
+87e4eed4485cee0736bb7031827ee773efde6f4fb97d6289c885fc5cf2049592  tools/semantic_provider_deployment_protocol.py
+c466172113d1ffe850bf2c69762113b55fbc65d9091c96dca98a74548fddf930  tools/semantic_provider_dns.py
+25c6df90d33e39fe83321df6ab9e5c38d4c33bcd290ad57c7a85c03b1bb8ba78  tools/semantic_provider_lease_coordination.py
+7a5f2b21c096228a3e4d298674e380f667c3004dd6d8ec19934a2302844c0f93  tools/semantic_provider_lease_nft.py
+92736eebeccf344e565186bce94d29c65ffe1d50638d57eae81486e7b26e884d  tools/semantic_provider_lease_owner.py
+1ade8d45a7387bd3b22464a34401ab6b4358f76e5c025ac84d80951542eb1fad  tools/semantic_provider_preexec.py
+ef0b98c96879933480a26418edc2b971b21a116509ac87cbc39e3b2062e7a528  tools/semantic_provider_preexec_native.py
+OUF_AUTH_SHA
+while read -r OUF_AUTH_HASH OUF_AUTH_FILE; do
+  mkdir -p -- "$OUF_AUTH_PKG_TMP/$(dirname -- "$OUF_AUTH_FILE")"
+  curl --fail --silent --show-error --proto '=https' --max-time 30 \
+    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/d27bf59f72470828c961d1df25d7588878b477ca/$OUF_AUTH_FILE" \
+    -o "$OUF_AUTH_PKG_TMP/$OUF_AUTH_FILE"
+done < "$OUF_AUTH_PKG_TMP/sources.sha256"
+(cd "$OUF_AUTH_PKG_TMP"; sha256sum -c sources.sha256)
+OUF_AUTH_PKG_ROOT="/etc/ouf/deploy-snapshots/semantic-authenticated-deployment-package-$(date -u +%Y%m%d-%H%M%S)"
+sudo mkdir -m 0700 -- "$OUF_AUTH_PKG_ROOT"
+sudo install -d -m 0700 -o root -g root "$OUF_AUTH_PKG_ROOT/source/scripts" "$OUF_AUTH_PKG_ROOT/source/tools"
+while read -r OUF_AUTH_HASH OUF_AUTH_FILE; do
+  sudo install -m 0600 -o root -g root "$OUF_AUTH_PKG_TMP/$OUF_AUTH_FILE" "$OUF_AUTH_PKG_ROOT/source/$OUF_AUTH_FILE"
+done < "$OUF_AUTH_PKG_TMP/sources.sha256"
+printf 'SEMANTIC_AUTHENTICATED_DEPLOYMENT_PACKAGE_ROOT=%s\n' "$OUF_AUTH_PKG_ROOT"
+for OUF_AUTH_MODE in plan apply verify; do
+  sudo /usr/bin/python3 -I -B "$OUF_AUTH_PKG_ROOT/source/scripts/stage_semantic_authenticated_deployment_package.py" \
+    --mode "$OUF_AUTH_MODE" --package-root "$OUF_AUTH_PKG_ROOT" \
+    --source-commit d27bf59f72470828c961d1df25d7588878b477ca \
+    --hook-source-sha256 a4ca047fc76dda6378e81834cac421d5d829b55d63ac62dde29a3178245aaabc
+done
 ```
