@@ -1,23 +1,30 @@
 {
   "schema": "ouf.work-checkpoint.v1",
-  "gatewayCommit": "3bdedad3108112ee4c36e7cb8387aaf60912e97c",
-  "semanticDocumentationCommit": "e14b424ba523dd4f024e8042043131ea441a52dd",
+  "gatewayCommit": "3e9bea03e0eb1b0ff46e4a4000d612e8a7f99fa7",
+  "semanticDocumentationCommit": "d12c64d08598eb807bd88ea919880fec395d5d0f",
   "gatewayCI": {
-    "success": 38,
-    "total": 38,
-    "reruns": 0,
-    "unitTests": 201,
-    "preparerNativeTests": 2,
-    "dockerAdapterTests": 6,
-    "targetInventoryDockerTests": 1,
-    "goCompatibilityTests": 1,
-    "newAuthorityKeyTests": 17,
-    "newPrivatePolicyTests": 15
+    "commit": "3e9bea03e0eb1b0ff46e4a4000d612e8a7f99fa7",
+    "returnedPrWorkflows": 2,
+    "returnedJobs": 19,
+    "success": 19,
+    "rootUnitTests": 216,
+    "rootUnitSkipped": 0,
+    "newLiveMandateTests": 15,
+    "nativeAdmissionTests": 2,
+    "nativeTargetDockerGoTests": 2,
+    "source": "actual job111523471746 logs",
+    "scope": "PR workflow runs returned only",
+    "nativeV2TargetProven": false
   },
   "semanticDocumentationCI": {
-    "commit": "3a590539231a71f898784eab1b3f1825ca05ffb8",
+    "commit": "8076c32294712767468cf2d3b9393737023ce621",
     "returnedPrWorkflows": 7,
     "status": "SUCCESS",
+    "readerUnitTests": 39,
+    "readerUnitSkipped": 0,
+    "dockerArchiveTests": 1,
+    "readerJob": 111523909327,
+    "dockerArchiveJob": 111523909416,
     "connectorScope": "PR runs first page only"
   },
   "localTests": {
@@ -70,12 +77,13 @@
     "lastPassSection": 41,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "OBSERVATION_MANDATE_BRIDGE_AND_IMAGE_BYTES_PROVENANCE_OPEN",
+    "nextStatus": "EXACT_OCI_AUTHORIZATION_PROVISIONING_AND_TARGET_IMAGE_BYTES_OPEN",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
-    "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE"
+    "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
+    "section42Status": "PREPARED_NOT_AUTHORIZED_NOT_EXECUTED"
   },
-  "nextTask": "Resolve/test observation-to-mandate bridge and targeted installed image bytes/provenance review; no redundant inventory or VPS replay.",
+  "nextTask": "Verify prepared-code CI; concretize exact OCI authorization provisioning and product smoke without target replay.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -87,7 +95,7 @@
   ],
   "pr56": "open draft unmerged",
   "pr26": "open draft unmerged",
-  "documentationHead": "3a590539231a71f898784eab1b3f1825ca05ffb8",
+  "documentationHead": "8076c32294712767468cf2d3b9393737023ce621",
   "v8Recovery": {
     "status": "EXECUTED_PASS",
     "packageRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
@@ -99,8 +107,8 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Autonomous broker/producer bridge software review and implementation before operational signatures or start scopes.",
-  "latestDocumentationCi": "3a59053_7_PR_WORKFLOWS_SUCCESS_NEW_CHECKPOINT_PENDING",
+  "nextStep": "Verify prepared-code CI; concretize exact OCI authorization provisioning and product smoke without target replay.",
+  "latestDocumentationCi": "8076_7_PR_WORKFLOWS_SUCCESS_NEW_WRAPPER_CHECKPOINT_PENDING",
   "localDiagnosticTests": {
     "total": 11,
     "passed": 10,
@@ -175,9 +183,9 @@
     "roleSigningAuthorized": false,
     "startAuthorized": false
   },
-  "semanticHead": "e14b424ba523dd4f024e8042043131ea441a52dd",
+  "semanticHead": "8076c32294712767468cf2d3b9393737023ce621",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
-  "checkpointType": "operator-image-lineage-pass",
+  "checkpointType": "autonomous-live-mandate-software-and-image-byte-wrapper",
   "checkpointAt": "2026-10-04",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
@@ -326,7 +334,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "OBSERVATION_MANDATE_BRIDGE_AND_IMAGE_BYTES_PROVENANCE_OPEN",
+  "nextStatus": "EXACT_OCI_AUTHORIZATION_PROVISIONING_AND_TARGET_IMAGE_BYTES_OPEN",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -373,18 +381,64 @@
   "documentationHeadType": "lastVerifiedPrecedingCommit",
   "forecast": {
     "target": "first complete chatbot file/semantic/ingestion/UDP/search live smoke including external semantic branch",
-    "intensiveWorkDays": [
-      5,
-      10
+    "calendarDays": [
+      3,
+      7
     ],
-    "calendarWeeks": [
+    "significantIntegrationCorrectionWeeks": [
       1,
       2
     ],
-    "significantIntegrationCorrectionWeeks": [
-      2,
-      3
-    ],
+    "basis": "user reports near24h7d pace; revised estimate",
     "guaranteed": false
+  },
+  "previousGatewayCI": {
+    "success": 38,
+    "total": 38,
+    "reruns": 0,
+    "unitTests": 201,
+    "preparerNativeTests": 2,
+    "dockerAdapterTests": 6,
+    "targetInventoryDockerTests": 1,
+    "goCompatibilityTests": 1,
+    "newAuthorityKeyTests": 17,
+    "newPrivatePolicyTests": 15
+  },
+  "liveMandateBridge": {
+    "status": "IMPLEMENTED_TESTED_NOT_DEPLOYED",
+    "gatewayCommit": "3e9bea03e0eb1b0ff46e4a4000d612e8a7f99fa7",
+    "nodeConfigurationSchema": "ouf.semantic-node-attestor.v2",
+    "authorizationSchema": "ouf.semantic-node-live-acceptance-authorization.v1",
+    "signedExactOciRootfsRequired": true,
+    "observedCreatedGenerationRequired": true,
+    "wildcardGenerationAccepted": false,
+    "threeStableObservations": true,
+    "claimBeforeKeyRead": true,
+    "durablePublication": true,
+    "targetProvisioningOfExactOciAuthorizationOpen": true,
+    "nativeV2TargetProven": false,
+    "targetSignaturesIssued": 0
+  },
+  "imageBytesReadback": {
+    "section": 42,
+    "status": "PREPARED_NOT_AUTHORIZED_NOT_EXECUTED",
+    "preparedCommit": "ffe6a9bceeee08bae95c93425f646bd354780d7c",
+    "wrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-04.sh",
+    "wrapperSha256": "c8602ba1279481df8a7cbc66864bd5a978be0234678d6cc5515da6b2f7e45b57",
+    "scopeGranted": false,
+    "rootfsDescriptorsPinnedFromSection39": true,
+    "localTestsPassed": 13,
+    "localTestsSkipped": 0,
+    "ciStatus": "PENDING_ON_PREPARED_COMMIT",
+    "perImageSeconds": 180,
+    "perImageCumulativeParserBytes": 8589934592,
+    "perImageMaxEntries": 100000,
+    "archiveExtraction": false,
+    "imageEmbeddedSecretsMayBeRead": true,
+    "targetMountKeyEnvFilesRead": false,
+    "registryCredentialsRead": false,
+    "targetSignaturesIssued": 0,
+    "acceptanceGranted": false,
+    "startAuthorized": false
   }
 }
