@@ -1,5 +1,14 @@
 # Accettazione concreta dei candidati Semantic provider
 
+## Checkpoint corrente — §40 ESEGUITO/PASS, non ripetere
+
+Scope §40 conferito dall'utente «Autorizzo»; output operatore ricevuto 4 ottobre 2026, 21:28:07 Europe/Rome. Checksum OK; SEMANTIC_CONFIGURATION_PROVENANCE=PASS. Evidenza operatore, nessun accesso VPS indipendente. Pin eseguito `4e69bcf2a66abf75f0ec18db11c339293891f630`, wrapper SHA256 `1ab35491972810bc72a995c534e1bfc438f6f0c1e469b8dc8a3685e020c50b9b`. Receipt redatta: `docs/handoffs/receipts/SEMANTIC_CONFIGURATION_PROVENANCE_PASS_2026-10-04_OPERATOR.json`.
+
+Sette evidenze e tre configurazioni lette privatamente: receiptChainConsistent, sealedConfigurationBytesConsistent, adapterBindingConsistent e routesMatchSealedPlan=true. Chiave TLS inline letta solo in memoria; PEM separati/Env non letti. ProviderCalls/signaturesIssued/targetFilesWritten=0; acceptanceGranted/startAuthorized/runtimeRegistered=false. Doppie letture stabili, non snapshot atomico. Non prova compiler replay indipendente, validazione crittografica chiavi, publisher provenance immagini, OCI/rootfs/generazione live o release acceptance. Non ripetere §40/39/38/36/34/31.
+
+CI HEAD precedente `4f4416ec4f08d443ff79ef2cdfacc9267a85a903` riletta: sette workflow PR completed/success, inclusi i due prima in corso. I 18 test/parity già verdi restano prova ereditata, non rerun locale. PR26 draft/unmerged. Nessun comando VPS pendente. Prossimo lavoro autonomo: verifica mirata della lineage della build adapter e selezione southbound dalle receipt esistenti, senza rebuild/pull o accettazione automatica; risolvere anche il ponte observation→mandate prima di qualsiasi firma/avvio. Gli stati PREPARATO/non autorizzato/non eseguito sotto sono cronologia superata da questo checkpoint.
+
+
 Stato: piano tecnico revisionabile, NON accettazione concessa. Ultimo VPS §39 PASS; privatepolicy§38 PASS preservata; §39 readback metadati ESEGUITO/PASS (storico, non live). Nessuna firma operativa, lettura contenuti mount, registrazione runtime, collegamento consumer o avvio. Le prove §31/34/36/38 e tutti i tentativi BLOCKED restano immutabili.
 
 

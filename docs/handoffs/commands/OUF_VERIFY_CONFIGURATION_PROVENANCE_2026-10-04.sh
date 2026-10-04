@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# PREPARED ONLY — §40 PRIVATE CONFIGURATION READ SCOPE NOT GRANTED.
+# EXECUTED/PASS — §40 scope authorized; operator result received 2026-10-04. DO NOT REPLAY.
+# Executed immutable commit 4e69bcf2a66abf75f0ec18db11c339293891f630; SHA256 1ab35491972810bc72a995c534e1bfc438f6f0c1e469b8dc8a3685e020c50b9b.
 # Reads apisix.yaml with existing inline TLS private key; never prints it.
 # No separate PEM/MAC/env reads; no Docker, IAM, provider, writes or start.
 set -euo pipefail
