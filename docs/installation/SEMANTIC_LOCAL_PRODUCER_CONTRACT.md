@@ -1,5 +1,9 @@
 # Contratto dei producer locali e custodia del tentativo
 
+## Collegamento operativo successivo
+
+Gateway `86ceb70591762319b3003c4163990451a5c6cca1`: il broker operativo usa questo contratto e la custodia per emettere attestation e approval, validare completamente la creazione prima della seconda emissione, pubblicare READY e sigillare il driver v5. [Profilo, fasi, precondizioni e recupero](SEMANTIC_LOCAL_DEPLOYMENT_BROKER.md). Il broker crea O_EXCL i claim UNUSED soltanto dentro la propria fase PREPARING già persistita; l'installer provisiona in anticipo i journal STAGED del deployment/broker e le directory di risultato vuote. Nessun reset o replay implicito. Il vecchio package v6 sul VPS resta immutabile e non include il broker.
+
 ## Scopo e stato
 
 Sorgenti `93e1c845d26d339af6a07acb0e588b2532d2a4a7`: `tools/semantic_provider_deployment_producer.py`, API `DetachedAuthenticator.verify_detached` e17 test nuovi. 99 test locali PASS; [CI del commit](https://github.com/GioNob/ouf-api-gateway/commit/93e1c845d26d339af6a07acb0e588b2532d2a4a7/checks). Il modulo è un trasporto/custodia per componenti con mandato locale esplicito, non un signer, un issuer di mandati, un verifier di immagini o un orchestratore di avvio. Non genera né legge chiavi private. Nei test si usano esclusivamente chiavi effimere e un producer echo del risultato già firmato.

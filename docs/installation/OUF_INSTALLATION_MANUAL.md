@@ -1,6 +1,20 @@
 # OUF — Manuale di installazione e bootstrap
 
-## Checkpoint corrente — §28 ESEGUITO/PASS; contratto e custodia producer implementati
+## Checkpoint corrente — broker operativo collegato ai producer e al driver
+
+Gateway `86ceb70591762319b3003c4163990451a5c6cca1`: `scripts/semantic_provider_deployment_broker.py` compone le quattro fasi dell'adapter v4 con `LocalEvidenceProducer`, `ProducerEmission`, Consumption, preparer v3 e driver v5. Il collegamento è implementato; il broker sintetico precedente non è più necessario per comporre il percorso autenticato. Guida completa: [SEMANTIC_LOCAL_DEPLOYMENT_BROKER.md](SEMANTIC_LOCAL_DEPLOYMENT_BROKER.md).
+
+Ordine effettivo: intento creation-only autenticato → processo OCI created verificato → claim PREPARING persistente → attestazione firmata e validazione completa prima di chiedere approval → approval firmata legata alla richiesta/attestationHash/creationAcceptanceHash → READY → preparer → sigillo del driver sotto lock comune → start protetto soltanto dove autorizzato. Le chiamate ready_locked/seal_driver_locked evitano flock annidati; il subprocess preparer acquisisce il lock dopo che il broker lo ha rilasciato. Ogni emissione conserva ISSUING/ISSUED e file O_EXCL. Interruzioni, custodia o generazione cambiate e claim estranei impediscono replay o sigillo.
+
+**Verifiche:** 113 test locali eseguiti,110 PASS e3 Docker nativi saltati per ambiente privo di Docker/runc/netns. Otto nuovi test del broker usano subprocess producer e firme Ed25519 reali; native runtime/preparer sostituiti soltanto nei test unitari. [CI Gateway del commit](https://github.com/GioNob/ouf-api-gateway/commit/86ceb70591762319b3003c4163990451a5c6cca1/checks):107 test pertinenti PASS,2 prove native preparer PASS,6 test Docker PASS, compresa la catena broker operativo → due producer distinti → preparer v3 → driver v5, blocchi per deriva lease/firma e cleanup reale. Chiavi/mandati/verifier Busybox restano fixture CI, esclusi dai pacchetti di deployment. Tutti i38 check Gateway del commit sono SUCCESS, inclusi i due job summary-stack.
+
+**VPS invariato:** §28 ESEGUITO/PASS in `/etc/ouf/deploy-snapshots/semantic-authenticated-runtime-package-20261004-094455`, source `f1996cca60e66f1807b88f126793a8edc1aed15f`. Ricevuta operatore in `2a8a0bc82e93bd09a6f65e7645381e1951b6bff1`. Il package v6 non contiene i nuovi producer/broker; è immutabile e non va rieseguito. Nessun nuovo comando VPS, chiave, firma reale, policy, runtime registration o avvio è stato eseguito da questa sessione. Nessun merge.
+
+**Prossimo passo preciso:** predisporre per la singola installazione i binding dei producer installer/attestor reali e della trust policy pubblica, sotto mandato infrastrutturale esplicito. L'attestor deve provare l'immagine e l'accettazione completa reali; il risultato CI non lo sostituisce. Il profilo broker, il template e i journal STAGED devono essere provisionati con i dati effettivi del VPS prima di invocare il percorso operativo. Non generare implicitamente chiavi, mandati, avvii, replay o reboot. L'integrazione software è completata; l'accettazione del deployment target resta aperta.
+
+Conservati i vincoli PET: installazioni indipendenti per Ente, topologie su host/reti differenti o stessa subnet; ricerca esterna di Semantic/Registry attraverso Gateway, default schema.gov.it configurabile per installazione. Chatbot/MCP propone discovery/mapping tipizzato; THS decide adozione/pubblicazione/attivazione. Questo gate riguarda la discovery esterna e non sostituisce né dichiara completato il ciclo interno file → ingestion → UDP.
+
+## Checkpoint storico — §28 ESEGUITO/PASS; contratto e custodia producer implementati
 
 §28: `/etc/ouf/deploy-snapshots/semantic-authenticated-runtime-package-20261004-094455`, source `f1996cca60e66f1807b88f126793a8edc1aed15f`; checksum wrapper +22 sorgenti e plan/apply/verify PASS concordanti, Python3.13.5. Ricevuta operatore in `2a8a0bc82e93bd09a6f65e7645381e1951b6bff1`, CI documentale13/13. Nessun accesso VPS indipendente o digest della receipt target. Nessun replay del §28.
 
