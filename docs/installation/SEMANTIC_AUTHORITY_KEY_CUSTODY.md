@@ -1,10 +1,14 @@
 # Custodia privata delle chiavi di authority — due coppie, bozza inattiva
 
+## Checkpoint aggiornato — custodia36 PASS, policy37 NON CONFERITA
+
+Root `/etc/ouf/deploy-snapshots/semantic-authority-provisioning-20261004-164654`, draftHash `a9e5bdbef01c391c216e23e7b99c9e9ed3d6e3a92da56e8e1e9d7b2ca91b040c`, receiptHash `a134c4c8e8487860e6a8ed3a672520935a5de753d02507c4005a0475570b2d49`. [Evidenza operatore](../handoffs/receipts/SEMANTIC_AUTHORITY_KEY_CUSTODY_PASS_2026-10-04_OPERATOR.json), plan/apply/verify PASS,2chiavi presenti, verify keysGenerated/selfTestSignaturesIssued=0. Nessun ruolo firma/policy/start attivo. Non ripetere36 o rigenerare; la fonte dei byte eseguiti e hash è la receipt operatore. [Prossimo conferimento distinto](SEMANTIC_LAB_TRUST_POLICY_DECISION_2026-10-04.md): preparazione privata policy di verifica due grant/tre ruoli, senza firme/mandati o collegamento a consumer/runtime. Il35 è soddisfatto e non deve essere richiesto di nuovo.
+
 ## Stato
 
-§35 **CONFERITO SOLO PER CUSTODIA CHIAVI/BOZZA INATTIVA**, conferma utente `confermo`4 ottobre2026 17:57:37 Europe/Rome. [Conferimento registrato](../handoffs/receipts/SEMANTIC_AUTHORITY_KEY_CUSTODY_AUTHORIZED_2026-10-04_OPERATOR.json). §36 **NON ESEGUITO** sul VPS: [wrapper completo](../handoffs/commands/OUF_PROVISION_AUTHORITY_KEYS_2026-10-04.sh), SHA256 `14c506fc2468e0b6f40470d6b074aab318b0120813be4795172d4715bdaa4795`. Non sono stati generati nuovi keypair sul VPS in questa chat; le chiavi di test sono fixture temporanee, eliminate dopo i test.
+§35 **CONFERITO SOLO PER CUSTODIA CHIAVI/BOZZA INATTIVA**, conferma utente `confermo`4 ottobre2026 17:57:37 Europe/Rome. [Conferimento registrato](../handoffs/receipts/SEMANTIC_AUTHORITY_KEY_CUSTODY_AUTHORIZED_2026-10-04_OPERATOR.json). §36 **ESEGUITO/PASS; NON RIPETERE** sul VPS: [wrapper completo](../handoffs/commands/OUF_PROVISION_AUTHORITY_KEYS_2026-10-04.sh), SHA256 `14c506fc2468e0b6f40470d6b074aab318b0120813be4795172d4715bdaa4795`. Generati2 keypair reali sul VPS e2 firme selftest; verify non rigenera o firma. Le fixture dei test restano distinte, temporanee.
 
-Backend VPS già inventariato: OpenSSL `/usr/bin/openssl`, SHA256 `f4aa15f2822f670af7b5c1043d7aa6ebbbc64229fd2fae382edfc6a4524749c1`,3.5.7. Helper standalone stdlib Gateway `509a011cd920d9a9e9ece83a07e5b99ce05806a5`, SHA256 `095a9cd9523bc1ee2767737656884ff7e08b254a6b1aab015c977403e2b1e3ec`; dipendenze operative source v8 non importate o eseguite. Documentazione primaria delle opzioni: [genpkey](https://docs.openssl.org/3.0/man1/openssl-genpkey/) e [pkeyutl](https://docs.openssl.org/3.5/man1/openssl-pkeyutl/). Le prove locali usano OpenSSL3.0.13; la compatibilità con il binario pinned del VPS resta da verificare con §36.
+Backend VPS già inventariato: OpenSSL `/usr/bin/openssl`, SHA256 `f4aa15f2822f670af7b5c1043d7aa6ebbbc64229fd2fae382edfc6a4524749c1`,3.5.7. Helper standalone stdlib Gateway `509a011cd920d9a9e9ece83a07e5b99ce05806a5`, SHA256 `095a9cd9523bc1ee2767737656884ff7e08b254a6b1aab015c977403e2b1e3ec`; dipendenze operative source v8 non importate o eseguite. Documentazione primaria delle opzioni: [genpkey](https://docs.openssl.org/3.0/man1/openssl-genpkey/) e [pkeyutl](https://docs.openssl.org/3.5/man1/openssl-pkeyutl/). Le prove locali usano OpenSSL3.0.13; la compatibilità con il binario pinned del VPS è verificata dal PASS36.
 
 ## Scope approvato
 
@@ -28,7 +32,7 @@ Crash/failure parziale: i file della nuova custody rimangono, receipt assente pr
 
 ## Validazione
 
-17 nuovi test root reali, inclusi OpenSSL Ed25519, apply/verify senza rigenerazione o signing aggiuntivo, CLI isolata e redaction, missing authorization, identity/backend/source/inventory drift, directory/file permissions, symlink/hardlink, lock da altro processo, partial crash/no-replay, tampering key/pub/signature/draft/receipt, expired clock, source change prima receipt, comando deadline/overflow/nonzero, directory enumeration bounded e rifiuto da parser policy operativo. Locale suite pertinente43:41 PASS/2 native Docker-Go skip; nuovi17 tutti PASS con OpenSSL reale. CI root186unit+2 native preparer+2 target native tutti PASS senza skip, job111475711781. Stato globale codice38/38 da verificare prima di offrire il comando. Bash-n del wrapper PASS. Nessuna prova VPS di §36 ancora.
+17 nuovi test root reali, inclusi OpenSSL Ed25519, apply/verify senza rigenerazione o signing aggiuntivo, CLI isolata e redaction, missing authorization, identity/backend/source/inventory drift, directory/file permissions, symlink/hardlink, lock da altro processo, partial crash/no-replay, tampering key/pub/signature/draft/receipt, expired clock, source change prima receipt, comando deadline/overflow/nonzero, directory enumeration bounded e rifiuto da parser policy operativo. Locale suite pertinente43:41 PASS/2 native Docker-Go skip; nuovi17 tutti PASS con OpenSSL reale. CI root186unit+2 native preparer+2 target native tutti PASS senza skip, job111475711781. Stato globale codice38/38 SUCCESS verificato prima di offrire il comando. Bash-n del wrapper PASS. §36 plan/apply/verify PASS ricevuto.
 
 ## Dopo il risultato VPS
 

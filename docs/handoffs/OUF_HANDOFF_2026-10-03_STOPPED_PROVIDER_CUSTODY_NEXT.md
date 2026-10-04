@@ -1,6 +1,18 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — §35 custodia chiavi conferita; §36 provisioning NON ESEGUITO
+## Checkpoint corrente — §36 ESEGUITO/PASS; policy locale §37 NON CONFERITA
+
+[Output operatore registrato](receipts/SEMANTIC_AUTHORITY_KEY_CUSTODY_PASS_2026-10-04_OPERATOR.json): **plan/apply/verify PASS**, root `/etc/ouf/deploy-snapshots/semantic-authority-provisioning-20261004-164654`, draftHash `a9e5bdbef01c391c216e23e7b99c9e9ed3d6e3a92da56e8e1e9d7b2ca91b040c`, receiptHash `a134c4c8e8487860e6a8ed3a672520935a5de753d02507c4005a0475570b2d49`. Apply genera2 keypair distinti e2 firme sintetiche di autotest; verify genera0 chiavi/firme, confronta public/private e rifiuta messaggio alterato. Hash apply/verify concordi; nessuna private/public key incollata o ispezione indipendente VPS. Compatibilità del helper con il backend OpenSSL pinned3.5.7 verificata sul target da questo esito. §36 completato, non ripetere o rigenerare chiavi.
+
+Conferimento35 limitato alla custodia/bozza soddisfatto. deploymentSignaturesIssued/mandatesIssued/provider/DNS/IAM=0; roleSigningAuthorized/trustPolicyProvisioned/runtimeRegistered/deploymentAuthorityProven/startAuthorized=false; regole/unit/container invariati, atomicSnapshotProven=false. Selftest2 non sono attestazioni/approval. Receipt e draft restano privati root0600; source/custodyroot700. §34 inventario PASS e §31 package v8 PASS preservati; nessun replay.
+
+Byte eseguiti wrapper commit `1e129e036635e8ce74a1598e54b1c0ad32202f27`, SHA256 `14c506fc2468e0b6f40470d6b074aab318b0120813be4795172d4715bdaa4795`; helper Gateway `509a011cd920d9a9e9ece83a07e5b99ce05806a5`, SHA256 `095a9cd9523bc1ee2767737656884ff7e08b254a6b1aab015c977403e2b1e3ec`. CI codice38/38 SUCCESS,186 unit+2 native preparer+2 target native PASS; CI documenti wrapper eseguito13/13 SUCCESS. Nessun codice cambiato in questo checkpoint; nuova CI documentale da verificare prima del finale.
+
+**Prossimo passo preciso: [policy locale dei tre ruoli, proposta reviewable](../installation/SEMANTIC_LAB_TRUST_POLICY_DECISION_2026-10-04.md).** Due grant sui keypair esistenti: installer DEPLOYMENT_INTENT/FINAL_DEPLOYMENT_APPROVAL, attestor CREATION_ATTESTATION; installationouf-lab-netcup-01/entityouf-lab, publicKey e date90giorni dal draft sigillato, niente rinnovo implicito. Conferimento richiesto limitato alla preparazione privata di una policy operativa ACTIVE per la verifica dei ruoli. Non comprende firme/mandati, installazione/collegamento consumer, runtime registration, start o reboot. Nessuna nuova autorizzazione alla generazione chiavi richiesta. Nessun comando VPS nuovo prima di conferimento e builder verificato.
+
+Acceptance dei due candidati e8 mount, contenuti/mutabilità/provenance/full OCI/rootfs/generazione live, issuer intento, producer/broker/configuration/guard/lease/revoca, mandati finali e startup espliciti, atomicità/reboot/release restano aperti. Ingestion interna MCP→profilo→mapping DRAFT→THS→ACTIVE→Ingestion→UDP resta aperta, prove manuali precedenti preservate; gate esterno non prerequisito universale. Per-Ente indipendente, servizi colocati o distribuiti; Semantic/Registry ricerca via Gateway schema.gov.it default configurabile, chatbot/MCP propone e THS governa. PR56/26 draft non mergiate.
+
+## Checkpoint storico — §35 conferito; §36 allora NON ESEGUITO
 
 Utente `confermo`,4 ottobre2026 17:57:37 Europe/Rome: [conferimento circoscritto](receipts/SEMANTIC_AUTHORITY_KEY_CUSTODY_AUTHORIZED_2026-10-04_OPERATOR.json) per identità lab ouf-lab-netcup-01/entityouf-lab, issuer installer/attestor separati, due nuove coppie Ed25519 e bozza inattiva90giorni. Non è ruolo di firma, trust policy ACTIVE, mandato di acceptance/start, runtime registration, reboot o merge. [Procedura e limiti](../installation/SEMANTIC_AUTHORITY_KEY_CUSTODY.md). Non richiedere nuovamente questo conferimento; non estenderlo ad azioni operative.
 
@@ -1509,6 +1521,10 @@ Comando operativo versionato: [OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-1
 
 **CONFERITA SOLO CUSTODIA/BOZZA INATTIVA.** Utente confermo4ottobre17:57:37; evidenza e scope nel checkpoint corrente. Istruzione storica: [Proposta concreta](../installation/SEMANTIC_LAB_AUTHORITY_DECISION_2026-10-04.md). Richieste soltanto identità e futura generazione privata di due chiavi/bozza non attivata; start, firma deployment, policy ACTIVE e registrazione runtime esclusi. Nessun altro staging/inventario necessario per simulare il conferimento. Dopo approvazione sviluppare e verificare provisioning prima di fornire il comando VPS.
 
-## 36. Primo intervento VPS pendente — due chiavi private e bozza inattiva
+## 36. Intervento VPS ESEGUITO/PASS — due chiavi private e bozza inattiva
 
-**NON ESEGUITO.** [Wrapper completo](commands/OUF_PROVISION_AUTHORITY_KEYS_2026-10-04.sh), checksum/pin/input nel checkpoint corrente. Conferimento35 sufficiente per questa sola custodia. Riportare stdout sintetico root/hash/esito, mai private PEM o file della custody. Non ripetere §34 o sorgenti v8. Partial failure conserva file e blocca replay. Nessun ruolo di firma, policy ACTIVE, deployment signature, runtime registration/start o reboot conferito.
+**ESEGUITO/PASS; NON RIPETERE.** root164654, draftHash/receiptHash nel checkpoint corrente. Istruzione storica: [Wrapper completo](commands/OUF_PROVISION_AUTHORITY_KEYS_2026-10-04.sh), checksum/pin/input nel checkpoint corrente. Conferimento35 sufficiente per questa sola custodia. Riportare stdout sintetico root/hash/esito, mai private PEM o file della custody. Non ripetere §34 o sorgenti v8. Partial failure conserva file e blocca replay. Nessun ruolo di firma, policy ACTIVE, deployment signature, runtime registration/start o reboot conferito.
+
+## 37. Decisione di policy locale pendente — nessun comando VPS
+
+**NON CONFERITA.** [Proposta precisa](../installation/SEMANTIC_LAB_TRUST_POLICY_DECISION_2026-10-04.md): preparazione privata policy di verifica sui due keypair reali/tre ruoli, dati/date dal draft sigillato. Nessuna firma/mandato/consumer/start incluso; no nuova generazione. Dopo conferimento implementare/testare e CI prima del comando.

@@ -1,6 +1,10 @@
 # Provisioning delle authority e dossier target per installazione indipendente
 
-## Stato corrente — custodia chiavi approvata, provisioning36 NON ESEGUITO
+## Checkpoint aggiornato — custodia36 PASS, policy37 NON CONFERITA
+
+Root `/etc/ouf/deploy-snapshots/semantic-authority-provisioning-20261004-164654`, draftHash `a9e5bdbef01c391c216e23e7b99c9e9ed3d6e3a92da56e8e1e9d7b2ca91b040c`, receiptHash `a134c4c8e8487860e6a8ed3a672520935a5de753d02507c4005a0475570b2d49`. [Evidenza operatore](../handoffs/receipts/SEMANTIC_AUTHORITY_KEY_CUSTODY_PASS_2026-10-04_OPERATOR.json), plan/apply/verify PASS,2chiavi presenti, verify keysGenerated/selfTestSignaturesIssued=0. Nessun ruolo firma/policy/start attivo. Non ripetere36 o rigenerare; la fonte dei byte eseguiti e hash è la receipt operatore. [Prossimo conferimento distinto](SEMANTIC_LAB_TRUST_POLICY_DECISION_2026-10-04.md): preparazione privata policy di verifica due grant/tre ruoli, senza firme/mandati o collegamento a consumer/runtime. Il35 è soddisfatto e non deve essere richiesto di nuovo.
+
+## Stato storico — custodia approvata;36 allora NON ESEGUITO
 
 Utente confermo approva identità lab e sola futura generazione di2 keypair/bozza inattiva. [Scope e implementazione](SEMANTIC_AUTHORITY_KEY_CUSTODY.md), [wrapper36 completo](../handoffs/commands/OUF_PROVISION_AUTHORITY_KEYS_2026-10-04.sh), SHA256 `14c506fc2468e0b6f40470d6b074aab318b0120813be4795172d4715bdaa4795`, Gateway `509a011cd920d9a9e9ece83a07e5b99ce05806a5`. plan/apply/verify nuovi, no-overwrite;2 firme selftest sintetiche,0 deployment signatures. Policy ACTIVE/ruolo firma/runtime/start non conferiti. §34 PASS e §31 v8 PASS preservati, non ripetere. Conferimento non è generazione eseguita né accettazione immagini/mount.
 

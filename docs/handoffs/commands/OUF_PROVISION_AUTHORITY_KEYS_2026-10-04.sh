@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# STATO: NON ESEGUITO. §36. Conferimento §35: sole due chiavi private e bozza inattiva.
+# STATO: ESEGUITO/PASS. §36 plan/apply/verify completati; NON RIPETERE né rigenerare.
+# Root164654. Byte eseguiti commit1e129e0, SHA25614c506fc; hash receipt/draft nei documenti.
 # Nessuna firma deployment, policy ACTIVE, producer, runtime registration o start autorizzati.
 (
 set -euo pipefail
