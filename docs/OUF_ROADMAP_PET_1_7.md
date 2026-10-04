@@ -1,5 +1,16 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+## Checkpoint corrente — §39 preparato, NON ESEGUITO
+
+§38 rimane ultimo VPS ESEGUITO/PASS; nessun replay31/34/36/38 o creazione. Ripartenza dalla sezione7 completata per analisi/contratti/matrice: [piano di accettazione](installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md) con2 immagini/8 slot mount, provenance/mutabilità, binding OCI/rootfs/generazione, limiti temporali e rollback. Dati privati esatti owner/mode/destinazione non ricevuti: prossimo unico intervento §39 legge soltanto metadati storici da4 file sigillati, senza inspect target, Env/mount contents/PEM/Docker/DNS/IAM, firme o scritture target.
+
+[Wrapper39 completo](handoffs/commands/OUF_READ_ACCEPTANCE_METADATA_2026-10-04.sh), SHA256 `0be85f2f2c1d6cbd7f5b0f86c396e6a1050c024adcc85950029b8980cab6b001`, stato **NON ESEGUITO**; pin immutabile è il commit che aggiunge il file.11 test locali PASS/0 skip, CLI isolata/no-write/redaction/filesystem/hash/drift; bash-n e parità wrapper/reader PASS. CI dedicata sul nuovo commit da verificare; nessun esito VPS39 inventato. Rollback39 non necessario perché non modifica il target; BLOCKED conserva originali e richiede analisi senza replay.
+
+HEAD verificati prima delle modifiche: Semantic coordinamento7b0ed8b/PR26, Gateway3bdedad/PR56, Semantic workloadc2b4ae5/PR30; tutti OPEN DRAFT/non merged. Workflow PR riletti: rispettivamente6/2/6 SUCCESS, jobs restituiti tutti SUCCESS; il connector restituisce prima pagina dei run PR, non audit universale push/check suite.323 checksum PET allegati verificati/0 mismatch. Nessun test applicativo già verde rieseguito indiscriminatamente.
+
+Punti concreti lasciati aperti: Docker stopped non dà generation; adapter prepare in start dopo final network setup richiede raccordo osservazione→mandato prima del broker (non pausa HUMAN dentro18s); rootfs host non sostituisce bind mount acceptance; transazione stopped32hex distinta da deployment64hex; runtime runc non si migra con sola registrazione. Nessun nuovo package source-only; consumer/signing/runtime/start/reboot/merge non autorizzati. Filo prodotto interno→mapping→THS→ACTIVE→Ingestion→UDP preservato, Cinema/Teatri non rifatti. Dopo output39 aggiornare autonomamente4 documenti e comando, completare matrice con metadati ricevuti e preparare revisione privata nel solo scope necessario.
+
+
 > **Ripartenza corrente —4 ottobre2026, dopo §38 PASS:** leggere prima il [nuovo handoff completo](handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md). Contiene regole vincolanti, pin/CI verificati, autorizzazioni, root/hash, baseline/business/gate ereditati e sequenza del prossimo lavoro. **Nessun comando VPS pendente.** §38/36/34/31 e precedenti già eseguiti non vanno ripetuti; policy privata materializzata, consumer/signing/runtime/start ancora esclusi. Accettazione2candidati/8mount/fullOCI/rootfs/generazione è il prossimo lavoro. Le istruzioni di ripartenza qui sotto sono cronologiche e non prevalgono sul nuovo handoff.
 
 ## Checkpoint corrente — §38 ESEGUITO/PASS, non ripetere
