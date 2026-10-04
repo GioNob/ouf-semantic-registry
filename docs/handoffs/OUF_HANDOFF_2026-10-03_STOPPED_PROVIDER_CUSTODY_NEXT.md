@@ -1,6 +1,16 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — §30 ESEGUITO/BLOCKED in plan; recovery §31 NON ESEGUITA
+## Checkpoint corrente — §31 ESEGUITO/PASS; staging v8 completato
+
+Output operatore allegato: recovery root `/etc/ouf/deploy-snapshots/semantic-local-producers-directory-recovery-20261004-123655`; package originale `/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542`. inspect/repair PASS, source root:root **0755→0700**, proprietari/dev/inode e26 sorgenti preservati; **plan/apply/verify PASS**. Custodia sorgenti verificata, sourceCommit `7ded9df0c74c6db919c7a68d4c75ab2c132dea53`, manifest `a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b`. [Evidenza strutturata](receipts/SEMANTIC_LOCAL_PRODUCERS_V8_RECOVERY_PASS_2026-10-04_OPERATOR.json) e [output operatore](receipts/SEMANTIC_LOCAL_PRODUCERS_V8_RECOVERY_2026-10-04_OPERATOR.txt); nessuna ispezione indipendente del VPS, hash della receipt target non fornito. §30 originario resta ESEGUITO/BLOCKED; §31 è ESEGUITO/PASS e non va ripetuto.
+
+**Procedura canonica per nuovi package:** [unico wrapper completo corretto](commands/OUF_STAGE_LOCAL_PRODUCERS_PACKAGE_V8_2026-10-04.sh), SHA256 `f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d`. Scarica e verifica tutti26 sorgenti, crea esplicitamente root/source/scripts/tools root:root0700 e completa plan/apply/verify: non richiede il vecchio comando difettoso né la recovery. Questa revisione canonica è **NON ESEGUITA sul VPS**; il PASS target deriva dalla recovery documentata, non da una prova di bootstrap nuovo. Il wrapper difettoso resta soltanto storico nel commit immutabile `f6280b6275963af3b41b2426d8c75ec6a033cee3`, checksum f1c2e775; non usarlo per installazioni future. Variante FIXED equivalente resta disponibile per compatibilità.
+
+Verifiche codice Gateway `7941098e4253a50916542471328f556d979436fe`: CI38/38 SUCCESS,159 test pertinenti+2 native+6 Docker; nuovi8 test comprendono il bootstrap corretto con umask022/077 e la recovery reale. Contatori target chiavi/firme/provider/esecuzione producer tutti0; trustPolicyProvisioned/runtimeRegistered/startAuthorized=false, componenti non installati, regole/unit/container invariati. Nessuna authority o release acceptance provata.
+
+**Prossimo lavoro:** preparare provisioning esplicito per-Ente di authority e mandati di accettazione delle immagini/volumi target. Generazione chiavi, firma mandati, registrazione runtime e avvio richiedono authority esplicita; nessun merge/replay/reboot implicito. Atomicità e reboot reale restano aperti. Installazioni indipendenti per ogni Ente, host/rete condivisi o distribuiti; ingestion interna MCP→profilo→mapping DRAFT→THS→ACTIVE→Ingestion→UDP resta aperta.
+
+## Checkpoint storico — §30 bloccato; §31 allora pendente
 
 Output operatore: root `/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542`, source `7ded9df0c74c6db919c7a68d4c75ab2c132dea53`;28 checksum OK (wrapper/manifest/26 sorgenti), poi **BLOCKED MODE=plan REASON=PRIVATE_PACKAGE_DIRECTORY_REQUIRED**. apply/verify non raggiunti nel wrapper set-e; nessuna receipt PASS fornita. §30 è **ESEGUITO/BLOCKED**, non più NON ESEGUITO e non PASS. [Evidenza operatore](receipts/SEMANTIC_LOCAL_PRODUCERS_V8_BLOCKED_2026-10-04_OPERATOR.json), senza attribuire un’ispezione indipendente del VPS o inventare un hash di receipt target.
 

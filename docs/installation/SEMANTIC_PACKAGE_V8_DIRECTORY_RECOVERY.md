@@ -1,5 +1,11 @@
 # Recovery del tentativo package v8 bloccato in plan
 
+## Stato corrente — recovery ESEGUITA/PASS
+
+Output operatore: inspect/repair PASS, source0755→0700 sul package121542, seguito da plan/apply/verify PASS. Sorgenti26 invariati, proprietà e inode preservati; nessuna chiave/firma/provider o avvio. [Evidenza](../handoffs/receipts/SEMANTIC_LOCAL_PRODUCERS_V8_RECOVERY_PASS_2026-10-04_OPERATOR.json). La descrizione del blocco sotto è storica. Recovery root123655; non ripetere recovery né staging sul package esistente.
+
+Per nuovi package usare [il wrapper canonico completo corretto](../handoffs/commands/OUF_STAGE_LOCAL_PRODUCERS_PACKAGE_V8_2026-10-04.sh), senza concatenare comando errato e recovery. Questa revisione di bootstrap non è stata eseguita sul VPS; permessi corretti verificati nei test con GNU install e umask022/077.
+
 ## Evidenza e causa
 
 L’operatore ha eseguito §30. Root riportato: `/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542`; sorgenti Gateway `7ded9df0c74c6db919c7a68d4c75ab2c132dea53`. Wrapper SHA256 `f1c2e775d4882916e0840fe5ab9965fdf4477d984dd4dd5b1e0f5a7a2ea9d5bb`, manifest SHA256 `a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b`:28 checksum OK (wrapper, manifest,26 sorgenti). Esito: **ESEGUITO/BLOCKED MODE=plan REASON=PRIVATE_PACKAGE_DIRECTORY_REQUIRED**. apply/verify non raggiunti nel wrapper set-e; nessuna ricevuta PASS fornita. Non dichiarare source custody o staging acceptance completati.
@@ -8,7 +14,7 @@ La causa del wrapper è riprodotta con GNU install reale: `install -d -m0700 ...
 
 Il validatore di package rimane invariato e richiede tutte le quattro directory root:root0700. Nessun allentamento a0755, chmod ricorsivo o normalizzazione automatica di proprietari inattesi.
 
-## Intervento dell’operatore — §31 NON ESEGUITO
+## Intervento storico — §31 ESEGUITO/PASS, non ripetere
 
 [Wrapper recovery](../handoffs/commands/OUF_RECOVER_LOCAL_PRODUCERS_PACKAGE_V8_DIRECTORY_2026-10-04.sh), SHA256 `2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d`. Helper Gateway `7941098e4253a50916542471328f556d979436fe`: `scripts/repair_semantic_local_producers_package_directory.py`, SHA256 `116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4`.
 

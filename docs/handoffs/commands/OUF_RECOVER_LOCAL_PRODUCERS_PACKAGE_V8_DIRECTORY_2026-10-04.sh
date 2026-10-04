@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# STATO: NON ESEGUITO. Recovery del solo tentativo v8 bloccato in plan.
+# STATO: ESEGUITO/PASS, recovery root123655; inspect/repair e plan/apply/verify PASS.
+# NON RIESEGUIRE. Byte eseguiti al commit e9d5a0e, SHA256 2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d.
 # Non riutilizzare il wrapper originario; una ricevuta presente blocca la recovery.
 (
 set -euo pipefail
@@ -33,3 +34,4 @@ for OUF_DIR_STAGE_MODE in plan apply verify; do
     --source-manifest-sha256 a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b
 done
 )
+

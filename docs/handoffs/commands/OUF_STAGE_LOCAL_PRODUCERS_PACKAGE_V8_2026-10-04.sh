@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# STATO: ESEGUITO/BLOCKED in plan sul root121542. DEPRECATO: NON RIESEGUIRE; usare recovery §31.
+# PROCEDURA CANONICA COMPLETA CORRETTA per nuovi package/installazioni.
+# STATO DI QUESTA REVISIONE: NON ESEGUITA sul VPS; package 121542 completato con recovery §31.
+# Non rieseguire sul package esistente. Il tentativo originale difettoso è storico al commit f6280b6.
 # Staging privato v8; nessun producer eseguito, chiave, authority o start.
 (
 set -euo pipefail
@@ -46,6 +48,7 @@ done < "$OUF_PRODUCERS_TMP/sources.sha256"
 OUF_PRODUCERS_ROOT="/etc/ouf/deploy-snapshots/semantic-local-producers-package-$(date -u +%Y%m%d-%H%M%S)"
 sudo mkdir -m 0700 -- "$OUF_PRODUCERS_ROOT"
 sudo install -d -m 0700 -o root -g root \
+  "$OUF_PRODUCERS_ROOT" "$OUF_PRODUCERS_ROOT/source" \
   "$OUF_PRODUCERS_ROOT/source/scripts" "$OUF_PRODUCERS_ROOT/source/tools"
 sudo install -m 0600 -o root -g root "$OUF_PRODUCERS_TMP/sources.sha256" "$OUF_PRODUCERS_ROOT/sources.sha256"
 while read -r OUF_PRODUCERS_HASH OUF_PRODUCERS_FILE; do

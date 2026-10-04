@@ -1,6 +1,12 @@
 # Attestor reale del nodo e package privato v8
 
-## Aggiornamento corrente — staging §30 BLOCKED; recovery §31 pendente
+## Stato corrente — recovery ESEGUITA/PASS
+
+Output operatore: inspect/repair PASS, source0755→0700 sul package121542, seguito da plan/apply/verify PASS. Sorgenti26 invariati, proprietà e inode preservati; nessuna chiave/firma/provider o avvio. [Evidenza](../handoffs/receipts/SEMANTIC_LOCAL_PRODUCERS_V8_RECOVERY_PASS_2026-10-04_OPERATOR.json). La descrizione del blocco sotto è storica. Recovery root123655; non ripetere recovery né staging sul package esistente.
+
+Per nuovi package usare [il wrapper canonico completo corretto](../handoffs/commands/OUF_STAGE_LOCAL_PRODUCERS_PACKAGE_V8_2026-10-04.sh), senza concatenare comando errato e recovery. Questa revisione di bootstrap non è stata eseguita sul VPS; permessi corretti verificati nei test con GNU install e umask022/077.
+
+## Aggiornamento storico — §31 allora pendente
 
 §30 è stato ESEGUITO/BLOCKED in plan, root121542:28 checksum OK, PRIVATE_PACKAGE_DIRECTORY_REQUIRED, apply/verify non raggiunti. Il wrapper GNU install creava source intermedia0755. Non ripetere il comando originario. [Recovery §31](SEMANTIC_PACKAGE_V8_DIRECTORY_RECOVERY.md) verifica tutti i pin e corregge soltanto questo modo sullo stesso root; receipt presente o metadati inattesi bloccano. Non è ancora PASS né accettazione target. Gateway recovery 7941098e4253a50916542471328f556d979436fe: CI38/38,159 test pertinenti+2 native+6Docker; locale162PASS/3skip. §29 v7 resta ESEGUITO/PASS.
 
