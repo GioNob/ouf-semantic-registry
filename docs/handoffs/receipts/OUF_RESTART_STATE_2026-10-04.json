@@ -100,7 +100,7 @@
     "doNotReplay": true
   },
   "nextStep": "Authorize §41 four evidence files and six build-context source files only; future image bytes/provenance and observation-to-mandate bridge remain open.",
-  "latestDocumentationCi": "7740792_DEDICATED_SUCCESS_6_PR_WORKFLOWS_SUCCESS_1_IN_PROGRESS",
+  "latestDocumentationCi": "bccc9d0_4_SUCCESS_3_IN_PROGRESS_CODE_7740792_ALL_7_SUCCESS",
   "localDiagnosticTests": {
     "total": 11,
     "passed": 10,
@@ -347,7 +347,9 @@
     "ciDedicatedJob": 111514395188,
     "ciDedicatedConclusion": "success",
     "ciSuiteTestsPassed": 26,
-    "ciSuiteTestsSkipped": 0
+    "ciSuiteTestsSkipped": 0,
+    "ciCodeWorkflowCount": 7,
+    "ciCodeConclusion": "success"
   },
   "documentationHeadType": "lastVerifiedPrecedingCommit"
 }
