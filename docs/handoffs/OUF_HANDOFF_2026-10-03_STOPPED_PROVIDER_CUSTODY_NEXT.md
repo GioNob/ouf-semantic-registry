@@ -1,6 +1,16 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — §37 policy privata AUTORIZZATA; §38 NON ESEGUITO
+## Checkpoint corrente — §38 ESEGUITO/PASS, non ripetere
+
+Output operatore ricevuto il4 ottobre2026: plan/apply/verify PASS. Root privato `/etc/ouf/deploy-snapshots/semantic-trust-policy-preparation-20261004-172336`; policyHash `21122630e52cb63c3744fee89f5c81ed926dad55231190243ca11be6d481bd42` identico nei tre modi; receiptHash `42d27903c65e6a1334fff5647a817e393a661e27f5c4fbf69c8d7910a6abb7ab` identico in apply/verify. Checksum wrapper e helper scaricati/installati OK. Evidenza basata sull'output fornito, senza ispezione VPS indipendente. Wrapper eseguito dal commit immutabile dad24714ca572ab45667313b8cc7ec748c851ce3, SHA2561b3927170ba06722402050a25eb12d50bf3d5886ea443b5a1e5866770a573857. Il nuovo header documentale non sostituisce quei bytes eseguiti.
+
+Policy privata materializzata con2chiavi/3ruoli, grant ACTIVE nell'artefatto, parser reale/public binding/custodyReceipt verificati e validità originale preservata. consumerLinked/policyActiveInConsumer/trustPolicyInstalled/roleSigningAuthorized/startAuthorized/runtimeRegistered/deploymentAuthorityProven/atomicSnapshotProven=false. Nessuna nuova chiave, lettura privata, firma selftest/operativa, mandato o chiamata provider/DNS/IAM; regole/unit/container invariati. currentPrivateKeyBindingsReverified=false: non è una nuova verifica delle private key.
+
+§38 completato; §37 conferimento soddisfatto; §36/§34/§31 preservati. **Non ripetere preparazione, custodia o staging.** Prossimo lavoro: acceptance concreta dei2candidati/8mount, con classificazione contenuti/mutabilità/provenance e binding fullOCI/rootfs/generazione; poi intento e configurazione broker/producer. Metadata/hash già inventariati non equivalgono ad accettazione dei contenuti. Emissione di mandati/firme, collegamento consumer, registrazione runtime, start e reboot richiedono scope distinto ancora non conferito. Nessuna accettazione o attivazione implicita da questo PASS. CI codice3bdedad38/38 SUCCESS già verificata,46 test locali PASS e201unit+2nativepreparer+2targetnative PASS senza skip; questa modifica registra evidenza e documentazione, CI documentale separata da verificare.
+
+Installazioni indipendenti per Ente, servizi colocati o distribuiti; nessun multitenant centrale. Semantic/Registry ricerca esterna via Gateway, endpoint schema.gov.it predefinito e parametrizzabile; chatbot/MCP propone, THS governa. Ciclo ingestion interno e prove residue di lease/revoca/reboot/release restano aperti. PR56/26 draft, nessun merge. Le sezioni precedenti che riportano §38 NON ESEGUITO descrivono il checkpoint storico prima di questo output.
+
+## Checkpoint storico — §37 autorizzata, §38 allora non eseguito
 
 Utente `autorizzo`4 ottobre2026 18:58:29 Europe/Rome: [scope registrato](receipts/SEMANTIC_PRIVATE_TRUST_POLICY_AUTHORIZED_2026-10-04_OPERATOR.json) per sola preparazione privata della policy di verifica dei tre ruoli sui due keypair già custoditi. installationouf-lab-netcup-01/entityouf-lab, installer intent/finale e attestor creation; grant ACTIVE nell'artefatto, consumerLinked/installed/roleSigningAuthorized/startAuthorized=false. Nessuna nuova chiave/firma/mandato/producer/runtime registration/reboot/merge conferiti. Non richiedere di nuovo37 o la custodia35 già completata.
 
@@ -1554,6 +1564,6 @@ Comando operativo versionato: [OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-1
 
 **AUTORIZZATA SOLO PREPARAZIONE PRIVATA.** Utente autorizzo4ottobre18:58:29, scope nel checkpoint corrente. Istruzione storica: [Proposta precisa](../installation/SEMANTIC_LAB_TRUST_POLICY_DECISION_2026-10-04.md): preparazione privata policy di verifica sui due keypair reali/tre ruoli, dati/date dal draft sigillato. Nessuna firma/mandato/consumer/start incluso; no nuova generazione. Dopo conferimento implementare/testare e CI prima del comando.
 
-## 38. Primo intervento VPS pendente — policy privata di verifica
+## 38. Intervento VPS completato — policy privata di verifica
 
-**NON ESEGUITO.** [Wrapper completo](commands/OUF_PREPARE_TRUST_POLICY_2026-10-04.sh), checksum e pin nel checkpoint corrente. Scope37 sufficiente soltanto per preparazione privata dei grant sui keypair esistenti; nulla va collegato a consumer e nessuna firma/mandato/keygen/start. Output stdout sintetico root/hash/esito. Preservare36/34/v8, niente replay o rigenerazione dopo un blocco.
+**ESEGUITO/PASS plan/apply/verify. NON RIPETERE.** Root/hash nel checkpoint corrente. Procedura offerta prima dell’esecuzione: [Wrapper completo](commands/OUF_PREPARE_TRUST_POLICY_2026-10-04.sh), checksum e pin nel checkpoint corrente. Scope37 sufficiente soltanto per preparazione privata dei grant sui keypair esistenti; nulla va collegato a consumer e nessuna firma/mandato/keygen/start. Output stdout sintetico root/hash/esito. Preservare36/34/v8, niente replay o rigenerazione dopo un blocco.

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# STATO: NON ESEGUITO. §38. Conferimento37: sola policy privata di verifica ruoli.
+# STATO: ESEGUITO/PASS plan/apply/verify §38, 2026-10-04. NON RIPETERE.
+# Root: /etc/ouf/deploy-snapshots/semantic-trust-policy-preparation-20261004-172336
+# Bytes eseguiti: commit dad24714ca572ab45667313b8cc7ec748c851ce3, SHA256
+# 1b3927170ba06722402050a25eb12d50bf3d5886ea443b5a1e5866770a573857.
+# Conferimento37: sola policy privata di verifica ruoli.
 # Nessuna nuova chiave, firma, mandato, collegamento consumer/runtime o start.
 (
 set -euo pipefail

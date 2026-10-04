@@ -1,6 +1,16 @@
 # Provisioning delle authority e dossier target per installazione indipendente
 
-## Stato corrente —37 preparazione privata conferita,38 NON ESEGUITO
+## Checkpoint corrente — §38 ESEGUITO/PASS, non ripetere
+
+Output operatore ricevuto il4 ottobre2026: plan/apply/verify PASS. Root privato `/etc/ouf/deploy-snapshots/semantic-trust-policy-preparation-20261004-172336`; policyHash `21122630e52cb63c3744fee89f5c81ed926dad55231190243ca11be6d481bd42` identico nei tre modi; receiptHash `42d27903c65e6a1334fff5647a817e393a661e27f5c4fbf69c8d7910a6abb7ab` identico in apply/verify. Checksum wrapper e helper scaricati/installati OK. Evidenza basata sull'output fornito, senza ispezione VPS indipendente. Wrapper eseguito dal commit immutabile dad24714ca572ab45667313b8cc7ec748c851ce3, SHA2561b3927170ba06722402050a25eb12d50bf3d5886ea443b5a1e5866770a573857. Il nuovo header documentale non sostituisce quei bytes eseguiti.
+
+Policy privata materializzata con2chiavi/3ruoli, grant ACTIVE nell'artefatto, parser reale/public binding/custodyReceipt verificati e validità originale preservata. consumerLinked/policyActiveInConsumer/trustPolicyInstalled/roleSigningAuthorized/startAuthorized/runtimeRegistered/deploymentAuthorityProven/atomicSnapshotProven=false. Nessuna nuova chiave, lettura privata, firma selftest/operativa, mandato o chiamata provider/DNS/IAM; regole/unit/container invariati. currentPrivateKeyBindingsReverified=false: non è una nuova verifica delle private key.
+
+§38 completato; §37 conferimento soddisfatto; §36/§34/§31 preservati. **Non ripetere preparazione, custodia o staging.** Prossimo lavoro: acceptance concreta dei2candidati/8mount, con classificazione contenuti/mutabilità/provenance e binding fullOCI/rootfs/generazione; poi intento e configurazione broker/producer. Metadata/hash già inventariati non equivalgono ad accettazione dei contenuti. Emissione di mandati/firme, collegamento consumer, registrazione runtime, start e reboot richiedono scope distinto ancora non conferito. Nessuna accettazione o attivazione implicita da questo PASS. CI codice3bdedad38/38 SUCCESS già verificata,46 test locali PASS e201unit+2nativepreparer+2targetnative PASS senza skip; questa modifica registra evidenza e documentazione, CI documentale separata da verificare.
+
+Installazioni indipendenti per Ente, servizi colocati o distribuiti; nessun multitenant centrale. Semantic/Registry ricerca esterna via Gateway, endpoint schema.gov.it predefinito e parametrizzabile; chatbot/MCP propone, THS governa. Ciclo ingestion interno e prove residue di lease/revoca/reboot/release restano aperti. PR56/26 draft, nessun merge. Le sezioni precedenti che riportano §38 NON ESEGUITO descrivono il checkpoint storico prima di questo output.
+
+## Stato storico —37 conferita,38 allora non eseguito
 
 Utente autorizzo per sola policy privata di verifica sui keypair esistenti. [Procedura](SEMANTIC_PRIVATE_TRUST_POLICY_PREPARATION.md), [wrapper38](../handoffs/commands/OUF_PREPARE_TRUST_POLICY_2026-10-04.sh), SHA256 `1b3927170ba06722402050a25eb12d50bf3d5886ea443b5a1e5866770a573857`, Gateway `3bdedad3108112ee4c36e7cb8387aaf60912e97c` CI38/38SUCCESS/201unit+2native+2targetnative PASS. Grant ACTIVE nel file, consumerLinked/installed/roleSigning/start=false. Originali36/34/v8 preservati; noPEM read/keygen/signing. Date90giorni non rinnovate. Dopo output38 aggiornare tutti i checkpoint. Nessun altro conferimento per questa preparazione richiesto; emissione/consumer/runtime/start ancora esclusi.
 
