@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# STATO: NON ESEGUITO. §32 inventario target e piano authority inerte; nessun avvio o chiave.
+# STATO: ESEGUITO/BLOCKED, nessuna receipt PASS fornita. NON RIESEGUIRE: diagnostica §33 pendente.
+# Byte eseguiti al commit f0aca1711b4bc682d91469fe6d786b7a666a091a; SHA256 25023bef6501cfeec533d795619812ef6e3c79e44398e902979a1b24e51343b5.
 (
 set -euo pipefail
 OUF_ACCEPTANCE_TMP=$(mktemp -d)

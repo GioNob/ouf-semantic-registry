@@ -1,6 +1,16 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
-## Checkpoint corrente — provisioning progettato; §32 inventario target NON ESEGUITO
+## Checkpoint corrente — §32 ESEGUITO/BLOCKED; §33 diagnostica NON ESEGUITA
+
+Fotografia terminale allegata: **SEMANTIC_TARGET_ACCEPTANCE_INVENTORY=BLOCKED START_AUTHORIZED=false NO_SECRETS_PRINTED=true**. [Evidenza operatore](handoffs/receipts/SEMANTIC_TARGET_ACCEPTANCE_BLOCKED_2026-10-04_OPERATOR.json). Nessuna receipt PASS ricevuta; causa non esposta dalla versione originale. Il root preciso e l'eventuale presenza di evidenze parziali non sono trascritti come certi dalla fotografia. Nessuna ispezione indipendente VPS. Non ripetere §32 né cancellare snapshot/ricevute per ritentare. §31 staging v8 rimane ESEGUITO/PASS.
+
+Gateway `28272696308d449ac1380e0df0966a5224986c98`: aggiunta **--diagnose**, soltanto letture e nessuna pubblicazione di dossier/piano/receipt. Il codice restituisce CHECK e REASON costanti; mai exception text, Docker stderr, percorsi o valori privati. Vincoli di produzione invariati; nessuna ipotesi viene presentata come causa provata.10 test unit root (nuovo redaction/no-publication), prova Docker CLI estesa a diagnostica senza file seguita dall'inventario positivo e no-overwrite. Stato CI verificato sul commit prima di offrire il comando; locale11 test10PASS/1Docker skip.
+
+**Prossimo intervento VPS: §33 NON ESEGUITO**, [wrapper diagnostico completo](handoffs/commands/OUF_DIAGNOSE_TARGET_ACCEPTANCE_2026-10-04.sh), SHA256 `6d61183f1d5813db2de2da6e30f21d4ae2dcb71fbaacfffe6a0ba468652c9f75`. Helper SHA256 `b0abe2d6ef0cd3a31bae7896bfedd9043beabdd83a638fa7465e9210e121af0e`, pinned Gateway sopra. Nuovo root privato soltanto per custodire il diagnostico, con tutte directory root:root0700 esplicite. Gli input sigillati manifest/journal/package121542 restano gli stessi. --diagnose non completa né sovrascrive il vecchio snapshot, non ripete apply di staging e non pubblica nuove evidenze di accettazione.
+
+Dopo output §33: registrare root/esito/codici effettivi, individuare il controllo bloccante e correggere solo dopo evidenza; preparare una procedura completa per completare §32 senza overwrite delle eventuali evidenze parziali. Autorità/chiavi/firme/configurazioni operative/runtime/start restano non conferiti; progetto di provisioning per-Ente e dossier di accettazione incompleto. Nessun merge/replay/start/reboot implicito. Ingestion interna e gate atomico/reboot/release restano aperti.
+
+## Checkpoint storico — §32 allora NON ESEGUITO
 
 Gateway `a6d4e0ce0b9d66013370184a64103e0922a2e6fe`, PR56 draft non mergiata, **CI38/38 SUCCESS**:168 test pertinenti,2 native preparer e nuova prova Docker dell’inventario (2 candidati reali fixture mai avviati), oltre alle6 prove Docker adapter già verdi. Log root111444592858 e111444583801 verificati:168+2+1, nessuno skip. Locale169 test,168PASS/1 nuovo Docker skip. Prima revisione33e820f aveva3 failure in config-contract perché le fixture private root erano eseguite dal runner non root; corretto soltanto il gating fixture, non i vincoli di produzione, nuova CI verde senza rerun.
 

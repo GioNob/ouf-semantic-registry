@@ -1,5 +1,9 @@
 # Provisioning delle authority e dossier target per installazione indipendente
 
+## Stato corrente — §32 ESEGUITO/BLOCKED; diagnostica §33 pendente
+
+Fotografia operatore conferma BLOCKED, non la causa né receipt PASS. L’inventario NON ESEGUITO descritto sotto è storico. Non ripetere il wrapper32 o cancellare output parziali. [§33 diagnostica](../handoffs/commands/OUF_DIAGNOSE_TARGET_ACCEPTANCE_2026-10-04.sh) usa --diagnose: stessi input target, nessuna pubblicazione di dossier/piano/receipt e codici CHECK/REASON costanti senza valori privati. Nuovo snapshot custodisce soltanto il helper; non modifica package/candidati. Anche PASS diagnostico non completa §32 o conferisce authority.
+
 ## Stato e obiettivo
 
 Staging v8 completato sul root121542 tramite recovery §31 ESEGUITO/PASS. Le26 sorgenti restano al commit7ded9df; non ripetere staging o recovery. §32 **NON ESEGUITO** misura i due candidati target realmente presenti e genera una bozza di provisioning locale. Non conferisce authority, genera chiavi/firme, registra runtime o avvia processi. [Comando completo](../handoffs/commands/OUF_INVENTORY_TARGET_ACCEPTANCE_2026-10-04.sh).
