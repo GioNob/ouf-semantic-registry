@@ -6,9 +6,9 @@ Gateway `7ded9df0c74c6db919c7a68d4c75ab2c132dea53`: CI38/38,151 test pertinenti 
 
 §30 staging v8: **NON ESEGUITO**, package26 sorgenti per rendere disponibili i nuovi producer sul VPS senza invocarli. §29 v7 resta ESEGUITO/PASS e non va ripetuto. Provisioning authority e accettazione immagini/volumi target restano da chiudere; nessuna firma target, registrazione runtime, avvio o merge.
 
-## Stato
+## Stato e implementazione iniziale
 
-Implementazione: `scripts/semantic_provider_installer_approval.py`, `tools/semantic_provider_installer_approval.py` e `tools/semantic_provider_deployment_signing.py`, commit Gateway `1f8693cacc296c0b7b521ec6822ad5a032378a3d`. Il broker usa questa CLI nel percorso Docker/runc autenticato di CI. L’attestor del nodo resta una fixture: non è dimostrata l’accettazione delle immagini reali del VPS.
+Implementazione: `scripts/semantic_provider_installer_approval.py`, `tools/semantic_provider_installer_approval.py` e `tools/semantic_provider_deployment_signing.py`, commit Gateway `1f8693cacc296c0b7b521ec6822ad5a032378a3d`. Il broker usa questa CLI nel percorso Docker/runc autenticato di CI. L’attestor del nodo è ora un producer di produzione, introdotto nel checkpoint b87f16b e descritto nell’aggiornamento corrente sopra. L’accettazione delle immagini reali del VPS resta non dimostrata.
 
 Il package v7 già custodito in `/etc/ouf/deploy-snapshots/semantic-local-broker-package-20261004-110947` proviene da `04d775e892cd42e42d34de02959b9c7ba6483f3b` e non contiene questo nuovo issuer. §29 resta ESEGUITO/PASS. Nessun replay, installazione, mandato target, firma target, registrazione runtime o avvio è implicito in questo lavoro.
 
@@ -61,12 +61,12 @@ File privati root:root0600, sourceRoot e directory del claim0700, ancestor fidat
 
 Invocazione da parte del broker: Python pinned con `-I -B`, CLI pinned e `--configuration` esplicita; richiesta canonica su stdin. Errori: nessun risultato, exit1 e diagnostica costante senza contenuti sensibili. La CLI non esegue start, Docker, nft, IAM o DNS.
 
-## Verifiche e limiti
+## Verifiche del checkpoint issuer iniziale e limiti
 
-16 nuovi test con OpenSSL reale: CLI positiva e protocollo finale; mandato assente/falso, creation-only, altro Ente, scaduto o eccedente l’intento; attestazione incompleta e generazione diversa; claim broker mancante; claim precedente/incerto; chiave errata o modificata; fsync fallito; sorgente mutata e richiesta non canonica; regressione dell’orologio; due processi reali in concorrenza. Il percorso Docker autenticato usa ora l’issuer di produzione, un mandato firmato di CI e due chiavi distinte di CI; l’attestor resta sintetico.
+16 nuovi test con OpenSSL reale: CLI positiva e protocollo finale; mandato assente/falso, creation-only, altro Ente, scaduto o eccedente l’intento; attestazione incompleta e generazione diversa; claim broker mancante; claim precedente/incerto; chiave errata o modificata; fsync fallito; sorgente mutata e richiesta non canonica; regressione dell’orologio; due processi reali in concorrenza. Al checkpoint iniziale il percorso Docker autenticato usava l’issuer di produzione, un mandato firmato di CI e due chiavi distinte di CI, con attestor sintetico. Il checkpoint corrente sopra sostituisce anche quel producer con l’attestor di produzione.
 
 La simulazione e l’auto-revisione non sostituiscono i test. Verifiche osservate sul commit sopra: locale137 test,134 PASS e3 Docker skip; CI38/38 SUCCESS senza rerun,131 test pertinenti +2 preparer nativi +6 Docker. I log del percorso autenticato riportano REAL_INSTALLER_ISSUER=true e CI_NODE_ATTESTOR_ONLY=true.
 
 La CLI legge la chiave privata configurata per verificare il pin e chiede a OpenSSL di firmare: non affermare privateKeysRead=0 o signaturesIssued=0 per una sua esecuzione reale. Non genera, copia su file o esporta la chiave nei risultati. Il materiale letto è limitato a4096 byte; Python non garantisce azzeramento dei buffer. Hash/reletture e verifica crittografica prima/dopo non provano uno snapshot atomico contro root non cooperativo.
 
-Restano da realizzare e validare il producer reale dell’attestazione del nodo e l’accettazione completa delle immagini target, oltre al provisioning esplicito delle authority target. Restano aperti reboot reale e release acceptance. Non introdurre nuovi staging source-only per simulare il superamento di questi gate.
+Il producer reale dell’attestazione è completato e provato in CI. Restano l’accettazione completa delle immagini/volumi target e il provisioning esplicito delle authority e dei mandati target. Restano aperti reboot reale e release acceptance. Non introdurre nuovi staging source-only per simulare il superamento di questi gate.

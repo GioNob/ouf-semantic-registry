@@ -6,7 +6,7 @@ Gateway `7ded9df0c74c6db919c7a68d4c75ab2c132dea53`: CI38/38,151 test pertinenti 
 
 §30 staging v8: **NON ESEGUITO**, package26 sorgenti per rendere disponibili i nuovi producer sul VPS senza invocarli. §29 v7 resta ESEGUITO/PASS e non va ripetuto. Provisioning authority e accettazione immagini/volumi target restano da chiudere; nessuna firma target, registrazione runtime, avvio o merge.
 
-## Producer installer ora disponibile
+## Checkpoint storico — primo producer installer disponibile
 
 Commit Gateway `1f8693cacc296c0b7b521ec6822ad5a032378a3d`: l’approval finale può essere emessa dalla [CLI installer di produzione](SEMANTIC_INSTALLER_APPROVAL_PRODUCER.md), previa policy, mandato finale firmato e chiave già esistenti. La CI38/38 passa con questo issuer nel percorso Docker autenticato:131 test pertinenti,2 preparer nativi e6 Docker. L’attestor del nodo resta una fixture di CI e deve essere completato per le immagini reali. Il package v7 §29 ESEGUITO/PASS sul VPS non contiene il nuovo issuer; nessuna installazione, firma, registrazione o avvio target è avvenuta con questo checkpoint.
 
@@ -59,7 +59,7 @@ Sorgenti Gateway `86ceb70591762319b3003c4163990451a5c6cca1`, [CI38/38 SUCCESS](h
 
 Otto nuovi test del broker esercitano processi producer reali e firme Ed25519, ordine attestor/approver, sigillo, mancato replay, claim estraneo, deriva configurazione/intento/generazione/custodia e preparer fallito. Le verifiche native runc/netns/preparer sono sostituite in questi test e coperte dalla prova Docker opt-in in CI.
 
-La prova Docker autenticata usa il broker operativo con due producer distinti, preparer v3 e driver v5. La fixture attestor verifica esclusivamente l'immagine Busybox sintetica approvata, comando e mount di prova; la fixture installer firma sotto mandato sintetico della CI. Wrapper di test introduce deriva lease o firma soltanto dopo l'esecuzione del broker operativo. Queste fixture, le loro chiavi e i loro mandati non appartengono ai pacchetti della piattaforma.
+La prova Docker autenticata corrente usa broker operativo, issuer installer e attestor nodo di produzione, preparer v3 e driver v5. La fixture di accettazione firma soltanto un mandato per l’immagine Busybox sintetica approvata; l’attestor confronta indipendentemente OCI completo, rootfs, generazione e trasporto. Il wrapper introduce deriva di lease/firma dopo il broker e, nel caso dedicato, modifica il rootfs dopo il mandato ma prima dell’attestazione. Producer e broker sono codice di piattaforma; fixture, chiavi e mandati di accettazione della prova restano soltanto di CI.
 
 Il VPS ha soltanto il package v6 §28 già eseguito/PASS, source f1996cca60e66f1807b88f126793a8edc1aed15f. Esso non contiene producer o broker nuovi; resta immutabile e non va rieseguito. Nessun nuovo comando VPS è stato eseguito o autorizza un avvio. Collegamento del codice e accettazione del deployment reale sono stati distinti.
 
