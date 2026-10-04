@@ -1,7 +1,7 @@
 {
   "schema": "ouf.work-checkpoint.v1",
   "gatewayCommit": "516133e59be869012d3003758e545a5b5aa0060a",
-  "semanticDocumentationCommit": "7ea99c343290f8fdcc87c56e141ef5cf58af595f",
+  "semanticDocumentationCommit": "4f28ddfc8b6f9ef3df9e53aac33b0c4e6d7fb36d",
   "gatewayCI": {
     "commit": "516133e59be869012d3003758e545a5b5aa0060a",
     "returnedPrWorkflows": 2,
@@ -23,10 +23,11 @@
     "nativeV3TargetProven": false
   },
   "semanticDocumentationCI": {
-    "commit": "7ea99c343290f8fdcc87c56e141ef5cf58af595f",
+    "commit": "4f28ddfc8b6f9ef3df9e53aac33b0c4e6d7fb36d",
     "returnedPrWorkflows": 7,
     "status": "SUCCESS",
-    "connectorScope": "PR runs first page only"
+    "connectorScope": "PR runs first page only",
+    "pointerMeaning": "lastVerifiedPrecedingCommit"
   },
   "localTests": {
     "total": 169,
@@ -96,7 +97,7 @@
   ],
   "pr56": "open draft unmerged",
   "pr26": "open draft unmerged",
-  "documentationHead": "7ea99c343290f8fdcc87c56e141ef5cf58af595f",
+  "documentationHead": "4f28ddfc8b6f9ef3df9e53aac33b0c4e6d7fb36d",
   "v8Recovery": {
     "status": "EXECUTED_PASS",
     "packageRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
@@ -109,7 +110,7 @@
     "doNotReplay": true
   },
   "nextStep": "Present tested pinned scope42 at operator return; concretize target acceptance issuer/runtime plan; targeted Search503 cause diagnosis separately.",
-  "latestDocumentationCi": "7ea99_7_PR_WORKFLOWS_SUCCESS_FINAL_CHECKPOINT_PENDING",
+  "latestDocumentationCi": "4f28ddf_7_PR_WORKFLOWS_SUCCESS_LAST_VERIFIED_PRECEDING_COMMIT",
   "localDiagnosticTests": {
     "total": 11,
     "passed": 10,
@@ -184,7 +185,7 @@
     "roleSigningAuthorized": false,
     "startAuthorized": false
   },
-  "semanticHead": "7ea99c343290f8fdcc87c56e141ef5cf58af595f",
+  "semanticHead": "4f28ddfc8b6f9ef3df9e53aac33b0c4e6d7fb36d",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
   "checkpointType": "native-docker-live-authority-bridge-verified-and-product503-recorded",
   "checkpointAt": "2026-10-04",
@@ -408,7 +409,7 @@
   "liveMandateBridge": {
     "status": "IMPLEMENTED_TESTED_NOT_DEPLOYED",
     "gatewayCommit": "516133e59be869012d3003758e545a5b5aa0060a",
-    "nodeConfigurationSchema": "ouf.semantic-node-attestor.v2",
+    "nodeConfigurationSchema": "ouf.semantic-node-attestor.v3",
     "authorizationSchema": "ouf.semantic-node-live-acceptance-authorization.v1",
     "signedExactOciRootfsRequired": true,
     "observedCreatedGenerationRequired": true,
