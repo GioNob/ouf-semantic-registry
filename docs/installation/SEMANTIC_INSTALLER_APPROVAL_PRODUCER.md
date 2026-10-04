@@ -1,5 +1,9 @@
 # Producer reale dell’approval finale dell’installer
 
+## Stato corrente — staging completato, provisioning in preparazione
+
+§31 ESEGUITO/PASS ha completato plan/apply/verify del package26 sorgenti v8 sul root121542. §30 originario resta storico BLOCKED. Il precedente testo NON ESEGUITO sotto è storico. Non ripetere staging/recovery. Prossimo §32 NON ESEGUITO: [dossier e progetto policy/configurazioni](SEMANTIC_DEPLOYMENT_AUTHORITY_PROVISIONING.md); nessuna chiave/firma o conferimento di authority. Gatewaya6d4e0ce CI38/38 verde.
+
 ## Aggiornamento corrente — entrambi i producer reali e staging v8 pendente
 
 Gateway `7ded9df0c74c6db919c7a68d4c75ab2c132dea53`: CI38/38,151 test pertinenti +2 native preparer +6 Docker. Il percorso autenticato usa issuer installer e attestor nodo di produzione, con denial prima dell’approval quando il rootfs cambia. Mandati/chiavi/immagine Busybox restano authority di CI; non accettazione target. Per configurazione, limiti e contenuto dei bind mount: [attestor e package v8](SEMANTIC_NODE_ATTESTOR_AND_PRODUCERS_PACKAGE_V8.md).

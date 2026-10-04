@@ -1,0 +1,57 @@
+# Provisioning delle authority e dossier target per installazione indipendente
+
+## Stato e obiettivo
+
+Staging v8 completato sul root121542 tramite recovery §31 ESEGUITO/PASS. Le26 sorgenti restano al commit7ded9df; non ripetere staging o recovery. §32 **NON ESEGUITO** misura i due candidati target realmente presenti e genera una bozza di provisioning locale. Non conferisce authority, genera chiavi/firme, registra runtime o avvia processi. [Comando completo](../handoffs/commands/OUF_INVENTORY_TARGET_ACCEPTANCE_2026-10-04.sh).
+
+Ogni Ente ha un'installazione indipendente. Il riferimento entityRef non si deduce dall'host, dal nome dell'installazione o dall'utente Keycloak. La condivisione di host/subnet non conferisce fiducia: l'attestor resta locale al nodo runtime anche quando altri servizi sono su server/reti differenti. Non occorre una authority centrale o un servizio multitenant.
+
+## Dossier privato e piano inerte
+
+`inventory_semantic_target_acceptance.py` è standalone stdlib: non importa né esegue i producer custoditi. Verifica hash del manifest candidate, journal creation, manifest26 sorgenti e receipt v8; rilegge tutte26 sorgenti. Legge soltanto inspect Docker container/image/network con template selettivi. Verifica identità e never-started, etichette journal, startup selezionato, user, restrizioni host, DNS configurato, mount bind readonly/rprivate e indirizzi IPv4 configurati. Il runtime deve avere un nome valido; il dossier registra quello osservato, senza sostituirlo o registrarlo.
+
+Due letture confrontate devono coincidere. Mount source: soltanto lstat e metadati degli antenati, senza aprire file/chiavi/env né enumerare contenuti di directory. Tipo file/directory, mode, owner, dev/inode, nlink, size, mtime/ctime vengono custoditi; symlink, file speciali e scrittura group/world bloccano. I proprietari dei file montati possono essere UID applicativi: gli antenati devono essere root-owned e non scrivibili group/world. Nessun permesso viene corretto.
+
+Output privati root0600 nel nuovo snapshot700:
+
+| File | Contenuto e uso |
+| --- | --- |
+| target-dossier.json | Identità candidate/immagini, layer digest dichiarati da Docker, configurazione selezionata, percorsi mount e loro metadati. Da consultare privatamente; command/paths non vengono pubblicati su stdout o GitHub. |
+| authority-plan.json | Schema `ouf.semantic-deployment-authority-provisioning-plan.v1`, stato DRAFT_NOT_AUTHORIZED, tre ruoli con identità e chiavi non assegnate. **Non è una trust policy né configurazione operativa**. |
+| inventory-receipt.json | Hash dei due file e della receipt v8, contatori/esito. Pubblicata per ultima dopo fsync/readback; unico marker di completamento. |
+
+Il report pubblico stampa soltanto hash, conteggi e booleani, senza percorsi mount, command, configurazioni o credenziali. Nessuna lettura `.Config.Env` o contenuti di mount. Le risposte Docker sono limitate a128KiB/call e30s complessivi; due candidati, massimo32 mount/network ciascuno,256 layer/image; dossier aggregato massimo128KiB. stdout drenato con selector, stderr scartato e processo ucciso/raccolto su timeout/overflow. File privati readback128KiB e antisymlink/hardlink/metadata drift. Pubblicazione esclusiva, mai overwrite: evidenza parziale richiede riconciliazione, non reset o replay.
+
+## Modello di fiducia da approvare
+
+| Ruolo | Responsabilità | Evidenza necessaria |
+| --- | --- | --- |
+| DEPLOYMENT_INTENT | Autorità infrastrutturale installer: autorizza creazione per installation/entity/candidato/transazione specifici. | Intento firmato creation-only, vincoli deployment e binding trasporto/runtime. Non autorizza start. |
+| CREATION_ATTESTATION | Attestor locale al nodo; verifica il mandato di accettazione e l'osservazione reale di OCI/rootfs/generazione/link prima di firmare. | Mandato di accettazione esplicito, completo OCI, rootfs seal osservato, gestione bind mount esterni. Nessuna auto-accettazione derivata dal Docker image ID. |
+| FINAL_DEPLOYMENT_APPROVAL | Installer emette approval dopo attestazione valida e mandato finale distinto. | Mandato finale firmato e limitato a singola generazione/OCI/trasporto/runtime, start esplicito. |
+
+Coerenza con contratto vigente: installer può detenere ruoli intento/finale; chiave e ruolo dell'attestor restano separati. La scelta di soggetti, publicKey/keyRef/issuerRef, validità, custodia, revoca e scope richiede autorità esplicita. Nessuna chiave esistente è promossa a authority perché presente sul disco. IAM applicativo non diventa authority infrastrutturale. Non leggere/riutilizzare chiavi TLS o di receipt come chiavi di deploy.
+
+Policy operativa futura: schema `ouf.semantic-deployment-trust-policy.v1`; installationRef/entityRef esatti;1..32 grant con keyRef,issuerRef,roles,publicKey Ed25519 lowercasehex64,notBefore,expiresAt,state ACTIVE/REVOKED. La bozza nulla non è convertibile in policy ACTIVE senza conferimento esplicito. I mandati operativi sono validi al massimo300s e dentro la finestra dell'intento; non emetterli ora per un avvio futuro.
+
+## Binding delle configurazioni da materializzare dopo l'inventario e il conferimento
+
+| Componente | Schema operativo | Binding da risolvere |
+| --- | --- | --- |
+| Broker | ouf.semantic-deployment-broker.v1 | sourceRoot e closure esatta18 sorgenti, authorities5 identità, intento/policy/signatureDirectory/OpenSSL; producer attestor/approval pinned, preparerTemplate, candidateRoot e runtimeRootParent. |
+| Attestor nodo | ouf.semantic-node-attestor.v1 | closure20 sorgenti, Python, authorities, intento, acceptanceMandatePath, policy/firme/OpenSSL, propria signingKeyBinding/keyRef; journal broker/emissione/claim, budget1..12s, runtime, antenati runtime/bundle, ip/nsenter, candidate network/transport/table e limiti rootfs. |
+| Issuer installer | ouf.semantic-installer-approval-producer.v1 | closure18 sorgenti, Python, authorities, intento, attestationPath e approvalMandateBinding; policy/firme/OpenSSL, propria signingKeyBinding/keyRef, journal emissione/claim e budget1..12s. |
+| Preparer | ouf.semantic-admission-preparer.v3 | Comandi e hash, candidate/kernel/DNS, common guard/lease lock e percorsi privati, namespace/rootfs osservati e protocollo autenticato. Produce il driver v5 soltanto dopo ammissione reale. |
+| Adapter Docker | ouf.semantic-docker-runtime-adapter.v4 | Driver/broker e configurazioni pinned, registry/CID e runtime nativo. Registrazione e migrazione dei candidati esistenti richiedono intervento esplicito; runtime runc esistente non viene sostituito da questo inventario. |
+
+La matrice è un progetto di configurazione, non JSON operativo con default permissivi. Gli hash delle closure derivano dalla receipt v8 verificata e vanno selezionati esattamente secondo i MODULES delle CLI; non includere indiscriminatamente tutti26 file. Le chiavi e i journal sono per installazione/nodo e transazione; il broker conserva lock comune guard/lease, oltre al lock per CID, evitando firma/start concorrenti e replay dopo crash. Nessun claim va cancellato per ritentare.
+
+## Cosa resta da provare
+
+PASS §32 è inventario per costruire un dossier di revisione. Non prova ambiente completo, provenance publisher, contenuto immutabile dei layer o dei volumi, full OCI, namespace/generazione live, rootfs seal, hook OCI, active lease lifecycle, snapshot atomico, reboot o release acceptance. I layer sono descriptor Docker, **non** sigillo dell'intero rootfs estratto. I bind mount possono contenere chiavi e dati mutabili: questo comando non li apre o sigilla. L'autorità deve approvare contenuti e mutabilità con vincoli espliciti. I candidati Docker created con runtime runc non danno da soli un bundle/generazione runc created; i mandati non vanno sintetizzati da metadati incompleti.
+
+Dopo output §32: registrare esito/hash/root nei4 documenti e stato comando; usare il dossier privato per definire soggetti/chiavi/policy e dossier di accettazione target concreto. Preparare il provisioning reviewable prima di chiedere conferimento per generazione/firma/applicazione. Nessun nuovo staging source-only per simulare gates chiusi. Ingestion interna MCP→profilo→mapping DRAFT→THS→bundle ACTIVE→Ingestion→UDP resta aperta; Semantic/Registry ricerca via Gateway, schema.gov.it predefinito configurabile, chatbot/MCP propone e THS governa adozione/pubblicazione/attivazione.
+
+## Validazione
+
+9 test unit root con filesystem reale: nessun open dei mount, piano inerte, configurazioni unsafe, network/image/mount drift, letture diverse, symlink/FIFO/worldwrite, budget/overflow/exit, O_EXCL/fsync/readback e source/receipt drift. Prova Docker root dedicata:2 immagini/candidati fixture mai avviati, mount con segreto non letto, CLI reale con package v8 e ricevuta verificata, dossier/hash e no-overwrite del tentativo successivo. Nessun pull o provider; immagine fixture importata localmente. La suite generale non root salta le fixture root; il job root le esegue effettivamente. Stato CI e commit esatti nel checkpoint corrente.
