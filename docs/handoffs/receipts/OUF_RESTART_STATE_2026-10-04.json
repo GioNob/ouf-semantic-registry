@@ -87,7 +87,7 @@
   ],
   "pr56": "open draft unmerged",
   "pr26": "open draft unmerged",
-  "documentationHead": "e14b424ba523dd4f024e8042043131ea441a52dd",
+  "documentationHead": "77407922584a68ffbbeb7068a88d9acac33fa52d",
   "v8Recovery": {
     "status": "EXECUTED_PASS",
     "packageRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
@@ -100,7 +100,7 @@
     "doNotReplay": true
   },
   "nextStep": "Authorize §41 four evidence files and six build-context source files only; future image bytes/provenance and observation-to-mandate bridge remain open.",
-  "latestDocumentationCi": "e14b424_7_PR_WORKFLOWS_SUCCESS_NEW_CODE_PENDING",
+  "latestDocumentationCi": "7740792_DEDICATED_SUCCESS_6_PR_WORKFLOWS_SUCCESS_1_IN_PROGRESS",
   "localDiagnosticTests": {
     "total": 11,
     "passed": 10,
@@ -296,7 +296,7 @@
     "status": "EXECUTED_PASS",
     "wrapper": "docs/handoffs/commands/OUF_VERIFY_CONFIGURATION_PROVENANCE_2026-10-04.sh",
     "wrapperSha256": "1ab35491972810bc72a995c534e1bfc438f6f0c1e469b8dc8a3685e020c50b9b",
-    "privateScopeRequired": true,
+    "privateScopeRequired": false,
     "inlineTlsPrivateKeyFileReadProposed": true,
     "separatePrivateKeyFilesReadProposed": 0,
     "localTestsPassed": 7,
@@ -341,6 +341,13 @@
     "imageBytesVerified": false,
     "imagePublisherProvenanceVerified": false,
     "acceptanceGranted": false,
-    "startAuthorized": false
-  }
+    "startAuthorized": false,
+    "preparedCommit": "77407922584a68ffbbeb7068a88d9acac33fa52d",
+    "ciDedicatedRun": 37228966326,
+    "ciDedicatedJob": 111514395188,
+    "ciDedicatedConclusion": "success",
+    "ciSuiteTestsPassed": 26,
+    "ciSuiteTestsSkipped": 0
+  },
+  "documentationHeadType": "lastVerifiedPrecedingCommit"
 }
