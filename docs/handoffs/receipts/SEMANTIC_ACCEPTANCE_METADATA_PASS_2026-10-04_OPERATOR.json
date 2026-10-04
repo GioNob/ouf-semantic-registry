@@ -1,0 +1,162 @@
+{
+  "schema": "ouf.semantic-acceptance-metadata-pass.operator.v1",
+  "section": 39,
+  "status": "EXECUTED_PASS",
+  "receivedAt": "2026-10-04T20:41:08+02:00",
+  "evidenceSource": "USER_OPERATOR_OUTPUT_NOT_INDEPENDENT_VPS_INSPECTION",
+  "executedCommit": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
+  "wrapper": "docs/handoffs/commands/OUF_READ_ACCEPTANCE_METADATA_2026-10-04.sh",
+  "wrapperSha256": "0be85f2f2c1d6cbd7f5b0f86c396e6a1050c024adcc85950029b8980cab6b001",
+  "downloadChecksumOK": true,
+  "result": {
+    "schema": "ouf.semantic-acceptance-metadata-readback.v1",
+    "acceptanceGranted": false,
+    "atomicSnapshotProven": false,
+    "candidates": [
+      {
+        "role": "adapter",
+        "imageId": "sha256:a697bf75bf7d51afadadfaccd3d80537e9a5fb2a08f0d194c6dfd9462e812468",
+        "containerIdHash": "df50fd5c4bbccbba9e04b5c465b7837e1cb331fe4c27fceee188d3f782506c28",
+        "layerDescriptorCount": 8,
+        "layerDescriptorsHash": "e6b2f3bd33516825e3bee4a0af52090d917545bd644c294dfe0843b736b088d1",
+        "readOnlyRoot": true,
+        "mounts": [
+          {
+            "slot": "adapter.json",
+            "category": "CONFIG",
+            "uid": 10006,
+            "gid": 10006,
+            "mode": "0600",
+            "size": 973,
+            "destinationBindingHash": "7ccf41a2f266c8d7bf0c7a9945fe2151ffa1f60c50ec07da434bfff3220258e1",
+            "sourceBindingHash": "206d490d5c217af35563aff3b2282f5b0bce96a097df89ceffb377e45cb5c96c",
+            "readOnly": true,
+            "contentsRead": false,
+            "contentsAccepted": false
+          },
+          {
+            "slot": "adapter/server.crt",
+            "category": "PUBLIC_CERT",
+            "uid": 10006,
+            "gid": 10006,
+            "mode": "0600",
+            "size": 717,
+            "destinationBindingHash": "02b949e128cfa063f53bf4f4ad0a015956aa19064b4236527bac2f125c94e17f",
+            "sourceBindingHash": "5b2e3aa19c8158051427f7cd6c49c32ee0265bd4bee2d7a40ce0ee995bbba0e5",
+            "readOnly": true,
+            "contentsRead": false,
+            "contentsAccepted": false
+          },
+          {
+            "slot": "adapter/server.key",
+            "category": "TLS_SECRET",
+            "uid": 10006,
+            "gid": 10006,
+            "mode": "0600",
+            "size": 241,
+            "destinationBindingHash": "51ef7a278d9c4ac09e288a3ceb4125434390784f83ef4527e2a64b1f673429ca",
+            "sourceBindingHash": "545ad7729562c248184abd16a97586f20eedd23e0ce16482250c276842a8d28b",
+            "readOnly": true,
+            "contentsRead": false,
+            "contentsAccepted": false
+          },
+          {
+            "slot": "adapter/provider-receipt.key",
+            "category": "PURPOSE_MAC_SECRET",
+            "uid": 10006,
+            "gid": 10006,
+            "mode": "0600",
+            "size": 64,
+            "destinationBindingHash": "de999a0d7d35e4f49174cd46db677785717182e20ac085e5903c652477e67a0b",
+            "sourceBindingHash": "8fb144ec2a590771f642f11eeabb8fc7b19b76881ee3f8f8a9eaf39bce52cc5f",
+            "readOnly": true,
+            "contentsRead": false,
+            "contentsAccepted": false
+          },
+          {
+            "slot": "trust-bundle.pem",
+            "category": "PUBLIC_TRUST",
+            "uid": 0,
+            "gid": 0,
+            "mode": "0644",
+            "size": 225117,
+            "destinationBindingHash": "aded0868b19a81f109f453864f6340d65e601b3e4a5c6e52f4579a52a5810e4e",
+            "sourceBindingHash": "0a57d6c135cf9351271c627cb9b34c88feb059081879a184ab28ed5412730195",
+            "readOnly": true,
+            "contentsRead": false,
+            "contentsAccepted": false
+          }
+        ]
+      },
+      {
+        "role": "southbound",
+        "imageId": "sha256:84e6b5e787e9f889ebff88161cb9a16599bafcffa236c6b54c7f779a0655940d",
+        "containerIdHash": "f3272ad1a51d83ad0dacb5c4dbf42683ffbe68e9580ade8942bfa436283508fd",
+        "layerDescriptorCount": 9,
+        "layerDescriptorsHash": "ea6aeeef286a7c893cd0bd8eb7452196d87c8681f72a10a3001af288133528ed",
+        "readOnlyRoot": false,
+        "mounts": [
+          {
+            "slot": "config.yaml",
+            "category": "CONFIG",
+            "uid": 636,
+            "gid": 636,
+            "mode": "0600",
+            "size": 742,
+            "destinationBindingHash": "7e77d7bb95c026d3ad810c9503e2696266adf2267b520a4b3b1baa182f9e3c4a",
+            "sourceBindingHash": "9cac3cab101200838938f85b6cd8101dcc3b152b93dece4e5c0f1d5d547c0f72",
+            "readOnly": true,
+            "contentsRead": false,
+            "contentsAccepted": false
+          },
+          {
+            "slot": "apisix.yaml",
+            "category": "CONFIG_WITH_TLS_SECRET",
+            "uid": 636,
+            "gid": 636,
+            "mode": "0600",
+            "size": 12239,
+            "destinationBindingHash": "ced9bcb66836bd908bacb1a17802ab69dce6de4cf04e81cb6b0cd32779da385f",
+            "sourceBindingHash": "8b105de8db244cdd254695552c48cf87aeb4295fdee0e719e94557d6b6d49b79",
+            "readOnly": true,
+            "contentsRead": false,
+            "contentsAccepted": false
+          },
+          {
+            "slot": "trust-bundle.pem",
+            "category": "PUBLIC_TRUST",
+            "uid": 0,
+            "gid": 0,
+            "mode": "0644",
+            "size": 225117,
+            "destinationBindingHash": "aded0868b19a81f109f453864f6340d65e601b3e4a5c6e52f4579a52a5810e4e",
+            "sourceBindingHash": "0a57d6c135cf9351271c627cb9b34c88feb059081879a184ab28ed5412730195",
+            "readOnly": true,
+            "contentsRead": false,
+            "contentsAccepted": false
+          }
+        ]
+      }
+    ],
+    "inputHashes": [
+      "052b46a56ea666971f135c75af48b3342dbeb68e2f17f1f16263a99351df88bd",
+      "a1c2acd9924fc0f924ded7c2d59f128ef2d8b8dd11c62484a901f628022aaae7",
+      "a37f22635035ab8543a4654def5cd6a6f4fe45fd1affc0ff10ccc3c19f03085c",
+      "6b0814aefde46df9b849df9596b666cc5b99c74aa82bc4fbf71f292b0a189e43"
+    ],
+    "historicalEvidenceOnly": true,
+    "currentTargetInspected": false,
+    "containersChanged": false,
+    "environmentRead": false,
+    "fullCreationAcceptanceProven": false,
+    "generationObserved": false,
+    "mountContentsRead": false,
+    "privateKeysRead": 0,
+    "providerCalls": 0,
+    "runtimeRegistered": false,
+    "signaturesIssued": 0,
+    "startAuthorized": false,
+    "targetFilesWritten": 0
+  },
+  "doNotReplay": true
+}

@@ -27,15 +27,15 @@
     "skipped": 1
   },
   "vps": {
-    "lastPassedSection": 38,
-    "lastPassedRoot": "/etc/ouf/deploy-snapshots/semantic-trust-policy-preparation-20261004-172336",
+    "lastPassedSection": 39,
+    "lastPassedRoot": null,
     "section30Status": "EXECUTED_BLOCKED_PLAN",
     "blockedRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
     "sourceCommit": "7ded9df0c74c6db919c7a68d4c75ab2c132dea53",
     "sourceManifestSha256": "a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b",
     "downloadChecksumsPassed": 28,
     "applyVerifyReached": true,
-    "nextSection": 39,
+    "nextSection": null,
     "recoveryExecuted": true,
     "recoveryWrapperSha256": "2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d",
     "repairToolSha256": "116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4",
@@ -44,8 +44,8 @@
     "startAuthorized": false,
     "runtimeRegistered": false,
     "section32Status": "EXECUTED_BLOCKED",
-    "nextWrapper": "docs/handoffs/commands/OUF_READ_ACCEPTANCE_METADATA_2026-10-04.sh",
-    "nextWrapperSha256": "0be85f2f2c1d6cbd7f5b0f86c396e6a1050c024adcc85950029b8980cab6b001",
+    "nextWrapper": null,
+    "nextWrapperSha256": null,
     "section33Status": "EXECUTED_BLOCKED",
     "section32Root": null,
     "partialEvidenceKnown": false,
@@ -60,7 +60,7 @@
     "dossierHash": "a37f22635035ab8543a4654def5cd6a6f4fe45fd1affc0ff10ccc3c19f03085c",
     "authorityPlanHash": "31492d13db05b46252215bb4bde815712bd55a1e245aff25408350328fcb7093",
     "sourcePackageReceiptHash": "f06c4b6ea2a7c05e008db3e615e35f475d44824b2073ff2d5f451c55dbce2850",
-    "inventoryReceiptHash": null,
+    "inventoryReceiptHash": "6b0814aefde46df9b849df9596b666cc5b99c74aa82bc4fbf71f292b0a189e43",
     "section36Status": "EXECUTED_PASS",
     "section36Root": "/etc/ouf/deploy-snapshots/semantic-authority-provisioning-20261004-164654",
     "draftHash": "a9e5bdbef01c391c216e23e7b99c9e9ed3d6e3a92da56e8e1e9d7b2ca91b040c",
@@ -68,12 +68,13 @@
     "keysPresent": 2,
     "section37Status": "PRIVATE_ROLE_POLICY_AUTHORIZED",
     "section38Status": "EXECUTED_PASS",
-    "lastPassSection": 38,
-    "lastPassRoot": "/etc/ouf/deploy-snapshots/semantic-trust-policy-preparation-20261004-172336",
+    "lastPassSection": 39,
+    "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "NOT_EXECUTED_HISTORICAL_METADATA_READBACK"
+    "nextStatus": "PRIVATE_CONTENT_PROVENANCE_REVIEW_PREPARATION",
+    "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA"
   },
-  "nextTask": "Operator section39 historical sealed metadata readback; complete observed owner/mode/destination hashes in concrete acceptance matrix, then scope private content/provenance review. No signing/runtime/start.",
+  "nextTask": "Prepare private configuration/provenance verification and observation-to-mandate bridge; no VPS command currently offered.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -97,8 +98,8 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Run only pinned wrapper39 after checksum validation; no replay31/34/36/38; return redacted output. Section39 NOT_EXECUTED.",
-  "latestDocumentationCi": "CODE_COMMIT_SUCCESS_DOCUMENTATION_RECORD_FOLLOWUP",
+  "nextStep": "Do not replay39/38/36/34/31. Implement/test/review scoped private content verification before asking operator action or authority.",
+  "latestDocumentationCi": "PRIOR_HEAD_aab0f3e_SUCCESS_THIS_RECEIPT_RECORD_PENDING",
   "localDiagnosticTests": {
     "total": 11,
     "passed": 10,
@@ -175,12 +176,12 @@
   },
   "semanticHead": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
-  "checkpointType": "candidate-acceptance-plan-sealed-metadata-readback",
+  "checkpointType": "operator-acceptance-metadata-pass",
   "checkpointAt": "2026-10-04",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
     "section": 39,
-    "status": "NOT_EXECUTED",
+    "status": "EXECUTED_PASS",
     "wrapper": "docs/handoffs/commands/OUF_READ_ACCEPTANCE_METADATA_2026-10-04.sh",
     "immutableCommit": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
     "sha256": "0be85f2f2c1d6cbd7f5b0f86c396e6a1050c024adcc85950029b8980cab6b001",
@@ -283,6 +284,10 @@
     "mountContentsRead": false,
     "operationalSignaturesIssued": 0,
     "acceptanceGranted": false,
-    "notCurrentLiveInventory": true
+    "notCurrentLiveInventory": true,
+    "receivedAt": "2026-10-04T20:41:08+02:00",
+    "operatorReceipt": "docs/handoffs/receipts/SEMANTIC_ACCEPTANCE_METADATA_PASS_2026-10-04_OPERATOR.json",
+    "inventoryReceiptHash": "6b0814aefde46df9b849df9596b666cc5b99c74aa82bc4fbf71f292b0a189e43",
+    "doNotReplay": true
   }
 }

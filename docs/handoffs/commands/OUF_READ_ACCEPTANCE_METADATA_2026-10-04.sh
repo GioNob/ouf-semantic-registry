@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Section 39: NOT EXECUTED. Historical metadata readback only; no replay of 34/36/38.
+# Section 39: EXECUTED PASS (operator output 2026-10-04). DO NOT REPLAY.
+# Executed bytes: commit 43011fe14ef31ea6b6378de618a6be2e8ddf6256, SHA256 0be85f2f2c1d6cbd7f5b0f86c396e6a1050c024adcc85950029b8980cab6b001.
+# This changed documentation header is not the checksum of the executed wrapper.
 # One complete wrapper. No target installation, helper download, package or rollback mutation.
 set -euo pipefail
 exec sudo /usr/bin/python3 -I -B - \

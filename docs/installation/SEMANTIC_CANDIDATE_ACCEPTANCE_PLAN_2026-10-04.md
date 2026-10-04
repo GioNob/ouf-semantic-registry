@@ -1,6 +1,24 @@
 # Accettazione concreta dei candidati Semantic provider
 
-Stato: piano tecnico revisionabile, NON accettazione concessa. Ultimo VPS §38 PASS; §39 readback metadati NON ESEGUITO. Nessuna firma operativa, lettura contenuti mount, registrazione runtime, collegamento consumer o avvio. Le prove §31/34/36/38 e tutti i tentativi BLOCKED restano immutabili.
+Stato: piano tecnico revisionabile, NON accettazione concessa. Ultimo VPS §39 PASS; privatepolicy§38 PASS preservata; §39 readback metadati ESEGUITO/PASS (storico, non live). Nessuna firma operativa, lettura contenuti mount, registrazione runtime, collegamento consumer o avvio. Le prove §31/34/36/38 e tutti i tentativi BLOCKED restano immutabili.
+
+
+## §39 ESEGUITO/PASS — metadati storici ricevuti
+
+Evidenza operatore,4 ottobre2026 20:41:08 Europe/Rome. Nessun current inspect/content acceptance. Destinazioni/source binding hashes conservati nella [receipt](../handoffs/receipts/SEMANTIC_ACCEPTANCE_METADATA_PASS_2026-10-04_OPERATOR.json); owner/mode/size sono del dossier34. Non inferire stat live da questo readback.
+
+| Ruolo | Slot | UID:GID | Mode | Byte | Mount |
+| --- | --- | --- | --- | --- | --- |
+| adapter | adapter.json | 10006:10006 | 0600 | 973 | RO, contenuto non letto/non accettato |
+| adapter | adapter/server.crt | 10006:10006 | 0600 | 717 | RO, contenuto non letto/non accettato |
+| adapter | adapter/server.key | 10006:10006 | 0600 | 241 | RO, contenuto non letto/non accettato |
+| adapter | adapter/provider-receipt.key | 10006:10006 | 0600 | 64 | RO, contenuto non letto/non accettato |
+| adapter | trust-bundle.pem | 0:0 | 0644 | 225117 | RO, contenuto non letto/non accettato |
+| southbound | config.yaml | 636:636 | 0600 | 742 | RO, contenuto non letto/non accettato |
+| southbound | apisix.yaml | 636:636 | 0600 | 12239 | RO, contenuto non letto/non accettato |
+| southbound | trust-bundle.pem | 0:0 | 0644 | 225117 | RO, contenuto non letto/non accettato |
+
+Adapter8 layer descriptors, southbound9; digest layer descriptors non è sigillo bytes/rootfs o publisher trust. Root adapterRO, southboundRW; nessun start/gen/mandato. inventory-receipt34 SHA2566b0814aefde46df9b849df9596b666cc5b99c74aa82bc4fbf71f292b0a189e43 ora osservato. Non ripetere39/34. I valori DA LEGGERE delle sezioni storiche sono ora sostituiti da questa tabella; revisione contenuti/provenance e fullOCI/rootfs/generation ancora APERTI.
 
 ## Normativa e fonti
 

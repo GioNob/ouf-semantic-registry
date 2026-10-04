@@ -1,5 +1,14 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+## Checkpoint corrente — §39 ESEGUITO/PASS, non ripetere
+
+Output operatore ricevuto4 ottobre2026 20:41:08 Europe/Rome: checksum wrapper OK e SEMANTIC_ACCEPTANCE_METADATA PASS/HISTORICAL_ONLY. [Ricevuta operatore](handoffs/receipts/SEMANTIC_ACCEPTANCE_METADATA_PASS_2026-10-04_OPERATOR.json). Nessuna ispezione VPS indipendente: letti solo4 JSON storici hash-pinned, mai contenuti mount/Env/PEM/Docker. Receipt34 ora ha hash noto `6b0814aefde46df9b849df9596b666cc5b99c74aa82bc4fbf71f292b0a189e43`. Fonte eseguita43011fe14ef31ea6b6378de618a6be2e8ddf6256, wrapperSHA0be85f2f2c1d6cbd7f5b0f86c396e6a1050c024adcc85950029b8980cab6b001; nuovo header documentale non modifica quei bytes immutabili. **Non ripetere39/38/36/34/31. Nessun altro comando VPS attualmente offerto.**
+
+Matrice completata con8 metadati salvati al34: adapter4 file10006:10006/0600 (973,717,241,64 byte); southbound2 file636:636/0600 (742,12239 byte); stessa fonte trust-bundle root0:0/0644/225117 byte montata2 volte. Immagini confermate soltanto nel dossier storico: adapter8 layer descriptor/rootRO; APISIX9/rootRW. Source/destination/container ID e layer descriptor hashes sono nella receipt; nessun contenuto o path privato pubblicato.
+
+currentTargetInspected/fullCreationAcceptanceProven/generationObserved/acceptanceGranted/atomicSnapshotProven/runtimeRegistered/startAuthorized=false; targetFilesWritten/privateKeysRead/signaturesIssued/providerCalls=0. Ultimo intervento VPS39 PASS non sostituisce privatepolicy38 PASS; ruolo firma/consumer/start non conferiti. [Piano aggiornato](installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md). Prossimo lavoro autonomo: verifica privata reviewable delle configurazioni/provenance e raccordo osservazione→mandato, con codice/test/CI prima di qualunque richiesta di lettura privata o nuova authority. Nessuna autoacceptance o staging source-only. CI codice43011fe e documentiaab0f3e:7 workflow PR/9 jobs SUCCESS riletti,11 test PASS/0skip; CI di questa registrazione da verificare.
+
+
 ## Checkpoint corrente — §39 preparato, NON ESEGUITO
 
 §38 rimane ultimo VPS ESEGUITO/PASS; nessun replay31/34/36/38 o creazione. Ripartenza dalla sezione7 completata per analisi/contratti/matrice: [piano di accettazione](installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md) con2 immagini/8 slot mount, provenance/mutabilità, binding OCI/rootfs/generazione, limiti temporali e rollback. Dati privati esatti owner/mode/destinazione non ricevuti: prossimo unico intervento §39 legge soltanto metadati storici da4 file sigillati, senza inspect target, Env/mount contents/PEM/Docker/DNS/IAM, firme o scritture target.
