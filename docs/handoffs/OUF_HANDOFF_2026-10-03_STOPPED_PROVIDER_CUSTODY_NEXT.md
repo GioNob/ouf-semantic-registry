@@ -4,9 +4,9 @@
 
 §26 attestato dall'operatore in `/etc/ouf/deploy-snapshots/semantic-deployment-trust-backend-inventory-20261004-080455`: source custody 18 e stableAcrossReads PASS, receipt hash `1b5a340a11fa3a157fe83be7bddc2a4af5dd755eb78a003b7a3640e117647d0a`; OpenSSL 3.5.7, hash `f4aa15f2822f670af7b5c1043d7aa6ebbbc64229fd2fae382edfc6a4524749c1`, firma valida e due negative PASS. Authority/atomicità/runtime/start restano false; key generation/private-key reads/signature issuance/provider/DNS/IAM calls zero. Receipt operatore conservata; nessun replay §25/§26.
 
-**Codice completato:** gateway `d27bf59f72470828c961d1df25d7588878b477ca`, verificatore detached Ed25519 con scope key/role/issuer/installazione/Ente, policy esplicita hash-pinned, revoca/scadenza rilette dopo native verify bounded; nessun issuer/default/grant, signing o keygen di produzione. Nuovo source package v5 di 20 file. Locale 63 test pertinenti PASS, 13 auth nuovi + 2 package. [Contratto e limiti](../installation/SEMANTIC_DEPLOYMENT_AUTHENTICATION.md).
+**Codice completato:** gateway `6697029e3efa03f9090bd7be13aab86784749731`, verificatore detached Ed25519 con scope key/role/issuer/installazione/Ente, policy esplicita hash-pinned, revoca/scadenza rilette dopo native verify bounded; nessun issuer/default/grant, signing o keygen di produzione. Nuovo source package v5 di 20 file. Locale 64 test pertinenti PASS, 14 auth nuovi + 2 package. [Contratto e limiti](../installation/SEMANTIC_DEPLOYMENT_AUTHENTICATION.md).
 
-**CI codice finale:** gateway `d27bf59f72470828c961d1df25d7588878b477ca`, 38/38 completed/success; log push/PR verificati: 63 unit/contract/package, 2 native admission, 5 Docker. Documento ricevuta §26 `e796a09c08b0c1a55e2e903cd83b12bebc03fa33`: 13/13 success dopo rerun del solo job fallito per download Maven Central HTTP403, senza modifica al codice.
+**CI codice finale:** gateway `6697029e3efa03f9090bd7be13aab86784749731`, 38/38 completed/success; log push/PR verificati: 64 unit/contract/package, 2 native admission, 5 Docker. Documento ricevuta §26 `e796a09c08b0c1a55e2e903cd83b12bebc03fa33`: 13/13 success dopo rerun del solo job fallito per download Maven Central HTTP403, senza modifica al codice.
 
 **Percorso confermato sui PET:** Semantic v1.3 §§10–11,17–18,25–26 e74; Onboarding v1.6 §§9.3,12–13,92; MCP v1.4 confini/catalogo. Il chatbot può richiedere discovery tipizzata e proporre mapping; Semantic/Registry governa provider adapter e candidati; egress via Gateway southbound. Trigger: match interno inadeguato **o richiesta esplicita autorizzata**. Niente SPARQL arbitrario dall'Agent, né adozione/pubblicazione/activation HUMAN via MCP. Candidato esterno non è riferimento ACTIVE finché il workflow governato non lo rende tale.
 
@@ -1225,7 +1225,7 @@ b97f31cc17c22abbb7a021c274be73816f649196762f9c6dfcc54a58d8382e8a  tools/material
 98e3004300226fecd509a46c009585df14021927f20d4e5c82d8ff7a8a8180de  tools/materialize_southbound_kernel.py
 1c0d7f1243752fe216ef62eefbc2e3253b8f2503b518fafe11277e4d7721a084  tools/materialize_southbound_lease_refresh.py
 4bd0051fad23acd91fc42eb9b6cd2f2dac6e8d9d960fefd391add261a3646499  tools/semantic_provider_deployment_admission.py
-1316e94949a83745701eecb40f33017dcf1461165b59c1388ad57949a96beab4  tools/semantic_provider_deployment_authentication.py
+f81bdead000bde095ddcd7ab3841edf765513deb8512e20115e0054d08dcff53  tools/semantic_provider_deployment_authentication.py
 88b848be497607a71a9fc8def9164119d8bcf74d095d906fd56e6f91b7cb642a  tools/semantic_provider_deployment_consumption.py
 87e4eed4485cee0736bb7031827ee773efde6f4fb97d6289c885fc5cf2049592  tools/semantic_provider_deployment_protocol.py
 c466172113d1ffe850bf2c69762113b55fbc65d9091c96dca98a74548fddf930  tools/semantic_provider_dns.py
@@ -1238,7 +1238,7 @@ OUF_AUTH_SHA
 while read -r OUF_AUTH_HASH OUF_AUTH_FILE; do
   mkdir -p -- "$OUF_AUTH_PKG_TMP/$(dirname -- "$OUF_AUTH_FILE")"
   curl --fail --silent --show-error --proto '=https' --max-time 30 \
-    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/d27bf59f72470828c961d1df25d7588878b477ca/$OUF_AUTH_FILE" \
+    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/6697029e3efa03f9090bd7be13aab86784749731/$OUF_AUTH_FILE" \
     -o "$OUF_AUTH_PKG_TMP/$OUF_AUTH_FILE"
 done < "$OUF_AUTH_PKG_TMP/sources.sha256"
 (cd "$OUF_AUTH_PKG_TMP"; sha256sum -c sources.sha256)
@@ -1252,7 +1252,7 @@ printf 'SEMANTIC_AUTHENTICATED_DEPLOYMENT_PACKAGE_ROOT=%s\n' "$OUF_AUTH_PKG_ROOT
 for OUF_AUTH_MODE in plan apply verify; do
   sudo /usr/bin/python3 -I -B "$OUF_AUTH_PKG_ROOT/source/scripts/stage_semantic_authenticated_deployment_package.py" \
     --mode "$OUF_AUTH_MODE" --package-root "$OUF_AUTH_PKG_ROOT" \
-    --source-commit d27bf59f72470828c961d1df25d7588878b477ca \
+    --source-commit 6697029e3efa03f9090bd7be13aab86784749731 \
     --hook-source-sha256 a4ca047fc76dda6378e81834cac421d5d829b55d63ac62dde29a3178245aaabc
 done
 ```

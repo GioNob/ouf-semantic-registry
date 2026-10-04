@@ -15,7 +15,7 @@ b97f31cc17c22abbb7a021c274be73816f649196762f9c6dfcc54a58d8382e8a  tools/material
 98e3004300226fecd509a46c009585df14021927f20d4e5c82d8ff7a8a8180de  tools/materialize_southbound_kernel.py
 1c0d7f1243752fe216ef62eefbc2e3253b8f2503b518fafe11277e4d7721a084  tools/materialize_southbound_lease_refresh.py
 4bd0051fad23acd91fc42eb9b6cd2f2dac6e8d9d960fefd391add261a3646499  tools/semantic_provider_deployment_admission.py
-1316e94949a83745701eecb40f33017dcf1461165b59c1388ad57949a96beab4  tools/semantic_provider_deployment_authentication.py
+f81bdead000bde095ddcd7ab3841edf765513deb8512e20115e0054d08dcff53  tools/semantic_provider_deployment_authentication.py
 88b848be497607a71a9fc8def9164119d8bcf74d095d906fd56e6f91b7cb642a  tools/semantic_provider_deployment_consumption.py
 87e4eed4485cee0736bb7031827ee773efde6f4fb97d6289c885fc5cf2049592  tools/semantic_provider_deployment_protocol.py
 c466172113d1ffe850bf2c69762113b55fbc65d9091c96dca98a74548fddf930  tools/semantic_provider_dns.py
@@ -28,7 +28,7 @@ OUF_AUTH_SHA
 while read -r OUF_AUTH_HASH OUF_AUTH_FILE; do
   mkdir -p -- "$OUF_AUTH_PKG_TMP/$(dirname -- "$OUF_AUTH_FILE")"
   curl --fail --silent --show-error --proto '=https' --max-time 30 \
-    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/d27bf59f72470828c961d1df25d7588878b477ca/$OUF_AUTH_FILE" \
+    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/6697029e3efa03f9090bd7be13aab86784749731/$OUF_AUTH_FILE" \
     -o "$OUF_AUTH_PKG_TMP/$OUF_AUTH_FILE"
 done < "$OUF_AUTH_PKG_TMP/sources.sha256"
 (cd "$OUF_AUTH_PKG_TMP"; sha256sum -c sources.sha256)
@@ -42,6 +42,6 @@ printf 'SEMANTIC_AUTHENTICATED_DEPLOYMENT_PACKAGE_ROOT=%s\n' "$OUF_AUTH_PKG_ROOT
 for OUF_AUTH_MODE in plan apply verify; do
   sudo /usr/bin/python3 -I -B "$OUF_AUTH_PKG_ROOT/source/scripts/stage_semantic_authenticated_deployment_package.py" \
     --mode "$OUF_AUTH_MODE" --package-root "$OUF_AUTH_PKG_ROOT" \
-    --source-commit d27bf59f72470828c961d1df25d7588878b477ca \
+    --source-commit 6697029e3efa03f9090bd7be13aab86784749731 \
     --hook-source-sha256 a4ca047fc76dda6378e81834cac421d5d829b55d63ac62dde29a3178245aaabc
 done

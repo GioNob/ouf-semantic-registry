@@ -2,7 +2,7 @@
 
 ## Aggiornamento corrente — §26 PASS; verificatore sorgente v5, authority target non concessa
 
-Gateway `d27bf59f72470828c961d1df25d7588878b477ca`, 63 test pertinenti e CI 38/38 PASS. Verificatore scoped/detached e package v5 completati; §27 privato NON ESEGUITO, nessuna key/policy/producer o runtime installati. [Confini della verifica](../installation/SEMANTIC_DEPLOYMENT_AUTHENTICATION.md).
+Gateway `6697029e3efa03f9090bd7be13aab86784749731`, 64 test pertinenti e CI 38/38 PASS. Verificatore scoped/detached e package v5 completati; §27 privato NON ESEGUITO, nessuna key/policy/producer o runtime installati. [Confini della verifica](../installation/SEMANTIC_DEPLOYMENT_AUTHENTICATION.md).
 
 Ricerca esterna governata da Semantic/Registry/provider adapter tramite Gateway southbound. Chatbot richiede capability tipizzate e propone; THS/owner decidono adozione/pubblicazione. Trigger gap o esplicita richiesta autorizzata; SPARQL se disponibile/configurato, nessuna query libera dall'Agent. Default modificabile `schema.gov.it` è decisione utente. [Riesame PET e collegamento allo sprint](../sprints/OUF_FILE_TO_UDP_PROVIDER_DEPENDENCY_2026-10-04.md).
 
