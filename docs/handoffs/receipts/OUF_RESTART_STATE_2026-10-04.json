@@ -300,7 +300,14 @@
     "separatePrivateKeyFilesReadProposed": 0,
     "localTestsPassed": 7,
     "acceptanceGranted": false,
-    "startAuthorized": false
+    "startAuthorized": false,
+    "executedCommit": null,
+    "preparedCommit": "4e69bcf2a66abf75f0ec18db11c339293891f630",
+    "ciDedicatedRun": 37226268082,
+    "ciDedicatedJob": 111506443576,
+    "ciDedicatedConclusion": "success",
+    "testsPassed": 18,
+    "scopeGranted": false
   },
   "nextStatus": "PRIVATE_CONFIGURATION_READ_SCOPE_REQUIRED_AFTER_CI"
 }
