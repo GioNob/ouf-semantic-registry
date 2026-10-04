@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# §26 NON ESEGUITO: read-only public signature backend inventory.
+# §26 ESEGUITO/PASS 2026-10-04; historical command, no automatic replay.
+# Source root: /etc/ouf/deploy-snapshots/semantic-deployment-trust-backend-inventory-20261004-080455
 set -euo pipefail
 OUF_TRUST_TMP=$(mktemp -d)
 trap 'rm -rf -- "$OUF_TRUST_TMP"' EXIT

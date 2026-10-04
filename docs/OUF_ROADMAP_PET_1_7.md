@@ -1,6 +1,18 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
-## Checkpoint corrente — §25 ESEGUITO/PASS; §26 NON ESEGUITO, inventario read-only
+## Checkpoint corrente — §26 ESEGUITO/PASS; autenticazione deployment in lavorazione
+
+**Ultimo esito VPS, 4 ottobre 2026:** `/etc/ouf/deploy-snapshots/semantic-deployment-trust-backend-inventory-20261004-080455`. Custody dei 18 sorgenti v4 e stabilità fra letture PASS; receipt hash `1b5a340a11fa3a157fe83be7bddc2a4af5dd755eb78a003b7a3640e117647d0a`. OpenSSL `3.5.7`, hash `f4aa15f2822f670af7b5c1043d7aa6ebbbc64229fd2fae382edfc6a4524749c1`: firma pubblica valida accettata, messaggio e firma alterati respinti. Evidenza operatore, non accesso indipendente al VPS.
+
+Authority/atomicSnapshot/runtimeRegistration/start restano false; chiavi generate/lette private, firme emesse, chiamate IAM/DNS/provider zero. §26 è storico: nessun replay richiesto. §25 e gli snapshot precedenti restano immutabili.
+
+**Collegamento all'obiettivo:** file → MCP/chatbot → ricerca semantica interna → eventuale discovery esterna se il match interno è insufficiente → mapping Onboarding e THS → bundle ACTIVE → Ingestion/handoff → UDP e serving autorizzato. Il ramo esterno era disabled/non connesso: il percorso di deploy corrente chiude i suoi gate di rete/shared faces, guard/lease e admission. Il provider esterno non è un prerequisito universale del percorso interno o di ogni ingestion. Nessun gate end-to-end chiuso dalla disponibilità OpenSSL.
+
+**Prossimo lavoro indipendente:** verificatore bounded di firme detached per intent, attestation e approval della singola installazione; niente emissione firme, chiavi di produzione, installazione, avvio o nuova authority. Esito CI/codice sarà registrato al successivo checkpoint. Il mandato e le trust key reali devono essere conferiti/provisionati esplicitamente; il broker sintetico CI resta escluso.
+
+**Criterio di uscita dal ramo:** evidenze autentiche per la singola installazione; creazione reale/OCI/rootfs e namespace accettati; guard/lease coordinati; runtime e startup autorizzati esplicitamente; provider southbound con OIDC/purpose/TLS/revoca e least privilege verificati sul target. Poi ricongiungere il ramo allo sprint MCP/mapping, riusando il file e le prove esistenti. Le automazioni coprono queste configurazioni necessarie, senza introdurre nuovi moduli o ampliare il deployment generale. Reboot/atomic snapshot e gate ereditati restano tracciati; non inventare scorciatoie per il lab.
+
+## Checkpoint precedente — §25 ESEGUITO/PASS; §26 allora NON ESEGUITO, inventario read-only
 
 **Vincolo permanente:** un Ente, una installazione OUF indipendente; servizi distribuiti o co-localizzati anche nella stessa rete/sottorete. Nessuna authority centrale multitenant.
 
