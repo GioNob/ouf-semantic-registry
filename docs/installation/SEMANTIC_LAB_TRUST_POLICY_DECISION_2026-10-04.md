@@ -1,6 +1,6 @@
 # Proposta di policy locale di verifica per OUF lab
 
-**STATO: PROPOSTA, NON CONFERITA, NON MATERIALIZZATA.** Il conferimento35 riguardava soltanto le due chiavi private/bozza inattiva ed è completato al36. Questa è una nuova decisione circoscritta; non richiedere di nuovo la generazione delle chiavi.
+**STATO: PREPARAZIONE PRIVATA AUTORIZZATA, NON MATERIALIZZATA SUL VPS.** Utente autorizzo4ottobre18:58:29, [scope registrato](../handoffs/receipts/SEMANTIC_PRIVATE_TRUST_POLICY_AUTHORIZED_2026-10-04_OPERATOR.json), [implementazione/§38](SEMANTIC_PRIVATE_TRUST_POLICY_PREPARATION.md). Il conferimento35 riguardava soltanto le due chiavi private/bozza inattiva ed è completato al36. Questa è una nuova decisione circoscritta; non richiedere di nuovo la generazione delle chiavi.
 
 ## Binding reviewable
 
@@ -13,7 +13,7 @@ Installation `ouf-lab-netcup-01`, entity `ouf-lab`. Custody36 `/etc/ouf/deploy-s
 
 Proposta: preparare in **nuovo snapshot privato** una policy con schema operativo `ouf.semantic-deployment-trust-policy.v1`, installationRef/entityRef esatti e due grant con keyRef/issuerRef/roles/publicKey/notBefore/expiresAt/state ACTIVE. ACTIVE indica chiavi ammesse per verificare i ruoli nella policy proposta, non approvazione di un deployment o start. Tutte le publicKey/date derivano dal draft verificato, non da nomi host, IAM, chiavi TLS o placeholder. Il parser operativo deve accettare la policy e rifiutare grant con ruolo/binding/validità alterati.
 
-## Scope del conferimento richiesto
+## Scope del conferimento ricevuto
 
 Autorizzare **solo preparazione privata della policy dei tre ruoli sopra**, verificata con il contratto vigente e collegata per hash alla custody36 e al dossier34. Questo conferimento rende autorizzata la selezione delle chiavi/ruoli nella policy da preparare. Non autorizza emissione di firme operative o mandati, installation di producer/broker, collegamento della policy a processi/servizi/runtime, creazione/migrazione di container, modifica delle regole/unit, runtime registration, start, provider call o reboot. La policy privata è un artefatto di provisioning esplicito, non si attiva automaticamente in un consumer. Il grant finale non equivale a mandato finale per un candidato.
 
@@ -25,6 +25,6 @@ Prima del comando VPS: implementare builder/verify read-only delle chiavi, sourc
 
 Politica per-Ente autonoma, non multitenant centrale; chiave attestor sul nodo runtime anche per microservizi distribuiti. Su unico host ruoli e keypair sono separati, non si dichiara protezione da root amministratore. Ingestion interna MCP/THS/UDP resta aperta e distinta dai gate provider; ricerca esterna Semantic/Registry via Gateway, schema.gov.it default parametrizzato.
 
-## Decisione
+## Decisione ricevuta; istruzione storica
 
-Approvare o negare il solo scope della policy privata dei tre ruoli. Nessun comando VPS fino a conferimento e implementazione/test/CI. La conferma della custodia35 non viene estesa implicitamente a questa policy.
+Approvare o negare il solo scope della policy privata dei tre ruoli. Nessun comando VPS fino a conferimento e implementazione/test/CI. La custodia35 non è stata estesa implicitamente: autorizzazione distinta37 ricevuta e registrata.

@@ -1,0 +1,45 @@
+{
+  "schema": "ouf.semantic-private-role-policy-authorization-operator.v1",
+  "evidenceType": "user-conversation-authorization",
+  "message": "autorizzo",
+  "receivedAt": "2026-10-04T18:58:29+02:00",
+  "approvedProposalCommit": "13430c852d24cbec4760576141614af406f13765",
+  "approvedProposalPath": "docs/installation/SEMANTIC_LAB_TRUST_POLICY_DECISION_2026-10-04.md",
+  "installationRef": "ouf-lab-netcup-01",
+  "entityRef": "ouf-lab",
+  "privateRoleVerificationPolicyPreparationAuthorized": true,
+  "grants": [
+    {
+      "issuerRef": "ouf-lab-infrastructure-installer",
+      "keyRef": "ouf-lab-installer-ed25519-1",
+      "roles": [
+        "DEPLOYMENT_INTENT",
+        "FINAL_DEPLOYMENT_APPROVAL"
+      ]
+    },
+    {
+      "issuerRef": "ouf-lab-node-attestor",
+      "keyRef": "ouf-lab-attestor-ed25519-1",
+      "roles": [
+        "CREATION_ATTESTATION"
+      ]
+    }
+  ],
+  "grantStateInPreparedArtifact": "ACTIVE",
+  "originalDraftValidityPreserved": true,
+  "custodyRoot": "/etc/ouf/deploy-snapshots/semantic-authority-provisioning-20261004-164654",
+  "custodyReceiptHash": "a134c4c8e8487860e6a8ed3a672520935a5de753d02507c4005a0475570b2d49",
+  "draftHash": "a9e5bdbef01c391c216e23e7b99c9e9ed3d6e3a92da56e8e1e9d7b2ca91b040c",
+  "keyGenerationAuthorizedByThisDecision": false,
+  "roleSigningAuthorized": false,
+  "deploymentSignaturesAuthorized": false,
+  "mandatesAuthorized": false,
+  "policyConsumerLinkAuthorized": false,
+  "producerInstallationAuthorized": false,
+  "runtimeRegistrationAuthorized": false,
+  "startAuthorized": false,
+  "rebootAuthorized": false,
+  "mergeAuthorized": false,
+  "vpsPolicyPreparationExecuted": false,
+  "note": "Preparation of a private operative-format verification policy only; no linking, issuer role signing or candidate acceptance/start mandate."
+}

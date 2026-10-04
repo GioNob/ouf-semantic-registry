@@ -1,6 +1,10 @@
 # Provisioning delle authority e dossier target per installazione indipendente
 
-## Checkpoint aggiornato — custodia36 PASS, policy37 NON CONFERITA
+## Stato corrente —37 preparazione privata conferita,38 NON ESEGUITO
+
+Utente autorizzo per sola policy privata di verifica sui keypair esistenti. [Procedura](SEMANTIC_PRIVATE_TRUST_POLICY_PREPARATION.md), [wrapper38](../handoffs/commands/OUF_PREPARE_TRUST_POLICY_2026-10-04.sh), SHA256 `1b3927170ba06722402050a25eb12d50bf3d5886ea443b5a1e5866770a573857`, Gateway `3bdedad3108112ee4c36e7cb8387aaf60912e97c` CI38/38SUCCESS/201unit+2native+2targetnative PASS. Grant ACTIVE nel file, consumerLinked/installed/roleSigning/start=false. Originali36/34/v8 preservati; noPEM read/keygen/signing. Date90giorni non rinnovate. Dopo output38 aggiornare tutti i checkpoint. Nessun altro conferimento per questa preparazione richiesto; emissione/consumer/runtime/start ancora esclusi.
+
+## Checkpoint storico —36 PASS,37 allora pendente
 
 Root `/etc/ouf/deploy-snapshots/semantic-authority-provisioning-20261004-164654`, draftHash `a9e5bdbef01c391c216e23e7b99c9e9ed3d6e3a92da56e8e1e9d7b2ca91b040c`, receiptHash `a134c4c8e8487860e6a8ed3a672520935a5de753d02507c4005a0475570b2d49`. [Evidenza operatore](../handoffs/receipts/SEMANTIC_AUTHORITY_KEY_CUSTODY_PASS_2026-10-04_OPERATOR.json), plan/apply/verify PASS,2chiavi presenti, verify keysGenerated/selfTestSignaturesIssued=0. Nessun ruolo firma/policy/start attivo. Non ripetere36 o rigenerare; la fonte dei byte eseguiti e hash è la receipt operatore. [Prossimo conferimento distinto](SEMANTIC_LAB_TRUST_POLICY_DECISION_2026-10-04.md): preparazione privata policy di verifica due grant/tre ruoli, senza firme/mandati o collegamento a consumer/runtime. Il35 è soddisfatto e non deve essere richiesto di nuovo.
 
