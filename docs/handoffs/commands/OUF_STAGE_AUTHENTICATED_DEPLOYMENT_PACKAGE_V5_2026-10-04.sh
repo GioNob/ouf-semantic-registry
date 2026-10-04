@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# §27 NON ESEGUITO: new private sources only. No policy/key/runtime installation.
+# §27 ESEGUITO/PASS 2026-10-04; historical command, no automatic replay.
+# Root: /etc/ouf/deploy-snapshots/semantic-authenticated-deployment-package-20261004-083518
 set -euo pipefail
 OUF_AUTH_PKG_TMP=$(mktemp -d)
 trap 'rm -rf -- "$OUF_AUTH_PKG_TMP"' EXIT

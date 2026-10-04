@@ -1,6 +1,18 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
-## Checkpoint corrente — §26 ESEGUITO/PASS; §27 sorgenti v5 NON ESEGUITO
+## Checkpoint corrente — §27 ESEGUITO/PASS; collegamento verifica → consumo pendente
+
+**Ultimo esito VPS, 4 ottobre 2026:** `/etc/ouf/deploy-snapshots/semantic-authenticated-deployment-package-20261004-083518`; checksum comando +20 sorgenti OK, plan/apply/verify PASS concordanti, Python3.13.5, source `6697029e3efa03f9090bd7be13aab86784749731`, schema `ouf.semantic-authenticated-deployment-source-package.v5`. Evidenza allegata dall'operatore, non accesso indipendente al VPS.
+
+signatureVerifierInstalled/trustPolicyProvisioned/externalProducerInstalled/runtimeAdapterInstalled/admissionPreparerInstalled/runtimeRegistered/startAuthorized=false; keysGenerated/signaturesIssued/providerCalls=0; regole/unità/container invariati. Questo PASS sigilla sorgenti, non verifica un deployment reale e non conferisce authority. §27 e i vecchi snapshot sono immutabili; nessun replay richiesto.
+
+**Prossimo lavoro repository:** collegare firme/custody e revoca delle tre evidenze alla reauthorization subito prima del consumo, sotto common guard/lease lock; testare diniego prima del claim e revoca dopo STARTING senza release del processo o replay. Il driver v4 attuale ricontrolla il solo approval binding hash/tempo; non dichiararlo già collegato al nuovo verificatore.
+
+**Gate reali aperti:** broker/issuer/attestor produttivi, mandate/public trust keys per-Ente provisionati esplicitamente, full immagine/OCI/rootfs acceptance, closure source-sealed di integrazione e acceptance target. Nessun signing, key generation, runtime registration o startup implicito.
+
+**Percorso conservato:** Semantic/Registry esegue discovery tramite adapter e Gateway southbound; chatbot/MCP invoca capability tipizzate e propone, THS governa decisioni HUMAN. Gap interno o richiesta esplicita autorizzata; default provider modificabile schema.gov.it. Ramo provider non è prerequisito universale di ogni ingestion. [Traccia PET](OUF_FILE_TO_UDP_PROVIDER_DEPENDENCY_2026-10-04.md).
+
+## Checkpoint precedente — §26 ESEGUITO/PASS; §27 allora NON ESEGUITO
 
 §26 attestato dall'operatore in `/etc/ouf/deploy-snapshots/semantic-deployment-trust-backend-inventory-20261004-080455`: source custody 18 e stableAcrossReads PASS, receipt hash `1b5a340a11fa3a157fe83be7bddc2a4af5dd755eb78a003b7a3640e117647d0a`; OpenSSL 3.5.7, hash `f4aa15f2822f670af7b5c1043d7aa6ebbbc64229fd2fae382edfc6a4524749c1`, firma valida e due negative PASS. Authority/atomicità/runtime/start restano false; key generation/private-key reads/signature issuance/provider/DNS/IAM calls zero. Receipt operatore conservata; nessun replay §25/§26.
 

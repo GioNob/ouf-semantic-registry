@@ -1,0 +1,76 @@
+{
+  "schema": "ouf.semantic-authenticated-deployment-package.operator-attestation.v1",
+  "evidenceSource": "Attached operator VPS output: Testo incollato(1).txt",
+  "evidenceSHA256": "7523101933448cf32a09e2cd325962cc5adf75f786f7a854a19d5bedf4070b07",
+  "executionDateUTC": "2026-10-04",
+  "packageRoot": "/etc/ouf/deploy-snapshots/semantic-authenticated-deployment-package-20261004-083518",
+  "checksumResults": {
+    "command": "OK",
+    "sources": 20,
+    "allSources": "OK"
+  },
+  "modes": [
+    "plan",
+    "apply",
+    "verify"
+  ],
+  "result": "PASS",
+  "receipt": {
+    "admissionPreparerInstalled": false,
+    "containersChanged": false,
+    "externalProducerInstalled": false,
+    "keysGenerated": 0,
+    "noSecretsPrinted": true,
+    "notReleaseAcceptance": true,
+    "providerCalls": 0,
+    "pythonVersion": "3.13.5",
+    "rulesChanged": false,
+    "runtimeAdapterInstalled": false,
+    "runtimeRegistered": false,
+    "schema": "ouf.semantic-authenticated-deployment-source-package.v5",
+    "signatureVerifierInstalled": false,
+    "signaturesIssued": 0,
+    "sourceCommit": "6697029e3efa03f9090bd7be13aab86784749731",
+    "sourceHashes": {
+      "scripts/semantic_provider_admission_preparer.py": "e8f6670029e6e3bf7a74e79dadd710b5a62bf31a23abd4c2785a71f36245a03c",
+      "scripts/semantic_provider_docker_runtime.py": "c05c0216c0cec774f13ab27b193ab92599dd191314a157dc76b26ad978bc215c",
+      "scripts/semantic_provider_preexec_hook.py": "a4ca047fc76dda6378e81834cac421d5d829b55d63ac62dde29a3178245aaabc",
+      "scripts/stage_semantic_admission_package.py": "84f6b1fec995b9675284253321930efee0056e4546168058bae6a3667a2ff7d7",
+      "scripts/stage_semantic_authenticated_deployment_package.py": "2be2d851db0ae5f5189c0b4c5aed27a74a7e91a58f080e5ef16d1a0bba181d9a",
+      "scripts/stage_semantic_deployment_package.py": "e2ee1c81de0cf9004538adc0393833453d826a9e1a2533fa9baba95aab50e8b0",
+      "scripts/stage_semantic_preexec_package.py": "3fb04519de05131087a5bd12095b42f97026e7c5826d5f8f3845608404008f95",
+      "tools/materialize_semantic_shared_faces.py": "b97f31cc17c22abbb7a021c274be73816f649196762f9c6dfcc54a58d8382e8a",
+      "tools/materialize_southbound_kernel.py": "98e3004300226fecd509a46c009585df14021927f20d4e5c82d8ff7a8a8180de",
+      "tools/materialize_southbound_lease_refresh.py": "1c0d7f1243752fe216ef62eefbc2e3253b8f2503b518fafe11277e4d7721a084",
+      "tools/semantic_provider_deployment_admission.py": "4bd0051fad23acd91fc42eb9b6cd2f2dac6e8d9d960fefd391add261a3646499",
+      "tools/semantic_provider_deployment_authentication.py": "f81bdead000bde095ddcd7ab3841edf765513deb8512e20115e0054d08dcff53",
+      "tools/semantic_provider_deployment_consumption.py": "88b848be497607a71a9fc8def9164119d8bcf74d095d906fd56e6f91b7cb642a",
+      "tools/semantic_provider_deployment_protocol.py": "87e4eed4485cee0736bb7031827ee773efde6f4fb97d6289c885fc5cf2049592",
+      "tools/semantic_provider_dns.py": "c466172113d1ffe850bf2c69762113b55fbc65d9091c96dca98a74548fddf930",
+      "tools/semantic_provider_lease_coordination.py": "25c6df90d33e39fe83321df6ab9e5c38d4c33bcd290ad57c7a85c03b1bb8ba78",
+      "tools/semantic_provider_lease_nft.py": "7a5f2b21c096228a3e4d298674e380f667c3004dd6d8ec19934a2302844c0f93",
+      "tools/semantic_provider_lease_owner.py": "92736eebeccf344e565186bce94d29c65ffe1d50638d57eae81486e7b26e884d",
+      "tools/semantic_provider_preexec.py": "1ade8d45a7387bd3b22464a34401ab6b4358f76e5c025ac84d80951542eb1fad",
+      "tools/semantic_provider_preexec_native.py": "ef0b98c96879933480a26418edc2b971b21a116509ac87cbc39e3b2062e7a528"
+    },
+    "startAuthorized": false,
+    "trustPolicyProvisioned": false,
+    "trustedToolsAvailable": {
+      "busybox": true,
+      "ip": true,
+      "mount": true,
+      "nft": true,
+      "nsenter": true,
+      "python": true,
+      "runc": true,
+      "umount": true,
+      "unshare": true
+    },
+    "unitsChanged": false
+  },
+  "limitations": [
+    "Operator evidence; no independent VPS access.",
+    "No on-disk receipt digest supplied.",
+    "Private source custody, not production verification or release acceptance."
+  ]
+}

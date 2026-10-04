@@ -2,7 +2,7 @@
 
 ## Stato
 
-§26 ESEGUITO/PASS secondo l'output operatore: OpenSSL 3.5.7 target, vettore pubblico positivo e due negativi PASS, custody 18 sorgenti v4 PASS. Il nuovo verificatore non è installato sul VPS e non fa parte del package v4 immutabile. Il §27 porta soltanto 20 sorgenti in un nuovo package privato v5; **NON ESEGUITO**. Nessuna key/policy, firma, authority o startup di produzione è stata creata.
+§26 ESEGUITO/PASS secondo l'output operatore: OpenSSL 3.5.7 target, vettore pubblico positivo e due negativi PASS, custody 18 sorgenti v4 PASS. Il nuovo verificatore non è installato sul VPS e non fa parte del package v4 immutabile. Il §27 porta soltanto 20 sorgenti in un nuovo package privato v5; **ESEGUITO/PASS il 4 ottobre 2026** in `/etc/ouf/deploy-snapshots/semantic-authenticated-deployment-package-20261004-083518`, 20 checksum OK e plan/apply/verify PASS. Nessuna key/policy, firma, authority o startup di produzione è stata creata.
 
 Gateway sorgenti `6697029e3efa03f9090bd7be13aab86784749731`: `tools/semantic_provider_deployment_authentication.py`, `scripts/stage_semantic_authenticated_deployment_package.py`, due nuovi moduli test e workflow pertinente. I sorgenti legacy, i loro schemi/closure e i vecchi snapshot restano invariati. [Comando §27](../handoffs/commands/OUF_STAGE_AUTHENTICATED_DEPLOYMENT_PACKAGE_V5_2026-10-04.sh).
 
@@ -32,8 +32,8 @@ CI sull'esatto head: 38/38 completed/success, con log push/PR verificati (64 uni
 
 Una verifica positiva autentica i bytes rispetto a una key/mandato provisionati: non prova la veridicità di full creation acceptance, non dà authority applicativa IAM, non supera i controlli live guard/lease e non autorizza avvio. Restano da implementare/provisionare broker, issuer e attestor reali, acceptance completa dell'immagine/OCI/rootfs, source-sealing delle nuove closure e late verification nel driver/common lock. Il callback reale è integrato con il protocollo nei test; **adapter/preparer/driver di produzione non sono stati dichiarati migrati a questo verificatore**.
 
-## Next step VPS
+## Registro §27 e prossimo lavoro
 
 §27 solo nuovo package `ouf.semantic-authenticated-deployment-source-package.v5`; compile/hash/receipt. signatureVerifierInstalled/trustPolicyProvisioned/externalProducerInstalled/runtimeRegistered/startAuthorized=false, keysGenerated/signaturesIssued/providerCalls=0, regole/unit/container invariati. Le source v4 originali vengono copiate, non cambiate. PASS dello staging non è autenticazione del deployment reale.
 
-Dopo il §27, implementare il broker produttivo e il collegamento all'attestazione reale; mandato/key provisioning richiedono binding espliciti della singola installazione. Nessun merge, reset/replay dei journal o registrazione/start impliciti. [Collegamento verificato alla filiera MCP → UDP e PET](../sprints/OUF_FILE_TO_UDP_PROVIDER_DEPENDENCY_2026-10-04.md).
+§27 completato; non ripetere. Ora implementare il broker produttivo e il collegamento all'attestazione reale; mandato/key provisioning richiedono binding espliciti della singola installazione. Nessun merge, reset/replay dei journal o registrazione/start impliciti. [Collegamento verificato alla filiera MCP → UDP e PET](../sprints/OUF_FILE_TO_UDP_PROVIDER_DEPENDENCY_2026-10-04.md).
