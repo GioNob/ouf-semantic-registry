@@ -1,6 +1,20 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
-## Checkpoint corrente — broker operativo collegato ai producer e al driver
+## Checkpoint corrente — §29 pronto/NON ESEGUITO; package broker v7 privato
+
+Il broker operativo è collegato e verificato nel commit `86ceb70591762319b3003c4163990451a5c6cca1` (CI38/38 SUCCESS). Nuovo Gateway `1717967947b1fa5b0b3dd11b2c42e7a7f3bdf4fb`: stager source-only v7 con manifest esatto pinned,20 sorgenti della chiusura operativa, zero esecuzione dei corpi hook/broker/producer. Nuovo codice stager/test e workflow; broker operativo, adapter, preparer e driver restano quelli già collegati.
+
+**§29 NON ESEGUITO:** prossimo intervento operatore è soltanto staging privato in nuovo root /etc/ouf/deploy-snapshots/semantic-local-broker-package-TIMESTAMP. [Comando immutabile](../handoffs/commands/OUF_STAGE_LOCAL_BROKER_PACKAGE_V7_2026-10-04.sh), wrapper SHA256 `7f617411b491e93d1ae11846390014474d5f54eb73c648afba529602c2563296`; manifest SHA256 `901570bfd764bd4c34a9eea0e4e3a24cd59584176b21e9441ec96a12bd0063d1`; sorgenti pinned `1717967947b1fa5b0b3dd11b2c42e7a7f3bdf4fb`. Non eseguire il comando storico §28 sul vecchio root. [Guida e valori attesi](../installation/SEMANTIC_LOCAL_BROKER_PACKAGE_V7.md).
+
+Plan non scrive; apply scrive soltanto receipt privata O_EXCL/0600/fsync; verify confronta receipt e sorgenti e non ripara drift. Manifest esatto20 file, hash verificati prima di compilare, nessun import/exec delle sorgenti; letture limitate e fstat/readback. Non vengono eseguiti broker, producer, runc, Docker, nft, OpenSSL, IAM o DNS. Capability tool è solo metadata filesystem.
+
+**Verifiche:** sette nuovi test dello stager; locale120 eseguiti,117 PASS e3 Docker native saltati. Wrapper bash -n PASS, tutti20 contenuti/hash confrontati con il commit GitHub. [CI Gateway](https://github.com/GioNob/ouf-api-gateway/commit/1717967947b1fa5b0b3dd11b2c42e7a7f3bdf4fb/checks): 38/38 check SUCCESS sull'esatto commit, dopo il singolo rerun mirato. Una prima prova Docker legacy è fallita in docker create senza dettagli diagnostici, mentre la catena autenticata con broker operativo era PASS; un solo rerun mirato del job, senza attribuire causa non dimostrata. 114 test pertinenti PASS,2 native preparer PASS,6 Docker test PASS; il rerun Docker è concluso con SUCCESS..
+
+**Ultimo VPS confermato:** §28 ESEGUITO/PASS, root /etc/ouf/deploy-snapshots/semantic-authenticated-runtime-package-20261004-094455, source f1996cca60e66f1807b88f126793a8edc1aed15f, ricevuta operatore2a8a0bc82e93bd09a6f65e7645381e1951b6bff1. V6 immutabile; nuovo v7 non lo modifica né lo riapplica. Root/receipt §29 saranno noti solo dopo output operatore.
+
+**Gate successivo aperto:** producer installer/attestor reali, mandato infrastrutturale, policy pubblica e accettazione completa dell'immagine; profilo broker/template/journal STAGED della singola installazione. Package source-only non li provisiona e non costituisce startup readiness. Nessun avvio, registration, key generation/read, firma, provider call, replay, reboot o merge implicito. Ogni Ente ha piattaforma indipendente; conservata la responsabilità PET Semantic/Registry→Gateway per discovery esterna e THS per adozione/attivazione. Il ciclo file→ingestion→UDP resta distinto e aperto.
+
+## Checkpoint storico — broker operativo collegato ai producer e al driver
 
 Gateway `86ceb70591762319b3003c4163990451a5c6cca1`: `scripts/semantic_provider_deployment_broker.py` compone le quattro fasi dell'adapter v4 con `LocalEvidenceProducer`, `ProducerEmission`, Consumption, preparer v3 e driver v5. Il collegamento è implementato; il broker sintetico precedente non è più necessario per comporre il percorso autenticato. Guida completa: [SEMANTIC_LOCAL_DEPLOYMENT_BROKER.md](../installation/SEMANTIC_LOCAL_DEPLOYMENT_BROKER.md).
 
