@@ -1,3 +1,6 @@
+# HISTORICAL: handoff §23 EXECUTED/PASS plan/apply/verify on 2026-10-04.
+# Recorded package root: /etc/ouf/deploy-snapshots/semantic-admission-package-20261004-055825
+# Private source staging only. Do not replay automatically.
 (
 set -euo pipefail
 OUF_PREEXEC_PKG_TMP=$(mktemp -d)
