@@ -1,6 +1,22 @@
 # OUF — Manuale di installazione e bootstrap
 
-## Checkpoint corrente — §29 pronto/NON ESEGUITO; package broker v7 privato
+## Checkpoint corrente — §29 ESEGUITO/PASS; sorgenti broker v7 custodite sul VPS
+
+Ricevuta operatore del2026-10-04: `/etc/ouf/deploy-snapshots/semantic-local-broker-package-20261004-110947`, schema `ouf.semantic-local-broker-source-package.v7`, source `04d775e892cd42e42d34de02959b9c7ba6483f3b`. Checksum wrapper +manifest +20 sorgenti OK; plan/apply/verify PASS, tre receipt JSON concordanti; Python3.13.5. Tutti20 hash confrontati con il manifest del comando immutabile `bcae7ff130846a28e98579556790efdeee495d10`. Wrapper SHA256 `430694376a5b745a35ad2efaf46c2ceede5df9542f62edceacf95c1d47680072`; manifest SHA256 `e258b94090319124cbdf9520fa5b179e772836f3d6477e3824809741e08a5035`.
+
+[Evidenza strutturata dell'operatore](../handoffs/receipts/SEMANTIC_LOCAL_BROKER_PACKAGE_V7_2026-10-04_OPERATOR.json), SHA256 dell'allegato terminale `40809a684b7543e7531b35f8be8f3d4b6260e907690999afe2e7f89971faa8bd`. Fonte: Testo incollato(3).txt. Questa è evidenza fornita dall'operatore, non ispezione indipendente del VPS; nessun digest della receipt target è stato fornito e non viene inventato. trustedToolsAvailable=true per tutti10 tool è metadata filesystem, non prova di integrazione runtime o authority.
+
+Confermati false: brokerInstalled, runtimeAdapterInstalled, admissionPreparerInstalled, externalProducerInstalled, signatureVerifierInstalled, trustPolicyProvisioned, runtimeRegistered, rulesChanged, unitsChanged, containersChanged, startAuthorized. Confermati0: sourceBodiesExecuted, keysGenerated, privateKeysRead, signaturesIssued, providerCalls. sourceCustodyVerified/noSecretsPrinted/notReleaseAcceptance=true. sourceBodiesExecuted riguarda i componenti operativi, escluso lo stager. Lo staging non ha eseguito il broker o gli issuer/attestor reali.
+
+**§29 non va rieseguito.** [Comando storico aggiornato a ESEGUITO/PASS](../handoffs/commands/OUF_STAGE_LOCAL_BROKER_PACKAGE_V7_2026-10-04.sh); il commit immutabile offerto all'operatore conserva il testo precedente NON ESEGUITO. Il package v6 §28 resta immutabile, root /etc/ouf/deploy-snapshots/semantic-authenticated-runtime-package-20261004-094455, source f1996cca60e66f1807b88f126793a8edc1aed15f.
+
+**Validazione software già conclusa:** [Gateway04d775e8](https://github.com/GioNob/ouf-api-gateway/commit/04d775e892cd42e42d34de02959b9c7ba6483f3b/checks) CI38/38 SUCCESS,115 test pertinenti,2 native preparer,6 Docker PASS; locale121 eseguiti,118 PASS e3 Docker saltati. Otto test dello stager, verifica esatta dei byte receipt per respingere false/0, wrapper integrale offline con root/curl/sudo shim e stager reale. [Guida del package](SEMANTIC_LOCAL_BROKER_PACKAGE_V7.md).
+
+**Prossimo gate:** predisposizione esplicita dei producer installer/attestor reali e del mandato/trust policy pubblica dell'Ente; accettazione completa dell'immagine reale; profilo broker/template e journal STAGED legati ai dati del VPS. Le chiavi e il verifier Busybox della CI non sono authority target. Senza queste evidenze non si invoca il percorso operativo e non si considera il target startup-ready. Nessun nuovo comando di attivazione è autorizzato da questo receipt.
+
+Restano aperti gli altri gate di infrastruttura/namespace/revoca/lease/reboot e il ciclo file→mapping→ingestion→UDP; nessun PASS viene trasferito dal package alla release. Ogni Ente ha installazione indipendente; co-locazione o reti differenti non conferiscono permessi impliciti. Semantic/Registry mantiene la discovery esterna attraverso Gateway, default schema.gov.it configurabile, e THS governa adozione/attivazione secondo PET. Nessun merge, start, registration, replay o reboot implicito.
+
+## Checkpoint storico — §29 pronto/NON ESEGUITO; package broker v7 privato
 
 Il broker operativo è collegato e verificato nel commit `86ceb70591762319b3003c4163990451a5c6cca1` (CI38/38 SUCCESS). Nuovo Gateway `04d775e892cd42e42d34de02959b9c7ba6483f3b`: stager source-only v7 con manifest esatto pinned,20 sorgenti della chiusura operativa, zero esecuzione dei corpi hook/broker/producer. Nuovo codice stager/test e workflow; broker operativo, adapter, preparer e driver restano quelli già collegati.
 

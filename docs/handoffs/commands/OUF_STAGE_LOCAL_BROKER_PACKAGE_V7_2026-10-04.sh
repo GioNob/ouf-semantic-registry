@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# §29 NON ESEGUITO — package broker v7 privato, solo sorgenti; nessun install/start/replay.
+# §29 ESEGUITO/PASS 2026-10-04 — comando storico; non ripetere.
+# Root: /etc/ouf/deploy-snapshots/semantic-local-broker-package-20261004-110947
+# Hash del wrapper eseguito: 430694376a5b745a35ad2efaf46c2ceede5df9542f62edceacf95c1d47680072
+# Solo sorgenti private; nessun install/start/replay.
 set -euo pipefail
 OUF_BROKER_PKG_TMP=$(mktemp -d)
 trap 'rm -rf -- "$OUF_BROKER_PKG_TMP"' EXIT
