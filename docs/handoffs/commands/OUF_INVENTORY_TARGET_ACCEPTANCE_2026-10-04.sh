@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# STATO: NON ESEGUITO. §34 wrapper canonico completo compatibile Docker29: diagnose poi inventario.
+# STATO: ESEGUITO/PASS. §34 diagnostica e inventario privato completati; NON RIPETERE.
+# Root20261004-151023/prepared. Byte eseguiti commitf4eb446, SHA2561fa92459.
 # §32 originale e §33 diagnostico restano storico BLOCKED; nessun overwrite/replay di staging.
 (
 set -euo pipefail

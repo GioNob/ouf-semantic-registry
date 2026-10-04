@@ -1,6 +1,12 @@
 # Provisioning delle authority e dossier target per installazione indipendente
 
-## Stato corrente — §33 BLOCKED; §34 corretto NON ESEGUITO
+## Stato corrente — §34 ESEGUITO/PASS; proposta di authority pronta
+
+Diagnostica e inventario PASS, `/etc/ouf/deploy-snapshots/semantic-target-acceptance-inventory-20261004-151023/prepared`,2 candidati mai avviati e8 mount. DossierHash `a37f22635035ab8543a4654def5cd6a6f4fe45fd1affc0ff10ccc3c19f03085c`, pianoHash `31492d13db05b46252215bb4bde815712bd55a1e245aff25408350328fcb7093`, packageReceiptHash `f06c4b6ea2a7c05e008db3e615e35f475d44824b2073ff2d5f451c55dbce2850`. Nessuna accettazione completa/authority/start, nessuna chiave o firma. [Receipt operatore](../handoffs/receipts/SEMANTIC_TARGET_ACCEPTANCE_PASS_2026-10-04_OPERATOR.json), non ispezione indipendente; hash inventory-receipt non fornito. Non ripetere §34/staging/recovery.
+
+[Proposta concreta di conferimento](SEMANTIC_LAB_AUTHORITY_DECISION_2026-10-04.md): identità per laboratorio e futura generazione privata di2 chiavi Ed25519/bozza non attivata. Il modello per-Ente già approvato non conferisce questa authority. Nessun comando VPS nuovo fino alla decisione e alla verifica del provisioning. No firma deployment, policy ACTIVE, runtime registration o start inclusi. Gatewayd42a8 CI38/38 SUCCESS; wrapper eseguito documentif4eb446 CI13/13 SUCCESS.
+
+## Stato storico — §33 BLOCKED; §34 allora NON ESEGUITO
 
 Diagnostico operatore root20261004-145230: IMAGE_INSPECT / TARGET_ACCEPTANCE_INVENTORY_UNPROVEN. Nessuna receipt PASS o authority target. Gateway `d42a8c563a58ed041bf7b7a2921be975e93becf5` CI38/38 verde,169 unit+2 preparer native+2 target native PASS; nuovo [wrapper completo §34](../handoffs/commands/OUF_INVENTORY_TARGET_ACCEPTANCE_2026-10-04.sh) SHA256 `1fa92459ae358f3811ba234c837a0c3e8cffcde92b575372f5d073ae78f8833d`: diagnosi prima, inventario solo se PASS su nuovo root senza overwrite. §31 PASS preservato; non ripetere staging/recovery/§32/§33.
 
@@ -12,7 +18,7 @@ Fotografia operatore conferma BLOCKED, non la causa né receipt PASS. L’invent
 
 ## Stato e obiettivo
 
-Staging v8 completato sul root121542 tramite recovery §31 ESEGUITO/PASS. Le26 sorgenti restano al commit7ded9df; non ripetere staging o recovery. §32 **NON ESEGUITO** misura i due candidati target realmente presenti e genera una bozza di provisioning locale. Non conferisce authority, genera chiavi/firme, registra runtime o avvia processi. [Comando completo](../handoffs/commands/OUF_INVENTORY_TARGET_ACCEPTANCE_2026-10-04.sh).
+Staging v8 completato sul root121542 tramite recovery §31 ESEGUITO/PASS. Le26 sorgenti restano al commit7ded9df; non ripetere staging o recovery. §32 originale ESEGUITO/BLOCKED; §34 corretto ESEGUITO/PASS misura i due candidati target e genera una bozza di provisioning locale. Non conferisce authority, genera chiavi/firme, registra runtime o avvia processi. [Comando completo](../handoffs/commands/OUF_INVENTORY_TARGET_ACCEPTANCE_2026-10-04.sh).
 
 Ogni Ente ha un'installazione indipendente. Il riferimento entityRef non si deduce dall'host, dal nome dell'installazione o dall'utente Keycloak. La condivisione di host/subnet non conferisce fiducia: l'attestor resta locale al nodo runtime anche quando altri servizi sono su server/reti differenti. Non occorre una authority centrale o un servizio multitenant.
 
@@ -58,9 +64,9 @@ La matrice è un progetto di configurazione, non JSON operativo con default perm
 
 ## Cosa resta da provare
 
-PASS §32 è inventario per costruire un dossier di revisione. Non prova ambiente completo, provenance publisher, contenuto immutabile dei layer o dei volumi, full OCI, namespace/generazione live, rootfs seal, hook OCI, active lease lifecycle, snapshot atomico, reboot o release acceptance. I layer sono descriptor Docker, **non** sigillo dell'intero rootfs estratto. I bind mount possono contenere chiavi e dati mutabili: questo comando non li apre o sigilla. L'autorità deve approvare contenuti e mutabilità con vincoli espliciti. I candidati Docker created con runtime runc non danno da soli un bundle/generazione runc created; i mandati non vanno sintetizzati da metadati incompleti.
+PASS §34 è inventario per costruire un dossier di revisione. Non prova ambiente completo, provenance publisher, contenuto immutabile dei layer o dei volumi, full OCI, namespace/generazione live, rootfs seal, hook OCI, active lease lifecycle, snapshot atomico, reboot o release acceptance. I layer sono descriptor Docker, **non** sigillo dell'intero rootfs estratto. I bind mount possono contenere chiavi e dati mutabili: questo comando non li apre o sigilla. L'autorità deve approvare contenuti e mutabilità con vincoli espliciti. I candidati Docker created con runtime runc non danno da soli un bundle/generazione runc created; i mandati non vanno sintetizzati da metadati incompleti.
 
-Dopo output §32: registrare esito/hash/root nei4 documenti e stato comando; usare il dossier privato per definire soggetti/chiavi/policy e dossier di accettazione target concreto. Preparare il provisioning reviewable prima di chiedere conferimento per generazione/firma/applicazione. Nessun nuovo staging source-only per simulare gates chiusi. Ingestion interna MCP→profilo→mapping DRAFT→THS→bundle ACTIVE→Ingestion→UDP resta aperta; Semantic/Registry ricerca via Gateway, schema.gov.it predefinito configurabile, chatbot/MCP propone e THS governa adozione/pubblicazione/attivazione.
+Output §34 registrato nei4 documenti e stato comando aggiornato: dossier privato disponibile, prossimo gate identità e conferimento circoscritto; non ripetere inventario. Preparare il provisioning reviewable prima di chiedere conferimento per generazione/firma/applicazione. Nessun nuovo staging source-only per simulare gates chiusi. Ingestion interna MCP→profilo→mapping DRAFT→THS→bundle ACTIVE→Ingestion→UDP resta aperta; Semantic/Registry ricerca via Gateway, schema.gov.it predefinito configurabile, chatbot/MCP propone e THS governa adozione/pubblicazione/attivazione.
 
 ## Validazione
 
