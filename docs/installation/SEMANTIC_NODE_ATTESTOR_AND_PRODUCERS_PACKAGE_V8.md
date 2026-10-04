@@ -1,10 +1,14 @@
 # Attestor reale del nodo e package privato v8
 
+## Aggiornamento corrente — staging §30 BLOCKED; recovery §31 pendente
+
+§30 è stato ESEGUITO/BLOCKED in plan, root121542:28 checksum OK, PRIVATE_PACKAGE_DIRECTORY_REQUIRED, apply/verify non raggiunti. Il wrapper GNU install creava source intermedia0755. Non ripetere il comando originario. [Recovery §31](SEMANTIC_PACKAGE_V8_DIRECTORY_RECOVERY.md) verifica tutti i pin e corregge soltanto questo modo sullo stesso root; receipt presente o metadati inattesi bloccano. Non è ancora PASS né accettazione target. Gateway recovery 7941098e4253a50916542471328f556d979436fe: CI38/38,159 test pertinenti+2 native+6Docker; locale162PASS/3skip. §29 v7 resta ESEGUITO/PASS.
+
 ## Stato verificato
 
 Gateway `7ded9df0c74c6db919c7a68d4c75ab2c132dea53` (attestor introdotto in `b87f16bdde66c67137b356b411c09fe651d15f85`): CI38/38 SUCCESS senza rerun;151 test pertinenti,2 prove native del preparer e6 test Docker. Locale157 test,154PASS e3 prove Docker saltate. Il percorso Docker autenticato usa ora **attestor e issuer di produzione**: i log riportano REAL_NODE_ATTESTOR=true, REAL_INSTALLER_ISSUER=true, ROOTFS_DRIFT_NO_APPLICATION=true e CI_ACCEPTANCE_AUTHORITY_ONLY=true. Una modifica dell’immagine dopo il mandato viene respinta prima del claim del firmatario, senza approval o driver e senza processo applicativo.
 
-Queste sono prove di CI, con immagine Busybox, due chiavi e mandati dedicati di CI. Non dimostrano authority, accettazione o avvio delle immagini reali sul VPS. Il comando di staging v8 descritto sotto è **NON ESEGUITO**. Lo staging §29 v7 resta ESEGUITO/PASS nella sua ricevuta operatore, senza replay.
+Queste sono prove di CI, con immagine Busybox, due chiavi e mandati dedicati di CI. Non dimostrano authority, accettazione o avvio delle immagini reali sul VPS. Il comando originario descritto sotto è stato **ESEGUITO/BLOCKED in plan**; per lo stato corrente vale l’aggiornamento sopra. Lo staging §29 v7 resta ESEGUITO/PASS nella sua ricevuta operatore, senza replay.
 
 ## Responsabilità e autorità
 
@@ -48,7 +52,7 @@ Schema esatto `ouf.semantic-node-attestor.v1`: sourceRoot/sourceHashes/pythonBin
 
 La CLI isolata `-I -B --configuration` usa il contratto LocalEvidenceProducer. Gli errori restituiscono exit1 con diagnostica costante e nessun record. Il signer condiviso accetta soltanto CREATION_ATTESTATION o FINAL_DEPLOYMENT_APPROVAL e verifica il grant pubblico del ruolo. Nessuna authority è dedotta da una chiave privata presente.
 
-## Prossimo intervento VPS: staging v8, NON ESEGUITO
+## Intervento VPS originario §30: ESEGUITO/BLOCKED, non ripetere
 
 [Comando completo](../handoffs/commands/OUF_STAGE_LOCAL_PRODUCERS_PACKAGE_V8_2026-10-04.sh). SHA256 wrapper `f1c2e775d4882916e0840fe5ab9965fdf4477d984dd4dd5b1e0f5a7a2ea9d5bb`; [manifest di26 sorgenti](../handoffs/commands/OUF_LOCAL_PRODUCERS_PACKAGE_V8_SOURCES_2026-10-04.sha256), SHA256 `a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b`. Sorgenti fissate al commit Gateway sopra.
 

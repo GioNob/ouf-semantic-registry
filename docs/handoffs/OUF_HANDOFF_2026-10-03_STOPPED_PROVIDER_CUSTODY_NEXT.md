@@ -1,6 +1,22 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — attestor e issuer reali verificati; staging v8 NON ESEGUITO
+## Checkpoint corrente — §30 ESEGUITO/BLOCKED in plan; recovery §31 NON ESEGUITA
+
+Output operatore: root `/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542`, source `7ded9df0c74c6db919c7a68d4c75ab2c132dea53`;28 checksum OK (wrapper/manifest/26 sorgenti), poi **BLOCKED MODE=plan REASON=PRIVATE_PACKAGE_DIRECTORY_REQUIRED**. apply/verify non raggiunti nel wrapper set-e; nessuna receipt PASS fornita. §30 è **ESEGUITO/BLOCKED**, non più NON ESEGUITO e non PASS. [Evidenza operatore](receipts/SEMANTIC_LOCAL_PRODUCERS_V8_BLOCKED_2026-10-04_OPERATOR.json), senza attribuire un’ispezione indipendente del VPS o inventare un hash di receipt target.
+
+Difetto riprodotto con GNU install reale: le leaf source/scripts e source/tools ricevono0700, ma source intermedia viene creata0755. Il wrapper ometteva source dall’elenco esplicito. Il validatore resta rigoroso; non si accetta0755. La metadata concreta target sarà letta prima di qualsiasi riparazione, e stati inattesi sono rifiutati.
+
+Correzione Gateway `7941098e4253a50916542471328f556d979436fe`, PR56 draft non mergiata, **CI38/38 SUCCESS senza rerun**:159 test pertinenti +2 native preparer +6 Docker. Locale165 test,162PASS e3Docker skip. 8 nuovi test riproducono il caso GNU, il completamento originale dopo recovery, umask022/077, receipt incerta, hash/mode/owner/symlink/hardlink inattesi, no-op e fsync fallito. Nessuno dei26 sorgenti del package target è cambiato.
+
+**Prossimo intervento dell’operatore: §31 NON ESEGUITO**, [wrapper recovery](commands/OUF_RECOVER_LOCAL_PRODUCERS_PACKAGE_V8_DIRECTORY_2026-10-04.sh), SHA256 `2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d`. [Procedura e limiti](../installation/SEMANTIC_PACKAGE_V8_DIRECTORY_RECOVERY.md). Helper pinned Gateway sopra, SHA256 `116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4`. Verifica root/scripts/tools0700, source0755 o0700, root:root,26 hash originali e receipt assente; corregge soltanto source0755→0700, fsync e rilegge. Sullo stesso root completa per la prima volta plan/apply/verify dello stager7ded9df. Receipt presente o metadati inattesi bloccano: non cancellare o normalizzare altro. Non ripetere il wrapper originario e non creare un package sostitutivo per nascondere questo tentativo.
+
+Il [wrapper futuro corretto](commands/OUF_STAGE_LOCAL_PRODUCERS_PACKAGE_V8_FIXED_2026-10-04.sh) crea esplicitamente tutte le quattro directory con mode/owner/group richiesti; **NON ESEGUITO**, non destinato al root121542. Il comando originario è deprecato e marcato ESEGUITO/BLOCKED; il commit eseguito f6280b6 rimane immutabile con checksum wrapper f1c2e775. La sua sezione storica non è uno stato corrente.
+
+La recovery non esegue producer e non crea authority, chiavi o firme; non registra runtime, non modifica regole/unit/container e non autorizza avvii. §29 v7 ESEGUITO/PASS è preservato. Dopo output §31 registrare autonomamente receipt, stato comando e tutti i documenti; poi provisioning esplicito authority e mandati per immagini/volumi target, ancora aperto. Restano snapshot atomico, runtime registration e avvio eventuali espliciti, reboot e release acceptance.
+
+Ogni Ente conserva un’installazione indipendente, stessa macchina/subnet o servizi su nodi/reti differenti; nessun tenant o authority centrale. Questo ramo riguarda il provider esterno: ingestion interna MCP→profilo→mapping DRAFT→THS→bundle ACTIVE→Ingestion→UDP resta aperta. Semantic/Registry ricerca via Gateway, schema.gov.it predefinito e provider configurabile; chatbot/MCP propone e THS autorizza adozione/pubblicazione/attivazione.
+
+## Checkpoint storico — attestor e issuer reali verificati; staging v8 allora NON ESEGUITO
 
 Gateway `7ded9df0c74c6db919c7a68d4c75ab2c132dea53`, PR56 draft non mergiata: **CI38/38 SUCCESS**, senza rerun, con151 test pertinenti +2 prove native preparer +6 Docker. Locale157 test,154PASS e3 Docker skip. Nuovi12 test attestor e8 test staging v8. Il percorso autenticato usa entrambi i producer di produzione; il rootfs alterato dopo l’accettazione è respinto prima di claim del firmatario, approval e driver, senza processo applicativo. Mandati, chiavi e immagine Busybox della prova restano di CI.
 
@@ -1400,6 +1416,11 @@ done
 Comando operativo versionato: [OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04.sh](commands/OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04.sh). Source Gateway `f1996cca60e66f1807b88f126793a8edc1aed15f`, 22 hash esatti; script SHA256 `92b746dc33db98da5580ea64d8994887a9c9ba1c85ca67569155ef9dddae1e05`. Crea un nuovo snapshot privato e una receipt source-only. Non aggiorna il package v5 già eseguito. Plan/apply/verify non installano configurazioni o producer, non eseguono i body dei nuovi moduli e non autorizzano start. Output operatore ricevuto: plan/apply/verify PASS, root `/etc/ouf/deploy-snapshots/semantic-authenticated-runtime-package-20261004-094455`; ricevuta conservata. Non ripetere.
 
 
-## 30. Primo intervento VPS pendente — package privato producer reali v8
+## 30. Intervento VPS eseguito — package v8 BLOCKED in plan
 
-**NON ESEGUITO.** Eseguire una volta il [wrapper fissato](commands/OUF_STAGE_LOCAL_PRODUCERS_PACKAGE_V8_2026-10-04.sh) dopo la verifica SHA256 descritta nel checkpoint corrente e restituire l’output. Nessun replay del v7. Entrambi i producer restano non installati/invocati; authority e start non vengono conferiti. Nessun nuovo login Keycloak. Prima di qualunque configurazione operativa, servono authority e accettazione target esplicite.
+**ESEGUITO/BLOCKED**, root121542, PRIVATE_PACKAGE_DIRECTORY_REQUIRED; apply/verify non raggiunti. Il [wrapper originario](commands/OUF_STAGE_LOCAL_PRODUCERS_PACKAGE_V8_2026-10-04.sh) è deprecato e non va ripetuto. Per continuare usare soltanto §31 dopo i controlli descritti. Nessun replay del v7. Entrambi i producer restano non installati/invocati; authority e start non vengono conferiti. Nessun nuovo login Keycloak. Prima di qualunque configurazione operativa, servono authority e accettazione target esplicite.
+
+
+## 31. Primo intervento VPS pendente — recovery directory del package v8
+
+**NON ESEGUITO.** Eseguire una volta il [wrapper recovery pinned](commands/OUF_RECOVER_LOCAL_PRODUCERS_PACKAGE_V8_DIRECTORY_2026-10-04.sh) sul root121542 e riportare l’output. Nessuna cancellazione di receipt, chmod ricorsivo o sostituzione del package. Receipt presente/metadati diversi bloccano; source0755 può diventare0700 soltanto dopo hash e owner verificati. Completa il primo apply/verify mai raggiunto di §30, senza start, chiavi o runtime registration. §29 non va ripetuto.
