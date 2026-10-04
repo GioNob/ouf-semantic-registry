@@ -1,5 +1,7 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
+> **Ripartenza corrente —4 ottobre2026, dopo §38 PASS:** leggere prima il [nuovo handoff completo](../handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md). Contiene regole vincolanti, pin/CI verificati, autorizzazioni, root/hash, baseline/business/gate ereditati e sequenza del prossimo lavoro. **Nessun comando VPS pendente.** §38/36/34/31 e precedenti già eseguiti non vanno ripetuti; policy privata materializzata, consumer/signing/runtime/start ancora esclusi. Accettazione2candidati/8mount/fullOCI/rootfs/generazione è il prossimo lavoro. Le istruzioni di ripartenza qui sotto sono cronologiche e non prevalgono sul nuovo handoff.
+
 ## Checkpoint corrente — §38 ESEGUITO/PASS, non ripetere
 
 Output operatore ricevuto il4 ottobre2026: plan/apply/verify PASS. Root privato `/etc/ouf/deploy-snapshots/semantic-trust-policy-preparation-20261004-172336`; policyHash `21122630e52cb63c3744fee89f5c81ed926dad55231190243ca11be6d481bd42` identico nei tre modi; receiptHash `42d27903c65e6a1334fff5647a817e393a661e27f5c4fbf69c8d7910a6abb7ab` identico in apply/verify. Checksum wrapper e helper scaricati/installati OK. Evidenza basata sull'output fornito, senza ispezione VPS indipendente. Wrapper eseguito dal commit immutabile dad24714ca572ab45667313b8cc7ec748c851ce3, SHA2561b3927170ba06722402050a25eb12d50bf3d5886ea443b5a1e5866770a573857. Il nuovo header documentale non sostituisce quei bytes eseguiti.

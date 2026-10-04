@@ -1,5 +1,7 @@
 # OUF — handoff per nuova chat: prossimo sprint file → UDP
 
+> **Ripartenza corrente —4 ottobre2026, dopo §38 PASS:** leggere prima il [nuovo handoff completo](OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md). Contiene regole vincolanti, pin/CI verificati, autorizzazioni, root/hash, baseline/business/gate ereditati e sequenza del prossimo lavoro. **Nessun comando VPS pendente.** §38/36/34/31 e precedenti già eseguiti non vanno ripetuti; policy privata materializzata, consumer/signing/runtime/start ancora esclusi. Accettazione2candidati/8mount/fullOCI/rootfs/generazione è il prossimo lavoro. Le istruzioni di ripartenza qui sotto sono cronologiche e non prevalgono sul nuovo handoff.
+
 > **Ripartenza aggiornata — 2026-10-03 16:14 Europe/Rome:** leggere prima il [nuovo handoff completo](OUF_HANDOFF_2026-10-03_STOPPED_PROVIDER_CUSTODY_NEXT.md). Ultimo VPS PASS: due provider candidate `CREATED_STOPPED`, mai avviati. **Il comando `inventory_semantic_provider_guard_custody.py` NON è stato eseguito dall'utente**; blocco pinned completo nel §6 del nuovo handoff, nessun esito target da presumere. Gateway PR56 `85914e39bd0aa9f8e7a0a0a9d3b9db6007633ff8`: 28/28 check SUCCESS; Semantic PR30 `c2b4ae5abed1236378c7060b3eb3dac126672cbc`: 14/14 SUCCESS, incremento non deployed. Prima delle regole runtime coordinare boot custody/empty sets; non startare né ricreare le reti, non replay Cinema/Teatri. Cronologia e gate ereditati sotto restano conservati; i pin live e gli stati attuali sono nel nuovo handoff.
 
 Data checkpoint: 2026-10-01, 20:24 Europe/Rome.
@@ -1105,3 +1107,4 @@ Next boundary: coordinate the installed deny-only boot guard with the future emp
 
 
 Custody helper pinned revision: Gateway `85914e39bd0aa9f8e7a0a0a9d3b9db6007633ff8`; SHA-256 `fabd47c6ce8919bc7a910cbaf63f66f1fb786b00c239ae41757c1fd0df829b8d`. All 28 check runs on this revision completed successfully (push and PR); config-contract recorded 454 passed / 64 opt-in skips, with native Docker/kernel/TLS/systemd jobs green separately. This proves CI behavior, not target custody or startup acceptance. Next user action is read-only target invocation with the five exact receipt/journal roots, creation revision `93e861fe8c8a43912f0cb78a74adceb2db509dd9`, and explicit Docker/nft/systemctl paths; no Keycloak renewal is needed for this helper.
+
