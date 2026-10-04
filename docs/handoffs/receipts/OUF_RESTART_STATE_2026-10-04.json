@@ -15,7 +15,7 @@
     "newPrivatePolicyTests": 15
   },
   "semanticDocumentationCI": {
-    "commit": "e14b424ba523dd4f024e8042043131ea441a52dd",
+    "commit": "3a590539231a71f898784eab1b3f1825ca05ffb8",
     "returnedPrWorkflows": 7,
     "status": "SUCCESS",
     "connectorScope": "PR runs first page only"
@@ -26,7 +26,7 @@
     "skipped": 1
   },
   "vps": {
-    "lastPassedSection": 40,
+    "lastPassedSection": 41,
     "lastPassedRoot": null,
     "section30Status": "EXECUTED_BLOCKED_PLAN",
     "blockedRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
@@ -34,7 +34,7 @@
     "sourceManifestSha256": "a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b",
     "downloadChecksumsPassed": 28,
     "applyVerifyReached": true,
-    "nextSection": 41,
+    "nextSection": null,
     "recoveryExecuted": true,
     "recoveryWrapperSha256": "2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d",
     "repairToolSha256": "116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4",
@@ -43,8 +43,8 @@
     "startAuthorized": false,
     "runtimeRegistered": false,
     "section32Status": "EXECUTED_BLOCKED",
-    "nextWrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_LINEAGE_2026-10-04.sh",
-    "nextWrapperSha256": "ac40df1dba21cc528641ea38aad2020e557dd3424612ab53071bc57f74992083",
+    "nextWrapper": null,
+    "nextWrapperSha256": null,
     "section33Status": "EXECUTED_BLOCKED",
     "section32Root": null,
     "partialEvidenceKnown": false,
@@ -67,15 +67,15 @@
     "keysPresent": 2,
     "section37Status": "PRIVATE_ROLE_POLICY_AUTHORIZED",
     "section38Status": "EXECUTED_PASS",
-    "lastPassSection": 40,
+    "lastPassSection": 41,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "PRIVATE_IMAGE_LINEAGE_READ_SCOPE_REQUIRED_AFTER_CI",
+    "nextStatus": "OBSERVATION_MANDATE_BRIDGE_AND_IMAGE_BYTES_PROVENANCE_OPEN",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
-    "section41Status": "PREPARED_NOT_AUTHORIZED_NOT_EXECUTED"
+    "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE"
   },
-  "nextTask": "Obtain concrete §41 private image lineage read scope after pinned wrapper tests and CI. No VPS replay.",
+  "nextTask": "Resolve/test observation-to-mandate bridge and targeted installed image bytes/provenance review; no redundant inventory or VPS replay.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -87,7 +87,7 @@
   ],
   "pr56": "open draft unmerged",
   "pr26": "open draft unmerged",
-  "documentationHead": "77407922584a68ffbbeb7068a88d9acac33fa52d",
+  "documentationHead": "3a590539231a71f898784eab1b3f1825ca05ffb8",
   "v8Recovery": {
     "status": "EXECUTED_PASS",
     "packageRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
@@ -99,8 +99,8 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Authorize §41 four evidence files and six build-context source files only; future image bytes/provenance and observation-to-mandate bridge remain open.",
-  "latestDocumentationCi": "bccc9d0_4_SUCCESS_3_IN_PROGRESS_CODE_7740792_ALL_7_SUCCESS",
+  "nextStep": "Autonomous broker/producer bridge software review and implementation before operational signatures or start scopes.",
+  "latestDocumentationCi": "3a59053_7_PR_WORKFLOWS_SUCCESS_NEW_CHECKPOINT_PENDING",
   "localDiagnosticTests": {
     "total": 11,
     "passed": 10,
@@ -177,7 +177,7 @@
   },
   "semanticHead": "e14b424ba523dd4f024e8042043131ea441a52dd",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
-  "checkpointType": "operator-configuration-provenance-pass-image-lineage-prepared",
+  "checkpointType": "operator-image-lineage-pass",
   "checkpointAt": "2026-10-04",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
@@ -326,15 +326,15 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "PRIVATE_IMAGE_LINEAGE_READ_SCOPE_REQUIRED_AFTER_CI",
+  "nextStatus": "OBSERVATION_MANDATE_BRIDGE_AND_IMAGE_BYTES_PROVENANCE_OPEN",
   "imageLineageReadback": {
     "section": 41,
-    "status": "PREPARED_NOT_AUTHORIZED_NOT_EXECUTED",
+    "status": "EXECUTED_PASS",
     "wrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_LINEAGE_2026-10-04.sh",
     "wrapperSha256": "ac40df1dba21cc528641ea38aad2020e557dd3424612ab53071bc57f74992083",
     "localTestsPassed": 8,
     "localTestsSkipped": 0,
-    "scopeGranted": false,
+    "scopeGranted": true,
     "evidenceFilesProposed": 4,
     "buildContextFilesProposed": 6,
     "privateKeyFilesReadProposed": 0,
@@ -349,7 +349,42 @@
     "ciSuiteTestsPassed": 26,
     "ciSuiteTestsSkipped": 0,
     "ciCodeWorkflowCount": 7,
-    "ciCodeConclusion": "success"
+    "ciCodeConclusion": "success",
+    "executedCommit": "77407922584a68ffbbeb7068a88d9acac33fa52d",
+    "receivedAt": "2026-10-04T21:53:39+02:00",
+    "operatorReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_LINEAGE_PASS_2026-10-04_OPERATOR.json",
+    "inputHashes": {
+      "Dockerfile.semantic-provider": "b2cc4828a2cc9424c2a3b31793d9094dbade41d8d7485ca43b32d2dcd80873e7",
+      "build-intent": "806197190e8665bc01c641c5ad0dc1809670f2deee4d9bf4abf8f1a4b1ece5e0",
+      "image-stage": "64b5ec653d3b7037795ae380120a1127d9b6d8e10e60d2cfa381eedc87b4438b",
+      "manifest": "052b46a56ea666971f135c75af48b3342dbeb68e2f17f1f16263a99351df88bd",
+      "tools/semantic_provider_adapter.py": "718f031cd4116d233c3075ee74da2f28170b5ed4efcac1a77deef154f7fd320c",
+      "tools/semantic_provider_admission.py": "dca670d1f0ced678db6af9810199da07419901a21523385e0ebea623b608bbfc",
+      "tools/semantic_provider_boundary.py": "cae2b1d5970349ce1ebc95fb44ca4dd1bd67d93e43900ad4cbeabb3d5fbd6e69",
+      "tools/semantic_provider_relay.py": "04b33da9b3d599872c19ea20d3775141ef99c5989c7fb7175be6926b74cc7f6f",
+      "tools/southbound_security.py": "5953e6143fb7141b62a2d5cc26d8cf85ee74147d9eefaa923460f8e1706eb0ec",
+      "trust": "8a108a3c4b47f86ef58589c7322572db88991672f4c328a200711a9fd5576776"
+    },
+    "doNotReplay": true,
+    "buildContextMatchesPinnedSource": true,
+    "adapterReceiptBindingsConsistent": true,
+    "southboundSelectionConsistent": true
   },
-  "documentationHeadType": "lastVerifiedPrecedingCommit"
+  "documentationHeadType": "lastVerifiedPrecedingCommit",
+  "forecast": {
+    "target": "first complete chatbot file/semantic/ingestion/UDP/search live smoke including external semantic branch",
+    "intensiveWorkDays": [
+      5,
+      10
+    ],
+    "calendarWeeks": [
+      1,
+      2
+    ],
+    "significantIntegrationCorrectionWeeks": [
+      2,
+      3
+    ],
+    "guaranteed": false
+  }
 }

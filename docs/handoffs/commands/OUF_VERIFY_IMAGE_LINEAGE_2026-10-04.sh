@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# PREPARED ONLY — §41 PRIVATE IMAGE LINEAGE READ SCOPE NOT GRANTED.
+# EXECUTED/PASS — §41 scope authorized; operator result received 2026-10-04. DO NOT REPLAY.
+# Executed pin 77407922584a68ffbbeb7068a88d9acac33fa52d; SHA256 ac40df1dba21cc528641ea38aad2020e557dd3424612ab53071bc57f74992083.
 # Four evidence files plus six frozen source files; no secrets/config/Env/Docker reads.
 # Historical bindings only; no image-byte verification, acceptance, writes, signing or start.
 set -euo pipefail

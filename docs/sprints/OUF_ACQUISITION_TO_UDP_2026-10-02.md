@@ -1,5 +1,20 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
+## Checkpoint corrente — §41 ESEGUITO/PASS, non ripetere
+
+Scope §41 conferito dall'utente il4 ottobre2026 21:48:38 Europe/Rome; output ricevuto21:53:39. Wrapper checksum OK; SEMANTIC_IMAGE_LINEAGE=PASS/HISTORICAL_ONLY. Evidenza operatore, nessuna ispezione VPS indipendente. Pin eseguito `77407922584a68ffbbeb7068a88d9acac33fa52d`, SHA256 `ac40df1dba21cc528641ea38aad2020e557dd3424612ab53071bc57f74992083`. [Receipt redatta](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/receipts/SEMANTIC_IMAGE_LINEAGE_PASS_2026-10-04_OPERATOR.json).
+
+Quattro evidenze e sei sorgenti conservati verificati; buildContextMatchesPinnedSource/adapterReceiptBindingsConsistent/southboundSelectionConsistent=true. Nuovi hash osservati: build-intent `806197190e8665bc01c641c5ad0dc1809670f2deee4d9bf4abf8f1a4b1ece5e0`, image-stage `64b5ec653d3b7037795ae380120a1127d9b6d8e10e60d2cfa381eedc87b4438b`. Nessun file configurazione/chiave/Env letto; providerCalls/signaturesIssued/targetFilesWritten=0. acceptanceGranted/startAuthorized/runtimeRegistered=false. Prova storica dei binding e dei sorgenti, non dei bytes dentro le immagini, publisher trust, SBOM/base, build riproducibile, OCI/rootfs/generation live o snapshot atomico. Quei gate restano aperti.
+
+**Nessun comando VPS pendente. Non ripetere §41/40/39/38/36/34/31.** Scope41 completato e non esteso ad altre letture. Le sezioni PREPARATO/non autorizzato/non eseguito sotto sono cronologia superata da questo checkpoint. La policy privata38 resta non collegata ai consumer, nessuna firma operativa/avvio implicito.
+
+Priorità successiva autorizzata per lavoro autonomo: risolvere e testare il raccordo observation→mandate nel broker/producer prima di nuove richieste di firma/start; completare la prova mirata dei bytes/provenance delle immagini, riusando gli hash receipt acquisiti. Non aprire inventari ridondanti o ulteriori package inerti. Dossier/generation reali non sostituibili con candidati fermi. Migrazione runtime, consumerlink e avvio richiedono scope distinti dopo risultato concreto revisionabile.
+
+Stima orientativa comunicata all'utente per prima prova completa chatbot→file→mapping semantico (incluso ramo esterno)→THS/ACTIVE→Ingestion/UDP→Search:5–10 giornate intense, circa1–2 settimane al ritmo continuativo; margine2–3 settimane se il raccordo/live richiede correzioni significative. È una previsione, non una data garantita o release acceptance. La ricerca interna rimane indipendente dal provider esterno; le prove manuali Cinema/Teatri restano congelate, non si rifanno.
+
+CI del precedente HEAD documentale `3a590539231a71f898784eab1b3f1825ca05ffb8` riletta:7 workflow PR completed/success. Codice §41 `7740792`:26 test CI PASS/0 skip e3wrapper parity/bash-n PASS già verificati, non rerun locale in questo aggiornamento di sola documentazione. CI di questo nuovo checkpoint da verificare separatamente. PR26/30/56 restano draft/nonmerged.
+
+
 ## §41 PREPARATO — lettura privata lineage immagini da autorizzare
 
 Ultimo VPS §40 ESEGUITO/PASS; scope §40 completato, non riutilizzato per altre letture. Preparato `tools/verify_semantic_image_lineage.py` e wrapper `docs/handoffs/commands/OUF_VERIFY_IMAGE_LINEAGE_2026-10-04.sh`, SHA256 `ac40df1dba21cc528641ea38aad2020e557dd3424612ab53071bc57f74992083`. Stato NON AUTORIZZATO/NON ESEGUITO. Nessun comando VPS pendente prima del conferimento.
