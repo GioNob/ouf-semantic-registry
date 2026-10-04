@@ -1,5 +1,9 @@
 # Broker locale operativo di deployment
 
+## Producer installer ora disponibile
+
+Commit Gateway `1f8693cacc296c0b7b521ec6822ad5a032378a3d`: l’approval finale può essere emessa dalla [CLI installer di produzione](SEMANTIC_INSTALLER_APPROVAL_PRODUCER.md), previa policy, mandato finale firmato e chiave già esistenti. La CI38/38 passa con questo issuer nel percorso Docker autenticato:131 test pertinenti,2 preparer nativi e6 Docker. L’attestor del nodo resta una fixture di CI e deve essere completato per le immagini reali. Il package v7 §29 ESEGUITO/PASS sul VPS non contiene il nuovo issuer; nessuna installazione, firma, registrazione o avvio target è avvenuta con questo checkpoint.
+
 ## Stato e confini
 
 Il broker `scripts/semantic_provider_deployment_broker.py` è collegato a `LocalEvidenceProducer`, `ProducerEmission`, `Consumption`, al preparer v3 e al driver v5 tramite l'adapter v4. Non è più necessario un broker sintetico per comporre queste fasi. Le authority e gli attestor reali restano componenti locali configurati con mandato esplicito; il broker non firma, non legge chiavi private e non certifica immagini.

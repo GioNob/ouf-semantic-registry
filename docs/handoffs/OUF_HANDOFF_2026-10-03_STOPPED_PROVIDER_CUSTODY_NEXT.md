@@ -1,6 +1,20 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — §29 ESEGUITO/PASS; sorgenti broker v7 custodite sul VPS
+## Checkpoint corrente — issuer reale dell’approval completato; §29 VPS ESEGUITO/PASS
+
+Gateway: `1f8693cacc296c0b7b521ec6822ad5a032378a3d`, ramo `codex/semantic-provider-request-boundary`, PR56 draft e non mergiata. CI **38/38 SUCCESS**, senza rerun: **131 test pertinenti**, **2 prove native del preparer** e **6 test Docker**, compreso il percorso autenticato che usa broker operativo e **issuer installer di produzione**. In locale:137 test eseguiti,134 passati e3 prove Docker saltate perché l’ambiente non le supporta. 16 nuovi test issuer includono due processi concorrenti, fsync fallito, claim incerto, mandato/chiave/input non validi e regressione temporale.
+
+L’issuer verifica un mandato finale **distinto, esplicito e firmato**, riferito a quello specifico intento; un intento creation-only non autorizza l’approval. Verifica l’attestazione completa del nodo prima di leggere la chiave privata esistente e pinned. Claim O_EXCL e fsync precedono le due firme Ed25519. Il claim issuer resta ISSUING anche dopo il risultato: soltanto il broker conferma custodia e ISSUED. Nessun retry/reset automatico dopo un esito incerto.
+
+Decisione tecnica: issuer locale dell’installer, distinto dall’attestor e dall’IAM applicativo, per ogni installazione indipendente di ciascun Ente. Nessun servizio centrale o multitenant. Stesso host/subnet e servizi distribuiti restano casi supportati. Per contratto, provisioning e limiti: [producer installer reale](../installation/SEMANTIC_INSTALLER_APPROVAL_PRODUCER.md).
+
+**VPS: invariato rispetto alla ricevuta §29.** Package v7 `/etc/ouf/deploy-snapshots/semantic-local-broker-package-20261004-110947`, source `04d775e892cd42e42d34de02959b9c7ba6483f3b`, plan/apply/verify ESEGUITI/PASS. La ricevuta operatore e la sezione del comando restano registrate; non effettuare replay. Il nuovo issuer non è installato nel package v7. Nessuna nuova esecuzione VPS è dichiarata. Nessuna generazione chiavi, firma target, concessione authority, registrazione runtime, avvio, merge o reboot.
+
+**Questione aperta e prossimo passo preciso:** completare il producer reale dell’attestazione del nodo, con verifica dell’immagine/rootfs e dei vincoli completi di creazione, generazione live e binding del trasporto; poi provisioning esplicito delle authority target. La CI usa ancora un attestor e mandati/chiavi sintetici dedicati, quindi non prova accettazione delle immagini reali, authority target, snapshot atomico, reboot o release acceptance. Non produrre un altro staging source-only per dichiarare chiusi questi gate.
+
+Il percorso ingestion via MCP resta aperto nel suo sprint: file → profilo → mapping DRAFT → THS → bundle ACTIVE → Ingestion → UDP. L’enforcement esterno non è una dipendenza universale dell’ingestion interna. La ricerca esterna appartiene a Semantic/Registry tramite Gateway, provider predefinito schema.gov.it configurabile per installazione; chatbot/MCP propone, THS autorizza adozione/pubblicazione/attivazione. Queste responsabilità non cambiano con l’issuer.
+
+## Checkpoint storico — §29 ESEGUITO/PASS; sorgenti broker v7 custodite sul VPS
 
 Ricevuta operatore del2026-10-04: `/etc/ouf/deploy-snapshots/semantic-local-broker-package-20261004-110947`, schema `ouf.semantic-local-broker-source-package.v7`, source `04d775e892cd42e42d34de02959b9c7ba6483f3b`. Checksum wrapper +manifest +20 sorgenti OK; plan/apply/verify PASS, tre receipt JSON concordanti; Python3.13.5. Tutti20 hash confrontati con il manifest del comando immutabile `bcae7ff130846a28e98579556790efdeee495d10`. Wrapper SHA256 `430694376a5b745a35ad2efaf46c2ceede5df9542f62edceacf95c1d47680072`; manifest SHA256 `e258b94090319124cbdf9520fa5b179e772836f3d6477e3824809741e08a5035`.
 
