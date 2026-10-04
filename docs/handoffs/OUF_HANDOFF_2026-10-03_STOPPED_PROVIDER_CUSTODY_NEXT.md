@@ -1,6 +1,21 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — §27 eseguito; riverifica autenticata implementata, integrazione driver pendente
+## Checkpoint corrente — driver autenticato collegato; §28 staging privato v6 NON ESEGUITO
+
+Gateway `f1996cca60e66f1807b88f126793a8edc1aed15f`: **adapter v4 → preparer v3 → driver v5** richiedono esplicitamente riverifica Ed25519 dei tre ruoli. Le nuove closure sigillate contengono 16 file per il preparer e 15 per il driver; nessun fallback al driver precedente nel percorso adapter v4. I vecchi schemi rimangono compatibili per gli snapshot già creati, senza migrazione implicita.
+
+**Budget condiviso:** nel driver firme, hash/riletture e backend nativo condividono la stessa deadline monotonic `budgetSeconds` (1–5s), senza reset tra riverifiche prima/dopo fsync. Nel preparer il verificatore condivide la deadline complessiva di preparazione (18s), oltre ai budget dei worker nativi. Timeout/scadenza/revoca prima del claim conserva READY; dopo il claim conserva STARTING senza FIFO/replay automatico. Rollback di risorse possedute e generazione morta non richiede una firma ancora valida.
+
+**Verifiche sull'esatto commit:** 82 test locali PASS; CI Gateway **38/38 completed/success**. Log push e PR: **82 test +2 native admission**, Docker **6 test PASS**, inclusa prova reale adapter4/preparer3/driver5 con chiavi Ed25519 distinte e temporanee solo CI. Lease drift e firma alterata negano l'applicazione; firme valide consentono il marker del solo fixture. Nel negativo della firma Docker elimina il candidato fallito e il rollback porta preexec a ROLLED_BACK/admission CLEANED, mentre consumption resta READY; questo esito è verificato, non un reset. Sorgenti di tutti i 22 file del prossimo package riletti dal commit e hash confrontati.
+
+**Ultima evidenza VPS resta §27 ESEGUITO/PASS**, package v5 `/etc/ouf/deploy-snapshots/semantic-authenticated-deployment-package-20261004-083518`, source `6697029e3efa03f9090bd7be13aab86784749731`. Nuovo codice provato in CI; non ancora copiato o installato sul target.
+
+**Prossimo intervento operatore: §28 NON ESEGUITO**, soltanto nuovo source package `ouf.semantic-authenticated-runtime-source-package.v6`: 22 sorgenti privati, checksum +plan/apply/verify. [Comando §28](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/commands/OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04.sh) e [contratto operativo](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/installation/SEMANTIC_AUTHENTICATED_RUNTIME_DRIVER.md). Nessuna chiave/policy/mandato generato, nessuna firma emessa, nessun runtime registrato, nessun container o regola/unità cambiato. Questo staging non è readiness o release acceptance. Dopo l'output §28 registrare ricevuta e root esatti, senza replay, poi completare gli elementi produttivi indipendenti prima di richiedere i binding di autorità indispensabili.
+
+**Restano aperti:** broker/issuer/attestor produttivi con mandato esplicito della singola installazione; full image/OCI/rootfs creation acceptance; provisioning trust/policy/chiavi reali; snapshot atomico, enforcement/binding IPv6/spoof, OIDC/purpose/TLS/revocation admission, ciclo lease attivo/guard e reboot reale. Le prove CI di questo percorso non chiudono questi gate né autorizzano start/merge/replay. Ogni Ente è un'installazione indipendente, con servizi co-locati o distribuiti. Semantic/Registry governa discovery esterna tramite Gateway (default schema.gov.it parametrizzabile); MCP/chatbot propone, THS governa adozione/attivazione. Il ramo provider non sostituisce la prova file→mapping→ingestion→UDP.
+
+
+## Checkpoint storico — riverifica autenticata, prima del collegamento al driver
 
 Il §27 resta **ESEGUITO/PASS**: package privato `/etc/ouf/deploy-snapshots/semantic-authenticated-deployment-package-20261004-083518`, source `6697029e3efa03f9090bd7be13aab86784749731`. Nessun replay, avvio o installazione richiesto.
 
@@ -1204,7 +1219,7 @@ Nessuna installazione di producer né nuova authority. Comando read-only pinning
 
 ```bash
 #!/usr/bin/env bash
-# §26 NON ESEGUITO: read-only public signature backend inventory.
+# §26 ESEGUITO/PASS — comando storico, non ripetere.
 set -euo pipefail
 OUF_TRUST_TMP=$(mktemp -d)
 trap 'rm -rf -- "$OUF_TRUST_TMP"' EXIT
@@ -1234,7 +1249,7 @@ sudo /usr/bin/python3 -I -B "$OUF_TRUST_ROOT/source/inventory.py" \
 
 ```bash
 #!/usr/bin/env bash
-# §27 NON ESEGUITO: new private sources only. No policy/key/runtime installation.
+# §27 ESEGUITO/PASS — comando storico, non ripetere. Solo sorgenti privati.
 set -euo pipefail
 OUF_AUTH_PKG_TMP=$(mktemp -d)
 trap 'rm -rf -- "$OUF_AUTH_PKG_TMP"' EXIT
@@ -1281,3 +1296,7 @@ for OUF_AUTH_MODE in plan apply verify; do
     --hook-source-sha256 a4ca047fc76dda6378e81834cac421d5d829b55d63ac62dde29a3178245aaabc
 done
 ```
+
+## 28. Package runtime autenticato v6 — NON ESEGUITO
+
+Comando operativo versionato: [OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04.sh](commands/OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04.sh). Source Gateway `f1996cca60e66f1807b88f126793a8edc1aed15f`, 22 hash esatti; script SHA256 `92b746dc33db98da5580ea64d8994887a9c9ba1c85ca67569155ef9dddae1e05`. Crea un nuovo snapshot privato e una receipt source-only. Non aggiorna il package v5 già eseguito. Plan/apply/verify non installano configurazioni o producer, non eseguono i body dei nuovi moduli e non autorizzano start. Attendere l'output operatore per marcare ESEGUITO/PASS e registrare root/receipt; nessun replay automatico.

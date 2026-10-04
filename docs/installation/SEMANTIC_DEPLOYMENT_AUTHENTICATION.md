@@ -1,4 +1,19 @@
-# Verifica detached delle evidenze deployment e package sorgenti v5
+# Verifica detached delle evidenze deployment e package sorgenti v5/v6
+
+## Checkpoint corrente — driver autenticato collegato; §28 staging privato v6 NON ESEGUITO
+
+Gateway `f1996cca60e66f1807b88f126793a8edc1aed15f`: **adapter v4 → preparer v3 → driver v5** richiedono esplicitamente riverifica Ed25519 dei tre ruoli. Le nuove closure sigillate contengono 16 file per il preparer e 15 per il driver; nessun fallback al driver precedente nel percorso adapter v4. I vecchi schemi rimangono compatibili per gli snapshot già creati, senza migrazione implicita.
+
+**Budget condiviso:** nel driver firme, hash/riletture e backend nativo condividono la stessa deadline monotonic `budgetSeconds` (1–5s), senza reset tra riverifiche prima/dopo fsync. Nel preparer il verificatore condivide la deadline complessiva di preparazione (18s), oltre ai budget dei worker nativi. Timeout/scadenza/revoca prima del claim conserva READY; dopo il claim conserva STARTING senza FIFO/replay automatico. Rollback di risorse possedute e generazione morta non richiede una firma ancora valida.
+
+**Verifiche sull'esatto commit:** 82 test locali PASS; CI Gateway **38/38 completed/success**. Log push e PR: **82 test +2 native admission**, Docker **6 test PASS**, inclusa prova reale adapter4/preparer3/driver5 con chiavi Ed25519 distinte e temporanee solo CI. Lease drift e firma alterata negano l'applicazione; firme valide consentono il marker del solo fixture. Nel negativo della firma Docker elimina il candidato fallito e il rollback porta preexec a ROLLED_BACK/admission CLEANED, mentre consumption resta READY; questo esito è verificato, non un reset. Sorgenti di tutti i 22 file del prossimo package riletti dal commit e hash confrontati.
+
+**Ultima evidenza VPS resta §27 ESEGUITO/PASS**, package v5 `/etc/ouf/deploy-snapshots/semantic-authenticated-deployment-package-20261004-083518`, source `6697029e3efa03f9090bd7be13aab86784749731`. Nuovo codice provato in CI; non ancora copiato o installato sul target.
+
+**Prossimo intervento operatore: §28 NON ESEGUITO**, soltanto nuovo source package `ouf.semantic-authenticated-runtime-source-package.v6`: 22 sorgenti privati, checksum +plan/apply/verify. [Comando §28](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/commands/OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04.sh) e [contratto operativo](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/installation/SEMANTIC_AUTHENTICATED_RUNTIME_DRIVER.md). Nessuna chiave/policy/mandato generato, nessuna firma emessa, nessun runtime registrato, nessun container o regola/unità cambiato. Questo staging non è readiness o release acceptance. Dopo l'output §28 registrare ricevuta e root esatti, senza replay, poi completare gli elementi produttivi indipendenti prima di richiedere i binding di autorità indispensabili.
+
+**Restano aperti:** broker/issuer/attestor produttivi con mandato esplicito della singola installazione; full image/OCI/rootfs creation acceptance; provisioning trust/policy/chiavi reali; snapshot atomico, enforcement/binding IPv6/spoof, OIDC/purpose/TLS/revocation admission, ciclo lease attivo/guard e reboot reale. Le prove CI di questo percorso non chiudono questi gate né autorizzano start/merge/replay. Ogni Ente è un'installazione indipendente, con servizi co-locati o distribuiti. Semantic/Registry governa discovery esterna tramite Gateway (default schema.gov.it parametrizzabile); MCP/chatbot propone, THS governa adozione/attivazione. Il ramo provider non sostituisce la prova file→mapping→ingestion→UDP.
+
 
 ## Stato
 
@@ -24,7 +39,7 @@ Header è il record senza signature, JSON ASCII sorted keys/separators compatti;
 
 La verifica native usa [OpenSSL pkeyutl](https://docs.openssl.org/3.5/man1/openssl-pkeyutl/), Ed25519 pure, `-verify -pubin -rawin`, con input piccoli di dimensione nota e file temporanei privati rimossi alla fine. L'hash del binario non attesta tutta la closure delle librerie/provider OS. Readback bounded non è snapshot atomico e non esclude un root esterno al protocollo. Writers cooperanti di revoca e consumo devono usare il common lock nell'integrazione; questo modulo non acquisisce un nuovo lock né sostituisce il journal consumer.
 
-## Verifiche e limiti
+## Verifiche storiche del package v5 e limiti
 
 CI sull'esatto head: 38/38 completed/success, con log push/PR verificati (64 unit/contract/package, 2 native admission e 5 Docker).
 
@@ -32,7 +47,7 @@ CI sull'esatto head: 38/38 completed/success, con log push/PR verificati (64 uni
 
 Una verifica positiva autentica i bytes rispetto a una key/mandato provisionati: non prova la veridicità di full creation acceptance, non dà authority applicativa IAM, non supera i controlli live guard/lease e non autorizza avvio. Restano da implementare/provisionare broker, issuer e attestor reali, acceptance completa dell'immagine/OCI/rootfs, source-sealing delle nuove closure e late verification nel driver/common lock. Il callback reale è integrato con il protocollo nei test; **adapter/preparer/driver di produzione non sono stati dichiarati migrati a questo verificatore**.
 
-## Registro §27 e prossimo lavoro
+## Registro storico §27
 
 §27 solo nuovo package `ouf.semantic-authenticated-deployment-source-package.v5`; compile/hash/receipt. signatureVerifierInstalled/trustPolicyProvisioned/externalProducerInstalled/runtimeRegistered/startAuthorized=false, keysGenerated/signaturesIssued/providerCalls=0, regole/unit/container invariati. Le source v4 originali vengono copiate, non cambiate. PASS dello staging non è autenticazione del deployment reale.
 
