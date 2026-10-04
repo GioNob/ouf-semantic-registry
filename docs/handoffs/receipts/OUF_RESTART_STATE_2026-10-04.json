@@ -1,7 +1,7 @@
 {
   "schema": "ouf.work-checkpoint.v1",
   "gatewayCommit": "3bdedad3108112ee4c36e7cb8387aaf60912e97c",
-  "semanticDocumentationCommit": "53699493fa4c52c7f0e6ef62bbad306525d38f9c",
+  "semanticDocumentationCommit": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
   "gatewayCI": {
     "success": 38,
     "total": 38,
@@ -15,10 +15,11 @@
     "newPrivatePolicyTests": 15
   },
   "semanticDocumentationCI": {
-    "commit": "53699493fa4c52c7f0e6ef62bbad306525d38f9c",
-    "success": 13,
-    "total": 13,
-    "status": "SUCCESS"
+    "commit": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
+    "returnedPrWorkflows": 7,
+    "returnedJobs": 9,
+    "status": "SUCCESS",
+    "connectorScope": "PR runs first page only"
   },
   "localTests": {
     "total": 169,
@@ -34,7 +35,7 @@
     "sourceManifestSha256": "a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b",
     "downloadChecksumsPassed": 28,
     "applyVerifyReached": true,
-    "nextSection": null,
+    "nextSection": 39,
     "recoveryExecuted": true,
     "recoveryWrapperSha256": "2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d",
     "repairToolSha256": "116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4",
@@ -43,8 +44,8 @@
     "startAuthorized": false,
     "runtimeRegistered": false,
     "section32Status": "EXECUTED_BLOCKED",
-    "nextWrapper": null,
-    "nextWrapperSha256": null,
+    "nextWrapper": "docs/handoffs/commands/OUF_READ_ACCEPTANCE_METADATA_2026-10-04.sh",
+    "nextWrapperSha256": "0be85f2f2c1d6cbd7f5b0f86c396e6a1050c024adcc85950029b8980cab6b001",
     "section33Status": "EXECUTED_BLOCKED",
     "section32Root": null,
     "partialEvidenceKnown": false,
@@ -70,9 +71,9 @@
     "lastPassSection": 38,
     "lastPassRoot": "/etc/ouf/deploy-snapshots/semantic-trust-policy-preparation-20261004-172336",
     "policyPreparationStatus": "PASS",
-    "nextStatus": "ACCEPTANCE_REVIEW_PENDING"
+    "nextStatus": "NOT_EXECUTED_HISTORICAL_METADATA_READBACK"
   },
-  "nextTask": "Concrete acceptance of two candidate images/eight mounts and full OCI/rootfs/generation bindings; no preparation replay.",
+  "nextTask": "Operator section39 historical sealed metadata readback; complete observed owner/mode/destination hashes in concrete acceptance matrix, then scope private content/provenance review. No signing/runtime/start.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -84,7 +85,7 @@
   ],
   "pr56": "open draft unmerged",
   "pr26": "open draft unmerged",
-  "documentationHead": "53699493fa4c52c7f0e6ef62bbad306525d38f9c",
+  "documentationHead": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
   "v8Recovery": {
     "status": "EXECUTED_PASS",
     "packageRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
@@ -96,8 +97,8 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Read current handoff section7; prepare concrete acceptance matrix and fullOCI/rootfs/generation sequencing for two stopped candidates/eight mounts. No VPS command pending. No implicit signing/consumer/runtime/start.",
-  "latestDocumentationCi": "SUCCESS",
+  "nextStep": "Run only pinned wrapper39 after checksum validation; no replay31/34/36/38; return redacted output. Section39 NOT_EXECUTED.",
+  "latestDocumentationCi": "CODE_COMMIT_SUCCESS_DOCUMENTATION_RECORD_FOLLOWUP",
   "localDiagnosticTests": {
     "total": 11,
     "passed": 10,
@@ -172,8 +173,116 @@
     "roleSigningAuthorized": false,
     "startAuthorized": false
   },
-  "semanticHead": "53699493fa4c52c7f0e6ef62bbad306525d38f9c",
+  "semanticHead": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
-  "checkpointType": "clean-new-chat-handoff",
-  "checkpointAt": "2026-10-04T19:42:11+02:00"
+  "checkpointType": "candidate-acceptance-plan-sealed-metadata-readback",
+  "checkpointAt": "2026-10-04",
+  "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
+  "acceptanceMetadataReadback": {
+    "section": 39,
+    "status": "NOT_EXECUTED",
+    "wrapper": "docs/handoffs/commands/OUF_READ_ACCEPTANCE_METADATA_2026-10-04.sh",
+    "immutableCommit": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
+    "sha256": "0be85f2f2c1d6cbd7f5b0f86c396e6a1050c024adcc85950029b8980cab6b001",
+    "localTests": {
+      "passed": 11,
+      "skipped": 0
+    },
+    "ci": [
+      {
+        "runId": 37224792907,
+        "jobs": [
+          {
+            "id": 111502112056,
+            "name": "pinned-sdk-consumer",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "runId": 37224792981,
+        "jobs": [
+          {
+            "id": 111502112165,
+            "name": "live-pairwise",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "runId": 37224792923,
+        "jobs": [
+          {
+            "id": 111502112197,
+            "name": "recovery-cycle-scripts",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 111502112363,
+            "name": "java21-postgresql17",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 111502278178,
+            "name": "container-smoke",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "runId": 37224792932,
+        "jobs": [
+          {
+            "id": 111502111989,
+            "name": "authorization-semantic-contract",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "runId": 37224792937,
+        "jobs": [
+          {
+            "id": 111502111965,
+            "name": "sealed-readback",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "runId": 37224792984,
+        "jobs": [
+          {
+            "id": 111502112298,
+            "name": "staging",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "runId": 37224792954,
+        "jobs": [
+          {
+            "id": 111502112068,
+            "name": "probe",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      }
+    ],
+    "targetFilesWritten": 0,
+    "mountContentsRead": false,
+    "operationalSignaturesIssued": 0,
+    "acceptanceGranted": false,
+    "notCurrentLiveInventory": true
+  }
 }
