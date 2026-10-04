@@ -1,6 +1,19 @@
 # OUF — Manuale di installazione e bootstrap
 
-## Checkpoint corrente — §27 ESEGUITO/PASS; collegamento verifica → consumo pendente
+## Checkpoint corrente — §27 eseguito; riverifica autenticata implementata, integrazione driver pendente
+
+Il §27 resta **ESEGUITO/PASS**: package privato `/etc/ouf/deploy-snapshots/semantic-authenticated-deployment-package-20261004-083518`, source `6697029e3efa03f9090bd7be13aab86784749731`. Nessun replay, avvio o installazione richiesto.
+
+Il Gateway aggiunge in `aa18a7b09a8bb55a193a5bdbc9b382aed2467663` il callback `LateAuthenticatedEvidence`: rilegge tre evidenze private con hash vincolati, verifica realmente le tre firme e i mandati locali, confronta evidenceHash e scope con il driver sigillato, ricontrolla tutti i file/firme/policy e la scadenza anche dopo le riletture. Il consumer esistente lo può invocare sotto il lock comune prima e dopo il claim persistente STARTING. Revoca prima del claim mantiene READY; revoca dopo claim mantiene STARTING senza processo né replay implicito.
+
+Validazione locale: **72 test PASS**, inclusi **8 nuovi test** con OpenSSL Ed25519 reale e PrivateJournal/flock; coperti consumo singolo, revoca prima/dopo fsync, modifica di una firma precedente durante verifica successiva, scope/hash estranei, deriva sorgente, scadenza approval e mandato dopo rilettura. Chiavi effimere solo nei fixture dei test. CI del nuovo codice: in corso al momento di questo checkpoint; esito da registrare dopo lettura dei job.
+
+**Limite e prossimo passo preciso:** callback composto/testato con il consumer, ma **non ancora collegato al bootstrap driver/preparer/adapter**; package v5 sul VPS rimane immutato e non contiene questo modulo. Integrare il percorso sigillato e il budget totale di verifica sotto lock, provarlo in CI con fixture indipendenti, prima di preparare un ulteriore intervento VPS. Le riletture non dimostrano snapshot atomico né impediscono un amministratore privilegiato non cooperante. Mandato reale, producer/attestor, chiavi/policy di produzione e readiness restano non provati.
+
+Restano confermate le installazioni indipendenti per Ente e le responsabilità PET: Semantic/Registry esegue discovery esterna tramite Gateway; provider predefinito schema.gov.it parametrizzabile per installazione; chatbot/MCP propone attraverso capability tipizzate, THS governa adozione/attivazione. Questa infrastruttura serve il ramo provider esterno; non costituisce prerequisito universale del ciclo ingestion interno.
+
+
+## Checkpoint storico — ricevuta §27 ESEGUITO/PASS
 
 **Ultimo esito VPS, 4 ottobre 2026:** `/etc/ouf/deploy-snapshots/semantic-authenticated-deployment-package-20261004-083518`; checksum comando +20 sorgenti OK, plan/apply/verify PASS concordanti, Python3.13.5, source `6697029e3efa03f9090bd7be13aab86784749731`, schema `ouf.semantic-authenticated-deployment-source-package.v5`. Evidenza allegata dall'operatore, non accesso indipendente al VPS.
 
