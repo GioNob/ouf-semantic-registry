@@ -1,7 +1,7 @@
 {
   "schema": "ouf.work-checkpoint.v1",
   "gatewayCommit": "3bdedad3108112ee4c36e7cb8387aaf60912e97c",
-  "semanticDocumentationCommit": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
+  "semanticDocumentationCommit": "e14b424ba523dd4f024e8042043131ea441a52dd",
   "gatewayCI": {
     "success": 38,
     "total": 38,
@@ -15,9 +15,8 @@
     "newPrivatePolicyTests": 15
   },
   "semanticDocumentationCI": {
-    "commit": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
+    "commit": "e14b424ba523dd4f024e8042043131ea441a52dd",
     "returnedPrWorkflows": 7,
-    "returnedJobs": 9,
     "status": "SUCCESS",
     "connectorScope": "PR runs first page only"
   },
@@ -27,7 +26,7 @@
     "skipped": 1
   },
   "vps": {
-    "lastPassedSection": 39,
+    "lastPassedSection": 40,
     "lastPassedRoot": null,
     "section30Status": "EXECUTED_BLOCKED_PLAN",
     "blockedRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
@@ -35,7 +34,7 @@
     "sourceManifestSha256": "a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b",
     "downloadChecksumsPassed": 28,
     "applyVerifyReached": true,
-    "nextSection": null,
+    "nextSection": 41,
     "recoveryExecuted": true,
     "recoveryWrapperSha256": "2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d",
     "repairToolSha256": "116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4",
@@ -44,8 +43,8 @@
     "startAuthorized": false,
     "runtimeRegistered": false,
     "section32Status": "EXECUTED_BLOCKED",
-    "nextWrapper": null,
-    "nextWrapperSha256": null,
+    "nextWrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_LINEAGE_2026-10-04.sh",
+    "nextWrapperSha256": "ac40df1dba21cc528641ea38aad2020e557dd3424612ab53071bc57f74992083",
     "section33Status": "EXECUTED_BLOCKED",
     "section32Root": null,
     "partialEvidenceKnown": false,
@@ -68,13 +67,15 @@
     "keysPresent": 2,
     "section37Status": "PRIVATE_ROLE_POLICY_AUTHORIZED",
     "section38Status": "EXECUTED_PASS",
-    "lastPassSection": 39,
+    "lastPassSection": 40,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "PRIVATE_CONTENT_PROVENANCE_REVIEW_PREPARATION",
-    "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA"
+    "nextStatus": "PRIVATE_IMAGE_LINEAGE_READ_SCOPE_REQUIRED_AFTER_CI",
+    "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
+    "section40Status": "EXECUTED_PASS",
+    "section41Status": "PREPARED_NOT_AUTHORIZED_NOT_EXECUTED"
   },
-  "nextTask": "Prepare private configuration/provenance verification and observation-to-mandate bridge; no VPS command currently offered.",
+  "nextTask": "Obtain concrete §41 private image lineage read scope after pinned wrapper tests and CI. No VPS replay.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -86,7 +87,7 @@
   ],
   "pr56": "open draft unmerged",
   "pr26": "open draft unmerged",
-  "documentationHead": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
+  "documentationHead": "e14b424ba523dd4f024e8042043131ea441a52dd",
   "v8Recovery": {
     "status": "EXECUTED_PASS",
     "packageRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
@@ -98,8 +99,8 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Do not replay39/38/36/34/31. Implement/test/review scoped private content verification before asking operator action or authority.",
-  "latestDocumentationCi": "PRIOR_HEAD_aab0f3e_SUCCESS_THIS_RECEIPT_RECORD_PENDING",
+  "nextStep": "Authorize §41 four evidence files and six build-context source files only; future image bytes/provenance and observation-to-mandate bridge remain open.",
+  "latestDocumentationCi": "e14b424_7_PR_WORKFLOWS_SUCCESS_NEW_CODE_PENDING",
   "localDiagnosticTests": {
     "total": 11,
     "passed": 10,
@@ -174,9 +175,9 @@
     "roleSigningAuthorized": false,
     "startAuthorized": false
   },
-  "semanticHead": "43011fe14ef31ea6b6378de618a6be2e8ddf6256",
+  "semanticHead": "e14b424ba523dd4f024e8042043131ea441a52dd",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
-  "checkpointType": "operator-acceptance-metadata-pass",
+  "checkpointType": "operator-configuration-provenance-pass-image-lineage-prepared",
   "checkpointAt": "2026-10-04",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
@@ -292,7 +293,7 @@
   },
   "configurationProvenanceReadback": {
     "section": 40,
-    "status": "PREPARED_NOT_AUTHORIZED_NOT_EXECUTED",
+    "status": "EXECUTED_PASS",
     "wrapper": "docs/handoffs/commands/OUF_VERIFY_CONFIGURATION_PROVENANCE_2026-10-04.sh",
     "wrapperSha256": "1ab35491972810bc72a995c534e1bfc438f6f0c1e469b8dc8a3685e020c50b9b",
     "privateScopeRequired": true,
@@ -301,13 +302,45 @@
     "localTestsPassed": 7,
     "acceptanceGranted": false,
     "startAuthorized": false,
-    "executedCommit": null,
+    "executedCommit": "4e69bcf2a66abf75f0ec18db11c339293891f630",
     "preparedCommit": "4e69bcf2a66abf75f0ec18db11c339293891f630",
     "ciDedicatedRun": 37226268082,
     "ciDedicatedJob": 111506443576,
     "ciDedicatedConclusion": "success",
     "testsPassed": 18,
-    "scopeGranted": false
+    "scopeGranted": true,
+    "receivedAt": "2026-10-04T21:28:07+02:00",
+    "operatorReceipt": "docs/handoffs/receipts/SEMANTIC_CONFIGURATION_PROVENANCE_PASS_2026-10-04_OPERATOR.json",
+    "inputHashes": {
+      "adapter.json": "4ac4d43b78d833b8d950ebc1bdfa5046bdace987674b50b836a4dbcd165dfcec",
+      "apisix.yaml": "dcb6c3d899a45483112edc1b005dd8214775096fa488d0544e62e22d039c160c",
+      "binding": "a486c01d486023f960945c71737d151eacfe91b341ffdb5b7aa0cc03c316b7d3",
+      "config.yaml": "3d7ba12497896163c22800706aab3a9552a0c7f4c37aa1cbe0ced9112478f399",
+      "launch": "715ad05237a26f9f63324f2bee87296659420d081ae3598414f798dc74f319cc",
+      "manifest": "052b46a56ea666971f135c75af48b3342dbeb68e2f17f1f16263a99351df88bd",
+      "plan": "121a78f38fb46aa256be8db87db7042def302da3c8bb5f06c80b326b062df461",
+      "stage": "768f37067b94b851f3e83ee224955c434dcd083c96717f4618f5675f0b7ae503",
+      "tls": "e17f7fe7db3e179cbdd619f7da79134e7c0d82b467d3513b6f62d0c8d27b3200",
+      "trust": "8a108a3c4b47f86ef58589c7322572db88991672f4c328a200711a9fd5576776"
+    },
+    "inlineTlsPrivateKeyFileRead": true,
+    "doNotReplay": true
   },
-  "nextStatus": "PRIVATE_CONFIGURATION_READ_SCOPE_REQUIRED_AFTER_CI"
+  "nextStatus": "PRIVATE_IMAGE_LINEAGE_READ_SCOPE_REQUIRED_AFTER_CI",
+  "imageLineageReadback": {
+    "section": 41,
+    "status": "PREPARED_NOT_AUTHORIZED_NOT_EXECUTED",
+    "wrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_LINEAGE_2026-10-04.sh",
+    "wrapperSha256": "ac40df1dba21cc528641ea38aad2020e557dd3424612ab53071bc57f74992083",
+    "localTestsPassed": 8,
+    "localTestsSkipped": 0,
+    "scopeGranted": false,
+    "evidenceFilesProposed": 4,
+    "buildContextFilesProposed": 6,
+    "privateKeyFilesReadProposed": 0,
+    "imageBytesVerified": false,
+    "imagePublisherProvenanceVerified": false,
+    "acceptanceGranted": false,
+    "startAuthorized": false
+  }
 }

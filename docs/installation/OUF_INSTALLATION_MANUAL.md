@@ -1,5 +1,20 @@
 # OUF — Manuale di installazione e bootstrap
 
+## §41 PREPARATO — lettura privata lineage immagini da autorizzare
+
+Ultimo VPS §40 ESEGUITO/PASS; scope §40 completato, non riutilizzato per altre letture. Preparato `tools/verify_semantic_image_lineage.py` e wrapper `docs/handoffs/commands/OUF_VERIFY_IMAGE_LINEAGE_2026-10-04.sh`, SHA256 `ac40df1dba21cc528641ea38aad2020e557dd3424612ab53071bc57f74992083`. Stato NON AUTORIZZATO/NON ESEGUITO. Nessun comando VPS pendente prima del conferimento.
+
+Scope concreto proposto: quattro file di evidenza (manifest e trust receipt già hash-pinned, image stage receipt e build-intent nel root adapter173408), più i sei file del contesto di build congelato sotto context. Nessun file configurazione runtime, TLS/PEM/MAC/OAuth/Env; niente Docker/image export/pull/build, rete/IAM/provider, scritture target, firma, consumerlink o avvio. Reader nofollow/regular/root0600/nlink1/ancestor e doppio read metadata/bytes del verificatore §40 riusato, con cap128KiB/file; output solo hash/esiti. Paths/binding del lab espliciti, nessun path da JSON privato aperto. Rollback non necessario per lettura; BLOCKED conserva prove e richiede analisi senza replay.
+
+Verifica: manifest/trust §40 → image IDs/ruoli RO-RW; stage receipt = build intent; source52c0dcf/sourceURL/base digest/runtime user/payloadHash coerenti; sei bytes sorgente corrispondono ai checksum revisionati al pin; adapter label snapshot in trust e selezione APISIX3.18.0 del Gateway coerenti. Le sei fonti GitHub pinned sono state scaricate via connector e tutti i checksum confrontati con PAYLOAD_HASHES del builder52c0dcf:6/6 uguali. Nessuna ricostruzione dell'immagine o inventario target ripetuto.
+
+**Limite:** il PASS attesta la lineage dichiarata dalle receipt e i bytes del contesto conservato, non i bytes installati dentro l'immagine, publisher trust, SBOM dipendenze/base, build riproducibile, OCI/rootfs/generation live o acceptance. Non assumere che un root-host compromesso non possa falsificare receipt non firmate. Questi limiti restano APERTI insieme al ponte observation→mandate; nessun nuovo prerequisito infrastrutturale o package source-only introdotto.
+
+PET riesaminati per questo slice: Alignment Matrix v1.7/Terminology v1.1, Semantic9.2/10/28.11/28.11.1/159.2/160.6–160.7, Gateway supply-chain/vendor digest gate, Authorization36.10 e Onboarding92–92.3. Confini owner/THS e ricerca interna indipendente dai provider preservati. Dockerfile selezionato usa base digest pinned e cinque file Python senza installazioni pip; ciò non costituisce SBOM completo della base.
+
+Test nuovi locali:8/8 PASS,0 skip (drift input, source/base/role sostituiti, hash coerenti ma binding errati, metadata drift, CLI isolata con zero scritture ed errori redatti). Wrapper bash-n e closure parity PASS. Test §39/40 già verdi riusati; CI estesa esegue11+7+8 test e tutte le parity. CI del checkpoint §40 `e14b424ba523dd4f024e8042043131ea441a52dd`:7 workflow PR completed/success. CI nuovo codice da verificare prima della richiesta VPS. Dopo PASS41 proseguire con prova mirata dei bytes immagine/provenance e raccordo temporale, senza firme/avvii impliciti.
+
+
 ## Checkpoint corrente — §40 ESEGUITO/PASS, non ripetere
 
 Scope §40 conferito dall'utente «Autorizzo»; output operatore ricevuto 4 ottobre 2026, 21:28:07 Europe/Rome. Checksum OK; SEMANTIC_CONFIGURATION_PROVENANCE=PASS. Evidenza operatore, nessun accesso VPS indipendente. Pin eseguito `4e69bcf2a66abf75f0ec18db11c339293891f630`, wrapper SHA256 `1ab35491972810bc72a995c534e1bfc438f6f0c1e469b8dc8a3685e020c50b9b`. Receipt redatta: `docs/handoffs/receipts/SEMANTIC_CONFIGURATION_PROVENANCE_PASS_2026-10-04_OPERATOR.json`.
