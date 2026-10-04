@@ -87,3 +87,13 @@ SHA256 wrapper `0be85f2f2c1d6cbd7f5b0f86c396e6a1050c024adcc85950029b8980cab6b001
 ## Filo del prodotto mantenuto
 
 Discovery/lookup/definitions/adoption exactrefs al mappingassistant→THS→ACTIVE→file ingestion→RAW/handoff→UDP restano obiettivo. Percorso interno non dipende dall'avvio provider se esiste già semantica sufficiente. Cinema8/8 e Teatri profile/proposta non vanno rifatti. R-SMOKE, Search/definitions/class Theatre/vocab/identity review, upload acceptance, Lake/replay/portabilità/OA restano aperti come registrati nell'handoff; nessuna chiusura per omissione.
+
+## §40 PREPARATO — scope di lettura privata non ancora conferito
+
+§39 resta l'ultimo VPS PASS, storico; §38 private trust policy PASS preservato, nessun replay. Preparato il [verificatore](../../tools/verify_semantic_configuration_provenance.py) e wrapper `docs/handoffs/commands/OUF_VERIFY_CONFIGURATION_PROVENANCE_2026-10-04.sh`, non eseguito. SHA256 wrapper `1ab35491972810bc72a995c534e1bfc438f6f0c1e469b8dc8a3685e020c50b9b`. Il wrapper contiene esattamente il verificatore testato; i root/owner sono espliciti e non derivati da JSON privato.
+
+Scope proposto: lettura read-only redatta di stopped-manifest, launch-input-receipt, tls-runtime-receipt, trust-receipt, stage-receipt, binding e runtime-plan già esistenti, più adapter.json/config.yaml/apisix.yaml nei root storici. **apisix.yaml contiene la chiave TLS southbound inline, quindi il suo contenuto sarà letto privatamente in memoria**, senza stamparlo/copiarlo. Nessun file PEM separato, MAC key, southbound.env, credential/client-secret o offline CA key viene aperto. Nessun Docker/IAM/network/provider, scrittura sul target, firma, installazione, consumerlink, runtime registration o start.
+
+Prova limitata: manifest SHA già noto→launch receipt→TLS/trust/binding→stage→plan; hash esatti dei tre output, adapter binding e routes rispetto al piano sigillato. Doppio read bytes/stat stabile, non snapshot atomico. **Non** replay indipendente del compiler, validazione crittografica chiavi/certificati, provenienza publisher immagine, ispezione Docker live/full OCI, generation/rootfs seal, né acceptance. I gate e il ponte observation→mandate restano aperti. I file di evidenza non conferiscono autorità.
+
+Test locali: 7 nuovi test PASS +11 readback storico PASS, nessuno skip; CLI isolata senza scritture, errori redatti, hash/contract drift, symlink/hardlink/FIFO/owner/mode e metadata drift. CI del checkpoint §39 `8caee157822045e39305812953fdee295f889285`:7 workflow PR success. Nuova CI da verificare sul commit del verificatore prima della richiesta VPS. Ai sensi handoff§7.4, chiedere scope concreto per la lettura privata solo dopo wrapper pinned/testato; nessun comando pendente prima della risposta.

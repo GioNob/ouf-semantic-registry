@@ -21,3 +21,14 @@ jobs:
           embedded = wrapper.split("<<'OUF_PYTHON'\n", 1)[1].rsplit('\nOUF_PYTHON', 1)[0]
           assert embedded == Path('tools/read_semantic_acceptance_metadata.py').read_text().rstrip('\n')
           PY
+      - name: Test private configuration provenance and redaction
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_configuration_provenance.py
+      - name: Verify private configuration wrapper embeds tested verifier
+        run: |
+          bash -n docs/handoffs/commands/OUF_VERIFY_CONFIGURATION_PROVENANCE_2026-10-04.sh
+          python3 -B - <<'PY'
+          from pathlib import Path
+          wrapper = Path('docs/handoffs/commands/OUF_VERIFY_CONFIGURATION_PROVENANCE_2026-10-04.sh').read_text()
+          embedded = wrapper.split("<<'OUF_PYTHON'\n", 1)[1].rsplit('\nOUF_PYTHON', 1)[0]
+          assert embedded == Path('tools/verify_semantic_configuration_provenance.py').read_text().rstrip('\n')
+          PY

@@ -289,5 +289,18 @@
     "operatorReceipt": "docs/handoffs/receipts/SEMANTIC_ACCEPTANCE_METADATA_PASS_2026-10-04_OPERATOR.json",
     "inventoryReceiptHash": "6b0814aefde46df9b849df9596b666cc5b99c74aa82bc4fbf71f292b0a189e43",
     "doNotReplay": true
-  }
+  },
+  "configurationProvenanceReadback": {
+    "section": 40,
+    "status": "PREPARED_NOT_AUTHORIZED_NOT_EXECUTED",
+    "wrapper": "docs/handoffs/commands/OUF_VERIFY_CONFIGURATION_PROVENANCE_2026-10-04.sh",
+    "wrapperSha256": "1ab35491972810bc72a995c534e1bfc438f6f0c1e469b8dc8a3685e020c50b9b",
+    "privateScopeRequired": true,
+    "inlineTlsPrivateKeyFileReadProposed": true,
+    "separatePrivateKeyFilesReadProposed": 0,
+    "localTestsPassed": 7,
+    "acceptanceGranted": false,
+    "startAuthorized": false
+  },
+  "nextStatus": "PRIVATE_CONFIGURATION_READ_SCOPE_REQUIRED_AFTER_CI"
 }
