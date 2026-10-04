@@ -131,7 +131,7 @@ class Tests(unittest.TestCase):
             with self.subTest(key=key),self.assertRaises(ValueError):self.verify(tar(members),'sha256:'+m.digest(raw),payload,meta)
 
     def test_isolated_cli_redaction_and_empty_docker_config(self):
-        data,image,payload,meta,_,_=fixture()
+        data,image,payload,meta,_,cfg=fixture()
         with tempfile.TemporaryDirectory(dir=os.environ.get('OUF_TEST_ROOT',str(ROOT.parent))) as d:
             root=Path(d);root.chmod(0o700)
             binary=root/'docker-fixture'
@@ -149,8 +149,14 @@ class Tests(unittest.TestCase):
                 '--adapter-image',image,'--southbound-image',image,'--payload-hashes',json.dumps(payload),
                 '--source-commit',meta['sourceCommit'],'--payload-hash',meta['payloadHash'],'--runtime-user',meta['user'],
                 '--seconds','10','--max-bytes','1000000','--max-entries','1000']
+            descriptor=m.digest(json.dumps({'Type':'layers','Layers':cfg['rootfs']['diff_ids']},sort_keys=True,separators=(',',':')).encode())
+            args+=['--adapter-rootfs-descriptors-hash',descriptor,'--southbound-rootfs-descriptors-hash',descriptor]
             proc=subprocess.run(args,capture_output=True);self.assertEqual(proc.returncode,0,proc.stdout+proc.stderr)
             self.assertNotIn(b'SENTINEL',proc.stdout+proc.stderr)
+            args[args.index('--southbound-rootfs-descriptors-hash')+1]='f'*64
+            proc=subprocess.run(args,capture_output=True);self.assertEqual(proc.returncode,1)
+            self.assertNotIn(b'SENTINEL',proc.stdout+proc.stderr)
+            args[args.index('--southbound-rootfs-descriptors-hash')+1]=descriptor
             args[args.index('--payload-hash')+1]='f'*64
             proc=subprocess.run(args,capture_output=True);self.assertEqual(proc.returncode,1)
             self.assertNotIn(b'SENTINEL',proc.stdout+proc.stderr);self.assertNotIn(d.encode(),proc.stdout+proc.stderr)

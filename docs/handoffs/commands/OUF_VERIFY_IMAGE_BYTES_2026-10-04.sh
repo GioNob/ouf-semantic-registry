@@ -1,3 +1,12 @@
+#!/usr/bin/env bash
+# PREPARED ONLY — §42 PRIVATE IMAGE BYTES READ SCOPE NOT GRANTED.
+# Docker save of TWO pinned images only, config + rootfs bytes streamed privately.
+# No container create/start/build/pull; no registry credentials or target mount/Env reads.
+# No archive extraction/spool; an empty temporary Docker CLI config directory is removed.
+# 180 seconds / 8 GiB cumulative parser work / 100000 entries PER IMAGE.
+# Publisher provenance, SBOM, mount view and release acceptance remain unproven.
+set -euo pipefail
+exec sudo /usr/bin/python3 -I -B - --docker-path /usr/bin/docker --docker-host unix:///var/run/docker.sock --platform linux/amd64 --adapter-image sha256:a697bf75bf7d51afadadfaccd3d80537e9a5fb2a08f0d194c6dfd9462e812468 --southbound-image sha256:84e6b5e787e9f889ebff88161cb9a16599bafcffa236c6b54c7f779a0655940d --adapter-rootfs-descriptors-hash e6b2f3bd33516825e3bee4a0af52090d917545bd644c294dfe0843b736b088d1 --southbound-rootfs-descriptors-hash ea6aeeef286a7c893cd0bd8eb7452196d87c8681f72a10a3001af288133528ed --payload-hashes '{"app/tools/semantic_provider_adapter.py":"718f031cd4116d233c3075ee74da2f28170b5ed4efcac1a77deef154f7fd320c","app/tools/semantic_provider_admission.py":"dca670d1f0ced678db6af9810199da07419901a21523385e0ebea623b608bbfc","app/tools/semantic_provider_boundary.py":"cae2b1d5970349ce1ebc95fb44ca4dd1bd67d93e43900ad4cbeabb3d5fbd6e69","app/tools/semantic_provider_relay.py":"04b33da9b3d599872c19ea20d3775141ef99c5989c7fb7175be6926b74cc7f6f","app/tools/southbound_security.py":"5953e6143fb7141b62a2d5cc26d8cf85ee74147d9eefaa923460f8e1706eb0ec"}' --source-commit 52c0dcf11654a4d3d0f17a6902ed095975466fb9 --payload-hash 379bad5a3083048ff012c5143ace15509321fa860cdaefd238b1218f6541afe7 --runtime-user 10006:10006 --seconds 180 --max-bytes 8589934592 --max-entries 100000 <<'OUF_PYTHON'
 """Bounded Docker save archive verification; never extracts or runs image files."""
 import argparse
 import gzip
@@ -275,3 +284,4 @@ def main():
 
 
 if __name__=='__main__': raise SystemExit(main())
+OUF_PYTHON
