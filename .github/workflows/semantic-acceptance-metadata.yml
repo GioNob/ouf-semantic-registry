@@ -47,3 +47,12 @@ jobs:
           embedded = wrapper.split("<<'OUF_PYTHON'\n", 1)[1].rsplit('\nOUF_PYTHON', 1)[0]
           assert embedded == source.rstrip('\n')
           PY
+      - name: Test bounded image archive verification and CLI redaction
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_image_archive.py
+  image-archive-docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify real Docker save format and owned image payload bytes
+        run: sudo env OUF_REQUIRE_IMAGE_ARCHIVE_DOCKER=1 OUF_IMAGE_ARCHIVE_TEST_PARENT=/root /usr/bin/python3 -B tests/test_semantic_image_archive_docker.py
