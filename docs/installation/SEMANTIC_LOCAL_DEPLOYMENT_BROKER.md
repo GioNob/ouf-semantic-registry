@@ -1,5 +1,11 @@
 # Broker locale operativo di deployment
 
+## Aggiornamento corrente — entrambi i producer reali e staging v8 pendente
+
+Gateway `7ded9df0c74c6db919c7a68d4c75ab2c132dea53`: CI38/38,151 test pertinenti +2 native preparer +6 Docker. Il percorso autenticato usa issuer installer e attestor nodo di produzione, con denial prima dell’approval quando il rootfs cambia. Mandati/chiavi/immagine Busybox restano authority di CI; non accettazione target. Per configurazione, limiti e contenuto dei bind mount: [attestor e package v8](SEMANTIC_NODE_ATTESTOR_AND_PRODUCERS_PACKAGE_V8.md).
+
+§30 staging v8: **NON ESEGUITO**, package26 sorgenti per rendere disponibili i nuovi producer sul VPS senza invocarli. §29 v7 resta ESEGUITO/PASS e non va ripetuto. Provisioning authority e accettazione immagini/volumi target restano da chiudere; nessuna firma target, registrazione runtime, avvio o merge.
+
 ## Producer installer ora disponibile
 
 Commit Gateway `1f8693cacc296c0b7b521ec6822ad5a032378a3d`: l’approval finale può essere emessa dalla [CLI installer di produzione](SEMANTIC_INSTALLER_APPROVAL_PRODUCER.md), previa policy, mandato finale firmato e chiave già esistenti. La CI38/38 passa con questo issuer nel percorso Docker autenticato:131 test pertinenti,2 preparer nativi e6 Docker. L’attestor del nodo resta una fixture di CI e deve essere completato per le immagini reali. Il package v7 §29 ESEGUITO/PASS sul VPS non contiene il nuovo issuer; nessuna installazione, firma, registrazione o avvio target è avvenuta con questo checkpoint.

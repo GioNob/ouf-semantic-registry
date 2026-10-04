@@ -1,6 +1,22 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — issuer reale dell’approval completato; §29 VPS ESEGUITO/PASS
+## Checkpoint corrente — attestor e issuer reali verificati; staging v8 NON ESEGUITO
+
+Gateway `7ded9df0c74c6db919c7a68d4c75ab2c132dea53`, PR56 draft non mergiata: **CI38/38 SUCCESS**, senza rerun, con151 test pertinenti +2 prove native preparer +6 Docker. Locale157 test,154PASS e3 Docker skip. Nuovi12 test attestor e8 test staging v8. Il percorso autenticato usa entrambi i producer di produzione; il rootfs alterato dopo l’accettazione è respinto prima di claim del firmatario, approval e driver, senza processo applicativo. Mandati, chiavi e immagine Busybox della prova restano di CI.
+
+L’attestor verifica un mandato di accettazione esplicito e firmato, l’intero OCI, il sigillo dell’intero rootfs senza esclusioni, runtime created, generazione live, MAC/IP e peer/bridge. Rilegge prima/dopo la firma e conserva un claim non ripetibile. Il contenuto dei bind mount esterni non è sigillato dal rootfs: l’autorità deve approvarne esplicitamente mutabilità e vincoli del documento OCI. Questo non prova snapshot atomico, provenance publisher o accettazione delle immagini/volumi reali del VPS.
+
+**Prossimo intervento necessario dell’operatore: §30 staging privato v8, NON ESEGUITO.** [Comando completo](commands/OUF_STAGE_LOCAL_PRODUCERS_PACKAGE_V8_2026-10-04.sh), wrapper SHA256 `f1c2e775d4882916e0840fe5ab9965fdf4477d984dd4dd5b1e0f5a7a2ea9d5bb`; manifest26 sorgenti SHA256 `a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b`. Fonte immutabile Gateway sopra. Nuovo root privato timestamped; plan/apply/verify compilano e custodiscono sorgenti/ricevuta senza invocare i producer. Nessuna chiave, firma o authority target, registrazione runtime, modifica regole/unit/container o avvio. **Non ripetere §29.**
+
+§29 v7 resta ESEGUITO/PASS secondo ricevuta operatore, root `/etc/ouf/deploy-snapshots/semantic-local-broker-package-20261004-110947`, source `04d775e892cd42e42d34de02959b9c7ba6483f3b`. Non contiene i nuovi producer. Il nuovo package v8 li rende disponibili per configurazione successiva: non è accettazione operativa. La sua esecuzione va registrata soltanto quando arriva l’output reale dell’utente; aggiornare autonomamente ricevuta, stato comando e tutti i documenti.
+
+Decisione: ogni Ente ha installazione e authority indipendenti; attestor locale al nodo runtime, senza tenant o authority centrale. Stesso host/subnet e nodi/reti differenti restano supportati dal contratto. Protocollo, configurazione, limiti, responsabilità dei mandati e provisioning aperto: [attestor/package v8](../installation/SEMANTIC_NODE_ATTESTOR_AND_PRODUCERS_PACKAGE_V8.md). L’issuer installer già completato rimane separato dall’attestor e dall’IAM applicativo.
+
+Dopo l’output v8: chiudere custodia sorgenti target e preparare **provisioning esplicito delle authority e dei mandati di accettazione target**, con binding reali delle immagini/volumi. Restano inoltre registrazione runtime esplicita, eventuale autorizzazione all’avvio, reboot reale e release acceptance. Nessun merge, replay, start o reboot implicito.
+
+Il ramo ingestion interno MCP→profilo→mapping DRAFT→THS→bundle ACTIVE→Ingestion→UDP resta aperto nel suo sprint. Semantic/Registry esegue la ricerca esterna via Gateway, schema.gov.it predefinito e provider configurabile per installazione; chatbot/MCP propone, THS autorizza adozione/pubblicazione/attivazione. Questo gate riguarda il deployment provider esterno, non un prerequisito universale dell’ingestion interna.
+
+## Checkpoint storico — issuer reale dell’approval completato; §29 VPS ESEGUITO/PASS
 
 Gateway: `1f8693cacc296c0b7b521ec6822ad5a032378a3d`, ramo `codex/semantic-provider-request-boundary`, PR56 draft e non mergiata. CI **38/38 SUCCESS**, senza rerun: **131 test pertinenti**, **2 prove native del preparer** e **6 test Docker**, compreso il percorso autenticato che usa broker operativo e **issuer installer di produzione**. In locale:137 test eseguiti,134 passati e3 prove Docker saltate perché l’ambiente non le supporta. 16 nuovi test issuer includono due processi concorrenti, fsync fallito, claim incerto, mandato/chiave/input non validi e regressione temporale.
 
@@ -1382,3 +1398,8 @@ done
 ## 28. Package runtime autenticato v6 — ESEGUITO/PASS
 
 Comando operativo versionato: [OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04.sh](commands/OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04.sh). Source Gateway `f1996cca60e66f1807b88f126793a8edc1aed15f`, 22 hash esatti; script SHA256 `92b746dc33db98da5580ea64d8994887a9c9ba1c85ca67569155ef9dddae1e05`. Crea un nuovo snapshot privato e una receipt source-only. Non aggiorna il package v5 già eseguito. Plan/apply/verify non installano configurazioni o producer, non eseguono i body dei nuovi moduli e non autorizzano start. Output operatore ricevuto: plan/apply/verify PASS, root `/etc/ouf/deploy-snapshots/semantic-authenticated-runtime-package-20261004-094455`; ricevuta conservata. Non ripetere.
+
+
+## 30. Primo intervento VPS pendente — package privato producer reali v8
+
+**NON ESEGUITO.** Eseguire una volta il [wrapper fissato](commands/OUF_STAGE_LOCAL_PRODUCERS_PACKAGE_V8_2026-10-04.sh) dopo la verifica SHA256 descritta nel checkpoint corrente e restituire l’output. Nessun replay del v7. Entrambi i producer restano non installati/invocati; authority e start non vengono conferiti. Nessun nuovo login Keycloak. Prima di qualunque configurazione operativa, servono authority e accettazione target esplicite.

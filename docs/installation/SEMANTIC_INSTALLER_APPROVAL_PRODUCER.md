@@ -1,5 +1,11 @@
 # Producer reale dell’approval finale dell’installer
 
+## Aggiornamento corrente — entrambi i producer reali e staging v8 pendente
+
+Gateway `7ded9df0c74c6db919c7a68d4c75ab2c132dea53`: CI38/38,151 test pertinenti +2 native preparer +6 Docker. Il percorso autenticato usa issuer installer e attestor nodo di produzione, con denial prima dell’approval quando il rootfs cambia. Mandati/chiavi/immagine Busybox restano authority di CI; non accettazione target. Per configurazione, limiti e contenuto dei bind mount: [attestor e package v8](SEMANTIC_NODE_ATTESTOR_AND_PRODUCERS_PACKAGE_V8.md).
+
+§30 staging v8: **NON ESEGUITO**, package26 sorgenti per rendere disponibili i nuovi producer sul VPS senza invocarli. §29 v7 resta ESEGUITO/PASS e non va ripetuto. Provisioning authority e accettazione immagini/volumi target restano da chiudere; nessuna firma target, registrazione runtime, avvio o merge.
+
 ## Stato
 
 Implementazione: `scripts/semantic_provider_installer_approval.py`, `tools/semantic_provider_installer_approval.py` e `tools/semantic_provider_deployment_signing.py`, commit Gateway `1f8693cacc296c0b7b521ec6822ad5a032378a3d`. Il broker usa questa CLI nel percorso Docker/runc autenticato di CI. L’attestor del nodo resta una fixture: non è dimostrata l’accettazione delle immagini reali del VPS.
