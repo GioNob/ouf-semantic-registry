@@ -1,3 +1,6 @@
+# HISTORICAL: handoff §25 EXECUTED/PASS plan/apply/verify on 2026-10-04.
+# Package root: /etc/ouf/deploy-snapshots/semantic-deployment-package-20261004-072744
+# Source-only snapshot; do not replay automatically.
 (
 set -euo pipefail
 OUF_DEPLOYMENT_PKG_TMP=$(mktemp -d)
