@@ -1,6 +1,12 @@
 # Provisioning delle authority e dossier target per installazione indipendente
 
-## Stato corrente — §32 ESEGUITO/BLOCKED; diagnostica §33 pendente
+## Stato corrente — §33 BLOCKED; §34 corretto NON ESEGUITO
+
+Diagnostico operatore root20261004-145230: IMAGE_INSPECT / TARGET_ACCEPTANCE_INVENTORY_UNPROVEN. Nessuna receipt PASS o authority target. Gateway `d42a8c563a58ed041bf7b7a2921be975e93becf5` CI38/38 verde,169 unit+2 preparer native+2 target native PASS; nuovo [wrapper completo §34](../handoffs/commands/OUF_INVENTORY_TARGET_ACCEPTANCE_2026-10-04.sh) SHA256 `1fa92459ae358f3811ba234c837a0c3e8cffcde92b575372f5d073ae78f8833d`: diagnosi prima, inventario solo se PASS su nuovo root senza overwrite. §31 PASS preservato; non ripetere staging/recovery/§32/§33.
+
+[Docker documenta l'omissione dei campi Config vuoti](https://docs.docker.com/engine/deprecated/#empty-nil-fields-in-image-config) e [la CLI usa fallback su mappa](https://github.com/docker/cli/blob/master/cli/command/inspect/inspector.go). Corretto accesso ai soli campi opzionali con regressione Go missingkey=error e Docker reale; obbligatori e vincoli volumi/startup preservati. Questo difetto è provato nei test; la causa del blocco sul VPS resta da confermare con §34. Locale10 PASS/2 native skip. Authority, accettazione effettiva di immagini/mount, runtime e start restano distinti e non conferiti.
+
+## Stato storico — §32 BLOCKED; §33 allora pendente
 
 Fotografia operatore conferma BLOCKED, non la causa né receipt PASS. L’inventario NON ESEGUITO descritto sotto è storico. Non ripetere il wrapper32 o cancellare output parziali. [§33 diagnostica](../handoffs/commands/OUF_DIAGNOSE_TARGET_ACCEPTANCE_2026-10-04.sh) usa --diagnose: stessi input target, nessuna pubblicazione di dossier/piano/receipt e codici CHECK/REASON costanti senza valori privati. Nuovo snapshot custodisce soltanto il helper; non modifica package/candidati. Anche PASS diagnostico non completa §32 o conferisce authority.
 

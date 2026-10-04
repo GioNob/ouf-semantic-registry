@@ -1,0 +1,19 @@
+{
+  "schema": "ouf.semantic-target-diagnostic-blocked-operator.v1",
+  "evidenceType": "operator-supplied-inline-terminal-output",
+  "sourceRoot": "/etc/ouf/deploy-snapshots/semantic-target-acceptance-diagnostic-20261004-145230",
+  "observedStatus": "BLOCKED",
+  "check": "IMAGE_INSPECT",
+  "reason": "TARGET_ACCEPTANCE_INVENTORY_UNPROVEN",
+  "startAuthorized": false,
+  "noSecretsPrinted": true,
+  "checksumChecksPassed": 3,
+  "sourceCommit": "28272696308d449ac1380e0df0966a5224986c98",
+  "helperSha256": "b0abe2d6ef0cd3a31bae7896bfedd9043beabdd83a638fa7465e9210e121af0e",
+  "wrapperCommit": "014ace6a8f7cf2394f0ceca3f5578cc0982db8ed",
+  "wrapperSha256": "6d61183f1d5813db2de2da6e30f21d4ae2dcb71fbaacfffe6a0ba468652c9f75",
+  "independentVpsInspection": false,
+  "targetAcceptanceProven": false,
+  "diagnosticPublishedAcceptanceEvidence": false,
+  "actualVpsCauseProven": false
+}

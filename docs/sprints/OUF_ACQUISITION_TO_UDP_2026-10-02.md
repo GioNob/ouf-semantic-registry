@@ -1,6 +1,18 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
-## Checkpoint corrente — §32 ESEGUITO/BLOCKED; §33 diagnostica NON ESEGUITA
+## Checkpoint corrente — §33 ESEGUITO/BLOCKED; §34 corretto NON ESEGUITO
+
+Output operatore: root `/etc/ouf/deploy-snapshots/semantic-target-acceptance-diagnostic-20261004-145230`, **CHECK=IMAGE_INSPECT REASON=TARGET_ACCEPTANCE_INVENTORY_UNPROVEN**, tre checksum OK, START_AUTHORIZED=false. [Evidenza registrata](../handoffs/receipts/SEMANTIC_TARGET_ACCEPTANCE_DIAGNOSTIC_BLOCKED_2026-10-04_OPERATOR.json). Diagnostica completata con BLOCKED, nessuna evidenza di accettazione pubblicata; nessuna ispezione indipendente VPS. §32 resta BLOCKED, §31 staging v8 PASS preservato. Non ripetere §32/§33 o staging/recovery.
+
+Corretto un difetto verificato nel template image inspect: Docker29 omette campi Config opzionali vuoti e il fallback CLI su mappa con missingkey=error può rifiutare l'accesso diretto. Ora solo User/WorkingDir/Entrypoint/Cmd/Volumes opzionali usano index; Id/RootFS/Config restano obbligatori, volumi/startup non vuoti restano visibili ai controlli. Nessuna lettura Env, contenuti mount o chiavi. La causa specifica sul VPS resta un'ipotesi finché il nuovo diagnostico non dà esito: aggiunti motivi costanti per exit nonzero/deadline/output limit/image drift/runtime mancante, senza stderr o valori privati.
+
+Gateway `d42a8c563a58ed041bf7b7a2921be975e93becf5`: **CI38/38 SUCCESS**, log job111463156252 verificato:169 unit,2 native preparer,2 target native (Go fallback Docker29 e Docker reale), tutti PASS senza skip. Locale12 test:10 PASS e2 native skip per strumenti assenti. La prima revisione della correzione falliva la regressione JSON; delimitatore corretto prima di offrire il wrapper e nuova CI verde. Nessun PASS target viene dedotto dai test.
+
+**Prossimo intervento VPS §34 NON ESEGUITO:** [unico wrapper completo corretto](../handoffs/commands/OUF_INVENTORY_TARGET_ACCEPTANCE_2026-10-04.sh), SHA256 `1fa92459ae358f3811ba234c837a0c3e8cffcde92b575372f5d073ae78f8833d`, helper `10c543fa8d42839110fb8d12a385a4e58b0db43240eb07efe2e3b9b4c6f22080` pinned al commit sopra. Nuovo root privato0700: prima --diagnose, poi solo se PASS l'inventario con dossier/piano/receipt0600, no-overwrite. Snapshot vecchi preservati, package121542 e sorgenti26 invariati. Nessuna regola/unit/container/configurazione operativa modificata, chiave generata, firma, registrazione runtime o start. PASS inventario non conferisce authority né accettazione target.
+
+Dopo output §34 registrare root/hash/esito nei quattro documenti; se ancora BLOCKED correggere il motivo specifico senza cancellare evidenze. Provisioning per-Ente, accettazione immagini/volumi, authority reale, snapshot atomico/reboot/release e ingestion interna restano aperti. Installazioni indipendenti per Ente su host/rete condivisi o distribuiti; Semantic/Registry cerca tramite Gateway, schema.gov.it default configurabile, chatbot/MCP propone e THS governa. PR56/26 draft non mergiate.
+
+## Checkpoint storico — §32 BLOCKED; §33 allora NON ESEGUITO
 
 Fotografia terminale allegata: **SEMANTIC_TARGET_ACCEPTANCE_INVENTORY=BLOCKED START_AUTHORIZED=false NO_SECRETS_PRINTED=true**. [Evidenza operatore](../handoffs/receipts/SEMANTIC_TARGET_ACCEPTANCE_BLOCKED_2026-10-04_OPERATOR.json). Nessuna receipt PASS ricevuta; causa non esposta dalla versione originale. Il root preciso e l'eventuale presenza di evidenze parziali non sono trascritti come certi dalla fotografia. Nessuna ispezione indipendente VPS. Non ripetere §32 né cancellare snapshot/ricevute per ritentare. §31 staging v8 rimane ESEGUITO/PASS.
 

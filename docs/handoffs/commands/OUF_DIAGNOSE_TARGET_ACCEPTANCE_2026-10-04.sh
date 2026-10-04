@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# STATO: NON ESEGUITO. §33 sola diagnosi dopo §32 BLOCKED; nessun dossier/receipt pubblicato.
+# STATO: ESEGUITO/BLOCKED. §33 CHECK=IMAGE_INSPECT REASON=TARGET_ACCEPTANCE_INVENTORY_UNPROVEN.
+# Root diagnostic-20261004-145230; byte eseguiti commit014ace6, SHA2566d61183f. NON RIESEGUIRE.
 (
 set -euo pipefail
 OUF_DIAG_TMP=$(mktemp -d)
