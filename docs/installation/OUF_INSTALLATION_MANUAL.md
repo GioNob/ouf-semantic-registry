@@ -1,6 +1,21 @@
 # OUF — Manuale di installazione e bootstrap
 
-## Checkpoint corrente — §28 ESEGUITO/PASS; producer locali e broker produttivo pendenti
+## Checkpoint corrente — §28 ESEGUITO/PASS; contratto e custodia producer implementati
+
+§28: `/etc/ouf/deploy-snapshots/semantic-authenticated-runtime-package-20261004-094455`, source `f1996cca60e66f1807b88f126793a8edc1aed15f`; checksum wrapper +22 sorgenti e plan/apply/verify PASS concordanti, Python3.13.5. Ricevuta operatore in `2a8a0bc82e93bd09a6f65e7645381e1951b6bff1`, CI documentale13/13. Nessun accesso VPS indipendente o digest della receipt target. Nessun replay del §28.
+
+Nuovo codice Gateway `93e1c845d26d339af6a07acb0e588b2532d2a4a7`: `LocalEvidenceProducer` invoca soltanto un producer Python locale con interprete/source/configurazione esplicitamente pinned; richieste esatte CREATION_ATTESTATION/FINAL_DEPLOYMENT_APPROVAL, preflight mandato attivo, I/O limitati, stderr soppresso, deadline condivisa con la verifica. Due firme reali: record e manifest che lega requestHash/recordHash/hash dell'envelope canonico. Un hash di richiesta non firmato non è accettato come legame. L'autenticatore espone anche verifica detached in memoria, conservando le verifiche file legacy.
+
+`ProducerEmission` richiede un journal UNUSED esplicitamente provisionato e il lock comune già esistente: claim fsync ISSUING prima dell'invocazione, risultato firmato salvato O_EXCL/0600 con readback e fsync directory, poi ISSUED con resultHash. Timeout/esito sconosciuto resta ISSUING; nessun retry/reset automatico. File risultato estraneo è preservato e blocca prima dell'emissione. Due processi concorrenti non emettono due volte sullo stesso claim.
+
+**Validazione:** 99 test locali PASS, di cui17 nuovi producer test: processo reale +Ed25519, catena a tre ruoli del protocollo esistente, replay di risposta su richiesta differente, firma/mandato/scope/source drift, modifica configurazione durante processo, limiti/output flood/hang e diagnostica redatta, deadline unica, fsync/custodia/claim incerto e concorrenza con due processi. Chiavi effimere solo fixture. [CI sull'esatto commit](https://github.com/GioNob/ouf-api-gateway/commit/93e1c845d26d339af6a07acb0e588b2532d2a4a7/checks): verificare i check di questo head, senza trasferire il PASS di un commit precedente.
+
+**Limite e prossimo passo preciso:** trasporto e custodia del producer sono implementati/testati, ma il broker produttivo e il collegamento di questi componenti al bootstrap operativo non sono dichiarati completi. Comporre il broker con claim per i ruoli, full attestation valida prima della richiesta di approval, pubblicazione/custodia del request-binding e delle tre evidenze, quindi READY del consumer esistente e preparer3/driver5. Nessun approver o attestor reale è provisionato; non confondere il fixture echo/signature CI con full image/OCI/rootfs acceptance. Profilo e mandato dell'Ente, keys/policy/producer reali e gli altri gate rimangono aperti.
+
+**Nessun nuovo intervento VPS in questo checkpoint:** v6 resta immutato; il nuovo modulo e la nuova API detached non sono copiati/installati sul target. Regole/unit/container/runtime e start non cambiano. Nessun merge/replay/emissione/keygen target. Installazioni indipendenti per Ente; servizi co-locati o distribuiti; Semantic/Registry discovery esterna tramite Gateway (default schema.gov.it parametrizzabile), MCP/chatbot propone e THS governa adozione/attivazione. La prova file→mapping→ingestion→UDP resta aperta.
+
+
+## Checkpoint storico — ricevuta §28, prima del contratto producer
 
 Output operatore del 4 ottobre 2026: `/etc/ouf/deploy-snapshots/semantic-authenticated-runtime-package-20261004-094455`, schema `ouf.semantic-authenticated-runtime-source-package.v6`, source `f1996cca60e66f1807b88f126793a8edc1aed15f`, Python3.13.5. Checksum wrapper +22 sorgenti OK; plan/apply/verify PASS con tre receipt concordanti. [Ricevuta operatore](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/receipts/SEMANTIC_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04_OPERATOR.json). Evidenza allegata, non accesso VPS indipendente; digest del file receipt sul VPS non fornito.
 
