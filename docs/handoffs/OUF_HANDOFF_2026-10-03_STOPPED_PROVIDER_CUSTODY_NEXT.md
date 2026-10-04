@@ -1,6 +1,24 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — installazioni autonome; admission a due fasi approvata e implementata come contratto
+## Checkpoint corrente — consumo durevole e Docker a due fasi validati; §25 package v4 NON ESEGUITO
+
+**Vincolo permanente approvato:** un Ente, una installazione OUF autonoma. Nessuna installazione centrale multitenant o authority condivisa tra Enti. Ogni installazione possiede identità, policy, configurazioni, dati e mandato infrastrutturale propri; i suoi microservizi possono essere distribuiti o co-localizzati nello stesso server/rete/sottorete.
+
+**Codice completato:** gateway `cc161b94c1af014403dabd113200d3180f02089d` (PR56 draft). Nuovo `tools/semantic_provider_deployment_consumption.py`, adapter v3, preparer v2 e driver v4; schemi legacy restano accettati. Journal per candidato `ouf.semantic-deployment-consumption.v1`: STAGED → CREATING → CREATED → READY → STARTING → STARTED. Scope installation/Ente/CID/transaction, intent/config hash, OCI/generazione, evidence/approval e driver hash sono legati. Il broker source-sealed riceve tre fasi esplicite: authorize-create, record-created e prepare. La creazione parte dall'intento creation-only; attestazione e approval finali arrivano dopo il created-state indipendente. Il preparer v2 controlla READY/custody prima delle modifiche, verifica la stessa generazione reale e produce driver v4; il broker sigilla il driver una sola volta.
+
+**Consumo e recovery:** il driver v4 invoca il consumer dentro la sezione critica common guard/lease lock di Preexec, dopo i controlli live. STARTING viene compare-and-replace/fsync prima della release FIFO; authority viene ricontrollata dopo il claim, immediatamente prima dello starter. Successo registra STARTED come tentativo native completato, non application readiness. Failure/crash/revoca tardiva/fsync non provato lasciano lo stato durevole per recovery esplicito; nessun reset, nuova adozione o replay automatico. Un diniego prima del claim non consuma READY. Il lock per CID dell'adapter resta distinto: ordine per-CID → common, senza acquisizione inversa. Autorità mutate da root fuori dal protocollo cooperante non sono escluse.
+
+**Verifiche eseguite:** locale 82 test, **78 PASS e 4 native/Docker opt-in skip**. Nuovi: 11 consumer test, inclusi due processi reali sullo stesso PrivateJournal/flock con un solo consumo, failure di pubblicazione, revoca tardiva, cambio generazione/hash, fasi corrotte, doppio create/final/seal/start e callback sotto lock; 3 source-package v4 test; nuovo caso Docker opt-in. Head corrente **38/38 CI completed/success**, push e PR. Log di quattro job pertinenti letti: ciascun admission-preparer passa 40 unit/contract/package test e 2 native preparer/runc/nft senza skip; ciascun Docker job passa 5 test senza skip, legacy preservato e nuovo adapter v3 → preparer v2 → driver v4 reale, candidate created prima di approval finale, lease drift nega l'applicazione, positivo con marker reale e consumption STARTED, cleanup owned e default runtime preservato. I produttori sono sintetici esclusivamente nei test; nessuna acceptance VPS o authority target viene dichiarata.
+
+**Package privato nuovo:** `scripts/stage_semantic_deployment_package.py`, schema `ouf.semantic-deployment-source-package.v4`, **18 sorgenti**. Compila in memoria senza eseguire i body dei tool, sigilla hash/receipt root-private e nega replay o drift. Nessun broker/issuer/attestor/authenticator di test incluso. runtimeAdapterInstalled/admissionPreparerInstalled/externalProducerInstalled/runtimeRegistered/startAuthorized=false, regole/unità/container invariati e providerCalls=0. Metadata trustedToolsAvailable non prova compatibilità runtime.
+
+**VPS ultimo attestato:** §23 ESEGUITO plan/apply/verify PASS, `/etc/ouf/deploy-snapshots/semantic-admission-package-20261004-055825`, source ed6fab81acc17591a1087761266701f877233799, source-only v3 a 15 file. Questo snapshot e v1/v2 restano immutabili; adapter/preparer non installati, runtime non registrato, start non autorizzato. Nessun nuovo comando VPS eseguito in questo lavoro.
+
+**Prossimo passo preciso — intervento operatore:** §25 **NON ESEGUITO**, staging esclusivamente source-only v4 in nuova radice `semantic-deployment-package-<UTC>`. Comando `docs/handoffs/commands/OUF_STAGE_DEPLOYMENT_PACKAGE_V4_2026-10-04.sh`, SHA256 `b6ad57b07b4b28cb8791fb64d7df39c915d48dc2022e1db163b24235e57f5dd5`; 18/18 contenuti/hash confrontati con GitHub al commit corrente e bash -n PASS. Attesi plan/apply/verify PASS e root/output; su BLOCKED preservare la radice e niente replay. Nessun profilo, broker di produzione, approval/creation acceptance reale, servizio, regola, installazione runtime o avvio inclusi.
+
+**Gate dopo staging:** individuare e configurare nella singola installazione i produttori realmente autorizzati e l'autenticatore bounded, implementare/validare il broker di produzione secondo l'interfaccia source-sealed (la fixture Docker non è deployable), verificare immagine/rootfs completa e custody target. Binding authority M2M A/B/C non è implicitamente scelto. Restano atomic snapshot, IPv6/spoof, OIDC/purpose/TLS/revoca applicativa, lease attiva, reboot e acceptance sul backend VPS. Migrazione/cohort/runtime registration e qualsiasi start richiedono passaggi espliciti successivi.
+
+## Checkpoint precedente — installazioni autonome; contratto a due fasi approvato
 
 **Decisione esplicita approvata dall'utente il 4 ottobre 2026:** ogni Ente installa e amministra il proprio OUF. Mille Enti significano mille installazioni indipendenti; nessuna installazione centrale multitenant, collegamento tra tenant o authority condivisa è implicita. Codice, contratti e strumenti di release sono comuni; identità, policy, configurazioni, dati e mandati infrastrutturali appartengono alla singola installazione. Dentro un'installazione i microservizi possono essere distribuiti su server/reti differenti o sullo stesso server nella stessa rete/sottorete. La scalabilità riguarda replicabilità, aggiornamenti/manutenzione automatizzati e carico locale.
 
@@ -1048,3 +1066,69 @@ done
 ## 24. Installazioni autonome e admission a due fasi — approvato; contratto repository ESEGUITO
 
 Decisione approvata dall'utente il 4 ottobre 2026: un Ente, una installazione autonoma. Contratto gateway `d0784285dc98651a732d1328ec2aef5cc0eb8955`, 18 nuovi test PASS e CI 38/38 completed/success; dettagli nel checkpoint corrente e in `docs/architecture/OUF_INDEPENDENT_INSTALLATIONS_DEPLOYMENT_ADMISSION_2026-10-04.md`. Nessun nuovo comando VPS, installazione, registrazione, avvio o replay eseguito. Il prossimo lavoro è la migrazione installer/adapter con journal durevole e consumo unico sotto common lock; gate concreti di authority e acceptance restano aperti.
+
+
+## 25. Package deployment v4 privato — NON ESEGUITO; intervento operatore pendente
+
+Prerequisiti: operatore oufadmin con sudo, accesso HTTPS ai sorgenti pinned. La radice deve essere nuova; conservare i package precedenti. Questa operazione copia e sigilla soltanto 18 sorgenti con schema source-package v4. Non installa adapter/preparer/broker, non registra runtime, non cambia unità/regole/container e non autorizza avvio o lease. Il modulo consumer supporta journal iniziali provisionati dall'installer, ma questo comando non ne crea né popola alcuno; non produce intent, attestazioni o approval.
+
+Source commit: `cc161b94c1af014403dabd113200d3180f02089d`. Comando standalone: `docs/handoffs/commands/OUF_STAGE_DEPLOYMENT_PACKAGE_V4_2026-10-04.sh`; SHA256 `b6ad57b07b4b28cb8791fb64d7df39c915d48dc2022e1db163b24235e57f5dd5`. Bash syntax PASS e source pin/hash readback 18/18. Fixture e chiavi sintetiche escluse.
+
+```bash
+(
+set -euo pipefail
+OUF_DEPLOYMENT_PKG_TMP=$(mktemp -d)
+trap 'rm -rf -- "$OUF_DEPLOYMENT_PKG_TMP"' EXIT
+
+cat > "$OUF_DEPLOYMENT_PKG_TMP/sources.sha256" <<'OUF_DEPLOYMENT_SHA'
+e2ee1c81de0cf9004538adc0393833453d826a9e1a2533fa9baba95aab50e8b0  scripts/stage_semantic_deployment_package.py
+84f6b1fec995b9675284253321930efee0056e4546168058bae6a3667a2ff7d7  scripts/stage_semantic_admission_package.py
+3fb04519de05131087a5bd12095b42f97026e7c5826d5f8f3845608404008f95  scripts/stage_semantic_preexec_package.py
+c05c0216c0cec774f13ab27b193ab92599dd191314a157dc76b26ad978bc215c  scripts/semantic_provider_docker_runtime.py
+a4ca047fc76dda6378e81834cac421d5d829b55d63ac62dde29a3178245aaabc  scripts/semantic_provider_preexec_hook.py
+e8f6670029e6e3bf7a74e79dadd710b5a62bf31a23abd4c2785a71f36245a03c  scripts/semantic_provider_admission_preparer.py
+98e3004300226fecd509a46c009585df14021927f20d4e5c82d8ff7a8a8180de  tools/materialize_southbound_kernel.py
+1c0d7f1243752fe216ef62eefbc2e3253b8f2503b518fafe11277e4d7721a084  tools/materialize_southbound_lease_refresh.py
+c466172113d1ffe850bf2c69762113b55fbc65d9091c96dca98a74548fddf930  tools/semantic_provider_dns.py
+7a5f2b21c096228a3e4d298674e380f667c3004dd6d8ec19934a2302844c0f93  tools/semantic_provider_lease_nft.py
+92736eebeccf344e565186bce94d29c65ffe1d50638d57eae81486e7b26e884d  tools/semantic_provider_lease_owner.py
+b97f31cc17c22abbb7a021c274be73816f649196762f9c6dfcc54a58d8382e8a  tools/materialize_semantic_shared_faces.py
+25c6df90d33e39fe83321df6ab9e5c38d4c33bcd290ad57c7a85c03b1bb8ba78  tools/semantic_provider_lease_coordination.py
+1ade8d45a7387bd3b22464a34401ab6b4358f76e5c025ac84d80951542eb1fad  tools/semantic_provider_preexec.py
+ef0b98c96879933480a26418edc2b971b21a116509ac87cbc39e3b2062e7a528  tools/semantic_provider_preexec_native.py
+4bd0051fad23acd91fc42eb9b6cd2f2dac6e8d9d960fefd391add261a3646499  tools/semantic_provider_deployment_admission.py
+87e4eed4485cee0736bb7031827ee773efde6f4fb97d6289c885fc5cf2049592  tools/semantic_provider_deployment_protocol.py
+88b848be497607a71a9fc8def9164119d8bcf74d095d906fd56e6f91b7cb642a  tools/semantic_provider_deployment_consumption.py
+OUF_DEPLOYMENT_SHA
+
+while read -r OUF_DEPLOYMENT_HASH OUF_DEPLOYMENT_FILE; do
+  mkdir -p -- "$OUF_DEPLOYMENT_PKG_TMP/$(dirname -- "$OUF_DEPLOYMENT_FILE")"
+  curl --fail --silent --show-error --proto '=https' --max-time 30 \
+    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/cc161b94c1af014403dabd113200d3180f02089d/$OUF_DEPLOYMENT_FILE" \
+    -o "$OUF_DEPLOYMENT_PKG_TMP/$OUF_DEPLOYMENT_FILE"
+done < "$OUF_DEPLOYMENT_PKG_TMP/sources.sha256"
+
+(cd "$OUF_DEPLOYMENT_PKG_TMP"; sha256sum -c sources.sha256)
+
+OUF_DEPLOYMENT_PKG_ROOT="/etc/ouf/deploy-snapshots/semantic-deployment-package-$(date -u +%Y%m%d-%H%M%S)"
+sudo mkdir -m 0700 -- "$OUF_DEPLOYMENT_PKG_ROOT"
+sudo install -d -m 0700 -o root -g root \
+  "$OUF_DEPLOYMENT_PKG_ROOT/source/scripts" "$OUF_DEPLOYMENT_PKG_ROOT/source/tools"
+while read -r OUF_DEPLOYMENT_HASH OUF_DEPLOYMENT_FILE; do
+  sudo install -m 0600 -o root -g root \
+    "$OUF_DEPLOYMENT_PKG_TMP/$OUF_DEPLOYMENT_FILE" "$OUF_DEPLOYMENT_PKG_ROOT/source/$OUF_DEPLOYMENT_FILE"
+done < "$OUF_DEPLOYMENT_PKG_TMP/sources.sha256"
+printf 'SEMANTIC_DEPLOYMENT_PACKAGE_ROOT=%s\n' "$OUF_DEPLOYMENT_PKG_ROOT"
+
+for OUF_DEPLOYMENT_PKG_MODE in plan apply verify; do
+  sudo /usr/bin/python3 -I -B \
+    "$OUF_DEPLOYMENT_PKG_ROOT/source/scripts/stage_semantic_deployment_package.py" \
+    --mode "$OUF_DEPLOYMENT_PKG_MODE" \
+    --package-root "$OUF_DEPLOYMENT_PKG_ROOT" \
+    --source-commit cc161b94c1af014403dabd113200d3180f02089d \
+    --hook-source-sha256 a4ca047fc76dda6378e81834cac421d5d829b55d63ac62dde29a3178245aaabc
+done
+)
+```
+
+**NON ESEGUITO sul VPS:** comando pronto e verificato, in attesa dell'operatore. Output richiesto: SEMANTIC_DEPLOYMENT_PACKAGE_ROOT, receipt e plan/apply/verify. Su BLOCKED non ripetere/reset; preservare la nuova radice. §23 resta ESEGUITO PASS e immutabile. L'approvazione architetturale non conferisce authority a nuovi issuer o servizi né autorizza runtime registration, application start, replay o merge.
