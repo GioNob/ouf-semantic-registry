@@ -1,6 +1,18 @@
 # OUF — ripartenza dopo creazione dei candidati provider fermi
 
-## Checkpoint corrente — §25 ESEGUITO PASS; package v4 solo sorgenti privati
+## Checkpoint corrente — §25 ESEGUITO/PASS; §26 NON ESEGUITO, inventario read-only
+
+**Vincolo permanente:** un Ente, una installazione OUF indipendente; servizi distribuiti o co-localizzati anche nella stessa rete/sottorete. Nessuna authority centrale multitenant.
+
+§25 registrato con ricevuta operatore e root `/etc/ouf/deploy-snapshots/semantic-deployment-package-20261004-072744`: 18 checksum OK, plan/apply/verify PASS, schema v4, source `cc161b94c1af014403dabd113200d3180f02089d`. Solo sorgenti privati; producer/preparer/adapter non installati, runtime non registrato, nessuna regola/unità/container cambiati, providerCalls=0, startAuthorized=false. Questo è l'ultimo esito VPS ricevuto.
+
+**Lavoro completato:** inventario di custody v4 e prova pubblica OpenSSL/Ed25519, gateway `023cd4687c3a8e8627ab1bf6629834e3c1174d35`. 47 test pertinenti locali PASS, 7 nuovi casi; confronto reale dei 18 hash dell'output operatore e CLI isolata PASS; verifica positiva e due negative reali. Nessuna generazione/accesso a chiavi private o emissione di firme. Il backend candidato è locale alla singola installazione; non attribuisce authority. [Dettagli e limiti](../installation/SEMANTIC_DEPLOYMENT_TRUST_BACKEND.md).
+
+**CI gateway finale:** commit `023cd4687c3a8e8627ab1bf6629834e3c1174d35`, 38/38 controlli completed/success; log verificati: 47 unit test + 2 native admission e 5 Docker, sia push sia PR. CI della ricevuta §25 `d033b0b8a3bfafaa405ea8f9745ac7c0c6e99f90`: 13/13 completed/success.
+
+**Prossimo intervento VPS necessario:** §26 **NON ESEGUITO**, [comando immutabile](commands/OUF_INVENTORY_DEPLOYMENT_TRUST_BACKEND_2026-10-04.sh). Legge il pacchetto v4, verifica i suoi 18 hash contro la ricevuta operatore e misura il backend effettivo. PASS dell'inventario non equivale a backend funzionante: verificare tutti i booleani di verifica firma. Atomicità, authority reale, provisioning delle chiavi, runtime e startup restano non provati/non autorizzati. Non ripetere §25. Nessun merge/avvio/replay implicito.
+
+## Checkpoint precedente — §25 ESEGUITO PASS; package v4 solo sorgenti privati
 
 **Vincolo permanente approvato:** un Ente, una installazione OUF autonoma. Nessuna installazione centrale multitenant o authority condivisa tra Enti. Ogni installazione possiede identità, policy, configurazioni, dati e mandato infrastrutturale propri; i suoi microservizi possono essere distribuiti o co-localizzati nello stesso server/rete/sottorete.
 
@@ -1134,3 +1146,33 @@ done
 **VPS §25 ESEGUITO — attestazione operatore del 4 ottobre 2026:** checksum comando OK e 18 sorgenti OK, plan/apply/verify **PASS** concordanti in `/etc/ouf/deploy-snapshots/semantic-deployment-package-20261004-072744`, schema `ouf.semantic-deployment-source-package.v4`, source `cc161b94c1af014403dabd113200d3180f02089d`, Python 3.13.5. Attestazione `docs/handoffs/receipts/SEMANTIC_DEPLOYMENT_PACKAGE_V4_2026-10-04_OPERATOR.json`; nessuna lettura indipendente del VPS né digest del receipt dichiarati. externalProducerInstalled/runtimeAdapterInstalled/admissionPreparerInstalled/runtimeRegistered/startAuthorized=false; rulesChanged/unitsChanged/containersChanged=false, providerCalls=0, notReleaseAcceptance/noSecretsPrinted=true. Nove trustedToolsAvailable=true sono metadata, non compatibilità funzionale. Questo nuovo snapshot e i precedenti sono immutabili; §25 è storico e non va rieseguito automaticamente.
 
 **Prossimo passo preciso:** predisporre il collegamento a produttori realmente autorizzati della singola installazione, con autenticazione delle evidenze distinta dal semplice hash/root ownership. Prima della selezione del backend crittografico sul target, verificarne disponibilità/versione/supporto senza generare chiavi, concessioni o approval. Mandati, identity binding M2M quando applicabile, full image/rootfs acceptance e configurazione del broker reale restano gate espliciti; nessun avvio o runtime registration autorizzato.
+
+## 26. Prossimo intervento VPS — inventario backend pubblico, NON ESEGUITO
+
+Nessuna installazione di producer né nuova authority. Comando read-only pinning helper e ricevuta operatore; restituisce la custody sorgenti e il risultato reale della verifica pubblica.
+
+```bash
+#!/usr/bin/env bash
+# §26 NON ESEGUITO: read-only public signature backend inventory.
+set -euo pipefail
+OUF_TRUST_TMP=$(mktemp -d)
+trap 'rm -rf -- "$OUF_TRUST_TMP"' EXIT
+curl --fail --silent --show-error --proto '=https' --max-time 30 \
+  https://raw.githubusercontent.com/GioNob/ouf-api-gateway/023cd4687c3a8e8627ab1bf6629834e3c1174d35/scripts/inventory_semantic_deployment_trust_backend.py \
+  -o "$OUF_TRUST_TMP/inventory.py"
+curl --fail --silent --show-error --proto '=https' --max-time 30 \
+  https://raw.githubusercontent.com/GioNob/ouf-semantic-registry/d033b0b8a3bfafaa405ea8f9745ac7c0c6e99f90/docs/handoffs/receipts/SEMANTIC_DEPLOYMENT_PACKAGE_V4_2026-10-04_OPERATOR.json \
+  -o "$OUF_TRUST_TMP/operator.json"
+printf '%s  %s\n' \
+  c0a1a349119ecc016c37e9a53b233935d6c3450d13f5cf0c06749b1589cd7e82 "$OUF_TRUST_TMP/inventory.py" \
+  315cf438aa8dec194958e61a99a8364526531b72472cdb9f74bee930a5e15146 "$OUF_TRUST_TMP/operator.json" | sha256sum -c -
+OUF_TRUST_ROOT="/etc/ouf/deploy-snapshots/semantic-deployment-trust-backend-inventory-$(date -u +%Y%m%d-%H%M%S)"
+sudo mkdir -m 0700 -- "$OUF_TRUST_ROOT"
+sudo install -d -m 0700 -o root -g root "$OUF_TRUST_ROOT/source"
+sudo install -m 0600 -o root -g root "$OUF_TRUST_TMP/inventory.py" "$OUF_TRUST_TMP/operator.json" "$OUF_TRUST_ROOT/source/"
+printf 'SEMANTIC_DEPLOYMENT_TRUST_BACKEND_SOURCE_ROOT=%s\n' "$OUF_TRUST_ROOT"
+sudo /usr/bin/python3 -I -B "$OUF_TRUST_ROOT/source/inventory.py" \
+  --package-root /etc/ouf/deploy-snapshots/semantic-deployment-package-20261004-072744 \
+  --operator-attestation "$OUF_TRUST_ROOT/source/operator.json" \
+  --openssl-path /usr/bin/openssl
+```

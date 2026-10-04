@@ -1,6 +1,18 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
-## Checkpoint corrente — §25 ESEGUITO PASS; package v4 solo sorgenti privati
+## Checkpoint corrente — §25 ESEGUITO/PASS; §26 NON ESEGUITO, inventario read-only
+
+**Vincolo permanente:** un Ente, una installazione OUF indipendente; servizi distribuiti o co-localizzati anche nella stessa rete/sottorete. Nessuna authority centrale multitenant.
+
+§25 registrato con ricevuta operatore e root `/etc/ouf/deploy-snapshots/semantic-deployment-package-20261004-072744`: 18 checksum OK, plan/apply/verify PASS, schema v4, source `cc161b94c1af014403dabd113200d3180f02089d`. Solo sorgenti privati; producer/preparer/adapter non installati, runtime non registrato, nessuna regola/unità/container cambiati, providerCalls=0, startAuthorized=false. Questo è l'ultimo esito VPS ricevuto.
+
+**Lavoro completato:** inventario di custody v4 e prova pubblica OpenSSL/Ed25519, gateway `023cd4687c3a8e8627ab1bf6629834e3c1174d35`. 47 test pertinenti locali PASS, 7 nuovi casi; confronto reale dei 18 hash dell'output operatore e CLI isolata PASS; verifica positiva e due negative reali. Nessuna generazione/accesso a chiavi private o emissione di firme. Il backend candidato è locale alla singola installazione; non attribuisce authority. [Dettagli e limiti](../installation/SEMANTIC_DEPLOYMENT_TRUST_BACKEND.md).
+
+**CI gateway finale:** commit `023cd4687c3a8e8627ab1bf6629834e3c1174d35`, 38/38 controlli completed/success; log verificati: 47 unit test + 2 native admission e 5 Docker, sia push sia PR. CI della ricevuta §25 `d033b0b8a3bfafaa405ea8f9745ac7c0c6e99f90`: 13/13 completed/success.
+
+**Prossimo intervento VPS necessario:** §26 **NON ESEGUITO**, [comando immutabile](../handoffs/commands/OUF_INVENTORY_DEPLOYMENT_TRUST_BACKEND_2026-10-04.sh). Legge il pacchetto v4, verifica i suoi 18 hash contro la ricevuta operatore e misura il backend effettivo. PASS dell'inventario non equivale a backend funzionante: verificare tutti i booleani di verifica firma. Atomicità, authority reale, provisioning delle chiavi, runtime e startup restano non provati/non autorizzati. Non ripetere §25. Nessun merge/avvio/replay implicito.
+
+## Checkpoint precedente — §25 ESEGUITO PASS; package v4 solo sorgenti privati
 
 **Vincolo permanente approvato:** un Ente, una installazione OUF autonoma. Nessuna installazione centrale multitenant o authority condivisa tra Enti. Ogni installazione possiede identità, policy, configurazioni, dati e mandato infrastrutturale propri; i suoi microservizi possono essere distribuiti o co-localizzati nello stesso server/rete/sottorete.
 
