@@ -4,7 +4,7 @@ set -euo pipefail
 OUF_BROKER_PKG_TMP=$(mktemp -d)
 trap 'rm -rf -- "$OUF_BROKER_PKG_TMP"' EXIT
 cat > "$OUF_BROKER_PKG_TMP/sources.sha256" <<'OUF_BROKER_PKG_SHA'
-4dd824967c99785dad190d988e2f4f21ee97752b0042a542835c23654ff70c8a  scripts/stage_semantic_local_broker_package.py
+725f747db3c91a32a6000ca1f4d3e4913c7e664fa0aadf1828203749be37439d  scripts/stage_semantic_local_broker_package.py
 693f4db5f5ae08edecc6d735b0f1bccb16c79104d5a909598275ec97fe6d1e0f  scripts/semantic_provider_deployment_broker.py
 4c504928a4a85d86d5e024d0216d8efb81b169f31b88c8b4205dfe00e98873a5  scripts/semantic_provider_docker_runtime.py
 da1239843da3219ec393d3680c2c4a9480f6500487927d8fca38dbf8ae029b7a  scripts/semantic_provider_admission_preparer.py
@@ -25,11 +25,11 @@ ef0b98c96879933480a26418edc2b971b21a116509ac87cbc39e3b2062e7a528  tools/semantic
 7182573aaaccf9dfea3ba47de52e75daa2f9c007ed6d83ddc7eaaa5bc3c38075  tools/semantic_provider_deployment_reauthorization.py
 04ed5dd2e9da9cb181b0808408b57ee4df740e209a0f8c1f8902cd9028c49f6c  tools/semantic_provider_deployment_producer.py
 OUF_BROKER_PKG_SHA
-printf '%s  %s\n' 901570bfd764bd4c34a9eea0e4e3a24cd59584176b21e9441ec96a12bd0063d1 "$OUF_BROKER_PKG_TMP/sources.sha256" | sha256sum -c -
+printf '%s  %s\n' e258b94090319124cbdf9520fa5b179e772836f3d6477e3824809741e08a5035 "$OUF_BROKER_PKG_TMP/sources.sha256" | sha256sum -c -
 while read -r OUF_BROKER_PKG_HASH OUF_BROKER_PKG_FILE; do
   mkdir -p -- "$OUF_BROKER_PKG_TMP/$(dirname -- "$OUF_BROKER_PKG_FILE")"
   curl --fail --silent --show-error --proto '=https' --max-time 30 \
-    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/1717967947b1fa5b0b3dd11b2c42e7a7f3bdf4fb/$OUF_BROKER_PKG_FILE" \
+    "https://raw.githubusercontent.com/GioNob/ouf-api-gateway/04d775e892cd42e42d34de02959b9c7ba6483f3b/$OUF_BROKER_PKG_FILE" \
     -o "$OUF_BROKER_PKG_TMP/$OUF_BROKER_PKG_FILE"
 done < "$OUF_BROKER_PKG_TMP/sources.sha256"
 (cd "$OUF_BROKER_PKG_TMP"; sha256sum -c sources.sha256)
@@ -47,6 +47,6 @@ for OUF_BROKER_PKG_MODE in plan apply verify; do
   sudo /usr/bin/python3 -I -B \
     "$OUF_BROKER_PKG_ROOT/source/scripts/stage_semantic_local_broker_package.py" \
     --mode "$OUF_BROKER_PKG_MODE" --package-root "$OUF_BROKER_PKG_ROOT" \
-    --source-commit 1717967947b1fa5b0b3dd11b2c42e7a7f3bdf4fb \
-    --source-manifest-sha256 901570bfd764bd4c34a9eea0e4e3a24cd59584176b21e9441ec96a12bd0063d1
+    --source-commit 04d775e892cd42e42d34de02959b9c7ba6483f3b \
+    --source-manifest-sha256 e258b94090319124cbdf9520fa5b179e772836f3d6477e3824809741e08a5035
 done
