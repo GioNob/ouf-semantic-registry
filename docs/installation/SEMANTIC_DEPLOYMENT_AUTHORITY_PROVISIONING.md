@@ -1,6 +1,10 @@
 # Provisioning delle authority e dossier target per installazione indipendente
 
-## Stato corrente — §34 ESEGUITO/PASS; proposta di authority pronta
+## Stato corrente — custodia chiavi approvata, provisioning36 NON ESEGUITO
+
+Utente confermo approva identità lab e sola futura generazione di2 keypair/bozza inattiva. [Scope e implementazione](SEMANTIC_AUTHORITY_KEY_CUSTODY.md), [wrapper36 completo](../handoffs/commands/OUF_PROVISION_AUTHORITY_KEYS_2026-10-04.sh), SHA256 `14c506fc2468e0b6f40470d6b074aab318b0120813be4795172d4715bdaa4795`, Gateway `509a011cd920d9a9e9ece83a07e5b99ce05806a5`. plan/apply/verify nuovi, no-overwrite;2 firme selftest sintetiche,0 deployment signatures. Policy ACTIVE/ruolo firma/runtime/start non conferiti. §34 PASS e §31 v8 PASS preservati, non ripetere. Conferimento non è generazione eseguita né accettazione immagini/mount.
+
+## Stato storico — §34 PASS; §35 allora pendente
 
 Diagnostica e inventario PASS, `/etc/ouf/deploy-snapshots/semantic-target-acceptance-inventory-20261004-151023/prepared`,2 candidati mai avviati e8 mount. DossierHash `a37f22635035ab8543a4654def5cd6a6f4fe45fd1affc0ff10ccc3c19f03085c`, pianoHash `31492d13db05b46252215bb4bde815712bd55a1e245aff25408350328fcb7093`, packageReceiptHash `f06c4b6ea2a7c05e008db3e615e35f475d44824b2073ff2d5f451c55dbce2850`. Nessuna accettazione completa/authority/start, nessuna chiave o firma. [Receipt operatore](../handoffs/receipts/SEMANTIC_TARGET_ACCEPTANCE_PASS_2026-10-04_OPERATOR.json), non ispezione indipendente; hash inventory-receipt non fornito. Non ripetere §34/staging/recovery.
 
