@@ -1,6 +1,15 @@
 # OUF — Manuale di installazione e bootstrap
 
-## Checkpoint corrente — driver autenticato collegato; §28 staging privato v6 NON ESEGUITO
+## Checkpoint corrente — §28 ESEGUITO/PASS; producer locali e broker produttivo pendenti
+
+Output operatore del 4 ottobre 2026: `/etc/ouf/deploy-snapshots/semantic-authenticated-runtime-package-20261004-094455`, schema `ouf.semantic-authenticated-runtime-source-package.v6`, source `f1996cca60e66f1807b88f126793a8edc1aed15f`, Python3.13.5. Checksum wrapper +22 sorgenti OK; plan/apply/verify PASS con tre receipt concordanti. [Ricevuta operatore](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/receipts/SEMANTIC_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04_OPERATOR.json). Evidenza allegata, non accesso VPS indipendente; digest del file receipt sul VPS non fornito.
+
+adapter/preparer/verifier/producer/runtime non installati o registrati; trustPolicyProvisioned/startAuthorized=false, keysGenerated/signaturesIssued/providerCalls=0; regole/unità/container invariati. trustedToolsAvailable, incluso OpenSSL, è metadata, non prova di verifica crypto o autorità sul target. §28 completato: nessun replay. I commit precedenti e i package v5/v6 restano immutabili.
+
+**Prossimo lavoro indipendente:** definire e implementare il contratto del producer locale per richieste tipizzate di CREATION_ATTESTATION e FINAL_DEPLOYMENT_APPROVAL, con eseguibile/configurazione pinned, limiti/deadline e verifica delle firme restituite; collegarlo poi al broker senza generare mandati, chiavi o approval implicite. La firma autentica il mandato provisionato, non dimostra da sola la veridicità della full image/OCI/rootfs acceptance. Il mandato reale della singola installazione e gli altri gate del handoff restano aperti.
+
+
+## Checkpoint storico — driver collegato, prima dell'esecuzione §28
 
 Gateway `f1996cca60e66f1807b88f126793a8edc1aed15f`: **adapter v4 → preparer v3 → driver v5** richiedono esplicitamente riverifica Ed25519 dei tre ruoli. Le nuove closure sigillate contengono 16 file per il preparer e 15 per il driver; nessun fallback al driver precedente nel percorso adapter v4. I vecchi schemi rimangono compatibili per gli snapshot già creati, senza migrazione implicita.
 
@@ -10,7 +19,7 @@ Gateway `f1996cca60e66f1807b88f126793a8edc1aed15f`: **adapter v4 → preparer v3
 
 **Ultima evidenza VPS resta §27 ESEGUITO/PASS**, package v5 `/etc/ouf/deploy-snapshots/semantic-authenticated-deployment-package-20261004-083518`, source `6697029e3efa03f9090bd7be13aab86784749731`. Nuovo codice provato in CI; non ancora copiato o installato sul target.
 
-**Prossimo intervento operatore: §28 NON ESEGUITO**, soltanto nuovo source package `ouf.semantic-authenticated-runtime-source-package.v6`: 22 sorgenti privati, checksum +plan/apply/verify. [Comando §28](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/commands/OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04.sh) e [contratto operativo](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/installation/SEMANTIC_AUTHENTICATED_RUNTIME_DRIVER.md). Nessuna chiave/policy/mandato generato, nessuna firma emessa, nessun runtime registrato, nessun container o regola/unità cambiato. Questo staging non è readiness o release acceptance. Dopo l'output §28 registrare ricevuta e root esatti, senza replay, poi completare gli elementi produttivi indipendenti prima di richiedere i binding di autorità indispensabili.
+**Intervento §28 ESEGUITO/PASS, registro storico**, soltanto nuovo source package `ouf.semantic-authenticated-runtime-source-package.v6`: 22 sorgenti privati, checksum +plan/apply/verify. [Comando §28](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/commands/OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04.sh) e [contratto operativo](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/installation/SEMANTIC_AUTHENTICATED_RUNTIME_DRIVER.md). Nessuna chiave/policy/mandato generato, nessuna firma emessa, nessun runtime registrato, nessun container o regola/unità cambiato. Questo staging non è readiness o release acceptance. Dopo l'output §28 registrare ricevuta e root esatti, senza replay, poi completare gli elementi produttivi indipendenti prima di richiedere i binding di autorità indispensabili.
 
 **Restano aperti:** broker/issuer/attestor produttivi con mandato esplicito della singola installazione; full image/OCI/rootfs creation acceptance; provisioning trust/policy/chiavi reali; snapshot atomico, enforcement/binding IPv6/spoof, OIDC/purpose/TLS/revocation admission, ciclo lease attivo/guard e reboot reale. Le prove CI di questo percorso non chiudono questi gate né autorizzano start/merge/replay. Ogni Ente è un'installazione indipendente, con servizi co-locati o distribuiti. Semantic/Registry governa discovery esterna tramite Gateway (default schema.gov.it parametrizzabile); MCP/chatbot propone, THS governa adozione/attivazione. Il ramo provider non sostituisce la prova file→mapping→ingestion→UDP.
 

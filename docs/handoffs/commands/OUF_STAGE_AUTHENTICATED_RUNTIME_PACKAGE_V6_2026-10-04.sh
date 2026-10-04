@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# §28 NON ESEGUITO — source package v6, privato; nessun install/start/replay.
+# §28 ESEGUITO/PASS 2026-10-04 — comando storico; non ripetere.
+# Root: /etc/ouf/deploy-snapshots/semantic-authenticated-runtime-package-20261004-094455
 set -euo pipefail
 OUF_AUTH_RUNTIME_TMP=$(mktemp -d)
 trap 'rm -rf -- "$OUF_AUTH_RUNTIME_TMP"' EXIT

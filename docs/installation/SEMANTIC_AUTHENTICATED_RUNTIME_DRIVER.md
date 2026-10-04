@@ -1,5 +1,14 @@
 # Runtime autenticato per installazione indipendente
 
+## Checkpoint corrente — §28 ESEGUITO/PASS; producer locali e broker produttivo pendenti
+
+Output operatore del 4 ottobre 2026: `/etc/ouf/deploy-snapshots/semantic-authenticated-runtime-package-20261004-094455`, schema `ouf.semantic-authenticated-runtime-source-package.v6`, source `f1996cca60e66f1807b88f126793a8edc1aed15f`, Python3.13.5. Checksum wrapper +22 sorgenti OK; plan/apply/verify PASS con tre receipt concordanti. [Ricevuta operatore](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/handoffs/receipts/SEMANTIC_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04_OPERATOR.json). Evidenza allegata, non accesso VPS indipendente; digest del file receipt sul VPS non fornito.
+
+adapter/preparer/verifier/producer/runtime non installati o registrati; trustPolicyProvisioned/startAuthorized=false, keysGenerated/signaturesIssued/providerCalls=0; regole/unità/container invariati. trustedToolsAvailable, incluso OpenSSL, è metadata, non prova di verifica crypto o autorità sul target. §28 completato: nessun replay. I commit precedenti e i package v5/v6 restano immutabili.
+
+**Prossimo lavoro indipendente:** definire e implementare il contratto del producer locale per richieste tipizzate di CREATION_ATTESTATION e FINAL_DEPLOYMENT_APPROVAL, con eseguibile/configurazione pinned, limiti/deadline e verifica delle firme restituite; collegarlo poi al broker senza generare mandati, chiavi o approval implicite. La firma autentica il mandato provisionato, non dimostra da sola la veridicità della full image/OCI/rootfs acceptance. Il mandato reale della singola installazione e gli altri gate del handoff restano aperti.
+
+
 ## Stato verificato
 
 Gateway `f1996cca60e66f1807b88f126793a8edc1aed15f`, CI38/38 PASS. 82 test pertinenti +2 native admission e6 test Docker. Il percorso adapter4/preparer3/driver5 è stato esercitato realmente in Docker/runc/nft con due chiavi Ed25519 distinte, temporanee e confinate al fixture. Negativi lease-drift e firma alterata, positivo marker applicativo, runtime Docker di default preservato, cleanup posseduto verificato. Questo non è l'autorizzazione o la readiness del VPS.
@@ -36,7 +45,7 @@ Le revoche cooperative devono usare lo stesso lock. Le riletture non provano sna
 
 Rollback/cleanup restano vincolati a risorse possedute, tag/footprint, journal e generazione morta; non richiedono firme ancora valide. Docker può chiedere delete dopo un'ammissione negata: il fixture della firma alterata verifica ROLLED_BACK del preexec, CLEANED dell'admission, DELETED dell'adapter, namespace rimosso e consumption ancora READY. Questo è cleanup, non una nuova autorizzazione o un reset della receipt. Lease-drift preserva il candidato protetto per recupero esplicito. Il consumer non consente una seconda consumazione.
 
-## Prossimo passo VPS — §28 NON ESEGUITO
+## Registro VPS — §28 ESEGUITO/PASS
 
 [Comando source-only v6](../handoffs/commands/OUF_STAGE_AUTHENTICATED_RUNTIME_PACKAGE_V6_2026-10-04.sh), 22 file, source `f1996cca60e66f1807b88f126793a8edc1aed15f`. Nuovo root privato, checksum e plan/apply/verify, receipt schema `ouf.semantic-authenticated-runtime-source-package.v6`. OpenSSL in trustedToolsAvailable è metadata d'inventario, non una prova di firma o mandato sul target. Nessun test/fixture/private key viene copiato.
 
