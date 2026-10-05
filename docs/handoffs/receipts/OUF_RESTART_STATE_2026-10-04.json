@@ -35,7 +35,7 @@
     "skipped": 1
   },
   "vps": {
-    "lastPassedSection": 45,
+    "lastPassedSection": 46,
     "lastPassedRoot": null,
     "section30Status": "EXECUTED_BLOCKED_PLAN",
     "blockedRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
@@ -43,7 +43,7 @@
     "sourceManifestSha256": "a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b",
     "downloadChecksumsPassed": 28,
     "applyVerifyReached": true,
-    "nextSection": 46,
+    "nextSection": null,
     "recoveryExecuted": true,
     "recoveryWrapperSha256": "2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d",
     "repairToolSha256": "116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4",
@@ -52,8 +52,8 @@
     "startAuthorized": false,
     "runtimeRegistered": false,
     "section32Status": "EXECUTED_BLOCKED",
-    "nextWrapper": "docs/handoffs/commands/OUF_VERIFY_ENVIRONMENT_BINDING_2026-10-05.sh",
-    "nextWrapperSha256": "cda3ed4660831a9ed09c134e2e83985a453667e28cc65bce63e316acad128e74",
+    "nextWrapper": null,
+    "nextWrapperSha256": null,
     "section33Status": "EXECUTED_BLOCKED",
     "section32Root": null,
     "partialEvidenceKnown": false,
@@ -79,7 +79,7 @@
     "lastPassSection": 43,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "SCOPE46_AUTHORIZED_AWAITING_OPERATOR_OUTPUT",
+    "nextStatus": "AUTONOMOUS_COMPLETE_CONFIG_HOSTCONFIG_AND_ISSUER_POLICY_REVIEW",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
@@ -701,12 +701,12 @@
   },
   "sealedEnvironmentBinding": {
     "section": 46,
-    "status": "AUTHORIZED_AWAITING_OPERATOR_EXECUTION",
+    "status": "EXECUTED_PASS",
     "sourceCommit": "43f981a8a8db821f980e1944476b714ed8369ca0",
     "wrapper": "docs/handoffs/commands/OUF_VERIFY_ENVIRONMENT_BINDING_2026-10-05.sh",
     "wrapperSha256": "cda3ed4660831a9ed09c134e2e83985a453667e28cc65bce63e316acad128e74",
     "scopeGranted": true,
-    "executionObserved": false,
+    "executionObserved": true,
     "newPrivateFileReads": [
       "sealed launch southbound.env",
       "sealed validator client-secret"
@@ -734,6 +734,8 @@
     "startAuthorized": false,
     "fullOciAcceptanceProven": false,
     "authorizationReceipt": "docs/handoffs/receipts/SEMANTIC_ENVIRONMENT_BINDING_SCOPE_46_AUTHORIZATION_2026-10-05.json",
-    "authorizedAt": "2026-10-05T18:20:24+02:00"
+    "authorizedAt": "2026-10-05T18:20:24+02:00",
+    "doNotReplay": true,
+    "operatorReceipt": "docs/handoffs/receipts/SEMANTIC_ENVIRONMENT_BINDING_PASS_2026-10-05_OPERATOR.json"
   }
 }

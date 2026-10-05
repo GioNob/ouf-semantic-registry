@@ -1,5 +1,5 @@
 #!/bin/bash
-# Section46 PREPARED_NOT_AUTHORIZED: sealed launch Env/OIDC credential read; no IAM/sign/start.
+# Section46 EXECUTED_PASS_DO_NOT_REPLAY; historical pin43f981a8a8db821f980e1944476b714ed8369ca0; no IAM/sign/start.
 set -euo pipefail
 exec sudo /usr/bin/python3 -I -B - \
  --manifest-root /etc/ouf/deploy-snapshots/semantic-provider-candidate-manifest-20261003-130410/prepared \
