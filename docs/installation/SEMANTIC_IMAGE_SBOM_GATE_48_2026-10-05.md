@@ -19,7 +19,7 @@ SBOM prodotta/binding all'immagine non equivalgono a SBOM accettata, scansione v
 
 ## Codice e comportamento operativo
 
-Source scanner-preparer `d9a024dfd526be619759948e0cf1b0158f45631e`, closureSHA256 `315057ec4718db053eb8865a1d2b1e2317bd9f16dad2b8c31ea36e0250ab97ca`. CIrun37359800332/job111931243938 PASS: scanner reale, immagini salvate reali, namespace rete reale, output privato, no container/application/replay. Unit5 e archive21 PASS locali. Il wrapper deve passare anche parity/bash-n prima del conferimento.
+Source scanner-preparer `4662257947d1c81550daf87cf7d5ea7283a24e06`, closureSHA256 `e08a3cc012c7984c11f4e13f4c22f2dcebf3702251a2123131d1ac98b5160c5e`. CIrun37359800332/job111931243938 PASS: scanner reale, immagini salvate reali, namespace rete reale, output privato, no container/application/replay. Unit5 e archive21 PASS locali. Il wrapper deve passare anche parity/bash-n prima del conferimento.
 
 Wrapper: `docs/handoffs/commands/OUF_PREPARE_IMAGE_SBOM_2026-10-05.sh`. Pin/SHA wrapper e comando verranno fissati dopo parity CI; non eseguire una versione non sigillata. Esecuzione una sola volta dopo conferimento esplicito di questo scope. Directory già esistente, hash/config/layer/piattaforma diversa, scanner SBOM su altro source, mancanza dei package o errore/timeout negano PASS. La directory parziale viene conservata: non rimuovere o ritentare automaticamente.
 

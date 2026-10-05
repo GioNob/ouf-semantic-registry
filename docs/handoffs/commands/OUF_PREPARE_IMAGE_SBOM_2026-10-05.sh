@@ -3,8 +3,8 @@
 # PET supply-chain input generation only; no acceptance, signature or start.
 set -Eeuo pipefail
 umask 077
-SOURCE_COMMIT=d9a024dfd526be619759948e0cf1b0158f45631e
-SOURCE_SHA256=315057ec4718db053eb8865a1d2b1e2317bd9f16dad2b8c31ea36e0250ab97ca
+SOURCE_COMMIT=4662257947d1c81550daf87cf7d5ea7283a24e06
+SOURCE_SHA256=e08a3cc012c7984c11f4e13f4c22f2dcebf3702251a2123131d1ac98b5160c5e
 SCANNER_ARCHIVE_SHA256=54a87372498168b2d033e876fd41fa4e8035b872699e525a57046e1f2f09c860
 task_download=$(mktemp -d)
 trap 'rm -rf -- "$task_download"' EXIT
@@ -36,7 +36,7 @@ def captured(filename,expected,limit):
 try:
     require(os.geteuid()==0 and sys.flags.isolated and sys.dont_write_bytecode)
     os.umask(0o077);signal.signal(signal.SIGALRM,lambda *_:(_ for _ in ()).throw(TimeoutError()));signal.alarm(420)
-    source=captured(sys.argv[1],'315057ec4718db053eb8865a1d2b1e2317bd9f16dad2b8c31ea36e0250ab97ca',131072)
+    source=captured(sys.argv[1],'e08a3cc012c7984c11f4e13f4c22f2dcebf3702251a2123131d1ac98b5160c5e',131072)
     scanner_archive=captured(sys.argv[2],'54a87372498168b2d033e876fd41fa4e8035b872699e525a57046e1f2f09c860',67108864)
     namespace={'__name__':'source_sealed_sbom'};exec(compile(source,'<ouf-source-sealed-sbom>','exec'),namespace)
     module=sys.modules['tools.prepare_semantic_image_sbom'];archive=sys.modules['tools.verify_semantic_image_archive']
@@ -56,9 +56,9 @@ try:
         'configByteSha256':'b6fd21b8c341f3bf274ddabbad2e3c1bbb6a17566f0e41bf618166e63e4641e4',
         'rootfsDescriptorsHash':'ea6aeeef286a7c893cd0bd8eb7452196d87c8681f72a10a3001af288133528ed'}]
     result=module.prepare(prepared,images,docker,docker_hash,scanner,scanner_hash,unshare,unshare_hash)
-    result['sourceCommit']='d9a024dfd526be619759948e0cf1b0158f45631e'
+    result['sourceCommit']='4662257947d1c81550daf87cf7d5ea7283a24e06'
     print('SEMANTIC_IMAGE_SBOM='+json.dumps(result,sort_keys=True))
     print('SEMANTIC_IMAGE_SBOM=PASS ACCEPTANCE_GRANTED=false START_AUTHORIZED=false')
 except Exception:
-    print('SEMANTIC_IMAGE_SBOM=BLOCKED REASON=IMAGE_SBOM_PREPARATION_UNPROVEN PARTIAL_ROOT_PRESERVED=true NO_SECRETS_PRINTED=true');raise SystemExit(1)
+    print('SEMANTIC_IMAGE_SBOM=BLOCKED REASON=IMAGE_SBOM_PREPARATION_UNPROVEN EXPLICIT_RECOVERY_REQUIRED=true NO_SECRETS_PRINTED=true');raise SystemExit(1)
 PY
