@@ -3,7 +3,7 @@
 Evidence production only: no release acceptance, waiver, signing or start.
 SBOM metadata remains private; stdout contains hashes, counters and states.
 """
-import argparse,datetime,hashlib,io,json,os,re,signal,stat,subprocess,sys,tarfile,time
+import argparse,datetime,hashlib,io,json,os,re,selectors,signal,stat,subprocess,sys,tarfile,time
 from pathlib import Path
 from tools import prepare_semantic_image_sbom as sbom
 
@@ -49,7 +49,7 @@ def scanner_from_archive(raw,destination):
 def summary(raw,expected,pin):
     report=sbom.decode(raw);require(type(report) is dict and type(report['matches']) is list and len(report['matches'])<=100000)
     descriptor=report['descriptor'];require(descriptor['name']=='grype' and descriptor['version']==GRYPE_VERSION)
-    require(not report.get('ignoredMatches'))
+    ignored=report.get('ignoredMatches');require(ignored is None or (type(ignored) is list and not ignored))
     db=descriptor['db'];require(db['schemaVersion']==pin['schemaVersion'] and db['built']==pin['built'] and not db.get('error'))
     source=report['source'];require(source['type']=='image' and source['target']['imageID']=='sha256:'+expected['configByteSha256'])
     counts={k:0 for k in SEVERITIES};public_ids=set()
@@ -90,10 +90,26 @@ def review(root,source_root,expected,receipt_hash,pin,db_archive,scanner,scanner
         'GRYPE_DB_VALIDATE_BY_HASH_ON_START':'true','GRYPE_DB_VALIDATE_AGE':'true','GRYPE_DB_MAX_ALLOWED_BUILT_AGE':'48h',
         'GRYPE_EXTERNAL_SOURCES_ENABLE':'false','GRYPE_ONLY_FIXED':'false','GRYPE_ONLY_NOTFIXED':'false'}
     def run(args,output=None,timeout=180):
-        result=subprocess.run([str(unshare),'--net','--',str(scanner),*args],cwd=home,env=env,
-            stdin=subprocess.DEVNULL,stdout=output if output is not None else subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,timeout=timeout)
-        require(result.returncode==0)
+        child=subprocess.Popen([str(unshare),'--net','--',str(scanner),*args],cwd=home,env=env,
+            stdin=subprocess.DEVNULL,stdout=subprocess.PIPE if output is not None else subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,start_new_session=True)
+        done=False;end=time.monotonic()+timeout;size=0
+        try:
+            if output is not None:
+                with selectors.DefaultSelector() as selector:
+                    os.set_blocking(child.stdout.fileno(),False);selector.register(child.stdout,selectors.EVENT_READ)
+                    while True:
+                        left=end-time.monotonic();require(left>0 and selector.select(left))
+                        raw=os.read(child.stdout.fileno(),65536)
+                        if not raw:break
+                        size+=len(raw);require(size<=LIMIT);output.write(raw)
+            left=end-time.monotonic();require(left>0 and child.wait(timeout=left)==0);done=True
+        finally:
+            if not done:
+                try:os.killpg(child.pid,signal.SIGKILL)
+                except ProcessLookupError:pass
+                child.wait(timeout=1)
+            if child.stdout is not None:child.stdout.close()
     run(['db','import',str(db_archive)])
     rows=[]
     for row in expected:

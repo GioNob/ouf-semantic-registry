@@ -1,4 +1,4 @@
-import datetime,json,sys,time,unittest
+import datetime,hashlib,json,os,sys,tempfile,time,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from tools import review_semantic_image_vulnerabilities as m
@@ -34,4 +34,14 @@ class Review(unittest.TestCase):
     def test_generated_closure_exact(self):
         root=Path(__file__).resolve().parents[1]/'tools'
         self.assertEqual(build(root),(root/'semantic_image_vulnerability_reviewer.py').read_text())
+    def test_private_database_bytes_mode_and_links_are_checked(self):
+        with tempfile.TemporaryDirectory(dir=os.environ.get('OUF_TEST_ROOT',str(Path.cwd().parent))) as directory:
+            root=Path(directory);root.chmod(0o700);p=root/'database';p.write_bytes(b'owned database bytes');p.chmod(0o600)
+            expected=hashlib.sha256(p.read_bytes()).hexdigest();m.hash_file(p,expected,1024)
+            p.chmod(0o644)
+            with self.assertRaises(Exception):m.hash_file(p,expected,1024)
+            p.chmod(0o600);p.write_bytes(b'changed')
+            with self.assertRaises(Exception):m.hash_file(p,expected,1024)
+            link=root/'link';link.symlink_to(p)
+            with self.assertRaises(Exception):m.hash_file(link,expected,1024)
 if __name__=='__main__':unittest.main()
