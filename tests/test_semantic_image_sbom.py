@@ -1,4 +1,5 @@
 import base64,copy,hashlib,json,os,re,subprocess,sys,unittest
+from unittest.mock import patch
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from tools import prepare_semantic_image_sbom as m
@@ -38,6 +39,12 @@ class Sbom(unittest.TestCase):
             with self.subTest(kind=kind),self.assertRaises(m.Denied):self.result(syft,spdx,verified)
     def test_duplicate_json_keys_cannot_replace_identity(self):
         with self.assertRaises(m.Denied):m.decode(b'{"id":1,"id":2}')
+    def test_export_option_injection_is_denied_before_any_host_command(self):
+        images=[{'role':r,'imageId':'sha256:'+str(i)*64,'configByteSha256':'3'*64,'rootfsDescriptorsHash':'4'*64}
+            for i,r in enumerate(('adapter','southbound'),1)]
+        images[0]['imageId']='--output=/CI_MUST_NOT_OPEN'
+        with patch.object(m,'ancestors',side_effect=AssertionError('must not inspect host')):
+            with self.assertRaises(m.Denied):m.prepare(Path('/CI_MUST_NOT_OPEN'),images,*([None]*6))
     def test_generated_closure_is_byte_identical(self):
         root=Path(__file__).resolve().parents[1]/'tools'
         self.assertEqual((root/'semantic_image_sbom_preparer.py').read_text(),builder.build(root))

@@ -4,7 +4,7 @@ Caller explicitly grants private image spooling/scanner execution. It must
 source-seal this closure, pin the scanner and own an unused private directory.
 No mounted runtime configuration, credential, signing key or provider IO.
 """
-import argparse,base64,hashlib,io,json,os,selectors,signal,stat,subprocess,sys,tarfile,time
+import argparse,base64,hashlib,io,json,os,re,selectors,signal,stat,subprocess,sys,tarfile,time
 from pathlib import Path
 from tools import verify_semantic_image_archive as archive
 
@@ -108,6 +108,8 @@ def prepare(root,images,docker,docker_hash,scanner,scanner_hash,unshare,unshare_
     require(len(images)==2 and {r['role'] for r in images}=={'adapter','southbound'})
     require(len({r['imageId'] for r in images})==2)
     require(all(set(r)=={'role','imageId','configByteSha256','rootfsDescriptorsHash'} for r in images))
+    require(all(type(r['imageId']) is str and re.fullmatch(r'sha256:[0-9a-f]{64}',r['imageId'])
+        and all(type(r[k]) is str and re.fullmatch(r'[0-9a-f]{64}',r[k]) for k in ('configByteSha256','rootfsDescriptorsHash')) for r in images))
     ancestors(root);s=root.lstat();require(stat.S_ISDIR(s.st_mode) and s.st_uid==s.st_gid==0 and stat.S_IMODE(s.st_mode)==0o700)
     require(not (root/'receipt.json').exists() and all(not (root/(r['role']+'.tar')).exists() for r in images))
     pins={p:executable(p,h) for p,h in ((docker,docker_hash),(scanner,scanner_hash),(unshare,unshare_hash))}
