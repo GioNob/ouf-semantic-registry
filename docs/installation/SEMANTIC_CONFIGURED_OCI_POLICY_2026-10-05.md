@@ -1,6 +1,6 @@
 # Complete configured OCI policy — unsigned implementation
 
-Status: SOFTWARE_IMPLEMENTED_NATIVE_DOCKER_GENERATION_CI_PENDING.
+Status: SOFTWARE_IMPLEMENTED_NATIVE_OCI_AND_MOUNT_CI_PASS_TARGET_NOT_EXECUTED.
 Last target result: §47 PASS. No target command or new target authority is issued
 by this document; do not replay historical wrappers.
 
@@ -74,3 +74,12 @@ Next work: read the fresh native OCI CI result, resolve any remaining policy mis
 
 
 Primary implementation for optional private time namespace: [Moby 29.8.1 WithNamespaces](https://github.com/moby/moby/blob/docker-v29.8.1/daemon/oci_linux.go).
+
+## Latest software checkpoint — unsigned OCI and native mount CI PASS
+
+Verified code pin `4bd3b3c6efa0add42b217766bf45773e82fa958b`, run37351083289: all four acceptance-metadata jobs passed. Logs read:100 root tests (job111901785588),2 runner Docker tests (111901785523),3 Docker29.8.1/containerd tests including real OCI generation (111901785434),4 native runc mount tests (111901785070,0.763s);109 total,zero skips. Eight historical wrapper parity/bash checks remained intact. Receipt: `docs/handoffs/receipts/SEMANTIC_UNSIGNED_OCI_MOUNT_CI_PASS_2026-10-05.json`.
+
+The three observed failures are corrected: inherited create stdio pipe retention in the CI fixture; optional private time namespace in actual Docker OCI; Docker recursive read-only rro request. Primary Moby source supports the latter two. Shared namespaces, time offsets, writable/shared manifest binds remain denied. Application execution was never allowed by these tests. Native proof is CI-only and does not authenticate an expected target policy or confer target acceptance.
+
+Latest VPS state remains §47 EXECUTED_PASS. No operator command is pending; do not replay sections39–47. Next autonomous work is to integrate source-sealed configured OCI semantics and contemporaneous mount/source/rootfs/generation facts into the independently authorized complete acceptance issuer. The issuer must not trust unsigned booleans, self-signed policy proposals or historical facts as fresh proof. Runtime/package installation, new private scope, signing and start remain separate concrete gates. PET supply-chain/SBOM/publisher and authority requirements remain open. Separate live-pairwise CI remains failed; this is not a global-green claim or a diagnosis of internal VPS Search503.
+

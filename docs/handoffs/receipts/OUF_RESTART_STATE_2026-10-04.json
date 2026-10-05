@@ -90,7 +90,7 @@
     "section46Status": "EXECUTED_PASS",
     "section47Status": "EXECUTED_PASS"
   },
-  "nextTask": "Read fresh native CI for optional private time namespace correction; continue authenticated OCI/mount acceptance issuer integration autonomously. Section47 passed; no operator command pending. Do not replay sections39–47.",
+  "nextTask": "Integrate source-sealed configured OCI and contemporaneous source/mount/rootfs/generation facts into independently authorized complete acceptance issuer; no operator command pending.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -114,7 +114,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Continue autonomous complete effective OCI and acceptance issuer policy implementation; section47 passed, no operator command pending. Do not replay sections39–47; keep distinct new private/write/sign/start gates.",
+  "nextStep": "Integrate source-sealed configured OCI and contemporaneous source/mount/rootfs/generation facts into independently authorized complete acceptance issuer; no operator command pending.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -231,9 +231,9 @@
     "roleSigningAuthorized": false,
     "startAuthorized": false
   },
-  "semanticHead": "3f49c743b721885d74a00e528b9b2d4bf8fdb772",
+  "semanticHead": "4bd3b3c6efa0add42b217766bf45773e82fa958b",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
-  "checkpointType": "section47-executed-pass",
+  "checkpointType": "section47-pass-unsigned-oci-and-native-mount-ci-pass",
   "checkpointAt": "2026-10-05T18:56:53+02:00",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
@@ -818,20 +818,53 @@
     "receivedAt": "2026-10-05T18:56:53+02:00",
     "doNotReplay": true
   },
-  "previousSemanticHead": "4f28ddfc8b6f9ef3df9e53aac33b0c4e6d7fb36d",
+  "previousSemanticHead": "3f49c743b721885d74a00e528b9b2d4bf8fdb772",
   "previousLatestDocumentationCi": "4f28ddf_7_PR_WORKFLOWS_SUCCESS_LAST_VERIFIED_PRECEDING_COMMIT",
   "unsignedOciSoftware": {
-    "previousCodeHead": "2ba1b026b6d4b553106eaf53eb038ad6b833f5eb",
-    "ciRun": 37350505094,
-    "mountNativeJob": 111899870111,
-    "mountNativeTestsPassed": 4,
-    "mountNativeSeconds": 0.608,
-    "configuredOciNativeStatus": "FAILED_OPTIONAL_PRIVATE_TIME_NAMESPACE_NOW_CORRECTED_CI_PENDING",
-    "localOciPolicyTestsPassed": 12,
+    "schema": "ouf.semantic-unsigned-oci-mount-ci.v1",
+    "codeCommit": "4bd3b3c6efa0add42b217766bf45773e82fa958b",
+    "workflowRun": 37351083289,
+    "status": "PASS",
+    "jobs": [
+      {
+        "name": "mount-view-runc",
+        "id": 111901785070,
+        "conclusion": "success",
+        "tests": 4
+      },
+      {
+        "name": "image-archive-containerd",
+        "id": 111901785434,
+        "conclusion": "success",
+        "tests": 3
+      },
+      {
+        "name": "image-archive-docker",
+        "id": 111901785523,
+        "conclusion": "success",
+        "tests": 2
+      },
+      {
+        "name": "sealed-readback",
+        "id": 111901785588,
+        "conclusion": "success",
+        "tests": 100
+      }
+    ],
+    "totalTests": 109,
+    "skipped": 0,
+    "logsRead": true,
     "targetExecuted": false,
-    "operatorCommandPending": false,
+    "privateDataScope": "SYNTHETIC_CI_ONLY",
+    "applicationStarted": false,
+    "policyAuthenticationProven": false,
+    "completeCreationAccepted": false,
     "acceptanceGranted": false,
+    "runtimeRegistered": false,
+    "signaturesIssued": 0,
     "startAuthorized": false,
-    "runtimeRegistered": false
-  }
+    "receiptPath": "docs/handoffs/receipts/SEMANTIC_UNSIGNED_OCI_MOUNT_CI_PASS_2026-10-05.json",
+    "nextTask": "Integrate source-sealed configured OCI and contemporaneous source/mount/rootfs/generation facts into independently authorized complete acceptance issuer; no operator command pending."
+  },
+  "semanticHeadMeaning": "lastVerifiedSoftwareCommitBeforeDocumentationCheckpoint"
 }
