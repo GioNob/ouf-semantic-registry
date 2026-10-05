@@ -17,7 +17,7 @@ def require(ok):
 def canonical(value):return json.dumps(value,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
 def database_pin(value,now=None):
     require(type(value) is dict and set(value)=={'status','schemaVersion','built','path','checksum'})
-    require(value['status']=='active' and type(value['schemaVersion']) is str and re.fullmatch(r'6\.\d+\.\d+',value['schemaVersion']))
+    require(value['status']=='active' and type(value['schemaVersion']) is str and re.fullmatch(r'v6\.\d+\.\d+',value['schemaVersion']))
     require(type(value['path']) is str and re.fullmatch(r'vulnerability-db_v6\.\d+\.\d+_[A-Za-z0-9:T._+-]+\.tar\.zst',value['path']))
     require(type(value['checksum']) is str and re.fullmatch(r'sha256:[0-9a-f]{64}',value['checksum']))
     built=datetime.datetime.fromisoformat(value['built'].replace('Z','+00:00'));require(built.tzinfo is not None)

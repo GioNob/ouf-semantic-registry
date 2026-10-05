@@ -5,9 +5,9 @@ from tools import review_semantic_image_vulnerabilities as m
 from tools.build_semantic_image_vulnerability_reviewer import build
 class Review(unittest.TestCase):
     def setUp(self):
-        self.pin={'status':'active','schemaVersion':'6.0.0','built':'2026-10-05T12:00:00Z','path':'vulnerability-db_v6.0.0_2026-10-05T12:00:00Z_1.tar.zst','checksum':'sha256:'+'a'*64}
+        self.pin={'status':'active','schemaVersion':'v6.0.0','built':'2026-10-05T12:00:00Z','path':'vulnerability-db_v6.0.0_2026-10-05T12:00:00Z_1.tar.zst','checksum':'sha256:'+'a'*64}
         self.expected={'role':'adapter','imageId':'sha256:'+'b'*64,'configByteSha256':'c'*64,'syftJsonSha256':'d'*64}
-        self.report={'matches':[],'source':{'type':'image','target':{'imageID':'sha256:'+'c'*64}},'descriptor':{'name':'grype','version':m.GRYPE_VERSION,'db':{'schemaVersion':'6.0.0','built':self.pin['built'],'valid':True}}}
+        self.report={'matches':[],'source':{'type':'image','target':{'imageID':'sha256:'+'c'*64}},'descriptor':{'name':'grype','version':m.GRYPE_VERSION,'db':{'schemaVersion':'v6.0.0','built':self.pin['built'],'valid':True}}}
     def scan(self):return m.summary(m.canonical(self.report),self.expected,self.pin)
     def test_clean_scan_never_grants_acceptance(self):
         r=self.scan();self.assertTrue(r['scannerSeverityThresholdMet']);self.assertFalse(r['acceptanceGranted']);self.assertFalse(r['dependencyCoverageAccepted'])
@@ -27,6 +27,9 @@ class Review(unittest.TestCase):
         self.assertEqual(m.database_pin(self.pin,now+3600),self.pin)
         for moment in (now-1,now+172801):
             with self.assertRaises(Exception):m.database_pin(self.pin,moment)
+        self.pin['schemaVersion']='6.0.0'
+        with self.assertRaises(Exception):m.database_pin(self.pin,now)
+        self.pin['schemaVersion']='v6.0.0'
         self.pin['path']='../unbound.tar.zst'
         with self.assertRaises(Exception):m.database_pin(self.pin,now)
     def test_duplicate_json_denied(self):
