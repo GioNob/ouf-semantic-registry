@@ -1,7 +1,10 @@
 # Complete creation-field review — software implementation
 
-Status: SOFTWARE_IMPLEMENTED_NATIVE_CI_PENDING. Target §46 remains PASS; this
-checkpoint does not supersede its execution or authorize another target action.
+Status: READY_FOR_OPERATOR_EXECUTION_WITHIN_EXISTING_READ_SCOPE_45_46.
+Target §46 remains PASS and must not be replayed. §47 has not been executed.
+The new wrapper classifies the same exact private inputs and candidate/image
+inspect objects already authorized in §45/§46; no new private file or authority
+scope is requested. The only pending intervention is operator execution.
 
 `tools/review_semantic_creation_fields.py` examines every field in the complete
 container Config and HostConfig. The reviewed Docker 29.8.1 API has 24 Config
@@ -48,3 +51,44 @@ plugin policy remain binding. This review neither supplies an SBOM/signature nor
 approves a custom APISIX plugin. The complete acceptance issuer, native OCI and
 mount/generation evidence, signing, consumer installation and runtime/start
 gates remain open. Historical wrappers §39–46 must not be replayed.
+
+## Verified code and operator execution
+
+Code/wrapper pin: `3f49c743b721885d74a00e528b9b2d4bf8fdb772`. Wrapper SHA256: `3a0182208cdd3e22383edaaed16e1db8e78b74cb92d567a0d5834ac3721142d6`.
+CI run 37343675450: root job 111876783737 passed 83 tests, zero skips;
+runner Docker job 111876784108 passed 2 tests; target Docker 29.8.1/containerd
+job 111876783401 passed 2 tests. All 8 wrapper parity checks and bash parsing
+passed. Logs read independently through GitHub. CI-native isolated §47 CLI
+passed on both daemons, kept both owned fixtures never started, preserved file
+bytes, and emitted no private fixture values or paths. Initial native failures
+were corrected in software/fixtures before operator execution: exact Env maps
+permit Docker merge ordering but reject duplicates/overrides; DNS is explicit
+in the synthetic fixture, avoiding nil/empty daemon-default ambiguity. Target
+checks were not relaxed and historical target wrappers were not modified.
+
+The full PR CI is not globally green: live pairwise run 37343675434, job
+111876782870, failed with upstream HTTP 503 before Docker/product probes.
+This is separate from the VPS internal Search 503; no bypass or retry is implied.
+
+Execute once in the existing `oufadmin` server session:
+
+```bash
+(
+  set -euo pipefail
+  workdir=$(mktemp -d)
+  trap 'rm -rf -- "$workdir"' EXIT
+  curl --fail --silent --show-error --location \
+    'https://raw.githubusercontent.com/GioNob/ouf-semantic-registry/3f49c743b721885d74a00e528b9b2d4bf8fdb772/docs/handoffs/commands/OUF_REVIEW_CREATION_FIELDS_2026-10-05.sh' \
+    -o "$workdir/verify.sh"
+  printf '%s  %s\n' '3a0182208cdd3e22383edaaed16e1db8e78b74cb92d567a0d5834ac3721142d6' "$workdir/verify.sh" | sha256sum -c -
+  bash "$workdir/verify.sh"
+)
+```
+
+Share only the redacted output. `SEMANTIC_CREATION_FIELDS=PASS` means the
+complete declared request conformed; the report explicitly keeps effective OCI
+policy, image publisher provenance, full OCI, mount view, generation, atomic
+snapshot, signing, runtime, acceptance and start false. A field-rule rejection
+returns schema-defined names/statuses plus hashes and counts, never values.
+Binding failures return only a generic redacted reason. Do not retry a blocked
+operation or modify a candidate to make the check pass without reviewing it.

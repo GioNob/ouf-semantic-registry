@@ -1,0 +1,42 @@
+{
+  "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
+  "section": 47,
+  "status": "PASS_NATIVE_CI_TARGET_NOT_EXECUTED",
+  "codeCommit": "3f49c743b721885d74a00e528b9b2d4bf8fdb772",
+  "wrapperPath": "docs/handoffs/commands/OUF_REVIEW_CREATION_FIELDS_2026-10-05.sh",
+  "wrapperSha256": "3a0182208cdd3e22383edaaed16e1db8e78b74cb92d567a0d5834ac3721142d6",
+  "runId": 37343675450,
+  "root": {
+    "jobId": 111876783737,
+    "tests": 83,
+    "skipped": 0
+  },
+  "docker": [
+    {
+      "jobId": 111876784108,
+      "tests": 2,
+      "daemon": "runner"
+    },
+    {
+      "jobId": 111876783401,
+      "tests": 2,
+      "daemon": "Docker 29.8.1/containerd"
+    }
+  ],
+  "wrapperParityCount": 8,
+  "logsRead": true,
+  "localNewTests": 13,
+  "privateReads": "same eight inputs and fixed candidate/image inspect objects authorized in sections45/46",
+  "targetExecuted": false,
+  "acceptanceGranted": false,
+  "startAuthorized": false,
+  "liveProviderCI": {
+    "runId": 37343675434,
+    "jobId": 111876782870,
+    "status": "FAILED",
+    "reason": "HTTP503 upstream schema.gov.it preflight, before Docker/product probes",
+    "bypass": false,
+    "retry": false
+  },
+  "limitation": "Complete declared-request classification cannot confer effective OCI, supply-chain, mount-view, generation, signature or start acceptance."
+}

@@ -86,7 +86,7 @@
     "section42Status": "EXECUTED_BLOCKED_DIAGNOSTIC",
     "section43Status": "EXECUTED_PASS"
   },
-  "nextTask": "Operator execute only pinned checksum-verified read-only scope42 wrapper; inspect returned result before any replay or target change.",
+  "nextTask": "Operator execute the checksum-pinned new section47 complete creation-field wrapper once; return redacted output. Same already authorized read scope45/46; no new private inputs, signing or start scope.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -110,8 +110,49 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Operator execute only pinned checksum-verified read-only scope42 wrapper; inspect returned result before any replay or target change.",
-  "latestDocumentationCi": "4f28ddf_7_PR_WORKFLOWS_SUCCESS_LAST_VERIFIED_PRECEDING_COMMIT",
+  "nextStep": "Operator execute the checksum-pinned new section47 complete creation-field wrapper once; return redacted output. Same already authorized read scope45/46; no new private inputs, signing or start scope.",
+  "latestDocumentationCi": {
+    "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
+    "section": 47,
+    "status": "PASS_NATIVE_CI_TARGET_NOT_EXECUTED",
+    "codeCommit": "3f49c743b721885d74a00e528b9b2d4bf8fdb772",
+    "wrapperPath": "docs/handoffs/commands/OUF_REVIEW_CREATION_FIELDS_2026-10-05.sh",
+    "wrapperSha256": "3a0182208cdd3e22383edaaed16e1db8e78b74cb92d567a0d5834ac3721142d6",
+    "runId": 37343675450,
+    "root": {
+      "jobId": 111876783737,
+      "tests": 83,
+      "skipped": 0
+    },
+    "docker": [
+      {
+        "jobId": 111876784108,
+        "tests": 2,
+        "daemon": "runner"
+      },
+      {
+        "jobId": 111876783401,
+        "tests": 2,
+        "daemon": "Docker 29.8.1/containerd"
+      }
+    ],
+    "wrapperParityCount": 8,
+    "logsRead": true,
+    "localNewTests": 13,
+    "privateReads": "same eight inputs and fixed candidate/image inspect objects authorized in sections45/46",
+    "targetExecuted": false,
+    "acceptanceGranted": false,
+    "startAuthorized": false,
+    "liveProviderCI": {
+      "runId": 37343675434,
+      "jobId": 111876782870,
+      "status": "FAILED",
+      "reason": "HTTP503 upstream schema.gov.it preflight, before Docker/product probes",
+      "bypass": false,
+      "retry": false
+    },
+    "limitation": "Complete declared-request classification cannot confer effective OCI, supply-chain, mount-view, generation, signature or start acceptance."
+  },
   "localDiagnosticTests": {
     "total": 11,
     "passed": 10,
@@ -186,10 +227,10 @@
     "roleSigningAuthorized": false,
     "startAuthorized": false
   },
-  "semanticHead": "4f28ddfc8b6f9ef3df9e53aac33b0c4e6d7fb36d",
+  "semanticHead": "3f49c743b721885d74a00e528b9b2d4bf8fdb772",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
-  "checkpointType": "scope42-authorized-not-executed",
-  "checkpointAt": "2026-10-05",
+  "checkpointType": "section47-native-ci-pass-not-executed",
+  "checkpointAt": "2026-10-05T18:53:57+02:00",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
     "section": 39,
@@ -337,7 +378,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "AUTONOMOUS_ACCEPTANCE_ISSUER_AND_MOUNT_BINDING_REVIEW",
+  "nextStatus": "SECTION47_READY_OPERATOR_EXECUTION_EXISTING_READ_SCOPE",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -381,7 +422,7 @@
     "adapterReceiptBindingsConsistent": true,
     "southboundSelectionConsistent": true
   },
-  "documentationHeadType": "lastVerifiedPrecedingCommit",
+  "documentationHeadType": "Documentation commit following code/wrapper pin3f49c743b721885d74a00e528b9b2d4bf8fdb772; obtain exact branch ref to resume.",
   "forecast": {
     "target": "first complete chatbot file/semantic/ingestion/UDP/search live smoke including external semantic branch",
     "calendarDays": [
@@ -689,15 +730,12 @@
     }
   },
   "liveProviderCi": {
-    "status": "BLOCKED_HTTP503",
-    "endpoint": "https://schema.gov.it/sparql",
-    "firstRun": 37300985693,
-    "retryJob": 111734491491,
-    "nextCodeRun": 37302120671,
-    "source": "CI preflight log; no VPS diagnosis",
-    "fallbackUsed": false,
-    "latestObservedRun": 37338806368,
-    "latestObservedJob": 111860308813
+    "runId": 37343675434,
+    "jobId": 111876782870,
+    "status": "FAILED",
+    "reason": "HTTP503 upstream schema.gov.it preflight, before Docker/product probes",
+    "bypass": false,
+    "retry": false
   },
   "sealedEnvironmentBinding": {
     "section": 46,
@@ -737,5 +775,41 @@
     "authorizedAt": "2026-10-05T18:20:24+02:00",
     "doNotReplay": true,
     "operatorReceipt": "docs/handoffs/receipts/SEMANTIC_ENVIRONMENT_BINDING_PASS_2026-10-05_OPERATOR.json"
-  }
+  },
+  "completeCreationFieldReview": {
+    "section": 47,
+    "status": "READY_NOT_EXECUTED",
+    "codeCommit": "3f49c743b721885d74a00e528b9b2d4bf8fdb772",
+    "wrapper": "docs/handoffs/commands/OUF_REVIEW_CREATION_FIELDS_2026-10-05.sh",
+    "wrapperSha256": "3a0182208cdd3e22383edaaed16e1db8e78b74cb92d567a0d5834ac3721142d6",
+    "readScope": "Existing explicit sections45/46 scope; same eight fixed inputs and Docker inspect objects",
+    "newPrivateFileReads": [],
+    "targetExecutionObserved": false,
+    "previousTargetSection": 46,
+    "previousTargetStatus": "PASS",
+    "guide": "docs/installation/SEMANTIC_CREATION_FIELD_REVIEW_2026-10-05.md",
+    "ciReceipt": "docs/handoffs/receipts/SEMANTIC_CREATION_FIELDS_CI_2026-10-05.json",
+    "configSchemaFields": 24,
+    "hostConfigSchemaFields": 70,
+    "rootTests": 83,
+    "dockerTests": 4,
+    "skipped": 0,
+    "wrapperParityCount": 8,
+    "allConfigurationFieldsSemanticallyAccepted": false,
+    "effectiveOciPolicyReviewed": false,
+    "acceptanceGranted": false,
+    "startAuthorized": false,
+    "doNotReplayHistoricalSections": [
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46
+    ]
+  },
+  "previousSemanticHead": "4f28ddfc8b6f9ef3df9e53aac33b0c4e6d7fb36d",
+  "previousLatestDocumentationCi": "4f28ddf_7_PR_WORKFLOWS_SUCCESS_LAST_VERIFIED_PRECEDING_COMMIT"
 }
