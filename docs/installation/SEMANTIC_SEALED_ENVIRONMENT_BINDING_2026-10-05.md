@@ -1,3 +1,7 @@
+## §46 AUTORIZZATO — comando operatore da eseguire; output non ricevuto
+
+Conferimento esplicito utente5 ottobre2026 18:20:24 Europe/Rome: scope46readonly Envlaunch/client-secret636:636 e6receipt/binding fissi,8inspect stessi2candidate/2image, output redatto. Receipt `docs/handoffs/receipts/SEMANTIC_ENVIRONMENT_BINDING_SCOPE_46_AUTHORIZATION_2026-10-05.json`. Wrapper eseguibile immutabile `43f981a8a8db821f980e1944476b714ed8369ca0`, SHA256 `cda3ed4660831a9ed09c134e2e83985a453667e28cc65bce63e316acad128e74`; header PREPARED al pin è storico, questo conferimento autorizza quei bytes senza modificarli. **NON ANCORA ESEGUITO; ultimo VPS45PASS; non ripetere45/44/43 o precedenti.** Eseguire una volta nella sessione oufadmin del server, preservare output redatto.70root+3Docker/0skip e7wrapper parity già verificati al pin. Nessuna IAM/provider/token grant/firma/start/consumer/runtime implicita; PET vincolanti e attuali limiti acceptance/fullOCI conservati. Stato corrente prevale sulle cronologie sottostanti.
+
 # §46 — pairing esatto Env/OIDC/MAC dei candidati
 
 **PREPARATO/NON AUTORIZZATO/NON ESEGUITO sulVPS.** Ultimo VPS§45 PASS, niente replay. Wrapper immutabile `43f981a8a8db821f980e1944476b714ed8369ca0`, SHA256 `cda3ed4660831a9ed09c134e2e83985a453667e28cc65bce63e316acad128e74`, `docs/handoffs/commands/OUF_VERIFY_ENVIRONMENT_BINDING_2026-10-05.sh`. Revisionabile: https://github.com/GioNob/ouf-semantic-registry/blob/43f981a8a8db821f980e1944476b714ed8369ca0/docs/handoffs/commands/OUF_VERIFY_ENVIRONMENT_BINDING_2026-10-05.sh
