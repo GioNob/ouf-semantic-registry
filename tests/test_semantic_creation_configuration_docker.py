@@ -21,7 +21,7 @@ class Native(unittest.TestCase):
                 run('build','--network=none','--pull=false','--tag',tag,root)
                 image=run('image','inspect','--format','{{.Id}}',tag);specs=[]
                 for i in range(2):specs.append({'name':tag+'-'+str(i),'image':image,'user':'0:0','command':[],
-                    'envFile':None,'readOnlyRoot':i==0,'memoryBytes':192*1024*1024,'pidsLimit':32,'dnsServers':[],
+                    'envFile':None,'readOnlyRoot':i==0,'memoryBytes':192*1024*1024,'pidsLimit':32,'dnsServers':['192.0.2.53'],
                     'mounts':[{'source':str(root/'proof'),'target':'/proof','readOnly':True}],
                     'networks':[{'id':'bridge','name':'bridge'}]})
                 from test_semantic_environment_binding import env_bytes,materialize,embedded as env_embedded
@@ -31,7 +31,7 @@ class Native(unittest.TestCase):
                 raw=m.encoded(manifest);pin=m.sha(raw)
                 for s in specs:
                     args=['create','--name',s['name'],'--user','0:0','--restart','no','--cap-drop','ALL',
-                        '--memory',str(s['memoryBytes']),'--memory-swap',str(s['memoryBytes']),'--pids-limit','32','--no-healthcheck','--network','bridge',
+                        '--memory',str(s['memoryBytes']),'--memory-swap',str(s['memoryBytes']),'--pids-limit','32','--no-healthcheck','--network','bridge','--dns','192.0.2.53',
                         '--label','ouf.semantic.candidate.transaction='+token,'--label','ouf.semantic.candidate.manifest='+pin,
                         '--mount','type=bind,source='+str(root/'proof')+',target=/proof,readonly']
                     if s['readOnlyRoot']:args.append('--read-only')
