@@ -1,5 +1,10 @@
 # OUF — ripartenza pulita dopo policy privata §38 PASS
 
+## Installer: prerequisito Linux/amd64, configurazione infrastrutturale guidata
+
+Chiarimento esplicito utente5 ottobre2026 alle06:49:48 Europe/Rome: **tutte le macchine di destinazione sono Linux/amd64, imposto come prerequisito**. Il wizard verifica il prerequisito, non sceglie architetture alternative. Parametri amministrativi: domain name, reti e assegnazione moduli→macchine, con derivazione endpoint/connessioni e validazione della topologia secondo PET. Intel/AMD x86-64 compatibili soddisfano amd64. Requisito aggiornato in `docs/installation/OUF_GUIDED_INSTALLER_REQUIREMENTS_2026-10-05.md`, non ancora implementato. Nessuna nuova scelta ARM64 o supporto multiarch richiesto. Questo chiarimento prevale sulle ipotesi precedenti. Scope43 già autorizzato, comando/pin/limiti invariati.
+
+
 ## §43 AUTORIZZATO — wrapper pinned pronto, output VPS ancora non ricevuto
 
 L'utente ha conferito esplicitamente “Autorizzo il43” il5 ottobre2026 alle06:48:20 Europe/Rome. Scope: export senza filtro di piattaforma delle medesime2 immagini esatte, con lettura privata in memoria anche di eventuali contenuti locali di altre piattaforme/attestazioni e segreti incorporati, mai divulgati. Verifica resta linux/amd64, limiti180s/8GiB/100000 entries perimmagine invariati. Nessun pull/build/containeroperation/provider/firma/acceptance/start/runtime/consumerlink/hostkeyEnv o registrycredential grant. Receipt `docs/handoffs/receipts/SEMANTIC_IMAGE_INDEX_BYTES_SCOPE_43_AUTHORIZATION_2026-10-05.json`.

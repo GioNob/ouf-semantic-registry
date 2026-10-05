@@ -1,21 +1,30 @@
 # Installer OUF guidato — requisito operativo
 
-Requisito utente5 ottobre2026 alle06:48:20 Europe/Rome: software di installazione che interroga l'admin e seleziona script e valori corretti per la piattaforma dell'ente. Stato **SPECIFICATO, NON IMPLEMENTATO**. Non confondere i wrapper di verifica amministrativa VPS con l'installer definitivo.
+Requisito utente5 ottobre2026, chiarito alle06:49:48 Europe/Rome. Stato **SPECIFICATO, NON IMPLEMENTATO**. Installer per configurare e distribuire i moduli dell'ente su macchine amministrate; distinto dai wrapper diagnostici VPS.
 
-## Rilevamento e scelte
+## Prerequisito piattaforma
 
-Rilevare automaticamente OS, architettura, bitness, runtime Docker/backend/versione e prerequisiti Python/privilegi. Normalizzare x86_64→linux/amd64 e aarch64→linux/arm64 solo su host Linux. amd64 è x86-64, utilizzabile con Intel e AMD compatibili; non scegliere in base alla marca. ARM64,32bit e target Windows/macOS non sono implicitamente supportati; un Docker Linux VM non equivale a supporto nativo host. La matrice corrente provata è linux/amd64 sul lab; aggiungere altre piattaforme solo dopo immagini, native CI e procedure di installazione convalidate.
+Tutte le macchine di destinazione devono essere **Linux/amd64**. amd64 indica x86-64 e comprende Intel e AMD compatibili; non è una marca CPU. Il wizard rileva e verifica OS/architettura/bitness su ogni macchina, senza chiedere la marca e senza scegliere altre architetture. Non sono richiesti ARM64,32bit o host Windows/macOS. Verifica anche runtime Docker/backend/versione, Python e accesso amministrativo secondo i prerequisiti della release; percorso fisso non equivale a provenienza verificata dell'interprete. Host incompatibile arresta il piano con diagnosi chiara.
 
-Chiedere solo scelte che non si rilevano affidabilmente: installazione nuova o ambiente esistente, profilo/componenti, domini/issuer/tenant identificativi, reti/porte e storage richiesti dai contratti PET, eventuale target differente dall'host. Mostrare i valori rilevati e il piano prima delle mutazioni. Password/chiavi e credential restano locali e privati; non passarli nella chat, negli argomenti pubblici o nei log. Preservare credenziali/config già esistenti; nessuna rigenerazione/reinstallazione implicita.
+## Parametri richiesti all'admin
 
-## Selezione degli artefatti e rilascio
+- Domain name e relativi nomi/endpoints dei servizi.
+- Reti e assegnazioni/collegamenti necessari tra macchine e moduli.
+- Inventario delle macchine e assegnazione di ciascun modulo alle macchine previste.
+- Scelte ulteriori indispensabili al profilo e ai contratti PET, distinguendo installazione nuova e ambiente esistente.
 
-Validare gli input contro schema e matrice supportata. Selezionare script/versioni e immagini con piattaforma esatta; verificare disponibilità e dipendenze senza fallback arbitrario. Generare manifest, parametri, wrapper e checksum dalla stessa release/build e dai valori convalidati; conservarli come artefatti versionati verificabili. Eseguire test/parity e native CI per ogni combinazione supportata. Dopo la generazione i bytes/pin sono immutabili: il rilevamento precede il sigillo, non ne modifica i parametri durante acceptance.
+Derivare dai dati una topologia coerente, endpoint e connessioni tra moduli; non presumere che tutti i moduli siano sullo stesso host. Verificare componenti obbligatori, dipendenze, risoluzione/raggiungibilità tra nodi, reti/porte senza conflitti e confini di ownership/accesso. Non chiedere all'admin dettagli che si possono derivare o rilevare affidabilmente. Mostrare riepilogo, rilevamenti e piano prima delle mutazioni.
 
-Distinguere dry-run/piano, prepare/stage e apply. Operazioni ripetibili devono riconoscere stato e receipt già presenti; niente replay di pipeline Cinema/Teatri o scritture side-effect duplicate. Verifiche fallite arrestano la fase interessata con diagnosi redatta. Avvio/acceptance/firma/migrazione e attivazione consumer rispettano sempre le autorizzazioni e i confini dei PET/handoff; le risposte al wizard non sostituiscono automaticamente i conferimenti necessari.
+Password/chiavi/credential restano locali e privati; niente chat, argomenti pubblici o log. Preservare configurazione e credenziali esistenti; nessuna rigenerazione/reinstallazione implicita. Parametri non sensibili e riferimenti privati sono gestiti separatamente.
+
+## Artefatti e applicazione
+
+Convalidare input e topologia contro schema/PET/matrice release Linux/amd64. Selezionare script e immagini pinned della release per ogni modulo e macchina. Generare manifest, parametri, wrapper e checksum dalla stessa build e dagli input convalidati; conservarli come artefatti versionati. Native CI verifica ogni topologia/profilo dichiarato supportato. Il rilevamento precede il sigillo: dopo la generazione i bytes/pin non si modificano arbitrariamente durante acceptance.
+
+Distinguere dry-run/piano, prepare/stage e apply, con ordine dipendenze distribuite e recovery per nodo. Riconoscere receipt e stato già presenti, evitando side-effect duplicati. Non rifare pipeline Cinema/Teatri già testate. Verifiche fallite arrestano la fase interessata con diagnosi redatta. Acceptance/firma/start/migrazione/consumer activation rispettano conferimenti e PET/handoff; risposte al wizard non concedono automaticamente autorità ulteriori.
 
 ## Criteri di completamento
 
-Un admin su piattaforma supportata può fornire scelte minime, vedere rilevamenti e piano, ottenere artefatti con parametri coerenti e riprendere dopo un'interruzione senza rigenerare segreti o rifare side-effect. Host Intel/AMD64 ricevono la stessa variante amd64 quando compatibili; ARM64 passa una matrice indipendente oppure riceve unsupported esplicito. Preflight copre /usr/bin/python3, Docker/backend/versione, accesso privilegiato limitato e incongruenze host/immagine. Test di integrazione e documentazione riproducono almeno installazione nuova, ambiente esistente e recovery.
+Un admin fornisce domini/reti/distribuzione moduli, vede un piano multi-macchina verificabile e ottiene artefatti coerenti e riproducibili. Tutti i target superano il prerequisito Linux/amd64. Test/documentazione coprono installazione nuova, ambiente esistente, topologia multi-macchina, parametri incompatibili e recovery dopo interruzione senza rigenerazione segreti né replay side-effect. Host Intel/AMD64 compatibili ricevono la stessa variante amd64.
 
-Debito precedente confermato: CI oggi testa/verifica i wrapper presenti; generazione automatica completa dei pin a ogni build e installer generalizzato non sono ancora completati. Nessun supporto aggiuntivo o R-INSTALL PASS è dichiarato da questo requisito.
+Debito corrente: CI verifica e testa i wrapper presenti; generazione automatica completa pin/build e installer guidato non sono ancora realizzati. Nessun R-INSTALL PASS deriva da questa specifica. Chiarimento06:49:48 prevale sulle ipotesi multiarch precedenti.

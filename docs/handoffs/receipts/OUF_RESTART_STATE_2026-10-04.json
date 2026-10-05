@@ -558,6 +558,16 @@
     "amd64SupportsIntelAndAMD64Bit": true,
     "askAdminInstallationParameters": true,
     "generatePinnedArtifactsFromValidatedInputs": true,
-    "arm64SupportProven": false
+    "arm64SupportProven": false,
+    "updatedAt": "2026-10-05T06:49:48+02:00",
+    "requiredPlatform": "linux/amd64",
+    "architectureSelectionRequested": false,
+    "validatePlatformPrerequisite": true,
+    "adminParameters": [
+      "domain names",
+      "networks",
+      "module-to-machine assignments"
+    ],
+    "multiMachineTopologyRequired": true
   }
 }
