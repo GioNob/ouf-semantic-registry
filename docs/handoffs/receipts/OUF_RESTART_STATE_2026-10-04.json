@@ -533,8 +533,19 @@
     "perImageMaxEntries": 100000,
     "localTestsPassed": 21,
     "localTestsSkipped": 0,
-    "ciStatus": "PENDING",
+    "ciStatus": "READBACK_SUCCESS_STANDARD_AND_CONTAINERD",
     "acceptanceGranted": false,
-    "startAuthorized": false
+    "startAuthorized": false,
+    "preparedCommit": "1a5e159fa130981a9f102a2d50c4dacb3cfda5f5",
+    "ciRootTests": 47,
+    "ciRootSkipped": 0,
+    "ciStandardDockerTests": 1,
+    "ciContainerdDockerTests": 1,
+    "ciReadbackRun": 37264907986,
+    "ciRootJob": 111619529628,
+    "ciStandardDockerJob": 111619529796,
+    "ciContainerdDockerJob": 111619529767,
+    "filteredIndexOmissionReproducedInCI": true,
+    "unfilteredIndexProofPassedInCI": true
   }
 }

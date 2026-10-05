@@ -17,3 +17,7 @@ Output solo hash,counts,booleani e vocabolario diagnostico fisso. Nessun stderr 
 SHA256 `6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff`; pin definitivo dopo pubblicazione/CI.21 test unit/CLI locali PASS0skip. Verifica nuovo workflow reale Docker29.8.1/containerd obbligatoria prima della richiesta di scope. Handoff§7.4: “Se serve lettura privata/conferimento nuovo, chiedere scope concreto dopo preparazione.” Qui il delta sono bytes aggiuntivi delle stesse immagini, non un nuovo grant acceptance/firma/start.
 
 Debito release separato: generator CI di manifest/pin/wrapper perbuild e host prerequisite preflight/privileged entry limitato. Questa verifica amministrativa non chiude quel debito né publisher/SBOM/fullOCI/generation/mountview/atomic/live readiness/Search503.
+
+## Checkpoint CI e consegna scope
+
+Pin immutabile `1a5e159fa130981a9f102a2d50c4dacb3cfda5f5`; SHA wrapper6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff verificato uguale remoto/locale. Workflow37264907986 SUCCESS:47 root0skip; job111619529628. Docker standard job111619529796:1 PASS. Docker29.8.1/containerd job111619529767:1 PASS con default filtered deliberatamente BLOCKED prima dell'export unfiltered INDEX/config/layer/payload PASS. Nessuna immagine fixture avviata, cleanup posseduto. Nuova autorizzazione §43 resta NON concessa: chiedere solo il delta dopo questo checkpoint. Esecuzione VPS NON osservata; target causa/bytes ancora non provati.
