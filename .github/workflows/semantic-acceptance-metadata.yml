@@ -79,6 +79,8 @@ jobs:
           daemon-config: |
             {"features":{"containerd-snapshotter":true}}
       - name: Place CI CLI under a root-owned fixed path
-        run: sudo install -o root -g root -m 0755 "$(command -v docker)" /usr/local/bin/ouf-ci-docker
+        run: |
+          sudo install -d -o root -g root -m 0700 /root/ouf-ci-runtime
+          sudo install -o root -g root -m 0755 "$(command -v docker)" /root/ouf-ci-runtime/docker
       - name: Require real containerd image identity and owned archive byte proof
-        run: sudo env OUF_REQUIRE_IMAGE_ARCHIVE_DOCKER=1 OUF_REQUIRE_CONTAINERD_IMAGE_ID=1 OUF_IMAGE_ARCHIVE_TEST_PARENT=/root OUF_IMAGE_ARCHIVE_DOCKER_PATH=/usr/local/bin/ouf-ci-docker OUF_IMAGE_ARCHIVE_DOCKER_HOST=unix://${{ steps.docker.outputs.sock }} /usr/bin/python3 -B tests/test_semantic_image_archive_docker.py
+        run: sudo env OUF_REQUIRE_IMAGE_ARCHIVE_DOCKER=1 OUF_REQUIRE_CONTAINERD_IMAGE_ID=1 OUF_IMAGE_ARCHIVE_TEST_PARENT=/root OUF_IMAGE_ARCHIVE_DOCKER_PATH=/root/ouf-ci-runtime/docker OUF_IMAGE_ARCHIVE_DOCKER_HOST=${{ steps.docker.outputs.sock }} /usr/bin/python3 -B tests/test_semantic_image_archive_docker.py
