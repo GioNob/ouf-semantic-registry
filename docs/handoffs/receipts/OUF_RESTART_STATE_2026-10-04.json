@@ -79,12 +79,12 @@
     "lastPassSection": 41,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "AWAITING_EXPLICIT_SCOPE_43_UNFILTERED_IMAGE_ARCHIVE",
+    "nextStatus": "AWAITING_OPERATOR_INDEX_PRESERVING_IMAGE_READBACK_43",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
     "section42Status": "EXECUTED_BLOCKED_DIAGNOSTIC",
-    "section43Status": "PREPARED_NOT_AUTHORIZED"
+    "section43Status": "AUTHORIZED_NOT_EXECUTED"
   },
   "nextTask": "Operator execute only pinned checksum-verified read-only scope42 wrapper; inspect returned result before any replay or target change.",
   "open": [
@@ -337,7 +337,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "AWAITING_EXPLICIT_SCOPE_43_UNFILTERED_IMAGE_ARCHIVE",
+  "nextStatus": "AWAITING_OPERATOR_INDEX_PRESERVING_IMAGE_READBACK_43",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -519,10 +519,10 @@
   },
   "imageIndexBytesReadback": {
     "section": 43,
-    "status": "PREPARED_NOT_AUTHORIZED",
+    "status": "AUTHORIZED_NOT_EXECUTED",
     "wrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_INDEX_BYTES_2026-10-05.sh",
     "wrapperSha256": "6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff",
-    "scopeGranted": false,
+    "scopeGranted": true,
     "executionObserved": false,
     "exportPlatformFilterApplied": false,
     "verifiedPlatform": "linux/amd64",
@@ -546,6 +546,18 @@
     "ciStandardDockerJob": 111619529796,
     "ciContainerdDockerJob": 111619529767,
     "filteredIndexOmissionReproducedInCI": true,
-    "unfilteredIndexProofPassedInCI": true
+    "unfilteredIndexProofPassedInCI": true,
+    "authorizationReceivedAt": "2026-10-05T06:48:20+02:00",
+    "authorizationReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_INDEX_BYTES_SCOPE_43_AUTHORIZATION_2026-10-05.json"
+  },
+  "guidedInstallerRequirement": {
+    "status": "SPECIFIED_NOT_IMPLEMENTED",
+    "recordedAt": "2026-10-05T06:48:20+02:00",
+    "specification": "docs/installation/OUF_GUIDED_INSTALLER_REQUIREMENTS_2026-10-05.md",
+    "detectHostArchitecture": true,
+    "amd64SupportsIntelAndAMD64Bit": true,
+    "askAdminInstallationParameters": true,
+    "generatePinnedArtifactsFromValidatedInputs": true,
+    "arm64SupportProven": false
   }
 }

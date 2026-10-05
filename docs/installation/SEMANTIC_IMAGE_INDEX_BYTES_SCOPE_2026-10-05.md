@@ -1,5 +1,10 @@
 # §43 — scope concreto di verifica indice/bytes immagini
 
+## Stato corrente: AUTORIZZATO, NON ESEGUITO
+
+Conferimento esplicito utente “Autorizzo il43” alle06:48:20 Europe/Rome del5 ottobre2026. Receipt `docs/handoffs/receipts/SEMANTIC_IMAGE_INDEX_BYTES_SCOPE_43_AUTHORIZATION_2026-10-05.json`. Il pin `1a5e159fa130981a9f102a2d50c4dacb3cfda5f5` e il checksum `6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff` restano immutati; le frasi NON AUTORIZZATO sottostanti registrano la preparazione storica. Nessun output VPS43 ancora ricevuto. Scope/limiti ed esclusioni sotto conferiti esattamente; nessun grant acceptance/firma/start.
+
+
 PREPARATO, NON AUTORIZZATO, NON ESEGUITO. §42 autorizzato per export --platform linux/amd64 resta BLOCKED. Nessun altro conferimento derivato.
 
 Il wrapper `docs/handoffs/commands/OUF_VERIFY_IMAGE_INDEX_BYTES_2026-10-05.sh` esporta SOLO i due image ID esatti già §39–42:

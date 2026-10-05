@@ -1,5 +1,14 @@
 # OUF — ripartenza pulita dopo policy privata §38 PASS
 
+## §43 AUTORIZZATO — wrapper pinned pronto, output VPS ancora non ricevuto
+
+L'utente ha conferito esplicitamente “Autorizzo il43” il5 ottobre2026 alle06:48:20 Europe/Rome. Scope: export senza filtro di piattaforma delle medesime2 immagini esatte, con lettura privata in memoria anche di eventuali contenuti locali di altre piattaforme/attestazioni e segreti incorporati, mai divulgati. Verifica resta linux/amd64, limiti180s/8GiB/100000 entries perimmagine invariati. Nessun pull/build/containeroperation/provider/firma/acceptance/start/runtime/consumerlink/hostkeyEnv o registrycredential grant. Receipt `docs/handoffs/receipts/SEMANTIC_IMAGE_INDEX_BYTES_SCOPE_43_AUTHORIZATION_2026-10-05.json`.
+
+Stato **AUTHORIZED_NOT_EXECUTED**. Pin esecutivo `1a5e159fa130981a9f102a2d50c4dacb3cfda5f5`, SHA256 `6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff`;47 root0skip+1 Docker standard+1 Docker29.8.1/containerd PASS sul pin. Il commento NOT GRANTED del wrapper immutabile registra la preparazione; il conferimento successivo è qui, non modifica il pin. §42 precedente resta BLOCKED e non si ripete; ultimo VPS PASS §41. Consegnare comando checksum-verified come oufadmin, poi registrare output; nessun retry/limite esteso automatico.
+
+Requisito utente installer guidato registrato in `docs/installation/OUF_GUIDED_INSTALLER_REQUIREMENTS_2026-10-05.md`: **amd64 significa x86-64 sia Intel sia AMD**, non marca CPU. Installer rileva OS/architettura/Docker e chiede le scelte amministrative, valida matrice supportata, sceglie immagini/script e genera manifest/pin per i parametri corretti. Platform verificata prima dell'operazione e poi sigillata; non deve modificare arbitrariamente wrapper già pinned. ARM64 e altri ambienti richiedono immagini/verifiche/native CI specifiche: supporto non ancora provato. Stato requisito SPECIFICATO_NON_IMPLEMENTATO; questa verifica VPS43 non è il futuro installer generalizzato.
+
+
 ## §43 preparato NON AUTORIZZATO — conservare indice immagine, niente nuovo tentativo §42
 
 La nuova CI Docker29.8.1/containerd ha riprodotto il limite: l'ID della fixture è l'indice originale, ma save --platform linux/amd64 ne esporta solo il manifest selezionato; il pin indice non è nell'archivio. CI run37264605556 job111618641830 BLOCKED alla catena OCI_TARGET_BINDING. È evidenza software sulla fixture, non prova della causa target; §42 VPS resta BLOCKED diagnosticamente alla congiunzione configSHA==ID / config JSON dict, secondo receipt06:34:44. Non consegnare il wrapper filtered e47dd8e/88ed2ea: NON eseguito sul VPS, superseded per questo limite; nessun replay dei due pin eseguiti.
