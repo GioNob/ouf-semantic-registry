@@ -1,3 +1,13 @@
+## §47 eseguito/PASS — campi di creazione classificati, nessun replay
+
+Output operatore ricevuto il 5 ottobre 2026 alle 18:56:53 Europe/Rome: checksum OK, `SEMANTIC_CREATION_FIELDS=PASS ACCEPTANCE_GRANTED=false START_AUTHORIZED=false`. Pin eseguito `3f49c743b721885d74a00e528b9b2d4bf8fdb772`, SHA256 `3a0182208cdd3e22383edaaed16e1db8e78b74cb92d567a0d5834ac3721142d6`. Receipt completa: `docs/handoffs/receipts/SEMANTIC_CREATION_FIELDS_PASS_2026-10-05_OPERATOR.json`. **Ultimo VPS §47 PASS; non ripetere §47 o i wrapper precedenti. Nessun comando VPS pendente.** Evidenza fornita dall’operatore, non ispezione SSH indipendente.
+
+Tutti i campi presenti seguono regole esplicite: Config adapter17/southbound19, HostConfig64 per ruolo, zero campi sconosciuti e zero obbligatori mancanti. Config/HostConfig/Env sono ancora gli stessi §45/§46. Dieci campi HostConfig per ruolo richiedono policy effettiva OCI/host; ExposedPorts e StopSignal del southbound richiedono provenance immagine. Nessun dato privato stampato/spooled, provider/IAM/firma/target-write/containermutation; acceptance/start/fullOCI/mount-view/generation/atomic restano false.
+
+Proseguire autonomamente sulla policy di acceptance dell’intero OCI e dell’issuer: hash di configurazione e classificazione della richiesta non autorizzano default del daemon né conferiscono acceptance. Occorrono prova dei namespace/seccomp/LSM/no-new-privileges, runtime/logging/protected paths, rootfs e mount effettivi, generation e supply chain; preparazione/signing/runtime/create/start o nuove letture private richiedono scope concreti distinti secondo handoff7.4–7.5. PET vincolanti. Non sostituire prove native con mock/skip o auto-acceptance.
+
+CI software §47 già verificata:83root+4Docker PASS/0skip,8wrapper parity. Il 503 upstream providerCI resta distinto dal Search503VPS. Cinema/Teatri/HUMAN, packagev8/policy/consumer e installer Linux/amd64/domain/reti/moduli→macchine restano invariati. Questo stato prevale sulle istruzioni di esecuzione §47 sottostanti.
+
 # Complete creation-field review — software implementation
 
 Status: READY_FOR_OPERATOR_EXECUTION_WITHIN_EXISTING_READ_SCOPE_45_46.

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Section47 READY_SAME_READ_SCOPE_45_46: complete field rules; no acceptance/sign/start.
+# Section47 EXECUTED_PASS_DO_NOT_REPLAY: historical code pin3f49c743; no acceptance/sign/start.
 set -euo pipefail
 exec sudo /usr/bin/python3 -I -B - \
  --manifest-root /etc/ouf/deploy-snapshots/semantic-provider-candidate-manifest-20261003-130410/prepared \

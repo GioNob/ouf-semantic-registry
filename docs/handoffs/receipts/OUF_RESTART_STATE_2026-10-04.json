@@ -86,7 +86,7 @@
     "section42Status": "EXECUTED_BLOCKED_DIAGNOSTIC",
     "section43Status": "EXECUTED_PASS"
   },
-  "nextTask": "Operator execute the checksum-pinned new section47 complete creation-field wrapper once; return redacted output. Same already authorized read scope45/46; no new private inputs, signing or start scope.",
+  "nextTask": "Continue autonomous complete effective OCI and acceptance issuer policy implementation; section47 passed, no operator command pending. Do not replay sections39–47; keep distinct new private/write/sign/start gates.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -110,7 +110,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Operator execute the checksum-pinned new section47 complete creation-field wrapper once; return redacted output. Same already authorized read scope45/46; no new private inputs, signing or start scope.",
+  "nextStep": "Continue autonomous complete effective OCI and acceptance issuer policy implementation; section47 passed, no operator command pending. Do not replay sections39–47; keep distinct new private/write/sign/start gates.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -229,8 +229,8 @@
   },
   "semanticHead": "3f49c743b721885d74a00e528b9b2d4bf8fdb772",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
-  "checkpointType": "section47-native-ci-pass-not-executed",
-  "checkpointAt": "2026-10-05T18:53:57+02:00",
+  "checkpointType": "section47-executed-pass",
+  "checkpointAt": "2026-10-05T18:56:53+02:00",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
     "section": 39,
@@ -378,7 +378,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "SECTION47_READY_OPERATOR_EXECUTION_EXISTING_READ_SCOPE",
+  "nextStatus": "AUTONOMOUS_EFFECTIVE_OCI_AND_ACCEPTANCE_ISSUER_POLICY",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -778,13 +778,13 @@
   },
   "completeCreationFieldReview": {
     "section": 47,
-    "status": "READY_NOT_EXECUTED",
+    "status": "EXECUTED_PASS",
     "codeCommit": "3f49c743b721885d74a00e528b9b2d4bf8fdb772",
     "wrapper": "docs/handoffs/commands/OUF_REVIEW_CREATION_FIELDS_2026-10-05.sh",
     "wrapperSha256": "3a0182208cdd3e22383edaaed16e1db8e78b74cb92d567a0d5834ac3721142d6",
     "readScope": "Existing explicit sections45/46 scope; same eight fixed inputs and Docker inspect objects",
     "newPrivateFileReads": [],
-    "targetExecutionObserved": false,
+    "targetExecutionObserved": true,
     "previousTargetSection": 46,
     "previousTargetStatus": "PASS",
     "guide": "docs/installation/SEMANTIC_CREATION_FIELD_REVIEW_2026-10-05.md",
@@ -807,8 +807,12 @@
       43,
       44,
       45,
-      46
-    ]
+      46,
+      47
+    ],
+    "operatorReceipt": "docs/handoffs/receipts/SEMANTIC_CREATION_FIELDS_PASS_2026-10-05_OPERATOR.json",
+    "receivedAt": "2026-10-05T18:56:53+02:00",
+    "doNotReplay": true
   },
   "previousSemanticHead": "4f28ddfc8b6f9ef3df9e53aac33b0c4e6d7fb36d",
   "previousLatestDocumentationCi": "4f28ddf_7_PR_WORKFLOWS_SUCCESS_LAST_VERIFIED_PRECEDING_COMMIT"
