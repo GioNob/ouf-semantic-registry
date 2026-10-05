@@ -1,0 +1,34 @@
+{
+  "schema": "ouf.readonly-product-smoke.v1",
+  "observedAt": "2026-10-05T20:05:29.027Z",
+  "selectedAccount": "ouf-admin",
+  "source": "OUF MCP plugin response; no independent target-host inspection",
+  "urbanSearch": {
+    "type": "https://api.ouf-lab.it/semantic/cinema",
+    "pageSize": 2,
+    "isError": true,
+    "responseStatus": 503,
+    "problemFields": {
+      "Type": "",
+      "Title": "",
+      "Code": "",
+      "Detail": "",
+      "RetryAfter": ""
+    },
+    "connectorErrorCode": "INVALID_ARGUMENT",
+    "positivePaginationProven": false
+  },
+  "semanticSearch": {
+    "q": "Theatre",
+    "type": "CLASS",
+    "limit": 3,
+    "isError": false,
+    "resultCount": 0,
+    "completeRegistryCensusProven": false,
+    "ontologyDefinitionProven": false
+  },
+  "externalProviderInvocationRequested": false,
+  "uploadOrIngestionRequested": false,
+  "platformMutationRequested": false,
+  "searchAcceptanceGranted": false
+}
