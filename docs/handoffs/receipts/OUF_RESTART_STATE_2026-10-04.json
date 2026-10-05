@@ -79,7 +79,7 @@
     "lastPassSection": 43,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "AWAITING_EXPLICIT_SCOPE45_PRIVATE_CREATION_CONFIG_ENV_READ",
+    "nextStatus": "SCOPE45_AUTHORIZED_AWAITING_OPERATOR_OUTPUT",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
@@ -632,8 +632,8 @@
   },
   "creationConfigurationReadback": {
     "section": 45,
-    "status": "PREPARED_NOT_AUTHORIZED",
-    "scopeGranted": false,
+    "status": "AUTHORIZED_AWAITING_OPERATOR_EXECUTION",
+    "scopeGranted": true,
     "executionObserved": false,
     "sourceCommit": "118b145ed4e83e077e058282d1fde7eee614f344",
     "wrapper": "docs/handoffs/commands/OUF_READ_CREATION_CONFIGURATION_2026-10-05.sh",
@@ -678,7 +678,9 @@
       "notWholeCiGreen": true,
       "liveProviderPreflightBlocked503": true
     },
-    "ciReceipt": "docs/handoffs/receipts/SEMANTIC_CREATION_CONFIGURATION_CI_2026-10-05.json"
+    "ciReceipt": "docs/handoffs/receipts/SEMANTIC_CREATION_CONFIGURATION_CI_2026-10-05.json",
+    "authorizationReceipt": "docs/handoffs/receipts/SEMANTIC_CREATION_CONFIGURATION_SCOPE_45_AUTHORIZATION_2026-10-05.json",
+    "authorizedAt": "2026-10-05T16:56:28+02:00"
   },
   "liveProviderCi": {
     "status": "BLOCKED_HTTP503",
