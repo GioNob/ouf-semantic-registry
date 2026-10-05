@@ -101,6 +101,15 @@ class Review(unittest.TestCase):
             inputs = fixture(); inputs[index][key] = value
             with self.subTest(key=key): self.assertFalse(m.review_fields(*inputs)['declaredRequestConforms'])
 
+    def test_docker_env_merge_order_is_semantic_but_duplicate_and_override_denied(self):
+        inputs=fixture();inputs[6]=['BASE=CI_PRIVATE_VALUE','SECOND=CI_SECOND_VALUE']
+        inputs[0]['Env']=list(reversed(inputs[6]))
+        self.assertTrue(m.review_fields(*inputs)['declaredRequestConforms'])
+        inputs[0]['Env'].append('BASE=CI_PRIVATE_VALUE')
+        self.assertFalse(m.review_fields(*inputs)['declaredRequestConforms'])
+        inputs[0]['Env']=['BASE=CI_PRIVATE_VALUE','SECOND=evil']
+        self.assertFalse(m.review_fields(*inputs)['declaredRequestConforms'])
+
     def test_exact_bind_mount_options_missing_duplicate_propagation_and_recursive_overrides_denied(self):
         for kind in ('missing', 'duplicate', 'rw', 'shared', 'recursive', 'create', 'consistency'):
             inputs = fixture(); mounts = inputs[1]['Mounts']

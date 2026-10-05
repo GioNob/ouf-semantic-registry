@@ -7,6 +7,7 @@ can confer effective-runtime or supply-chain acceptance.
 """
 import hashlib
 import json
+import re
 
 CONFIG_REQUIRED = frozenset('Hostname Domainname User AttachStdin AttachStdout AttachStderr Tty OpenStdin StdinOnce Env Cmd Image Volumes WorkingDir Entrypoint Labels'.split())
 CONFIG_OPTIONAL = frozenset('ExposedPorts Healthcheck ArgsEscaped NetworkDisabled OnBuild StopSignal StopTimeout Shell'.split())
@@ -24,6 +25,19 @@ def digest(value):
 
 def no_request(value, kind):
     return value is None or type(value) is kind and len(value) == 0
+
+def environment_map(rows):
+    if type(rows) is not list or len(rows) > 256:
+        return None
+    result = {}
+    for row in rows:
+        if type(row) is not str or '=' not in row or len(row) > 16384:
+            return None
+        key, value = row.split('=', 1)
+        if not re.fullmatch('[A-Za-z_][A-Za-z0-9_]*', key) or key in result:
+            return None
+        result[key] = value
+    return result
 
 class Fields:
     def __init__(self, obj, required, optional):
@@ -102,7 +116,8 @@ def review_fields(config, host, base, spec, journal, container_id, sealed_enviro
     c.exact('AttachStdout', True); c.exact('AttachStderr', True)
     c.exact('Hostname', container_id[:12]); c.exact('Domainname', '')
     c.exact('User', spec['user']); c.exact('Image', spec['image'])
-    c.exact('Env', sealed_environment)
+    actual_env, expected_env = environment_map(config.get('Env')), environment_map(sealed_environment)
+    c.rule('Env', actual_env is not None and expected_env is not None and same(actual_env, expected_env))
     c.exact('Cmd', spec['command'] or base.get('Cmd'))
     c.exact('Entrypoint', base.get('Entrypoint'))
     c.exact('WorkingDir', base.get('WorkingDir', ''))
