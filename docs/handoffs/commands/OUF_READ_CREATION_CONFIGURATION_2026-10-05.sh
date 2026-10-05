@@ -1,5 +1,5 @@
 #!/bin/bash
-# Section45 PREPARED_NOT_AUTHORIZED: full creation Config/HostConfig incl private Env; no OCI acceptance/start.
+# Section45 EXECUTED_PASS_DO_NOT_REPLAY; historical pin118b145ed4e83e077e058282d1fde7eee614f344; no OCI acceptance/start.
 set -euo pipefail
 exec sudo /usr/bin/python3 -I -B - \
  --manifest-root /etc/ouf/deploy-snapshots/semantic-provider-candidate-manifest-20261003-130410/prepared \

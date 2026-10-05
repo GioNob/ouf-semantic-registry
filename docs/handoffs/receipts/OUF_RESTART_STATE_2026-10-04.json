@@ -35,7 +35,7 @@
     "skipped": 1
   },
   "vps": {
-    "lastPassedSection": 44,
+    "lastPassedSection": 45,
     "lastPassedRoot": null,
     "section30Status": "EXECUTED_BLOCKED_PLAN",
     "blockedRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
@@ -43,7 +43,7 @@
     "sourceManifestSha256": "a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b",
     "downloadChecksumsPassed": 28,
     "applyVerifyReached": true,
-    "nextSection": 45,
+    "nextSection": null,
     "recoveryExecuted": true,
     "recoveryWrapperSha256": "2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d",
     "repairToolSha256": "116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4",
@@ -52,8 +52,8 @@
     "startAuthorized": false,
     "runtimeRegistered": false,
     "section32Status": "EXECUTED_BLOCKED",
-    "nextWrapper": "docs/handoffs/commands/OUF_READ_CREATION_CONFIGURATION_2026-10-05.sh",
-    "nextWrapperSha256": "927c0197a0059eef71662a4220e7b5d85038b454d95ac55bd12acebf0b3a5cad",
+    "nextWrapper": null,
+    "nextWrapperSha256": null,
     "section33Status": "EXECUTED_BLOCKED",
     "section32Root": null,
     "partialEvidenceKnown": false,
@@ -79,7 +79,7 @@
     "lastPassSection": 43,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "SCOPE45_AUTHORIZED_AWAITING_OPERATOR_OUTPUT",
+    "nextStatus": "AUTONOMOUS_ISSUER_CONFIG_ENV_CONTENT_REVIEW",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
@@ -632,9 +632,9 @@
   },
   "creationConfigurationReadback": {
     "section": 45,
-    "status": "AUTHORIZED_AWAITING_OPERATOR_EXECUTION",
+    "status": "EXECUTED_PASS",
     "scopeGranted": true,
-    "executionObserved": false,
+    "executionObserved": true,
     "sourceCommit": "118b145ed4e83e077e058282d1fde7eee614f344",
     "wrapper": "docs/handoffs/commands/OUF_READ_CREATION_CONFIGURATION_2026-10-05.sh",
     "wrapperSha256": "927c0197a0059eef71662a4220e7b5d85038b454d95ac55bd12acebf0b3a5cad",
@@ -680,7 +680,13 @@
     },
     "ciReceipt": "docs/handoffs/receipts/SEMANTIC_CREATION_CONFIGURATION_CI_2026-10-05.json",
     "authorizationReceipt": "docs/handoffs/receipts/SEMANTIC_CREATION_CONFIGURATION_SCOPE_45_AUTHORIZATION_2026-10-05.json",
-    "authorizedAt": "2026-10-05T16:56:28+02:00"
+    "authorizedAt": "2026-10-05T16:56:28+02:00",
+    "doNotReplay": true,
+    "operatorReceipt": "docs/handoffs/receipts/SEMANTIC_CREATION_CONFIGURATION_PASS_2026-10-05_OPERATOR.json",
+    "additionalEnvCounts": {
+      "adapter": 0,
+      "southbound": 2
+    }
   },
   "liveProviderCi": {
     "status": "BLOCKED_HTTP503",
