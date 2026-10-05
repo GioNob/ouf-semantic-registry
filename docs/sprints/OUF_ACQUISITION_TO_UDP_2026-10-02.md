@@ -1,3 +1,11 @@
+## Ripresa del 5 ottobre 2026 — gate49 corretto, wrapper preparato; CI reale pendente
+
+§48 resta ESEGUITO/PASS: non ripetere39–48. Nessun comando VPS pendente, scope49 non conferito. Il rilancio autorizzato della run37367745793, attempt2/job111969914985, ha completato 8 unit e download scanner/database hash-pinned, poi prodotto un report Grype reale; il verificatore ha negato il report perché lo stato DB è in `descriptor.db.status`, non direttamente in `descriptor.db`. Non è un difetto delle immagini VPS. Correzione salvata nel commit `4e51e03ccbe6b1fc62d8ca9ba79c03cbeb749cdb`, closure SHA256 `52177ba6b8c9a64045d3b1dec51da4730022695f3a45cdf2ebf2e45f1338bce5`:9 unit locali PASS, nuova prova reale37372042899 ancora in coda al checkpoint.
+
+Wrapper49 completo preparato, NON OFFERTO/NON AUTORIZZATO/NON ESEGUITO;3 controlli locali PASS su sintassi/pin/receipt e cattura pubblica con hash/mode/link/FIFO/limiti. La CI ora deve usare **lo stesso archivio DB del wrapper**, non selezionare un database diverso: `v6.1.10`, built `2026-10-05T06:45:38Z`, checksum `97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a`. Pin pubblico in `docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_DATABASE_PIN_2026-10-05.json`. Finestra48h termina il7 ottobre06:45:38Z; un wrapper scaduto deve essere rigenerato e riprovato, senza inventare hash o allargare freshness. Prima del conferimento49 attendere detection reale High/Critical con database/scanner exact e nessuna applicazione avviata. Gate49 produce evidenze, non clearance/acceptance/start. Search503, issuer/provenance/coverage/effectiveOCI/runtime e backlog prodotto restano aperti; Cinema/Teatri preservati.
+
+Questo stato prevale sui NEXT cronologici sottostanti.
+
 ## Aggiornamento21:54 Europe/Rome — §48 PASS; verifica vulnerabilità in corso
 
 Il readback SBOM48 è registrato:95 package adapter,179 southbound, versioni mancanti0, stessi archive/config/rootfs hash del43. Non ripetere39–48. Nessun comando VPS pendente. Software Grype preparato al source commit `f4fbed4e77a03f84536e960c9b85748a9a6de68d`, closure SHA256 `086fe4f97db1a7306d94782af6b4c9b4a0964c9402607c0a24faa7375a803090`;8 unit locali PASS e8 test root reali PASS nel job111950583923. La prima prova native si è fermata sul download pubblico DB conHTTP403: scan delle immagini NON eseguito. Nessuna clearance/acceptance/start concessa.
