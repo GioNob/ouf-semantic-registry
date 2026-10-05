@@ -1,0 +1,55 @@
+"""Real Syft, real saved images and a real isolated network namespace.
+
+Owned package fixtures only, no container creation/start, mandatory root CI.
+"""
+import hashlib,json,os,subprocess,sys,tempfile,unittest,uuid
+from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from tools import prepare_semantic_image_sbom as m
+from tools import verify_semantic_image_archive as archive
+class NativeSbom(unittest.TestCase):
+    def test_real_offline_scanner_binds_both_images_and_never_creates_container(self):
+        self.assertEqual(os.geteuid(),0)
+        docker=Path('/usr/bin/docker');scanner=Path(os.environ['OUF_SBOM_SCANNER']);unshare=Path('/usr/bin/unshare')
+        token=uuid.uuid4().hex;tags=[]
+        def run(*args):
+            p=subprocess.run([str(docker),*map(str,args)],capture_output=True,timeout=60)
+            self.assertEqual(p.returncode,0,'OWNED_SBOM_FIXTURE_SETUP_FAILED');return p.stdout.decode().strip()
+        before=run('ps','--all','--quiet')
+        with tempfile.TemporaryDirectory(dir='/root') as dirname:
+            root=Path(dirname);root.chmod(0o700);images=[]
+            try:
+                for i,role in enumerate(('adapter','southbound')):
+                    context=root/role;context.mkdir(mode=0o700)
+                    (context/'status').write_text('Package: ci-owned-'+role+'\nStatus: install ok installed\nArchitecture: amd64\nVersion: 1.'+str(i)+'\nMaintainer: CI <ci@example.invalid>\nDescription: Owned CI package fixture\n\n')
+                    (context/'Dockerfile').write_text('FROM scratch\nCOPY status /var/lib/dpkg/status\nCMD ["ci-never-start"]\n')
+                    tag='ouf-ci-sbom-'+role+'-'+token;tags.append(tag);run('build','--network=none','--pull=false','--tag',tag,context)
+                    image=run('image','inspect','--format','{{.Id}}',tag);probe=root/(role+'-probe.tar')
+                    with probe.open('wb') as out:
+                        p=subprocess.run([str(docker),'image','save',image],stdout=out,stderr=subprocess.DEVNULL,timeout=60)
+                        self.assertEqual(p.returncode,0)
+                    with probe.open('rb') as stream:v=archive.archive_verify(stream,image,archive.Budget())
+                    images.append({'role':role,'imageId':image,**{k:v[k] for k in ('configByteSha256','rootfsDescriptorsHash')}})
+                output=root/'prepared';output.mkdir(mode=0o700)
+                env={'PATH':'/usr/bin:/bin','OUF_SBOM_SCANNER':str(scanner)}
+                args=['/usr/bin/python3','-I','-B',str(Path(__file__).resolve().parents[1]/'tools/semantic_image_sbom_preparer.py'),
+                    '--root',str(output),'--images',json.dumps(images)]
+                for name,path in (('docker',docker),('scanner',scanner),('unshare',unshare)):
+                    args.extend(['--'+name,str(path),'--'+name+'-hash',hashlib.sha256(path.read_bytes()).hexdigest()])
+                p=subprocess.run(args,capture_output=True,timeout=420,env=env)
+                self.assertEqual(p.returncode,0,'NATIVE_ISOLATED_SBOM_PREPARATION_FAILED')
+                self.assertNotIn(b'ci-owned',p.stdout);self.assertNotIn(str(root).encode(),p.stdout)
+                receipt=json.loads((output/'receipt.json').read_bytes())
+                self.assertEqual(len(receipt['images']),2)
+                self.assertTrue(all(r['packageCount']>0 and r['sbomImageIdentityBound'] for r in receipt['images']))
+                self.assertFalse(receipt['acceptanceGranted']);self.assertFalse(receipt['startAuthorized'])
+                self.assertEqual(receipt['containerOperations'],0)
+                for role in ('adapter','southbound'):
+                    self.assertEqual((output/(role+'.spdx.json')).stat().st_mode&0o777,0o600)
+                repeat=subprocess.run(args,capture_output=True,timeout=15,env=env)
+                self.assertNotEqual(repeat.returncode,0,'DO_NOT_REPLAY_PRIVATE_SBOM_PREPARATION')
+                self.assertEqual(run('ps','--all','--quiet'),before)
+                print('SEMANTIC_IMAGE_SBOM_NATIVE=PASS REAL_SCANNER=true NETWORK_ISOLATED=true PRIVATE_ARTIFACTS=true NO_CONTAINER_CREATED=true NO_APPLICATION_STARTED=true CI_ONLY=true')
+            finally:
+                for tag in tags:run('image','rm',tag)
+if __name__=='__main__':unittest.main()

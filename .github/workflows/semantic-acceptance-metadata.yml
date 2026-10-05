@@ -123,6 +123,9 @@ jobs:
           source=Path('docs/handoffs/commands/OUF_VERIFY_ENVIRONMENT_BINDING_2026-10-05.sh').read_text()
           assert source.split("<<'OUF_PYTHON'\n",1)[1].rsplit('\nOUF_PYTHON',1)[0] == embedded().rstrip('\n')
           PY
+      - name: SBOM identity and deterministic closure unit checks
+        run: sudo /usr/bin/python3 -B tests/test_semantic_image_sbom.py
+
   image-archive-docker:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -171,3 +174,24 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y runc busybox-static
       - name: Require real created PID generation, bind inode and kernel readonly evidence
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_mount_view_native.py
+
+  image-sbom-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare exact public scanner in a private CI directory
+        run: |
+          sudo /usr/bin/python3 -B - <<'PY'
+          import hashlib,os,urllib.request
+          from pathlib import Path
+          from tools.prepare_semantic_image_sbom import scanner_from_archive,SCANNER_ARCHIVE_SHA256
+          os.umask(0o077)
+          root=Path('/root/ouf-ci-sbom-scanner');root.mkdir(mode=0o700)
+          url='https://github.com/anchore/syft/releases/download/v1.54.0/syft_1.54.0_linux_amd64.tar.gz'
+          with urllib.request.urlopen(url,timeout=60) as source:raw=source.read(67108865)
+          assert len(raw)<=67108864 and hashlib.sha256(raw).hexdigest()==SCANNER_ARCHIVE_SHA256
+          scanner_from_archive(raw,root/'syft')
+          PY
+      - name: Native offline image SBOM and no-replay proof
+        run: sudo env OUF_SBOM_SCANNER=/root/ouf-ci-sbom-scanner/syft /usr/bin/python3 -B tests/test_semantic_image_sbom_native.py
