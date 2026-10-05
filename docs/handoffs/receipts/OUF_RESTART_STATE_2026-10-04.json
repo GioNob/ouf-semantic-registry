@@ -1055,12 +1055,12 @@
   },
   "imageVulnerabilityGate": {
     "section": 49,
-    "status": "NATIVE_CI_PASS_SCOPE49_OFFERED_NOT_GRANTED",
+    "status": "SCOPE49_GRANTED_OPERATOR_EXECUTION_PENDING",
     "sourceCommit": "2c11fd6d37995b09de39f3d48b3f0373644ce7bc",
     "sourceSha256": "0060403c8336aab950012a44c9160f2b656ffa779479975ea44be6ec7a44ca43",
-    "scopeGranted": false,
+    "scopeGranted": true,
     "targetExecuted": false,
-    "operatorCommandPending": false,
+    "operatorCommandPending": true,
     "localTestsPassed": 10,
     "firstNativeRun": 37365819285,
     "firstNativeJob": 111950583923,
@@ -1070,7 +1070,7 @@
     "nextNativeRun": 37366132907,
     "nextNativeCommit": "dd8bb49b2150834dac9510a69b66c9da130822e4",
     "sourceReceiptSha256": "6e0a436d8da6b55c3286811140efd46b679d2ceb9dc202b33576a76425ed08fc",
-    "nextAction": "Request concrete scope49 in the complete guide; after grant execute immutable wrapper once and preserve redacted output. No replay39–48.",
+    "nextAction": "Operator executes immutable gate49 wrapper once on VPS and returns redacted output; preserve artifacts on BLOCKED. No replay39–48.",
     "wrapperTestsPassed": 3,
     "wrapperPath": "docs/handoffs/commands/OUF_REVIEW_IMAGE_VULNERABILITIES_2026-10-05.sh",
     "wrapperSha256": "ec5b567d90849a533a45f65911795690f2ad22357b6cc79b80d2d9c821a93fd9",
@@ -1107,6 +1107,9 @@
     "realScannerProven": true,
     "realDatabaseProven": true,
     "knownHighDetected": true,
-    "logsRead": true
+    "logsRead": true,
+    "authorizedAt": "2026-10-05T23:18:54+02:00",
+    "authorizationReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_SCOPE_49_AUTHORIZATION_2026-10-05.json",
+    "operatorOutputReceived": false
   }
 }

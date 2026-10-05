@@ -1,3 +1,11 @@
+## Gate49 AUTORIZZATO — comando operatore pronto, esito target pendente
+
+Conferimento esplicito utente5ottobre2026 alle23:18:54Europe/Rome: scope49 autorizzato come nella guida concreta già provata. Receipt `docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_SCOPE_49_AUTHORIZATION_2026-10-05.json`. Wrapper immutabile14ed6f3767df72d9eb3881d4c4d6645ee1045d9f/SHA256ec5b567d90849a533a45f65911795690f2ad22357b6cc79b80d2d9c821a93fd9;14testCI PASS/0skip, log letti. Il commento PREPARED_SCOPE_NOT_GRANTED del wrapper storico resta immutabile: questo consenso autorizza quei byte.
+
+**TARGET NON ANCORA ESEGUITO; output49 non ricevuto. Ultimo target§48PASS, non ripetere39–48.** Eseguire una sola volta il comando completo della guida49 nella shell operatore oufadmin del VPS e restituire output redatto. Cinqueletture SBOM/receipt48, downloadpubblici e nuovi scanner/DB/cache/report/receipt nel solo albero nuovo49; scannerroot/offline/unshare--net. Nessuna acceptance/firma/runtime/start inclusa. Freshness48h, pinDB scade7ottobre08:45:38Europe/Rome. Dopo output aggiornare autonomamente gli stati nei4documenti/receipt; seBLOCKED conservare root e riconciliare, niente replay/cleanup a intuito.
+
+Chiarimento sul numero dei gate:49 è la numerazione progressiva dei checkpoint, non un totale pianificato. §7 elenca7condizioni provider readiness; il registro ereditato contiene15voci di backlog generale, in parte sovrapposte e non equivalenti a22comandi. Non è definito un numero totale chiuso; non inventare ulteriori prerequisiti di piattaforma a ogni checkpoint. Chiudere le prove già richieste daiPET e riportare il lavoro al mapping/file→UDP, con acceptance/release e installabilità distinte. Questo stato prevale sui NEXT cronologici sottostanti.
+
 ## Gate49 — prova software/CI PASS, scope target pronto da conferire
 
 Verificata run37372640941/job111973338339 sul commit14ed6f3767df72d9eb3881d4c4d6645ee1045d9f (mergeCI f50e35e63dc028c32fa6a6eede34f70d43ff0601): **10unit+3wrapper+1native=14PASS/0skip**, log letti. Grype0.120.0 e database exact v6.1.10 sono reali; High/Critical rilevati nella fixture vulnerabile, scan isolato dalla rete, nessuna applicazione avviata. Questo chiude la prova software, **non certifica le immagini VPS**.
