@@ -1,0 +1,26 @@
+{
+  "schema": "ouf.semantic-sealed-environment-binding-ci-readback.v1",
+  "verifiedCommit": "43f981a8a8db821f980e1944476b714ed8369ca0",
+  "run": 37338806475,
+  "rootJob": 111860308978,
+  "rootTests": 70,
+  "skipped": 0,
+  "dockerTests": 3,
+  "dockerJobs": [
+    111860308625,
+    111860308232
+  ],
+  "wrapperParityCount": 7,
+  "logsRead": true,
+  "scope46Granted": false,
+  "vpsExecutionObserved": false,
+  "notWholeCiGreen": true,
+  "livePreflight503": {
+    "run": 37338806368,
+    "job": 111860308813,
+    "errors": [
+      "2026-10-05T16:11:00.8941686Z curl: (22) The requested URL returned error: 503",
+      "2026-10-05T16:11:00.9456709Z ##[error]Process completed with exit code 22."
+    ]
+  }
+}
