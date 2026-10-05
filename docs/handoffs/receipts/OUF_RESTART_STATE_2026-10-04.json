@@ -79,7 +79,7 @@
     "lastPassSection": 47,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "AUTONOMOUS_EFFECTIVE_OCI_AND_ACCEPTANCE_ISSUER_POLICY",
+    "nextStatus": "AUTONOMOUS_EXTERNAL_COMPLETE_ACCEPTANCE_ISSUER_AND_EVIDENCE_GATE",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
@@ -90,7 +90,7 @@
     "section46Status": "EXECUTED_PASS",
     "section47Status": "EXECUTED_PASS"
   },
-  "nextTask": "Integrate source-sealed configured OCI and contemporaneous source/mount/rootfs/generation facts into independently authorized complete acceptance issuer; no operator command pending.",
+  "nextTask": "Complete independent PET-conforming target acceptance issuer and prepare exact evidence/authority gate; no operator command pending.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -114,7 +114,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Integrate source-sealed configured OCI and contemporaneous source/mount/rootfs/generation facts into independently authorized complete acceptance issuer; no operator command pending.",
+  "nextStep": "Complete independent PET-conforming target acceptance issuer and prepare exact evidence/authority gate; no operator command pending.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -231,7 +231,7 @@
     "roleSigningAuthorized": false,
     "startAuthorized": false
   },
-  "semanticHead": "4bd3b3c6efa0add42b217766bf45773e82fa958b",
+  "semanticHead": "3505a2f6bfde9c3905b76a5e670ebc30b40d3d6d",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
   "checkpointType": "section47-pass-unsigned-oci-and-native-mount-ci-pass",
   "checkpointAt": "2026-10-05T18:56:53+02:00",
@@ -866,5 +866,55 @@
     "receiptPath": "docs/handoffs/receipts/SEMANTIC_UNSIGNED_OCI_MOUNT_CI_PASS_2026-10-05.json",
     "nextTask": "Integrate source-sealed configured OCI and contemporaneous source/mount/rootfs/generation facts into independently authorized complete acceptance issuer; no operator command pending."
   },
-  "semanticHeadMeaning": "lastVerifiedSoftwareCommitBeforeDocumentationCheckpoint"
+  "semanticHeadMeaning": "Software observer pin; static target compiler and historical operator evidence retain their own pins.",
+  "creationFrameIssuerConsumerSoftware": {
+    "schema": "ouf.semantic-created-frame-issuer-consumer-ci.v1",
+    "gatewayCodeCommit": "f38e1533e91258874950577b947d84a4b9134f18",
+    "semanticObserverCommit": "3505a2f6bfde9c3905b76a5e670ebc30b40d3d6d",
+    "observerSha256": "d15d290e903e16f64b9d153658453f2b857c5241eb30ded961fd981a3ba436e4",
+    "gatewayWorkflows": [
+      {
+        "id": 37357971003,
+        "name": "Semantic provider request boundary",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 37357971063,
+        "name": "Gateway control-plane and MCP mediation",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "gatewayNativeJob": 111925113296,
+    "rootTests": 238,
+    "nativeAdmissionTests": 2,
+    "nativeNodeTests": 6,
+    "nativeTargetDockerGoTests": 2,
+    "mandatorySkipped": 0,
+    "semanticWorkflow": 37355294240,
+    "semanticRootTests": 106,
+    "semanticRunnerDockerTests": 2,
+    "semanticTargetDockerTests": 3,
+    "semanticNativeRuncTests": 4,
+    "semanticMandatoryTotal": 115,
+    "semanticMandatorySkipped": 0,
+    "logsRead": true,
+    "realLateFrameReauthenticationProvenInCi": true,
+    "realPostSignatureSourceDriftDeniedInCi": true,
+    "brokerFramedPolicyPropagationTestedWithRealSignatures": true,
+    "syntheticUnitObservers": true,
+    "targetExecuted": false,
+    "acceptanceGranted": false,
+    "fullOciAcceptanceProvenOnTarget": false,
+    "externalCompleteAcceptanceIssuerImplemented": false,
+    "atomicSnapshotProven": false,
+    "providerCallsOnTarget": 0,
+    "targetFilesWritten": 0,
+    "targetSignaturesIssued": 0,
+    "runtimeRegisteredOnTarget": false,
+    "startAuthorizedOnTarget": false,
+    "lastOperatorPassedSection": 47,
+    "receiptPath": "docs/handoffs/receipts/SEMANTIC_CREATION_FRAME_ISSUER_CONSUMER_CI_PASS_2026-10-05.json"
+  }
 }
