@@ -7,7 +7,7 @@ class Review(unittest.TestCase):
     def setUp(self):
         self.pin={'status':'active','schemaVersion':'6.0.0','built':'2026-10-05T12:00:00Z','path':'vulnerability-db_v6.0.0_2026-10-05T12:00:00Z_1.tar.zst','checksum':'sha256:'+'a'*64}
         self.expected={'role':'adapter','imageId':'sha256:'+'b'*64,'configByteSha256':'c'*64,'syftJsonSha256':'d'*64}
-        self.report={'matches':[],'source':{'type':'image','target':{'imageID':'sha256:'+'c'*64}},'descriptor':{'name':'grype','version':m.GRYPE_VERSION,'db':{'schemaVersion':'6.0.0','built':self.pin['built']}}}
+        self.report={'matches':[],'source':{'type':'image','target':{'imageID':'sha256:'+'c'*64}},'descriptor':{'name':'grype','version':m.GRYPE_VERSION,'db':{'schemaVersion':'6.0.0','built':self.pin['built'],'valid':True}}}
     def scan(self):return m.summary(m.canonical(self.report),self.expected,self.pin)
     def test_clean_scan_never_grants_acceptance(self):
         r=self.scan();self.assertTrue(r['scannerSeverityThresholdMet']);self.assertFalse(r['acceptanceGranted']);self.assertFalse(r['dependencyCoverageAccepted'])
@@ -31,6 +31,12 @@ class Review(unittest.TestCase):
         with self.assertRaises(Exception):m.database_pin(self.pin,now)
     def test_duplicate_json_denied(self):
         with self.assertRaises(Exception):m.summary(b'{"matches":[],"matches":[]}',self.expected,self.pin)
+    def test_invalid_database_and_coverage_alert_prevent_threshold(self):
+        self.report['descriptor']['db']['valid']=False
+        with self.assertRaises(Exception):self.scan()
+        self.report['descriptor']['db']['valid']=True;self.report['alertsByPackage']=[{'package':{'name':'PRIVATE_COMPONENT'},'alerts':[{'type':'distro-eol'}]}]
+        r=self.scan();self.assertFalse(r['scannerSeverityThresholdMet']);self.assertEqual(r['packageAlertCount'],1)
+        self.assertNotIn('PRIVATE_COMPONENT',json.dumps(r))
     def test_generated_closure_exact(self):
         root=Path(__file__).resolve().parents[1]/'tools'
         self.assertEqual(build(root),(root/'semantic_image_vulnerability_reviewer.py').read_text())
