@@ -35,6 +35,13 @@ class DockerOCI(unittest.TestCase):
                 self.assertTrue(observed.is_file(),'REAL_GENERATED_OCI_NOT_CAPTURED')
                 doc=json.loads(observed.read_bytes());schema=m.schema_from_source_closure()
                 m.shape(doc,'Spec',schema)
+                known={'mount','pid','ipc','uts','network','cgroup','user','time'}
+                namespaces=doc.get('linux',{}).get('namespaces',[])
+                # Finite names and booleans only: no host paths or OCI values.
+                print('CI_OCI_NAMESPACE_DIAGNOSTIC='+json.dumps({
+                    'knownTypes':sorted(n['type'] for n in namespaces if n['type'] in known),
+                    'pathTypes':sorted(n['type'] for n in namespaces if n['type'] in known and n.get('path')),
+                    'unknownTypeCount':sum(n['type'] not in known for n in namespaces)}),flush=True)
                 # Independent launch/image fixture inputs; never copied from OCI.
                 startup={'args':['ci-never-start'],'cwd':'/','uid':10006,'gid':10006,'umask':None,
                     'env':['PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',

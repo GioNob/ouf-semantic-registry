@@ -27,11 +27,19 @@ class Native(unittest.TestCase):
             config=bundle/'config.json';config.write_text(json.dumps(doc));config.chmod(0o600)
             args=[str(runc),'--root',str(root/'runtime')]
             def run(*tail):
-                p=subprocess.run([*args,*map(str,tail)],capture_output=True,timeout=20)
-                self.assertEqual(p.returncode,0,'CI_RUNC_OPERATION_FAILED');return p.stdout
+                # A created init retains its stdio until start/delete. PIPE
+                # makes communicate wait for that init after runc has exited.
+                # These files hold synthetic CI diagnostics only.
+                with tempfile.TemporaryFile() as output:
+                    p=subprocess.run([*args,*map(str,tail)],stdin=subprocess.DEVNULL,
+                        stdout=output,stderr=output,timeout=20)
+                    self.assertEqual(p.returncode,0,'CI_RUNC_OPERATION_FAILED')
+                    output.seek(0);data=output.read(16385)
+                    self.assertLessEqual(len(data),16384,'CI_RUNC_OUTPUT_UNBOUNDED');return data
             created=False
             try:
-                run('create','--bundle',bundle,cid);created=True
+                # Cleanup also applies if create succeeds but its caller fails.
+                created=True;run('create','--bundle',bundle,cid)
                 state=json.loads(run('state',cid));self.assertEqual(state['status'],'created');pid=state['pid']
                 expected=m.generation(pid,m.Budget());bindings=[{'source':str(source),'target':target,'readOnly':True}]
                 attrs=[m.attributes(source.lstat())];before=source.read_bytes()
@@ -57,7 +65,9 @@ class Native(unittest.TestCase):
                 self.assertEqual(source.read_bytes(),before);self.assertFalse(marker.exists())
                 self.assertEqual(json.loads(run('state',cid))['status'],'created')
             finally:
-                if created:run('delete','--force',cid)
+                if created:
+                    subprocess.run([*args,'delete','--force',cid],stdin=subprocess.DEVNULL,
+                        stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=20,check=True)
 
     def test_actual_mountinfo_pid_generation_inode_and_kernel_readonly_without_app_start(self):self.exercise()
     def test_actual_rw_bind_denied(self):self.exercise('rw')
