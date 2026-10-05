@@ -1,3 +1,5 @@
+Conferma CI del checkpoint758c2815249c80e8e8e4d78699c551e003b972d1: run37302568764, log letti65root/0skip (6nuovi),3Docker/0skip,6wrapper parity PASS; job111738527886/111738528338/111738528152. L'ultimo test resourcebudget/pin è quindi ora provato anche nellaCI. Receipt `docs/handoffs/receipts/SEMANTIC_CREATION_CONFIGURATION_CI_2026-10-05.json`. Wrapper eseguibile118b/SHA927c restaimmutato;45NON AUTORIZZATO/NON ESEGUITO. Questa conferma prevale sul futuro readback del test indicato nel testo storico sotto; CI liveprovider resta separata/bloccata503.
+
 # §45 — configurazione completa di creazione dei due candidati
 
 **PREPARATO/NON AUTORIZZATO/NON ESEGUITO.** Ultimo VPS§44 PASS. Wrapper codice immutabile `118b145ed4e83e077e058282d1fde7eee614f344`, SHA256 `927c0197a0059eef71662a4220e7b5d85038b454d95ac55bd12acebf0b3a5cad`, `docs/handoffs/commands/OUF_READ_CREATION_CONFIGURATION_2026-10-05.sh`. Non eseguire prima del conferimento dello scope. PET vincolanti; §39–44 non vanno ripetuti.
