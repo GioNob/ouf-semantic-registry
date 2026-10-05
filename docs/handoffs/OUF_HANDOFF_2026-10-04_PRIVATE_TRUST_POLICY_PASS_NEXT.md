@@ -1,3 +1,13 @@
+## Gate49 — prova software/CI PASS, scope target pronto da conferire
+
+Verificata run37372640941/job111973338339 sul commit14ed6f3767df72d9eb3881d4c4d6645ee1045d9f (mergeCI f50e35e63dc028c32fa6a6eede34f70d43ff0601): **10unit+3wrapper+1native=14PASS/0skip**, log letti. Grype0.120.0 e database exact v6.1.10 sono reali; High/Critical rilevati nella fixture vulnerabile, scan isolato dalla rete, nessuna applicazione avviata. Questo chiude la prova software, **non certifica le immagini VPS**.
+
+Source2c11fd6d37995b09de39f3d48b3f0373644ce7bc/closureSHA2560060403c8336aab950012a44c9160f2b656ffa779479975ea44be6ec7a44ca43; wrapper14ed6f3767df72d9eb3881d4c4d6645ee1045d9f/SHA256ec5b567d90849a533a45f65911795690f2ad22357b6cc79b80d2d9c821a93fd9. Receipt `docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_GATE_49_CI_PASS_2026-10-05.json`.
+
+**Ultimo target§48PASS; non ripetere39–48. Scope49 OFFERTO/NON CONFERITO/NON ESEGUITO; nessun comando VPS pendente prima del conferimento.** Richiedere ora il risultato concreto della guida49:5file SBOM/receipt48 in lettura; nuovi scanner/DB/cache/report/receipt nel solo albero semantic-image-vulnerability-20261005-v1; rootPython-I-B e Grype offline/unshare--net. Dopo conferimento eseguire una volta il comando immutabile, preservare output redatto e aggiornare stato. Niente acceptance/firma/runtime/start impliciti.
+
+DB built2026-10-05T06:45:38Z, freshness48h, scadenza7ottobre08:45:38Europe/Rome. Dopo scadenza rigenerare pin/wrapper/prova. Search503, coverage/provenance/issuer/effectiveOCI/runtime/start e backlog prodotto restano aperti; Cinema/Teatri preservati. Questo PASS riguarda la sola CI dedicata, non un claim di CI globale verde. Questo checkpoint prevale sui NEXT cronologici sottostanti.
+
 ## Checkpoint di ripresa — gate49 software pronto, prova reale bloccata sulla coda runner
 
 Source corrente `2c11fd6d37995b09de39f3d48b3f0373644ce7bc`, closure SHA256 `0060403c8336aab950012a44c9160f2b656ffa779479975ea44be6ec7a44ca43`; wrapper immutabile `14ed6f3767df72d9eb3881d4c4d6645ee1045d9f`, SHA256 `ec5b567d90849a533a45f65911795690f2ad22357b6cc79b80d2d9c821a93fd9`. **10 unit del verificatore e3 controlli wrapper locali PASS.** Parsing Grype0.120.0 corretto su descriptor.db.status; alert falsy malformati negati. Wrapper/DB/receipt exact ricontrollati anche tramite readback GitHub.
