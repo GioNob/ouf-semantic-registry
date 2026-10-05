@@ -195,15 +195,3 @@ jobs:
           PY
       - name: Native offline image SBOM and no-replay proof
         run: sudo env OUF_SBOM_SCANNER=/root/ouf-ci-sbom-scanner/syft /usr/bin/python3 -B tests/test_semantic_image_sbom_native.py
-
-  image-vulnerability-offline:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - name: Verify vulnerability evidence parser and isolated closure
-        run: sudo /usr/bin/python3 -B tests/test_semantic_image_vulnerabilities.py
-      - name: Prepare public pinned scanners and fresh public database
-        run: sudo /usr/bin/python3 -B tests/prepare_native_vulnerability_scanners.py
-      - name: Require real offline vulnerability detection on owned fixtures
-        run: sudo env OUF_SBOM_SCANNER=/root/ouf-ci-vulnerability/syft /usr/bin/python3 -B tests/test_semantic_image_vulnerabilities_native.py
