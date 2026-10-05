@@ -1,3 +1,11 @@
+## Aggiornamento21:54 Europe/Rome — §48 PASS; verifica vulnerabilità in corso
+
+Il readback SBOM48 è registrato:95 package adapter,179 southbound, versioni mancanti0, stessi archive/config/rootfs hash del43. Non ripetere39–48. Nessun comando VPS pendente. Software Grype preparato al source commit `f4fbed4e77a03f84536e960c9b85748a9a6de68d`, closure SHA256 `086fe4f97db1a7306d94782af6b4c9b4a0964c9402607c0a24faa7375a803090`;8 unit locali PASS e8 test root reali PASS nel job111950583923. La prima prova native si è fermata sul download pubblico DB conHTTP403: scan delle immagini NON eseguito. Nessuna clearance/acceptance/start concessa.
+
+La CI dedicata successiva al commit `dd8bb49b2150834dac9510a69b66c9da130822e4` usa l'identificazione client documentata in Grype0.120.0 e diagnostica HTTP limitata; run37366132907 ancora pending al checkpoint. Il gate49 viene concretizzato con wrapper/checksum/database reale solo dopo prova scanner+DB+positive vulnerability fixture, senza mock/skip. [Guida in preparazione](https://github.com/GioNob/ouf-semantic-registry/blob/codex/r4a-smoke-semantic-inventory/docs/installation/SEMANTIC_IMAGE_VULNERABILITY_GATE_49_2026-10-05.md). Nessuno scope49 richiesto/conferito o lettura dei5 file SBOM privati eseguita. issuer indipendente/vendor allowlist/custom provenance/coverage/effective OCI/generation/runtime e Search503 restano OPEN. Cinema/Teatri e percorso prodotto interno invariati.
+
+Questo aggiornamento prevale sui NEXT storici sottostanti. Proseguire il lavoro software autonomo; coinvolgere l'operatore solo per il prossimo scope concreto già verificato.
+
 ## §48 ESEGUITO/PASS — SBOM prodotte, nessun replay
 
 Output operatore ricevuto5 ottobre2026 21:22:13 Europe/Rome: wrapper/preparer/scanner checksumOK, `SEMANTIC_IMAGE_SBOM=PASS ACCEPTANCE_GRANTED=false START_AUTHORIZED=false`. Wrapper `0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef`, SHA256 `8b23574892b9b929b28879c2ff17ee3e8ccdda0dffd4f67faf0858317baa8e2d`. Receipt completa `docs/handoffs/receipts/SEMANTIC_IMAGE_SBOM_PASS_2026-10-05_OPERATOR.json`. **Ultimo operatorPASS48; non ripetere39–48; nessun comando operatore pendente.** Evidenza riportata dall'operatore, non ispezione SSH indipendente.
