@@ -32,10 +32,15 @@ class Native(unittest.TestCase):
                             'action':'SCMP_ACT_ALLOW'}]}}}
             config=bundle/'config.json';config.write_text(json.dumps(doc));config.chmod(0o600)
             args=[str(runc),'--root',str(root/'runtime')]
+            create_log=tempfile.TemporaryFile()
             def run(*tail):
                 # A created init retains its stdio until start/delete. PIPE
                 # makes communicate wait for that init after runc has exited.
                 # These files hold synthetic CI diagnostics only.
+                if tail[0]=='create':
+                    p=subprocess.run([*args,*map(str,tail)],stdin=subprocess.DEVNULL,
+                        stdout=create_log,stderr=create_log,timeout=20)
+                    self.assertEqual(p.returncode,0,'CI_RUNC_OPERATION_FAILED');return b''
                 with tempfile.TemporaryFile() as output:
                     p=subprocess.run([*args,*map(str,tail)],stdin=subprocess.DEVNULL,
                         stdout=output,stderr=output,timeout=20)
@@ -46,7 +51,14 @@ class Native(unittest.TestCase):
             try:
                 # Cleanup also applies if create succeeds but its caller fails.
                 created=True;run('create','--bundle',bundle,cid)
-                state=json.loads(run('state',cid));self.assertEqual(state['status'],'created');pid=state['pid']
+                state=json.loads(run('state',cid))
+                if state['status']!='created':
+                    create_log.seek(0);diagnostic=create_log.read(65536).decode(errors='replace')
+                    print('CI_INIT_FAILURE_DIAGNOSTIC='+json.dumps({
+                        'bytes':len(diagnostic),'knownMarkers':[word for word in
+                            ('open exec fifo','permission denied','operation not permitted','resource temporarily unavailable',
+                             'failed to create new OS thread','seccomp','fatal error','panic','not found') if word in diagnostic]}),flush=True)
+                self.assertEqual(state['status'],'created');pid=state['pid']
                 expected=m.generation(pid,m.Budget());bindings=[{'source':str(source),'target':target,'readOnly':True}]
                 attrs=[m.attributes(source.lstat())];before=source.read_bytes()
                 source_policy={'source':str(source),'target':target,'readOnly':True,'uid':10006,'gid':10006,
@@ -102,6 +114,7 @@ class Native(unittest.TestCase):
                 if created:
                     subprocess.run([*args,'delete','--force',cid],stdin=subprocess.DEVNULL,
                         stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=20,check=True)
+                create_log.close()
 
     def test_actual_mountinfo_pid_generation_inode_and_kernel_readonly_without_app_start(self):self.exercise()
     def test_actual_rw_bind_denied(self):self.exercise('rw')
