@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# §43 PREPARED ONLY: unfiltered exact-image archive read scope NOT GRANTED.
+# §43 EXECUTED/PASS 2026-10-05 07:17:32 Europe/Rome — DO NOT REPLAY.
+# Executed immutable pin 1a5e159fa130981a9f102a2d50c4dacb3cfda5f5;
+# executed SHA256 6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff.
+# This current-branch header is historical tracking, not a new execution pin.
 # Reads extra locally retained platform/attestation bytes privately if present.
 # Still verifies linux/amd64 only, with original pinned index retained.
 # Fixed stage/class/line/counters only; no exception messages or Docker stderr.

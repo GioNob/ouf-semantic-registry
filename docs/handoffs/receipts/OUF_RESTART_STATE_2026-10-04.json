@@ -35,7 +35,7 @@
     "skipped": 1
   },
   "vps": {
-    "lastPassedSection": 41,
+    "lastPassedSection": 43,
     "lastPassedRoot": null,
     "section30Status": "EXECUTED_BLOCKED_PLAN",
     "blockedRoot": "/etc/ouf/deploy-snapshots/semantic-local-producers-package-20261004-121542",
@@ -43,7 +43,7 @@
     "sourceManifestSha256": "a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b",
     "downloadChecksumsPassed": 28,
     "applyVerifyReached": true,
-    "nextSection": 43,
+    "nextSection": null,
     "recoveryExecuted": true,
     "recoveryWrapperSha256": "2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d",
     "repairToolSha256": "116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4",
@@ -52,8 +52,8 @@
     "startAuthorized": false,
     "runtimeRegistered": false,
     "section32Status": "EXECUTED_BLOCKED",
-    "nextWrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_INDEX_BYTES_2026-10-05.sh",
-    "nextWrapperSha256": "6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff",
+    "nextWrapper": null,
+    "nextWrapperSha256": null,
     "section33Status": "EXECUTED_BLOCKED",
     "section32Root": null,
     "partialEvidenceKnown": false,
@@ -76,15 +76,15 @@
     "keysPresent": 2,
     "section37Status": "PRIVATE_ROLE_POLICY_AUTHORIZED",
     "section38Status": "EXECUTED_PASS",
-    "lastPassSection": 41,
+    "lastPassSection": 43,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "AWAITING_OPERATOR_INDEX_PRESERVING_IMAGE_READBACK_43",
+    "nextStatus": "AUTONOMOUS_ACCEPTANCE_ISSUER_AND_MOUNT_BINDING_REVIEW",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
     "section42Status": "EXECUTED_BLOCKED_DIAGNOSTIC",
-    "section43Status": "AUTHORIZED_NOT_EXECUTED"
+    "section43Status": "EXECUTED_PASS"
   },
   "nextTask": "Operator execute only pinned checksum-verified read-only scope42 wrapper; inspect returned result before any replay or target change.",
   "open": [
@@ -337,7 +337,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "AWAITING_OPERATOR_INDEX_PRESERVING_IMAGE_READBACK_43",
+  "nextStatus": "AUTONOMOUS_ACCEPTANCE_ISSUER_AND_MOUNT_BINDING_REVIEW",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -519,11 +519,11 @@
   },
   "imageIndexBytesReadback": {
     "section": 43,
-    "status": "AUTHORIZED_NOT_EXECUTED",
+    "status": "EXECUTED_PASS",
     "wrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_INDEX_BYTES_2026-10-05.sh",
     "wrapperSha256": "6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff",
     "scopeGranted": true,
-    "executionObserved": false,
+    "executionObserved": true,
     "exportPlatformFilterApplied": false,
     "verifiedPlatform": "linux/amd64",
     "additionalLocallyRetainedPlatformAndAttestationBytesMayBeRead": true,
@@ -548,7 +548,21 @@
     "filteredIndexOmissionReproducedInCI": true,
     "unfilteredIndexProofPassedInCI": true,
     "authorizationReceivedAt": "2026-10-05T06:48:20+02:00",
-    "authorizationReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_INDEX_BYTES_SCOPE_43_AUTHORIZATION_2026-10-05.json"
+    "authorizationReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_INDEX_BYTES_SCOPE_43_AUTHORIZATION_2026-10-05.json",
+    "reportedAt": "2026-10-05T07:17:32+02:00",
+    "resultReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_INDEX_BYTES_PASS_2026-10-05_OPERATOR.json",
+    "imageBytesVerified": true,
+    "imageIdentityBindingKinds": [
+      "INDEX",
+      "INDEX"
+    ],
+    "verifiedLayerCounts": [
+      8,
+      9
+    ],
+    "adapterPayloadVerified": true,
+    "rootfsDescriptorsMatchSection39": true,
+    "doNotReplay": true
   },
   "guidedInstallerRequirement": {
     "status": "SPECIFIED_NOT_IMPLEMENTED",
@@ -569,5 +583,10 @@
       "module-to-machine assignments"
     ],
     "multiMachineTopologyRequired": true
+  },
+  "imageBytesEvidence": {
+    "status": "PROVEN_BY_SECTION_43",
+    "receipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_INDEX_BYTES_PASS_2026-10-05_OPERATOR.json",
+    "notReleaseAcceptance": true
   }
 }

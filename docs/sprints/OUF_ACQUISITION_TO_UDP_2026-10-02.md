@@ -1,5 +1,16 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
+## §43 ESEGUITO/PASS — bytes delle immagini provati; non ripetere
+
+Output operatore5 ottobre2026 alle07:17:32 Europe/Rome: checksum OK, SEMANTIC_IMAGE_BYTES PASS, ACCEPTANCE_GRANTED=false, START_AUTHORIZED=false. Pin eseguito `1a5e159fa130981a9f102a2d50c4dacb3cfda5f5`, SHA256 `6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff`. Receipt `docs/handoffs/receipts/SEMANTIC_IMAGE_INDEX_BYTES_PASS_2026-10-05_OPERATOR.json`. Evidenza operatore; nessuna lettura SSH indipendente. **Ultimo VPS PASS43; non ripetere43/42/41/40/39/38/36/34/31. Nessun comando VPS pendente.**
+
+Entrambi gli ID sono **INDEX**: catena pinned index→manifest linux/amd64→config→layer verificata. configBytesMatchImageId=false è atteso, non failure; configByteHashVerified/imageTargetChainVerified/layerDiffIdsMatchConfig=true. Adapter8 layer e payload5 file con mode/owner/startup/labels corrispondenti ai pin; southbound9 layer, adapterPayloadVerified=false perché non è l'adapter. Rootfs descriptors uguali §39 (e6b2f3bd… / ea6aeeef…). Archivi46233600 e138930176 bytes; configSHA c3607ad2… e b6fd21b8…; DockerbinarySHA7f5b3816…. Receipt conserva tutti i digest completi. Unfiltered read consentita§43, non extrapolare conformità di tutte le altre piattaforme. Zero provider/signature/containeroperation/targetwrite/archiveextraction.
+
+Chiude il gap bytes/identity delle2 immagini che aveva bloccato42; non chiude publisher/base provenance, SBOM, build riprodotta, currentrootfs/fullOCI/mountview/generation/atomic/acceptance/start. Candidati/policy/consumer/runtime e packagev8 restano nello stato precedentemente documentato. Linux/amd64 prerequisito prodotto; installer domain/reti/moduli→macchine SPECIFICATO_NON_IMPLEMENTATO.
+
+Prossimo lavoro autonomo concreto: completare **issuer esterno di acceptance e binding delle8 mount/full OCI**, riusando configurazioni40, lineage41 e prova43; i prossimi interventi devono produrre acceptance reviewable, non ulteriori inventory generiche o package inerti. Prima di nuovi conferimenti privati/firma/migrazione/create/start preparare codice/piano/test e scope preciso. Raccordo v3 software Gateway516133e già provato; non è ancora issuer di acceptance target. Search503 resta indipendente/APERTA; Cinema8/8 e Teatri pending HUMAN preservati, niente replay. Stato corrente prevale sulle cronologie sottostanti.
+
+
 ## Installer: prerequisito Linux/amd64, configurazione infrastrutturale guidata
 
 Chiarimento esplicito utente5 ottobre2026 alle06:49:48 Europe/Rome: **tutte le macchine di destinazione sono Linux/amd64, imposto come prerequisito**. Il wizard verifica il prerequisito, non sceglie architetture alternative. Parametri amministrativi: domain name, reti e assegnazione moduli→macchine, con derivazione endpoint/connessioni e validazione della topologia secondo PET. Intel/AMD x86-64 compatibili soddisfano amd64. Requisito aggiornato in `docs/installation/OUF_GUIDED_INSTALLER_REQUIREMENTS_2026-10-05.md`, non ancora implementato. Nessuna nuova scelta ARM64 o supporto multiarch richiesto. Questo chiarimento prevale sulle ipotesi precedenti. Scope43 già autorizzato, comando/pin/limiti invariati.
