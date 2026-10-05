@@ -43,7 +43,7 @@
     "sourceManifestSha256": "a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b",
     "downloadChecksumsPassed": 28,
     "applyVerifyReached": true,
-    "nextSection": null,
+    "nextSection": 48,
     "recoveryExecuted": true,
     "recoveryWrapperSha256": "2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d",
     "repairToolSha256": "116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4",
@@ -52,8 +52,8 @@
     "startAuthorized": false,
     "runtimeRegistered": false,
     "section32Status": "EXECUTED_BLOCKED",
-    "nextWrapper": null,
-    "nextWrapperSha256": null,
+    "nextWrapper": "docs/handoffs/commands/OUF_PREPARE_IMAGE_SBOM_2026-10-05.sh",
+    "nextWrapperSha256": "8b23574892b9b929b28879c2ff17ee3e8ccdda0dffd4f67faf0858317baa8e2d",
     "section33Status": "EXECUTED_BLOCKED",
     "section32Root": null,
     "partialEvidenceKnown": false,
@@ -79,7 +79,7 @@
     "lastPassSection": 47,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "AUTONOMOUS_EXTERNAL_COMPLETE_ACCEPTANCE_ISSUER_AND_EVIDENCE_GATE",
+    "nextStatus": "GATE48_PREPARED_AWAITING_EXPLICIT_OPERATOR_SCOPE",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
@@ -88,9 +88,10 @@
     "section44Status": "EXECUTED_PASS",
     "section45Status": "EXECUTED_PASS",
     "section46Status": "EXECUTED_PASS",
-    "section47Status": "EXECUTED_PASS"
+    "section47Status": "EXECUTED_PASS",
+    "section48Status": "PREPARED_SCOPE_NOT_GRANTED_NOT_EXECUTED"
   },
-  "nextTask": "Complete independent PET-conforming target acceptance issuer and prepare exact evidence/authority gate; no operator command pending.",
+  "nextTask": "Request explicit scope48 for private image archives/SBOM/cache and pinned offline root scanner; then run sealed wrapper once and review redacted output.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -114,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Complete independent PET-conforming target acceptance issuer and prepare exact evidence/authority gate; no operator command pending.",
+  "nextStep": "Request explicit scope48 for private image archives/SBOM/cache and pinned offline root scanner; then run sealed wrapper once and review redacted output.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -231,7 +232,7 @@
     "roleSigningAuthorized": false,
     "startAuthorized": false
   },
-  "semanticHead": "3505a2f6bfde9c3905b76a5e670ebc30b40d3d6d",
+  "semanticHead": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
   "checkpointType": "section47-pass-unsigned-oci-and-native-mount-ci-pass",
   "checkpointAt": "2026-10-05T18:56:53+02:00",
@@ -382,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "AUTONOMOUS_EFFECTIVE_OCI_AND_ACCEPTANCE_ISSUER_POLICY",
+  "nextStatus": "GATE48_PREPARED_AWAITING_EXPLICIT_OPERATOR_SCOPE",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -866,7 +867,7 @@
     "receiptPath": "docs/handoffs/receipts/SEMANTIC_UNSIGNED_OCI_MOUNT_CI_PASS_2026-10-05.json",
     "nextTask": "Integrate source-sealed configured OCI and contemporaneous source/mount/rootfs/generation facts into independently authorized complete acceptance issuer; no operator command pending."
   },
-  "semanticHeadMeaning": "Software observer pin; static target compiler and historical operator evidence retain their own pins.",
+  "semanticHeadMeaning": "Immutable tested gate48 wrapper pin; not target execution or acceptance.",
   "creationFrameIssuerConsumerSoftware": {
     "schema": "ouf.semantic-created-frame-issuer-consumer-ci.v1",
     "gatewayCodeCommit": "f38e1533e91258874950577b947d84a4b9134f18",
@@ -916,5 +917,73 @@
     "startAuthorizedOnTarget": false,
     "lastOperatorPassedSection": 47,
     "receiptPath": "docs/handoffs/receipts/SEMANTIC_CREATION_FRAME_ISSUER_CONSUMER_CI_PASS_2026-10-05.json"
+  },
+  "imageSbomGate": {
+    "schema": "ouf.semantic-image-sbom-gate-ci.v1",
+    "status": "PASS_SCOPE_NOT_GRANTED_TARGET_NOT_EXECUTED",
+    "codeAndWrapperCommit": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
+    "sourceCommit": "4662257947d1c81550daf87cf7d5ea7283a24e06",
+    "sourceSha256": "e08a3cc012c7984c11f4e13f4c22f2dcebf3702251a2123131d1ac98b5160c5e",
+    "wrapperSha256": "8b23574892b9b929b28879c2ff17ee3e8ccdda0dffd4f67faf0858317baa8e2d",
+    "scannerVersion": "1.54.0",
+    "scannerArchiveSha256": "54a87372498168b2d033e876fd41fa4e8035b872699e525a57046e1f2f09c860",
+    "workflowRun": 37360645687,
+    "jobs": [
+      {
+        "name": "image-archive-containerd",
+        "id": 111934098865,
+        "conclusion": "success",
+        "tests": 3,
+        "skips": 0
+      },
+      {
+        "name": "sealed-readback",
+        "id": 111934099042,
+        "conclusion": "success",
+        "tests": 113,
+        "skips": 0
+      },
+      {
+        "name": "image-sbom-offline",
+        "id": 111934099062,
+        "conclusion": "success",
+        "tests": 1,
+        "skips": 0
+      },
+      {
+        "name": "image-archive-docker",
+        "id": 111934099198,
+        "conclusion": "success",
+        "tests": 2,
+        "skips": 0
+      },
+      {
+        "name": "mount-view-runc",
+        "id": 111934099243,
+        "conclusion": "success",
+        "tests": 4,
+        "skips": 0
+      }
+    ],
+    "totalTests": 123,
+    "skips": 0,
+    "logsRead": true,
+    "realScannerProvenInCi": true,
+    "realIsolatedNetworkNamespaceInCi": true,
+    "realImageArchivesInCi": true,
+    "wrapperParityAndBashN": true,
+    "syntheticCiPackages": true,
+    "operatorAuthorizationGranted": false,
+    "targetExecuted": false,
+    "targetFilesWritten": 0,
+    "targetSignaturesIssued": 0,
+    "acceptanceGranted": false,
+    "fullOciAcceptanceProven": false,
+    "runtimeRegistered": false,
+    "startAuthorized": false,
+    "lastOperatorPassedSection": 47,
+    "guidePath": "docs/installation/SEMANTIC_IMAGE_SBOM_GATE_48_2026-10-05.md",
+    "receiptPath": "docs/handoffs/receipts/SEMANTIC_IMAGE_SBOM_GATE_48_CI_PASS_2026-10-05.json",
+    "outputRoot": "/etc/ouf/deploy-snapshots/semantic-image-sbom-20261005-v1/prepared"
   }
 }

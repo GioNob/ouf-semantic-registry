@@ -19,8 +19,18 @@ SBOM prodotta/binding all'immagine non equivalgono a SBOM accettata, scansione v
 
 ## Codice e comportamento operativo
 
-Source scanner-preparer `4662257947d1c81550daf87cf7d5ea7283a24e06`, closureSHA256 `e08a3cc012c7984c11f4e13f4c22f2dcebf3702251a2123131d1ac98b5160c5e`. CIrun37359800332/job111931243938 PASS: scanner reale, immagini salvate reali, namespace rete reale, output privato, no container/application/replay. Unit5 e archive21 PASS locali. Il wrapper deve passare anche parity/bash-n prima del conferimento.
+Source scanner-preparer `4662257947d1c81550daf87cf7d5ea7283a24e06`, closureSHA256 `e08a3cc012c7984c11f4e13f4c22f2dcebf3702251a2123131d1ac98b5160c5e`. CIrun37360645687: **123 test PASS/0skip**, log dei5 job letti; root113, Docker runner2, Docker target3, runc4, scanner nativo1 (job111934099062). Scanner reale, immagini salvate reali, namespace rete reale, output privato, no container/application/replay. Unit7 comprendono source/wrapper parity, bash-n e diniego di injection prima di hostIO. La stessa closure è verificata nel commit wrapper 0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef. Receipt `docs/handoffs/receipts/SEMANTIC_IMAGE_SBOM_GATE_48_CI_PASS_2026-10-05.json`.
 
-Wrapper: `docs/handoffs/commands/OUF_PREPARE_IMAGE_SBOM_2026-10-05.sh`. Pin/SHA wrapper e comando verranno fissati dopo parity CI; non eseguire una versione non sigillata. Esecuzione una sola volta dopo conferimento esplicito di questo scope. Directory già esistente, hash/config/layer/piattaforma diversa, scanner SBOM su altro source, mancanza dei package o errore/timeout negano PASS. La directory parziale viene conservata: non rimuovere o ritentare automaticamente.
+Wrapper: `docs/handoffs/commands/OUF_PREPARE_IMAGE_SBOM_2026-10-05.sh`. Pin wrapper `0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef`, SHA256 `8b23574892b9b929b28879c2ff17ee3e8ccdda0dffd4f67faf0858317baa8e2d`; parity/bash-n e prova nativa PASS. Non eseguire prima del conferimento esplicito di questo scope. Esecuzione una sola volta dopo conferimento esplicito di questo scope. Directory già esistente, hash/config/layer/piattaforma diversa, scanner SBOM su altro source, mancanza dei package o errore/timeout negano PASS. La directory parziale viene conservata: non rimuovere o ritentare automaticamente.
 
 Budget preparazione420s, distinto dai deadline immutati issuer/consumer5/12/18s. Ogni export≤60s e512MiB; scanner≤90s; report JSON≤64MiB. Nessuna pausa HUMAN dentro questa deadline. Condividere solo output redatto, non i JSON/archivi privati. Il passo successivo usa questi artefatti per review supply-chain e issuer completo, con scope firma/install/runtime/start distinti.
+
+## Comando sigillato da usare solo dopo autorizzazione scope48
+
+```bash
+sbom_gate_tmp=$(mktemp -d)
+curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 'https://raw.githubusercontent.com/GioNob/ouf-semantic-registry/0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef/docs/handoffs/commands/OUF_PREPARE_IMAGE_SBOM_2026-10-05.sh' --output "$sbom_gate_tmp/verify.sh"
+printf '%s  %s\n' '8b23574892b9b929b28879c2ff17ee3e8ccdda0dffd4f67faf0858317baa8e2d' "$sbom_gate_tmp/verify.sh" | sha256sum --check --strict && bash "$sbom_gate_tmp/verify.sh"
+```
+
+Se compare un prompt sudo, inserire la password nel terminale del server, mai in chat. Restituire solo l'output redatto. Il comando produce artefatti necessari alla review PET, non autorizzazioni; l'ultimo target PASS resta47 finché non arriva l'output48.
