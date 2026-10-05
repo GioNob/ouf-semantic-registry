@@ -24,6 +24,8 @@ class DockerOCI(unittest.TestCase):
                 run('build','--network=none','--pull=false','--tag',tag,root)
                 image=run('image','inspect','--format','{{.Id}}',tag)
                 cid=run('create','--runtime','ouf-ci-oci-observe','--name',tag,'--user','10006:10006',
+                    '--hostname','ouf-ci-oci','--env','HOSTNAME=ouf-ci-oci','--env','HOME=/',
+                    '--env','PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
                     '--read-only','--cap-drop','ALL','--security-opt','no-new-privileges',
                     '--memory','201326592','--memory-swap','201326592','--pids-limit','32',
                     '--env','CI_PRIVATE_SECRET=CI_PRIVATE_VALUE','--mount','type=bind,source='+str(root/'proof')+',target=/proof,readonly',image)
@@ -36,7 +38,7 @@ class DockerOCI(unittest.TestCase):
                 # Independent launch/image fixture inputs; never copied from OCI.
                 startup={'args':['ci-never-start'],'cwd':'/','uid':10006,'gid':10006,'umask':None,
                     'env':['PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
-                        'HOSTNAME='+cid[:12],'HOME=/','CI_PRIVATE_SECRET=CI_PRIVATE_VALUE']}
+                        'HOSTNAME=ouf-ci-oci','HOME=/','CI_PRIVATE_SECRET=CI_PRIVATE_VALUE']}
                 spec={'user':'10006:10006','readOnlyRoot':True,'memoryBytes':201326592,'pidsLimit':32,
                     'mounts':[{'source':str(root/'proof'),'target':'/proof','readOnly':True}]}
                 # The observed exact document is only a proposed template; this
