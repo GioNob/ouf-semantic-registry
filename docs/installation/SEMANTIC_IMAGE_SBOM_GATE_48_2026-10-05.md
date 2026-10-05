@@ -1,3 +1,9 @@
+## Gate 48 AUTORIZZATO — esecuzione operatore/output pendenti
+
+Conferimento esplicito utente 5 ottobre2026 21:18:51 Europe/Rome: **scope48 autorizzato**, export delle sole2immagini sigillate, scrittura privata archivi/SBOM/receipt/cache nel solo nuovo albero48 ed esecuzione dello scannerSyft pinned/offline in namespace rete isolato. Receipt `docs/handoffs/receipts/SEMANTIC_IMAGE_SBOM_SCOPE_48_AUTHORIZATION_2026-10-05.json`. Wrapper immutabile `0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef`, SHA256 `8b23574892b9b929b28879c2ff17ee3e8ccdda0dffd4f67faf0858317baa8e2d`,123testCI PASS/0skip. Il commento PREPARED_SCOPE_NOT_GRANTED al pin è storico: questo conferimento autorizza quei byte senza modificarli.
+
+**NON ANCORA ESEGUITO sul VPS; output48 non ricevuto; ultimo operatorPASS47.** Eseguire una sola volta il comando sigillato della guida `docs/installation/SEMANTIC_IMAGE_SBOM_GATE_48_2026-10-05.md`, nella sessione oufadmin del server, e restituire solo output redatto. Non ripetere39–47. Questa autorizzazione produce artefatti per review PET, non conferisce acceptance completa, letture dei mount runtime/key/Env, firma, consumer/runtime registration o avvio. PET e stato Cinema/TeatriHUMAN/Search/installer preservati. Questo checkpoint prevale sulle cronologie sottostanti.
+
 # Gate 48 — artefatti SBOM privati per acceptance PET
 
 Stato: PREPARATO, NUOVO SCOPE NON CONFERITO, NON ESEGUITO SUL VPS.

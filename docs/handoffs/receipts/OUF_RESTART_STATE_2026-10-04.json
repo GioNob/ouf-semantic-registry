@@ -79,7 +79,7 @@
     "lastPassSection": 47,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "GATE48_PREPARED_AWAITING_EXPLICIT_OPERATOR_SCOPE",
+    "nextStatus": "GATE48_AUTHORIZED_AWAITING_OPERATOR_EXECUTION",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
@@ -89,9 +89,9 @@
     "section45Status": "EXECUTED_PASS",
     "section46Status": "EXECUTED_PASS",
     "section47Status": "EXECUTED_PASS",
-    "section48Status": "PREPARED_SCOPE_NOT_GRANTED_NOT_EXECUTED"
+    "section48Status": "AUTHORIZED_AWAITING_OPERATOR_EXECUTION_OUTPUT"
   },
-  "nextTask": "Request explicit scope48 for private image archives/SBOM/cache and pinned offline root scanner; then run sealed wrapper once and review redacted output.",
+  "nextTask": "Gate48 authorized: provide/run the immutable wrapper once as oufadmin and await redacted SEMANTIC_IMAGE_SBOM output; do not replay39–47.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Request explicit scope48 for private image archives/SBOM/cache and pinned offline root scanner; then run sealed wrapper once and review redacted output.",
+  "nextStep": "Gate48 authorized: provide/run the immutable wrapper once as oufadmin and await redacted SEMANTIC_IMAGE_SBOM output; do not replay39–47.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "GATE48_PREPARED_AWAITING_EXPLICIT_OPERATOR_SCOPE",
+  "nextStatus": "GATE48_AUTHORIZED_AWAITING_OPERATOR_EXECUTION",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -973,7 +973,7 @@
     "realImageArchivesInCi": true,
     "wrapperParityAndBashN": true,
     "syntheticCiPackages": true,
-    "operatorAuthorizationGranted": false,
+    "operatorAuthorizationGranted": true,
     "targetExecuted": false,
     "targetFilesWritten": 0,
     "targetSignaturesIssued": 0,
@@ -984,6 +984,9 @@
     "lastOperatorPassedSection": 47,
     "guidePath": "docs/installation/SEMANTIC_IMAGE_SBOM_GATE_48_2026-10-05.md",
     "receiptPath": "docs/handoffs/receipts/SEMANTIC_IMAGE_SBOM_GATE_48_CI_PASS_2026-10-05.json",
-    "outputRoot": "/etc/ouf/deploy-snapshots/semantic-image-sbom-20261005-v1/prepared"
+    "outputRoot": "/etc/ouf/deploy-snapshots/semantic-image-sbom-20261005-v1/prepared",
+    "authorizationReceiptPath": "docs/handoffs/receipts/SEMANTIC_IMAGE_SBOM_SCOPE_48_AUTHORIZATION_2026-10-05.json",
+    "authorizedAt": "2026-10-05T21:18:51+02:00",
+    "operatorOutputReceived": false
   }
 }

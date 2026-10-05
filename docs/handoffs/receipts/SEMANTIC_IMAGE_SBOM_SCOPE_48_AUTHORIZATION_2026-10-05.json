@@ -1,0 +1,21 @@
+{
+  "schema": "ouf.semantic-image-sbom-scope-authorization.v1",
+  "operatorMessage": "autorizzo",
+  "authorizedAt": "2026-10-05T21:18:51+02:00",
+  "authorizationBasis": "Explicit user confirmation of the prepared gate48 scope linked in this conversation.",
+  "wrapperCommit": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
+  "wrapperSha256": "8b23574892b9b929b28879c2ff17ee3e8ccdda0dffd4f67faf0858317baa8e2d",
+  "sourceCommit": "4662257947d1c81550daf87cf7d5ea7283a24e06",
+  "sourceSha256": "e08a3cc012c7984c11f4e13f4c22f2dcebf3702251a2123131d1ac98b5160c5e",
+  "scope": "Fixed two-image export; private archive/SPDX/Syft JSON/receipt/cache writes solely in the gate48 staging tree; exact pinned offline Syft root execution in an isolated network namespace; public source/scanner downloads.",
+  "outputRoot": "/etc/ouf/deploy-snapshots/semantic-image-sbom-20261005-v1/prepared",
+  "operatorAuthorizationGranted": true,
+  "targetExecuted": false,
+  "operatorOutputReceived": false,
+  "lastOperatorPassedSection": 47,
+  "acceptanceGranted": false,
+  "fullOciAcceptanceProven": false,
+  "signaturesAuthorized": false,
+  "runtimeRegistrationAuthorized": false,
+  "startAuthorized": false
+}
