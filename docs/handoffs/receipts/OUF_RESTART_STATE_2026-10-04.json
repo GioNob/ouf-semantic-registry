@@ -1055,7 +1055,7 @@
   },
   "imageVulnerabilityGate": {
     "section": 49,
-    "status": "WRAPPER_PREPARED_EXACT_DATABASE_NATIVE_CI_PENDING",
+    "status": "SOFTWARE_AND_WRAPPER_PREPARED_NATIVE_RUNNER_QUEUE_BLOCKED",
     "sourceCommit": "2c11fd6d37995b09de39f3d48b3f0373644ce7bc",
     "sourceSha256": "0060403c8336aab950012a44c9160f2b656ffa779479975ea44be6ec7a44ca43",
     "scopeGranted": false,
@@ -1070,7 +1070,7 @@
     "nextNativeRun": 37366132907,
     "nextNativeCommit": "dd8bb49b2150834dac9510a69b66c9da130822e4",
     "sourceReceiptSha256": "6e0a436d8da6b55c3286811140efd46b679d2ceb9dc202b33576a76425ed08fc",
-    "nextAction": "Require exact pinned-database real native detection and wrapper proof; only then offer concrete scope49.",
+    "nextAction": "Read final native run37372640941/job111973338339; require all10+3 checks and real offline known-High detection with exact DB before offering concrete scope49.",
     "wrapperTestsPassed": 3,
     "wrapperPath": "docs/handoffs/commands/OUF_REVIEW_IMAGE_VULNERABILITIES_2026-10-05.sh",
     "wrapperSha256": "ec5b567d90849a533a45f65911795690f2ad22357b6cc79b80d2d9c821a93fd9",
@@ -1087,6 +1087,18 @@
     "previousNativeFailure": "REAL_REPORT_DATABASE_STATUS_ENVELOPE_MISMATCH",
     "correctedNativeRun": 37372042899,
     "finalNativeProofPending": true,
-    "malformedCoverageAlertsDenied": true
+    "malformedCoverageAlertsDenied": true,
+    "finalCodeAndWrapperCommit": "14ed6f3767df72d9eb3881d4c4d6645ee1045d9f",
+    "finalNativeRun": 37372640941,
+    "finalNativeJob": 111973338339,
+    "finalNativeStatus": "QUEUED",
+    "wrapperOffered": false,
+    "publicRunnerIncident": {
+      "statusUrl": "https://www.githubstatus.com/",
+      "startedAt": "2026-10-05T19:11:00Z",
+      "latestObservedUpdateAt": "2026-10-05T19:50:00Z",
+      "detail": "Delays assigning GitHub-hosted runners; consistent with observed queue, not exclusive causal proof"
+    },
+    "guidePath": "docs/installation/SEMANTIC_IMAGE_VULNERABILITY_GATE_49_2026-10-05.md"
   }
 }
