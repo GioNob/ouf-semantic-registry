@@ -91,6 +91,8 @@ jobs:
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_environment_binding.py
       - name: Test exhaustive creation-field rules and typed denials
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_fields.py
+      - name: Test complete OCI schema, prepared-policy drift and hardening denials
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_oci_policy.py
       - name: Test exhaustive field-to-sealed-input binding
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_fields_binding.py
       - name: Verify complete field wrapper embeds tested closure
@@ -130,13 +132,17 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Install CI-only OCI observer that refuses application execution
+        run: |
+          sudo install -d -o root -g root -m 0700 /root/ouf-ci-runtime/observed-oci
+          sudo install -o root -g root -m 0755 tests/fixtures/oci_capture_runtime.py /root/ouf-ci-runtime/oci-observe
       - name: Set up target Docker version and containerd image store
         id: docker
         uses: docker/setup-docker-action@v4
         with:
           version: v29.8.1
           daemon-config: |
-            {"features":{"containerd-snapshotter":true}}
+            {"features":{"containerd-snapshotter":true},"runtimes":{"ouf-ci-oci-observe":{"path":"/root/ouf-ci-runtime/oci-observe"}}}
       - name: Place CI CLI under a root-owned fixed path
         run: |
           sudo install -d -o root -g root -m 0700 /root/ouf-ci-runtime
@@ -146,3 +152,6 @@ jobs:
 
       - name: Require complete field review on target Docker version
         run: sudo env OUF_TEST_ROOT=/root OUF_CREATION_DOCKER_PATH=/root/ouf-ci-runtime/docker OUF_CREATION_DOCKER_HOST=${{ steps.docker.outputs.sock }} /usr/bin/python3 -B tests/test_semantic_creation_configuration_docker.py
+
+      - name: Require real generated target OCI and deny application execution
+        run: sudo env OUF_TEST_ROOT=/root OUF_CREATION_DOCKER_PATH=/root/ouf-ci-runtime/docker OUF_CREATION_DOCKER_HOST=${{ steps.docker.outputs.sock }} /usr/bin/python3 -B tests/test_semantic_oci_docker.py
