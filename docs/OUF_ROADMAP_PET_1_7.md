@@ -1,5 +1,12 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+## §42 AUTORIZZATO — esecuzione operatore ancora NON osservata
+
+Il5 ottobre2026 alle06:20:36 Europe/Rome l'utente ha risposto **“autorizzo”** allo scope concreto §42. La sola lettura privata config/layer bytes delle2 immagini esatte è conferita, inclusi eventuali segreti incorporati letti privatamente in memoria e mai stampati. Wrapper esecutivo immutabile `ffe6a9bceeee08bae95c93425f646bd354780d7c`, SHA256 `c8602ba1279481df8a7cbc66864bd5a978be0234678d6cc5515da6b2f7e45b57`;39 test root+1 Docker e7 workflow CI PASS già verificati. Il commento NOT GRANTED nel pin originario registra il momento di preparazione, non lo stato attuale: conferimento registrato in `docs/handoffs/receipts/SEMANTIC_IMAGE_BYTES_SCOPE_42_AUTHORIZATION_2026-10-05.json`.
+
+Stato corrente **AUTHORIZED_NOT_EXECUTED**: nessun output VPS ricevuto, ultimo VPS §41 PASS resta invariato. Nessun nuovo grant di acceptance/firma/start/migrazione runtime/consumerlink/provider o lettura host key/Env/registry credential. Non ripetere §39–41; non estendere lo scope42 alla diagnosi Search503. Download wrapper temporaneo pubblico, checksum obbligatorio prima di bash; lettore conserva config CLI temporaneo vuoto e pipe senza extraction/spool. Dopo output aggiornare autonomamente4 documenti/stato/receipt; BLOCKED richiede analisi prima di qualsiasi nuovo tentativo.
+
+
 ## Checkpoint autonomo corrente — raccordo temporale software provato con Docker; §42 pronto
 
 Questo checkpoint prevale sulle sezioni storiche sottostanti. Ultimo VPS operatore **§41 PASS storico**, receipt immutata; §39–41 completati, nessun replay. Le letture prodotto MCP aggiunte sotto non sono deploy. Packagev8 target7ded9df, policy privata38, candidati fermi e consumer restano nel precedente stato. Nessuna firma operativa/registrazione runtime/migrazione/acceptance/start target eseguita; nessun comando VPS pendente.
