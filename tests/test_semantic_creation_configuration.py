@@ -1,4 +1,4 @@
-import copy,json,sys,unittest
+import copy,json,os,sys,tempfile,time,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from tools import read_semantic_creation_configuration as m
@@ -63,4 +63,17 @@ class Tests(unittest.TestCase):
         q=object.__new__(m.Query)
         for kind,value in [('container','name'),('network','a'*64),('container','--help')]:
             with self.assertRaises(m.Blocked):q(kind,value)
+    def test_native_bounded_stdout_timeout_and_binary_pin_before_execution(self):
+        root=Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory(dir=os.environ.get('OUF_TEST_ROOT',str(root))) as d:
+            directory=Path(d);directory.chmod(0o700);program=directory/'ci-program';marker=directory/'executed'
+            program.write_text('#!/usr/bin/python3\nimport sys\nsys.stdout.write("x"*131073)\n');program.chmod(0o700)
+            pin=m.binary(program,m.Budget());q=m.Query(program,pin,directory,'unix:///var/run/docker.sock')
+            with self.assertRaises(m.Blocked):q('container','a'*64)
+            program.write_text('#!/usr/bin/python3\nimport time\ntime.sleep(2)\n');pin=m.binary(program,m.Budget())
+            q=m.Query(program,pin,directory,'unix:///var/run/docker.sock');q.budget.deadline=time.monotonic()+0.2
+            with self.assertRaises(m.Blocked):q('container','a'*64)
+            program.write_text('#!/usr/bin/python3\nfrom pathlib import Path\nPath('+repr(str(marker))+').touch()\n')
+            with self.assertRaises(m.Blocked):m.Query(program,'f'*64,directory,'unix:///var/run/docker.sock')
+            self.assertFalse(marker.exists())
 if __name__=='__main__':unittest.main()

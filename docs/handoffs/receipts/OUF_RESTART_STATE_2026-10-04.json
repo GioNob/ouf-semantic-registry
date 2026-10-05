@@ -43,7 +43,7 @@
     "sourceManifestSha256": "a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b",
     "downloadChecksumsPassed": 28,
     "applyVerifyReached": true,
-    "nextSection": null,
+    "nextSection": 45,
     "recoveryExecuted": true,
     "recoveryWrapperSha256": "2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d",
     "repairToolSha256": "116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4",
@@ -52,8 +52,8 @@
     "startAuthorized": false,
     "runtimeRegistered": false,
     "section32Status": "EXECUTED_BLOCKED",
-    "nextWrapper": null,
-    "nextWrapperSha256": null,
+    "nextWrapper": "docs/handoffs/commands/OUF_READ_CREATION_CONFIGURATION_2026-10-05.sh",
+    "nextWrapperSha256": "927c0197a0059eef71662a4220e7b5d85038b454d95ac55bd12acebf0b3a5cad",
     "section33Status": "EXECUTED_BLOCKED",
     "section32Root": null,
     "partialEvidenceKnown": false,
@@ -79,7 +79,7 @@
     "lastPassSection": 43,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "AUTONOMOUS_ACCEPTANCE_ISSUER_FULL_OCI_MOUNT_VIEW_IMPLEMENTATION",
+    "nextStatus": "AWAITING_EXPLICIT_SCOPE45_PRIVATE_CREATION_CONFIG_ENV_READ",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
@@ -629,5 +629,42 @@
     "authorizationReceipt": "docs/handoffs/receipts/SEMANTIC_MOUNT_INPUTS_SCOPE_44_AUTHORIZATION_2026-10-05.json",
     "operatorReceipt": "docs/handoffs/receipts/SEMANTIC_MOUNT_INPUTS_PASS_2026-10-05_OPERATOR.json",
     "doNotReplay": true
+  },
+  "creationConfigurationReadback": {
+    "section": 45,
+    "status": "PREPARED_NOT_AUTHORIZED",
+    "scopeGranted": false,
+    "executionObserved": false,
+    "sourceCommit": "118b145ed4e83e077e058282d1fde7eee614f344",
+    "wrapper": "docs/handoffs/commands/OUF_READ_CREATION_CONFIGURATION_2026-10-05.sh",
+    "wrapperSha256": "927c0197a0059eef71662a4220e7b5d85038b454d95ac55bd12acebf0b3a5cad",
+    "fullPrivateDockerMetadataAndEnvironmentReadIfGranted": true,
+    "hostEnvironmentFilesRead": false,
+    "localTestsPassed": 6,
+    "localSkipped": 0,
+    "ciCode": {
+      "run": 37302120687,
+      "rootJob": 111737058546,
+      "rootTests": 64,
+      "skipped": 0,
+      "nativeDockerTests": 3,
+      "dockerJobs": [
+        111737058485,
+        111737058271
+      ],
+      "wrapperParityCount": 6
+    },
+    "fullOciAcceptanceProven": false,
+    "acceptanceGranted": false,
+    "startAuthorized": false
+  },
+  "liveProviderCi": {
+    "status": "BLOCKED_HTTP503",
+    "endpoint": "https://schema.gov.it/sparql",
+    "firstRun": 37300985693,
+    "retryJob": 111734491491,
+    "nextCodeRun": 37302120671,
+    "source": "CI preflight log; no VPS diagnosis",
+    "fallbackUsed": false
   }
 }
