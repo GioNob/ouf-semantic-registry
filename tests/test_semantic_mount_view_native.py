@@ -24,7 +24,12 @@ class Native(unittest.TestCase):
                 'mounts':[{'destination':'/proc','type':'proc','source':'proc','options':['nosuid','noexec','nodev']},
                     {'destination':'/dev','type':'tmpfs','source':'tmpfs','options':['nosuid','strictatime','mode=755']},
                     {'destination':target,'type':'bind','source':str(source),'options':['rbind','rprivate','rw' if variant=='rw' else 'ro']}],
-                'linux':{'cgroupsPath':'/'+cid,'namespaces':[{'type':k} for k in ('mount','pid','ipc','uts','network','cgroup')]}}
+                'linux':{'cgroupsPath':'/'+cid,'namespaces':[{'type':k} for k in ('mount','pid','ipc','uts','network','cgroup')],
+                    'maskedPaths':['/proc/kcore'],'readonlyPaths':['/proc/sys'],
+                    'resources':{'memory':{'limit':201326592,'swap':201326592},'pids':{'limit':32}},
+                    'seccomp':{'defaultAction':'SCMP_ACT_ERRNO','defaultErrnoRet':1,'architectures':['SCMP_ARCH_X86_64'],
+                        'syscalls':[{'names':['read','write','close','exit','exit_group','rt_sigreturn','rt_sigprocmask','prctl','futex'],
+                            'action':'SCMP_ACT_ALLOW'}]}}}
             config=bundle/'config.json';config.write_text(json.dumps(doc));config.chmod(0o600)
             args=[str(runc),'--root',str(root/'runtime')]
             def run(*tail):
@@ -67,6 +72,23 @@ class Native(unittest.TestCase):
                     incorrect=dict(source_policy);incorrect['sha256']='0'*64
                     with self.assertRaisesRegex(Denied,'SOURCE_FRAME_BYTE_HASH_DRIFT'):
                         frame.source_mount_frame(pid,expected,doc,[incorrect])
+                    policy={'schema':'ouf.semantic-configured-creation-frame-policy.v1','expectedOci':doc,
+                        'manifest':{'user':'10006:10006','readOnlyRoot':False,'memoryBytes':201326592,'pidsLimit':32,
+                            'mounts':bindings},'startup':{'uid':10006,'gid':10006,'umask':None,'cwd':'/',
+                            'args':doc['process']['args'],'env':doc['process']['env']},'approvedHooks':{},'sources':[source_policy]}
+                    policy_path=root/'policy.json';policy_path.write_text(json.dumps(policy));policy_path.chmod(0o600)
+                    request={'pid':pid,'generation':{'pid':pid,'startTicks':expected['startTicks'],
+                        'namespaceInode':expected['networkNamespaceInode']},'bundlePath':str(config),
+                        'applicationHash':hashlib.sha256(frame.canonical(doc)).hexdigest(),
+                        'policyHash':hashlib.sha256(policy_path.read_bytes()).hexdigest()}
+                    helper=Path(__file__).resolve().parents[1]/'tools/semantic_creation_frame_observer.py'
+                    command=['/usr/bin/python3','-I','-B',str(helper),'--configuration',str(policy_path)]
+                    reply=subprocess.run(command,input=frame.canonical(request),capture_output=True,timeout=6)
+                    self.assertEqual(reply.returncode,0,'CI_SOURCE_SEALED_FRAME_OBSERVER_FAILED')
+                    combined=json.loads(reply.stdout);self.assertTrue(combined['configuredPolicy']['configuredPolicyConforms'])
+                    self.assertTrue(combined['sourceMountFrame']['sourceByteHashesMatchExpected'])
+                    self.assertFalse(combined['acceptanceGranted']);self.assertEqual(reply.stderr,b'')
+                    self.assertNotIn(b'CI_PRIVATE',reply.stdout);self.assertNotIn(str(root).encode(),reply.stdout)
                     fd=None
                     try:
                         fd=os.open('/proc/'+str(pid)+'/root'+target,os.O_WRONLY)

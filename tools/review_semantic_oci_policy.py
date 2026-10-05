@@ -171,11 +171,11 @@ def configured_profile(bundle,expected,spec,startup,approved_hooks,schema):
         'completeCreationAccepted':False,'allConfigurationFieldsSemanticallyAccepted':False,
         'acceptanceGranted':False,'signaturesIssued':0,'startAuthorized':False}
 
-def schema_from_source_closure():
+def schema_from_source_closure(raw=None):
     # Not an independent authority lookup: issuer must source-seal this JSON
     # with its program before invoking the reviewer.
-    raw=(Path(__file__).with_name('semantic_oci_shape_schema.json')).read_bytes()
-    require(len(raw)<=131072,'OCI_SCHEMA_UNBOUNDED');value=json.loads(raw)
+    if raw is None:raw=(Path(__file__).with_name('semantic_oci_shape_schema.json')).read_bytes()
+    require(type(raw) is bytes and 0<len(raw)<=131072,'OCI_SCHEMA_UNBOUNDED');value=json.loads(raw)
     require(value['schema']=='ouf.oci-runtime-shape-schema.v1' and
         value['sourceCommit']=='92249139eea7161e13745abd4cb6d0ea02a3227a','OCI_SCHEMA_SOURCE_DRIFT')
     return value
