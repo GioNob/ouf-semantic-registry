@@ -58,6 +58,13 @@ class Policy(unittest.TestCase):
         inputs=list(fixture());inputs[0]['annotations']={'CI_PRIVATE_ANNOTATION':'CI_PRIVATE_VALUE'}
         with self.assertRaisesRegex(m.Denied,'OCI_EXACT_POLICY_DRIFT'):m.configured_profile(*inputs)
 
+    def test_docker_primary_gid_is_not_an_extra_group_grant(self):
+        inputs=list(fixture());inputs[0]['process']['user']['additionalGids']=[10006];inputs[1]=copy.deepcopy(inputs[0])
+        self.assertTrue(m.configured_profile(*inputs)['configuredPolicyConforms'])
+        for groups in ([10006,10006],[10006,0],[10007]):
+            inputs[0]['process']['user']['additionalGids']=groups;inputs[1]=copy.deepcopy(inputs[0])
+            with self.assertRaises(m.Denied):m.configured_profile(*inputs)
+
     def test_matching_oci_checksum_cannot_override_security_and_compiled_startup(self):
         changes=[(['process','noNewPrivileges'],False),(['process','terminal'],True),
             (['process','user','uid'],0),(['process','user','additionalGids'],[0]),

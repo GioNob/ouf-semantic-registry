@@ -91,6 +91,8 @@ jobs:
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_environment_binding.py
       - name: Test exhaustive creation-field rules and typed denials
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_fields.py
+      - name: Test bounded kernel mountinfo parsing and redacted generation inputs
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_mount_view.py
       - name: Test complete OCI schema, prepared-policy drift and hardening denials
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_oci_policy.py
       - name: Test exhaustive field-to-sealed-input binding
@@ -155,3 +157,13 @@ jobs:
 
       - name: Require real generated target OCI and deny application execution
         run: sudo env OUF_TEST_ROOT=/root OUF_CREATION_DOCKER_PATH=/root/ouf-ci-runtime/docker OUF_CREATION_DOCKER_HOST=${{ steps.docker.outputs.sock }} /usr/bin/python3 -B tests/test_semantic_oci_docker.py
+
+  mount-view-runc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native CI runtime and static owned application fixture
+        run: sudo apt-get update && sudo apt-get install -y runc busybox-static
+      - name: Require real created PID generation, bind inode and kernel readonly evidence
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_mount_view_native.py

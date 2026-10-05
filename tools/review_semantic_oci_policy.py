@@ -90,8 +90,11 @@ def configured_profile(bundle,expected,spec,startup,approved_hooks,schema):
             and canonical(process['args'])==canonical(startup['args']) and process['cwd']==startup['cwd'],
             'OCI_COMPILED_STARTUP_DRIFT')
     path(process['cwd']);require(env(process.get('env',[]))==env(startup['env']),'OCI_COMPILED_ENV_DRIFT')
-    user=process['user'];require(user['uid']==startup['uid'] and user['gid']==startup['gid']
-        and not user.get('additionalGids') and not user.get('username') and user.get('umask')==startup['umask'],
+    # Docker's reviewed WithUser emits the primary GID once in AdditionalGids.
+    # That adds no group authority; any other group or duplicate is rejected.
+    user=process['user'];groups=user.get('additionalGids') or []
+    require(user['uid']==startup['uid'] and user['gid']==startup['gid']
+        and groups in ([],[startup['gid']]) and not user.get('username') and user.get('umask')==startup['umask'],
         'OCI_USER_PROFILE_DRIFT')
     caps=process.get('capabilities');require(type(caps) is dict and all(not v for v in caps.values()),'OCI_CAPABILITIES_DENIED')
     require(process.get('apparmorProfile','')!='unconfined' and process.get('oomScoreAdj',0)==0,'OCI_PROCESS_HARDENING_REQUIRED')
