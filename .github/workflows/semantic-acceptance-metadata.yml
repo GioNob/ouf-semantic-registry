@@ -58,6 +58,22 @@ jobs:
           embedded = wrapper.split("<<'OUF_PYTHON'\n", 1)[1].rsplit('\nOUF_PYTHON', 1)[0]
           assert embedded == Path('tools/verify_semantic_image_archive.py').read_text().rstrip('\n')
           PY
+      - name: Test native private mount inputs, OpenSSL and frozen compiler
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_mount_inputs.py
+      - name: Require native target UID ownership without mocks
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_mount_inputs_native_ownership.py
+      - name: Verify mount wrapper embeds exactly the tested closure
+        run: |
+          bash -n docs/handoffs/commands/OUF_VERIFY_MOUNT_INPUTS_2026-10-05.sh
+          python3 -B - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0,'tests')
+          from test_semantic_mount_inputs import build_embedded
+          wrapper=Path('docs/handoffs/commands/OUF_VERIFY_MOUNT_INPUTS_2026-10-05.sh').read_text()
+          embedded=wrapper.split("<<'OUF_PYTHON'\n",1)[1].rsplit('\nOUF_PYTHON',1)[0]
+          assert embedded == build_embedded().rstrip('\n')
+          PY
   image-archive-docker:
     runs-on: ubuntu-latest
     timeout-minutes: 5
