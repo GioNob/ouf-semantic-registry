@@ -40,6 +40,13 @@ class Review(unittest.TestCase):
         self.report['descriptor']['db']['status']['valid']=True;self.report['alertsByPackage']=[{'package':{'name':'PRIVATE_COMPONENT'},'alerts':[{'type':'distro-eol'}]}]
         r=self.scan();self.assertFalse(r['scannerSeverityThresholdMet']);self.assertEqual(r['packageAlertCount'],1)
         self.assertNotIn('PRIVATE_COMPONENT',json.dumps(r))
+    def test_malformed_alert_shapes_never_become_a_clean_scan(self):
+        for alerts in (False,0,'',{},'PRIVATE_COMPONENT'):
+            self.report['alertsByPackage']=alerts
+            with self.assertRaises(Exception):self.scan()
+        for alerts in (None,[]):
+            self.report['alertsByPackage']=alerts
+            self.assertTrue(self.scan()['scannerSeverityThresholdMet'])
     def test_nested_database_status_binding_and_flat_legacy_denial(self):
         original=json.loads(json.dumps(self.report['descriptor']['db']))
         status=self.report['descriptor']['db']['status']

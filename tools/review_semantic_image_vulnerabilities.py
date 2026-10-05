@@ -59,7 +59,8 @@ def summary(raw,expected,pin):
         counts[severity]+=1
         identifier=vuln['id'];require(type(identifier) is str)
         if severity in ('High','Critical') and re.fullmatch(r'(CVE-\d{4}-\d{4,}|GHSA-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4})',identifier):public_ids.add(identifier)
-    alerts=report.get('alertsByPackage') or [];require(type(alerts) is list)
+    alerts=report.get('alertsByPackage');alerts=[] if alerts is None else alerts
+    require(type(alerts) is list and len(alerts)<=100000)
     threshold=not any(counts[k] for k in ('High','Critical','Unknown')) and not alerts
     return {'schema':'ouf.semantic-image-vulnerability-facts.v1','role':expected['role'],'imageId':expected['imageId'],
         'syftJsonSha256':expected['syftJsonSha256'],'reportSha256':sbom.digest(raw),'databaseArchiveSha256':pin['checksum'][7:],
