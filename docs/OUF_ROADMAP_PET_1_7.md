@@ -1,5 +1,14 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+## §43 preparato NON AUTORIZZATO — conservare indice immagine, niente nuovo tentativo §42
+
+La nuova CI Docker29.8.1/containerd ha riprodotto il limite: l'ID della fixture è l'indice originale, ma save --platform linux/amd64 ne esporta solo il manifest selezionato; il pin indice non è nell'archivio. CI run37264605556 job111618641830 BLOCKED alla catena OCI_TARGET_BINDING. È evidenza software sulla fixture, non prova della causa target; §42 VPS resta BLOCKED diagnosticamente alla congiunzione configSHA==ID / config JSON dict, secondo receipt06:34:44. Non consegnare il wrapper filtered e47dd8e/88ed2ea: NON eseguito sul VPS, superseded per questo limite; nessun replay dei due pin eseguiti.
+
+Follow-up concreto **§43**: `docs/handoffs/commands/OUF_VERIFY_IMAGE_INDEX_BYTES_2026-10-05.sh`, SHA256 `6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff`, **scope NON conferito e NON eseguito**. Rimuove il filtro di esportazione --platform SOLO con flag esplicito --retain-image-index, per conservare indice/manifest originali dei medesimi2 image ID. Piattaforma verificata resta linux/amd64. **Può leggere privatamente anche bytes delle altre piattaforme/attestazioni già conservati localmente nelle stesse2 immagini**, oltre config/layer già nello scope42; mai stampati/eseguiti/spooled. Questo delta richiede scope concreto secondo handoff§7.4, dopo preparazione/test del wrapper. Nessuna firma/start/pull/build/install/runtime/consumerlink/provider/lettura privata host keyEnv/registrycredentials; stessi limiti180s/8GiB/100000 entries perimmagine. Non allargare budget o leggere altriimageID.
+
+Catena CONFIG oppure esatto MANIFEST/INDEX→config/layer con digest,size,mediaType,platform univoca e ordine esatti; DiffID/rootfs/payload/startup invariati. Nessun fallback unanchored.21 test locali PASS0 skip incluse default senzaindex e opt-in esplicito; CI nuova da verificare. [Scope completo](../installation/SEMANTIC_IMAGE_INDEX_BYTES_SCOPE_2026-10-05.md). Acceptance/publisher/SBOM/currentOCI/generation/mountview/start non sono conferiti. Questa intestazione prevale sulle precedenti.
+
+
 ## §42 secondo BLOCKED — controllo identità config; correzione OCI pronta
 
 Output operatore5 ottobre2026 alle06:34:44 Europe/Rome: checksum wrapper41a03e4 OK; `dockerExitCode=0,errorClass=Blocked,imageRole=ADAPTER,parserBytes=223532435,parserEntries=5798,stage=ARCHIVE_VERIFICATION,verifierLine=167`; poi BLOCKED. La linea167 è nel Python incorporato (non la linea167 del file shell): confronto congiunto hash config==ID Docker e JSON config dict. Nessun PASS immagini, causa target ancora da confermare; non interpretare counters come prova della catena completa. Receipt `docs/handoffs/receipts/SEMANTIC_IMAGE_BYTES_DIAGNOSTIC_BLOCKED_2026-10-05.json`; ultimo VPS PASS resta §41.

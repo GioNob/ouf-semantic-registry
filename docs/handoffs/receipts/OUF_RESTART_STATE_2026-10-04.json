@@ -43,7 +43,7 @@
     "sourceManifestSha256": "a1b11fbfb9d701101f2efa1048c7f99a54f123ed1f1b71f480ffcd883c0e560b",
     "downloadChecksumsPassed": 28,
     "applyVerifyReached": true,
-    "nextSection": 42,
+    "nextSection": 43,
     "recoveryExecuted": true,
     "recoveryWrapperSha256": "2d770d268cf5a9e164d6559b60c3246500009d80ab076838f9fab4387df94a5d",
     "repairToolSha256": "116efd276852fc184479017ab853fb5ccce5c30667489771f097da4f505dbac4",
@@ -52,8 +52,8 @@
     "startAuthorized": false,
     "runtimeRegistered": false,
     "section32Status": "EXECUTED_BLOCKED",
-    "nextWrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-05_CONTAINERD.sh",
-    "nextWrapperSha256": "733e5fd1dfc12732b840003bce398a86ad8ca49e715568f635f0026c8ecdbeaa",
+    "nextWrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_INDEX_BYTES_2026-10-05.sh",
+    "nextWrapperSha256": "6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff",
     "section33Status": "EXECUTED_BLOCKED",
     "section32Root": null,
     "partialEvidenceKnown": false,
@@ -79,11 +79,12 @@
     "lastPassSection": 41,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "AWAITING_OCI_IMAGE_IDENTITY_VERIFICATION_42",
+    "nextStatus": "AWAITING_EXPLICIT_SCOPE_43_UNFILTERED_IMAGE_ARCHIVE",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
-    "section42Status": "EXECUTED_BLOCKED_DIAGNOSTIC"
+    "section42Status": "EXECUTED_BLOCKED_DIAGNOSTIC",
+    "section43Status": "PREPARED_NOT_AUTHORIZED"
   },
   "nextTask": "Operator execute only pinned checksum-verified read-only scope42 wrapper; inspect returned result before any replay or target change.",
   "open": [
@@ -336,7 +337,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "AWAITING_OCI_IMAGE_IDENTITY_VERIFICATION_42",
+  "nextStatus": "AWAITING_EXPLICIT_SCOPE_43_UNFILTERED_IMAGE_ARCHIVE",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -493,15 +494,16 @@
     },
     "targetCauseConfirmed": false,
     "ociFollowup": {
-      "status": "PREPARED_NOT_EXECUTED",
+      "status": "SUPERSEDED_BEFORE_VPS_EXECUTION",
       "wrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-05_CONTAINERD.sh",
       "wrapperSha256": "733e5fd1dfc12732b840003bce398a86ad8ca49e715568f635f0026c8ecdbeaa",
       "sameAuthorizedScope": true,
       "localTestsPassed": 20,
       "localTestsSkipped": 0,
-      "ciStatus": "PENDING",
+      "ciStatus": "CONTAINERD_FIXTURE_FAILED_PINNED_INDEX_OMITTED",
       "requiresPinnedTargetChain": true,
-      "noUnanchoredFallback": true
+      "noUnanchoredFallback": true,
+      "executionObserved": false
     }
   },
   "productReadSmoke": {
@@ -514,5 +516,25 @@
     "semanticTheatreClassItems": 0,
     "newIngestionRuns": 0,
     "alternateAccountRetry": false
+  },
+  "imageIndexBytesReadback": {
+    "section": 43,
+    "status": "PREPARED_NOT_AUTHORIZED",
+    "wrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_INDEX_BYTES_2026-10-05.sh",
+    "wrapperSha256": "6413193ac7f1b1d91eb71b59f7ae3140e594cfe788cd89c9cfa722161ca081ff",
+    "scopeGranted": false,
+    "executionObserved": false,
+    "exportPlatformFilterApplied": false,
+    "verifiedPlatform": "linux/amd64",
+    "additionalLocallyRetainedPlatformAndAttestationBytesMayBeRead": true,
+    "onlySameTwoPinnedImages": true,
+    "perImageSeconds": 180,
+    "perImageCumulativeParserBytes": 8589934592,
+    "perImageMaxEntries": 100000,
+    "localTestsPassed": 21,
+    "localTestsSkipped": 0,
+    "ciStatus": "PENDING",
+    "acceptanceGranted": false,
+    "startAuthorized": false
   }
 }

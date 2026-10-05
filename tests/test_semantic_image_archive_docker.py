@@ -45,13 +45,19 @@ ENTRYPOINT ["python3", "-B", "-m", "tools.semantic_provider_adapter"]
                     capture_output=True,timeout=120)
                 self.assertEqual(build.returncode,0,build.stderr.decode()[-2000:])
                 image=subprocess.check_output([str(docker),'--host',host,'image','inspect','--format','{{.Id}}',tag],timeout=10).decode().strip()
-                result=m.docker_verify(docker,host,image,m.Budget(seconds=30,max_bytes=10000000),payload,metadata)
+                retain = os.environ.get('OUF_REQUIRE_CONTAINERD_IMAGE_ID') == '1'
+                if retain:
+                    with self.assertRaises(m.Blocked):
+                        m.docker_verify(docker,host,image,m.Budget(seconds=30,max_bytes=10000000),payload,metadata)
+                    self.assertEqual(m.DIAGNOSTIC['stage'],'OCI_TARGET_BINDING')
+                result=m.docker_verify(docker,host,image,m.Budget(seconds=30,max_bytes=10000000),payload,metadata,retain_index=retain)
                 self.assertTrue(result['adapterPayloadVerified'])
                 self.assertTrue(result['layerDiffIdsMatchConfig'])
                 self.assertTrue(result['imageTargetChainVerified'])
                 if os.environ.get('OUF_REQUIRE_CONTAINERD_IMAGE_ID') == '1':
                     self.assertFalse(result['configBytesMatchImageId'])
-                    self.assertEqual(result['imageIdentityBindingKind'],'MANIFEST')
+                    self.assertEqual(result['imageIdentityBindingKind'],'INDEX')
+                    self.assertFalse(result['archivePlatformFilterApplied'])
                 self.assertFalse(result['acceptanceGranted'])
             finally:
                 cleanup=subprocess.run([str(docker),'--host',host,'image','rm',tag],capture_output=True,timeout=15)

@@ -172,6 +172,15 @@ class Tests(unittest.TestCase):
             args+=['--adapter-rootfs-descriptors-hash',descriptor,'--southbound-rootfs-descriptors-hash',descriptor]
             proc=subprocess.run(args,capture_output=True);self.assertEqual(proc.returncode,0,proc.stdout+proc.stderr)
             self.assertNotIn(b'SENTINEL',proc.stdout+proc.stderr)
+            saved_binary=binary.read_text()
+            binary.write_text(saved_binary.replace('assert sys.argv[6:9]==["save","--platform","linux/amd64"]',
+                'assert sys.argv[6:]==["save",'+repr(image)+']'))
+            args.append('--retain-image-index')
+            proc=subprocess.run(args,capture_output=True);self.assertEqual(proc.returncode,0,proc.stdout+proc.stderr)
+            self.assertIn(b'"archivePlatformFilterApplied": false',proc.stdout)
+            self.assertIn(b'"nonSelectedImageBytesMayBeRead": true',proc.stdout)
+            self.assertNotIn(b'SENTINEL',proc.stdout+proc.stderr)
+            args.pop();binary.write_text(saved_binary)
             args[args.index('--southbound-rootfs-descriptors-hash')+1]='f'*64
             proc=subprocess.run(args,capture_output=True);self.assertEqual(proc.returncode,1)
             self.assertIn(b'ROOTFS_DESCRIPTOR_COMPARISON',proc.stdout)
@@ -262,6 +271,10 @@ class Tests(unittest.TestCase):
         self.assertEqual(diagnostic['parserBytes'],0)
         self.assertIsNone(diagnostic['dockerExitCode'])
         self.assertNotIn('SECRET',json.dumps(diagnostic))
+
+    def test_retain_index_requires_explicit_boolean_and_never_changes_default(self):
+        with self.assertRaises(ValueError):
+            m.docker_verify(Path('/does/not/exist'),'unix:///fixture','sha256:'+'a'*64,m.Budget(),retain_index='yes')
 
     def test_pipe_deadline_on_stalled_export_and_early_image_argument_rejection(self):
         read,write=os.pipe();budget=m.Budget(seconds=1);budget.deadline=0
