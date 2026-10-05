@@ -1056,12 +1056,12 @@
   "imageVulnerabilityGate": {
     "section": 49,
     "status": "WRAPPER_PREPARED_EXACT_DATABASE_NATIVE_CI_PENDING",
-    "sourceCommit": "4e51e03ccbe6b1fc62d8ca9ba79c03cbeb749cdb",
-    "sourceSha256": "52177ba6b8c9a64045d3b1dec51da4730022695f3a45cdf2ebf2e45f1338bce5",
+    "sourceCommit": "2c11fd6d37995b09de39f3d48b3f0373644ce7bc",
+    "sourceSha256": "0060403c8336aab950012a44c9160f2b656ffa779479975ea44be6ec7a44ca43",
     "scopeGranted": false,
     "targetExecuted": false,
     "operatorCommandPending": false,
-    "localTestsPassed": 9,
+    "localTestsPassed": 10,
     "firstNativeRun": 37365819285,
     "firstNativeJob": 111950583923,
     "firstNativeRootTestsPassed": 8,
@@ -1073,7 +1073,7 @@
     "nextAction": "Require exact pinned-database real native detection and wrapper proof; only then offer concrete scope49.",
     "wrapperTestsPassed": 3,
     "wrapperPath": "docs/handoffs/commands/OUF_REVIEW_IMAGE_VULNERABILITIES_2026-10-05.sh",
-    "wrapperSha256": "345895cc14ac4d5b56c0c85a39f9ae776cc4f18e6a8cb126d8b5dee086bad4f9",
+    "wrapperSha256": "ec5b567d90849a533a45f65911795690f2ad22357b6cc79b80d2d9c821a93fd9",
     "databasePin": {
       "built": "2026-10-05T06:45:38Z",
       "checksum": "sha256:97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
@@ -1085,6 +1085,8 @@
     "previousNativeAttempt": 2,
     "previousNativeJob": 111969914985,
     "previousNativeFailure": "REAL_REPORT_DATABASE_STATUS_ENVELOPE_MISMATCH",
-    "correctedNativeRun": 37372042899
+    "correctedNativeRun": 37372042899,
+    "finalNativeProofPending": true,
+    "malformedCoverageAlertsDenied": true
   }
 }

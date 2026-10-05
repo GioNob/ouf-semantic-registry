@@ -3,8 +3,8 @@
 # No acceptance, signing, registration or application/container operation.
 set -Eeuo pipefail
 umask 077
-SOURCE_COMMIT=4e51e03ccbe6b1fc62d8ca9ba79c03cbeb749cdb
-SOURCE_SHA256=52177ba6b8c9a64045d3b1dec51da4730022695f3a45cdf2ebf2e45f1338bce5
+SOURCE_COMMIT=2c11fd6d37995b09de39f3d48b3f0373644ce7bc
+SOURCE_SHA256=0060403c8336aab950012a44c9160f2b656ffa779479975ea44be6ec7a44ca43
 SCANNER_ARCHIVE_SHA256=a5a1218dce63acdac152a6b3b5bb366e7267e36f4069848cf455543b3fa5700e
 DATABASE_PATH=vulnerability-db_v6.1.10_2026-10-05T00:36:45Z_1791182738.tar.zst
 DATABASE_SHA256=97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a
@@ -44,7 +44,7 @@ def captured(filename,expected,limit,destination=None):
 try:
     require(os.geteuid()==0 and sys.flags.isolated and sys.dont_write_bytecode)
     os.umask(0o077);signal.signal(signal.SIGALRM,lambda *_:(_ for _ in ()).throw(TimeoutError()));signal.alarm(720)
-    source=captured(sys.argv[1],'52177ba6b8c9a64045d3b1dec51da4730022695f3a45cdf2ebf2e45f1338bce5',131072)
+    source=captured(sys.argv[1],'0060403c8336aab950012a44c9160f2b656ffa779479975ea44be6ec7a44ca43',131072)
     scanner_archive=captured(sys.argv[2],'a5a1218dce63acdac152a6b3b5bb366e7267e36f4069848cf455543b3fa5700e',67108864)
     namespace={'__name__':'source_sealed_vulnerability'};exec(compile(source,'<ouf-source-sealed-vulnerability>','exec'),namespace)
     module=sys.modules['tools.review_semantic_image_vulnerabilities'];sbom=sys.modules['tools.prepare_semantic_image_sbom'];archive=sys.modules['tools.verify_semantic_image_archive']
@@ -64,7 +64,7 @@ try:
     expected=[{"schema":"ouf.semantic-image-sbom-artifact.v1","sbomProduced":True,"sbomImageIdentityBound":True,"networkIsolatedScanner":True,"dependencySbomAccepted":False,"vulnerabilityReviewProven":False,"imagePublisherProvenanceVerified":False,"completeCreationAccepted":False,"acceptanceGranted":False,"startAuthorized":False,"packageWithoutVersionCount":0,"role":"adapter","imageId":"sha256:a697bf75bf7d51afadadfaccd3d80537e9a5fb2a08f0d194c6dfd9462e812468","archiveBytes":46233600,"archiveSha256":"d970ec9d1df1d003ad8afe8a9434204399e0e8725ad1a4318bbe91f880c9f730","configByteSha256":"c3607ad2aa45b464c6abce4bec92e8a2fb0a82c0ec65b845c7693d2265048480","rootfsDescriptorsHash":"e6b2f3bd33516825e3bee4a0af52090d917545bd644c294dfe0843b736b088d1","packageCount":95,"spdxJsonSha256":"5c2a5fb2a496abbc4ac58eca9038c7b86c230138bdd9059b67d17c4823d77bda","syftJsonSha256":"7e4aaa6d8df1dd9e9d98d71179aa228e3e3ac0325723f22e2d5d36ab59601acf"},{"schema":"ouf.semantic-image-sbom-artifact.v1","sbomProduced":True,"sbomImageIdentityBound":True,"networkIsolatedScanner":True,"dependencySbomAccepted":False,"vulnerabilityReviewProven":False,"imagePublisherProvenanceVerified":False,"completeCreationAccepted":False,"acceptanceGranted":False,"startAuthorized":False,"packageWithoutVersionCount":0,"role":"southbound","imageId":"sha256:84e6b5e787e9f889ebff88161cb9a16599bafcffa236c6b54c7f779a0655940d","archiveBytes":138930176,"archiveSha256":"fa63d2b535294f802bafed56766e61d98ef08bca15c6ecf19b604bc070fdd1e0","configByteSha256":"b6fd21b8c341f3bf274ddabbad2e3c1bbb6a17566f0e41bf618166e63e4641e4","rootfsDescriptorsHash":"ea6aeeef286a7c893cd0bd8eb7452196d87c8681f72a10a3001af288133528ed","packageCount":179,"spdxJsonSha256":"554a13f86efec9d90908f0da6243104971599b27a6de6eb6a55ad8b0a7d2902f","syftJsonSha256":"83b7fd419b6566df4ca62a524138fe7b50d580a9d4548f3d892fff1fdfa36e58"}]
     result=module.review(prepared,Path('/etc/ouf/deploy-snapshots/semantic-image-sbom-20261005-v1/prepared'),expected,
         '6e0a436d8da6b55c3286811140efd46b679d2ceb9dc202b33576a76425ed08fc',pin,database,scanner,scanner_hash,unshare,unshare_hash)
-    result['sourceCommit']='4e51e03ccbe6b1fc62d8ca9ba79c03cbeb749cdb'
+    result['sourceCommit']='2c11fd6d37995b09de39f3d48b3f0373644ce7bc'
     print('SEMANTIC_IMAGE_VULNERABILITIES='+json.dumps(result,sort_keys=True))
     print('SEMANTIC_IMAGE_VULNERABILITIES=SCAN_COMPLETED ACCEPTANCE_GRANTED=false START_AUTHORIZED=false')
 except Exception:
