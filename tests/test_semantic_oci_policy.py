@@ -89,6 +89,18 @@ class Policy(unittest.TestCase):
             inputs[1]=copy.deepcopy(inputs[0])
             with self.subTest(kind=kind),self.assertRaises(m.Denied):m.configured_profile(*inputs)
 
+    def test_optional_private_time_namespace_never_allows_join_or_offsets(self):
+        inputs=list(fixture());inputs[0]['linux']['namespaces'].append({'type':'time'})
+        inputs[1]=copy.deepcopy(inputs[0])
+        self.assertTrue(m.configured_profile(*inputs)['configuredPolicyConforms'])
+        for kind in ('join','offset','duplicate'):
+            altered=copy.deepcopy(inputs)
+            if kind=='join':altered[0]['linux']['namespaces'][-1]['path']='/proc/1/ns/time'
+            elif kind=='offset':altered[0]['linux']['timeOffsets']={'monotonic':{'secs':1,'nanosecs':0}}
+            else:altered[0]['linux']['namespaces'].append({'type':'time'})
+            altered[1]=copy.deepcopy(altered[0])
+            with self.subTest(kind=kind),self.assertRaises(m.Denied):m.configured_profile(*altered)
+
     def test_mount_rw_missing_extra_duplicate_remapped_and_path_escape_denied(self):
         for kind in ('rw','missing','extra','duplicate','mapping','escape','propagation'):
             inputs=list(fixture());mounts=inputs[0]['mounts']

@@ -107,7 +107,12 @@ def configured_profile(bundle,expected,spec,startup,approved_hooks,schema):
             require(hook.get('args') and hook['args'][0]==hook['path'],'OCI_HOOK_PROFILE_DRIFT')
     namespaces=linux.get('namespaces');require(type(namespaces) is list,'OCI_NAMESPACE_PROFILE_REQUIRED')
     mapping={v['type']:v for v in namespaces}
-    require(len(mapping)==len(namespaces) and set(mapping)=={'mount','pid','ipc','uts','network','cgroup'}
+    # Moby 29.8.1 preserves its default private time namespace when supported
+    # by the kernel (WithNamespaces removes it on unsupported kernels).
+    # No joined time namespace or time offset is accepted by this profile.
+    required_namespaces={'mount','pid','ipc','uts','network','cgroup'}
+    require(len(mapping)==len(namespaces) and required_namespaces<=set(mapping)
+            and set(mapping)<=required_namespaces|{'time'}
             and all(not v.get('path') for k,v in mapping.items() if k!='network')
             and not linux.get('uidMappings') and not linux.get('gidMappings'),'OCI_PRIVATE_NAMESPACES_REQUIRED')
     if mapping['network'].get('path'):path(mapping['network']['path'])

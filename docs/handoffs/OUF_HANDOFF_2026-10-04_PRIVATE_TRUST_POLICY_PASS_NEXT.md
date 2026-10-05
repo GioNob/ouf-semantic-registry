@@ -1,3 +1,11 @@
+## Continuity checkpoint: interrupted session resumed
+
+Section 47 remains EXECUTED_PASS; no operator command is pending and sections 39–47 must not be replayed. Software head before this checkpoint: `2ba1b026b6d4b553106eaf53eb038ad6b833f5eb`.
+
+CI run 37350505094: sealed-readback and runner Docker passed; four mandatory real-runc mount tests passed in 0.608 seconds (job 111899870111). No application was started. The stdio timeout was caused by inherited output pipes in the CI fixture and was corrected using synthetic CI temporary output files. The Docker 29.8.1 OCI test still failed because its seven private namespaces include `time`; its diagnostic exposed only finite type names and path-presence booleans, with no paths or environment values. Moby's reviewed WithNamespaces retains this private time namespace on supported kernels. The next code revision permits that optional namespace only without a joined path; time offsets and shared namespaces remain denied. Twelve local OCI policy tests pass. Native CI for that revision is pending; no full-suite success or target acceptance is claimed.
+
+Next work: read the fresh native OCI CI result, resolve any remaining policy mismatch using primary source and bounded diagnostics, then continue authenticated acceptance issuer integration. Mount metadata observation does not prove source byte hashes, full OCI acceptance, publisher/SBOM provenance or issuer authority. Acceptance, registration, signing and start remain unauthorized by these read-only/software results. PET requirements retain precedence.
+
 ## §47 eseguito/PASS — campi di creazione classificati, nessun replay
 
 Output operatore ricevuto il 5 ottobre 2026 alle 18:56:53 Europe/Rome: checksum OK, `SEMANTIC_CREATION_FIELDS=PASS ACCEPTANCE_GRANTED=false START_AUTHORIZED=false`. Pin eseguito `3f49c743b721885d74a00e528b9b2d4bf8fdb772`, SHA256 `3a0182208cdd3e22383edaaed16e1db8e78b74cb92d567a0d5834ac3721142d6`. Receipt completa: `docs/handoffs/receipts/SEMANTIC_CREATION_FIELDS_PASS_2026-10-05_OPERATOR.json`. **Ultimo VPS §47 PASS; non ripetere §47 o i wrapper precedenti. Nessun comando VPS pendente.** Evidenza fornita dall’operatore, non ispezione SSH indipendente.

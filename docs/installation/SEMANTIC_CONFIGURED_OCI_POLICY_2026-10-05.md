@@ -63,3 +63,14 @@ Primary sources:
 - [runtime-spec v1.3.0 model](https://github.com/opencontainers/runtime-spec/blob/92249139eea7161e13745abd4cb6d0ea02a3227a/specs-go/config.go)
 - [Docker 29.8.1 vendored model](https://github.com/moby/moby/blob/docker-v29.8.1/vendor/github.com/opencontainers/runtime-spec/specs-go/config.go)
 - [Docker 29.8.1 vendored version](https://github.com/moby/moby/blob/docker-v29.8.1/vendor/github.com/opencontainers/runtime-spec/specs-go/version.go)
+
+## Continuity checkpoint: interrupted session resumed
+
+Section 47 remains EXECUTED_PASS; no operator command is pending and sections 39–47 must not be replayed. Software head before this checkpoint: `2ba1b026b6d4b553106eaf53eb038ad6b833f5eb`.
+
+CI run 37350505094: sealed-readback and runner Docker passed; four mandatory real-runc mount tests passed in 0.608 seconds (job 111899870111). No application was started. The stdio timeout was caused by inherited output pipes in the CI fixture and was corrected using synthetic CI temporary output files. The Docker 29.8.1 OCI test still failed because its seven private namespaces include `time`; its diagnostic exposed only finite type names and path-presence booleans, with no paths or environment values. Moby's reviewed WithNamespaces retains this private time namespace on supported kernels. The next code revision permits that optional namespace only without a joined path; time offsets and shared namespaces remain denied. Twelve local OCI policy tests pass. Native CI for that revision is pending; no full-suite success or target acceptance is claimed.
+
+Next work: read the fresh native OCI CI result, resolve any remaining policy mismatch using primary source and bounded diagnostics, then continue authenticated acceptance issuer integration. Mount metadata observation does not prove source byte hashes, full OCI acceptance, publisher/SBOM provenance or issuer authority. Acceptance, registration, signing and start remain unauthorized by these read-only/software results. PET requirements retain precedence.
+
+
+Primary implementation for optional private time namespace: [Moby 29.8.1 WithNamespaces](https://github.com/moby/moby/blob/docker-v29.8.1/daemon/oci_linux.go).
