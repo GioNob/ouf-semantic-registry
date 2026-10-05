@@ -87,6 +87,19 @@ jobs:
           source=Path('docs/handoffs/commands/OUF_READ_CREATION_CONFIGURATION_2026-10-05.sh').read_text()
           assert source.split("<<'OUF_PYTHON'\n",1)[1].rsplit('\nOUF_PYTHON',1)[0] == embedded().rstrip('\n')
           PY
+      - name: Test exact sealed Env OIDC MAC pairing, purpose and drift
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_environment_binding.py
+      - name: Verify sealed environment wrapper embeds tested closure
+        run: |
+          bash -n docs/handoffs/commands/OUF_VERIFY_ENVIRONMENT_BINDING_2026-10-05.sh
+          python3 -B - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0,'tests')
+          from test_semantic_environment_binding import embedded
+          source=Path('docs/handoffs/commands/OUF_VERIFY_ENVIRONMENT_BINDING_2026-10-05.sh').read_text()
+          assert source.split("<<'OUF_PYTHON'\n",1)[1].rsplit('\nOUF_PYTHON',1)[0] == embedded().rstrip('\n')
+          PY
   image-archive-docker:
     runs-on: ubuntu-latest
     timeout-minutes: 5
