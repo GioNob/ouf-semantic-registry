@@ -1,5 +1,5 @@
 #!/bin/bash
-# Section44 PREPARED_NOT_AUTHORIZED: private TLS/MAC read; no acceptance/sign/start.
+# Section44 EXECUTED_PASS_DO_NOT_REPLAY; historical execution pin 7b084e207f882168b11137f27d9647fa0d35525e; no acceptance/sign/start.
 set -euo pipefail
 exec sudo /usr/bin/python3 -I -B - \
  --manifest-root /etc/ouf/deploy-snapshots/semantic-provider-candidate-manifest-20261003-130410/prepared \
