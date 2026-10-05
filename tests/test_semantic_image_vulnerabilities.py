@@ -7,7 +7,7 @@ class Review(unittest.TestCase):
     def setUp(self):
         self.pin={'status':'active','schemaVersion':'v6.0.0','built':'2026-10-05T12:00:00Z','path':'vulnerability-db_v6.0.0_2026-10-05T12:00:00Z_1.tar.zst','checksum':'sha256:'+'a'*64}
         self.expected={'role':'adapter','imageId':'sha256:'+'b'*64,'configByteSha256':'c'*64,'syftJsonSha256':'d'*64}
-        self.report={'matches':[],'source':{'type':'image','target':{'imageID':'sha256:'+'c'*64}},'descriptor':{'name':'grype','version':m.GRYPE_VERSION,'db':{'schemaVersion':'v6.0.0','built':self.pin['built'],'valid':True}}}
+        self.report={'matches':[],'source':{'type':'image','target':{'imageID':'sha256:'+'c'*64}},'descriptor':{'name':'grype','version':m.GRYPE_VERSION,'db':{'status':{'schemaVersion':'v6.0.0','built':self.pin['built'],'valid':True},'providers':{}}}}
     def scan(self):return m.summary(m.canonical(self.report),self.expected,self.pin)
     def test_clean_scan_never_grants_acceptance(self):
         r=self.scan();self.assertTrue(r['scannerSeverityThresholdMet']);self.assertFalse(r['acceptanceGranted']);self.assertFalse(r['dependencyCoverageAccepted'])
@@ -35,11 +35,24 @@ class Review(unittest.TestCase):
     def test_duplicate_json_denied(self):
         with self.assertRaises(Exception):m.summary(b'{"matches":[],"matches":[]}',self.expected,self.pin)
     def test_invalid_database_and_coverage_alert_prevent_threshold(self):
-        self.report['descriptor']['db']['valid']=False
+        self.report['descriptor']['db']['status']['valid']=False
         with self.assertRaises(Exception):self.scan()
-        self.report['descriptor']['db']['valid']=True;self.report['alertsByPackage']=[{'package':{'name':'PRIVATE_COMPONENT'},'alerts':[{'type':'distro-eol'}]}]
+        self.report['descriptor']['db']['status']['valid']=True;self.report['alertsByPackage']=[{'package':{'name':'PRIVATE_COMPONENT'},'alerts':[{'type':'distro-eol'}]}]
         r=self.scan();self.assertFalse(r['scannerSeverityThresholdMet']);self.assertEqual(r['packageAlertCount'],1)
         self.assertNotIn('PRIVATE_COMPONENT',json.dumps(r))
+    def test_nested_database_status_binding_and_flat_legacy_denial(self):
+        original=json.loads(json.dumps(self.report['descriptor']['db']))
+        status=self.report['descriptor']['db']['status']
+        for key,value in (('schemaVersion','v6.1.10'),('built','2026-10-05T11:00:00Z'),('error','PRIVATE_ERROR'),('valid',None)):
+            previous=status.get(key);status[key]=value
+            with self.assertRaises(Exception):self.scan()
+            if previous is None:status.pop(key)
+            else:status[key]=previous
+        for db in (original['status'],{}, {'status':None},{'status':[], 'schemaVersion':self.pin['schemaVersion'],'built':self.pin['built'],'valid':True}):
+            self.report['descriptor']['db']=db
+            with self.assertRaises(Exception):self.scan()
+        self.report['descriptor']['db']=original
+        self.assertTrue(self.scan()['scannerSeverityThresholdMet'])
     def test_generated_closure_exact(self):
         root=Path(__file__).resolve().parents[1]/'tools'
         self.assertEqual(build(root),(root/'semantic_image_vulnerability_reviewer.py').read_text())

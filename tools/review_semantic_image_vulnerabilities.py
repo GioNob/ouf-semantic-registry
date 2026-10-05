@@ -50,7 +50,8 @@ def summary(raw,expected,pin):
     report=sbom.decode(raw);require(type(report) is dict and type(report['matches']) is list and len(report['matches'])<=100000)
     descriptor=report['descriptor'];require(descriptor['name']=='grype' and descriptor['version']==GRYPE_VERSION)
     ignored=report.get('ignoredMatches');require(ignored is None or (type(ignored) is list and not ignored))
-    db=descriptor['db'];require(db['schemaVersion']==pin['schemaVersion'] and db['built']==pin['built'] and db.get('valid') is True and not db.get('error'))
+    db_info=descriptor['db'];require(type(db_info) is dict and type(db_info.get('status')) is dict)
+    db=db_info['status'];require(db['schemaVersion']==pin['schemaVersion'] and db['built']==pin['built'] and db.get('valid') is True and not db.get('error'))
     source=report['source'];require(source['type']=='image' and source['target']['imageID']=='sha256:'+expected['configByteSha256'])
     counts={k:0 for k in SEVERITIES};public_ids=set()
     for match in report['matches']:

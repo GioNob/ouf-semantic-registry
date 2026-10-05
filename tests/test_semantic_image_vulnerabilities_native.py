@@ -62,7 +62,9 @@ class NativeVulnerability(unittest.TestCase):
                     # CI-owned fixture diagnostics only, never VPS inputs.
                     for f in reviewed.glob('*.grype.json'):
                         report=json.loads(f.read_bytes())
-                        print('NATIVE_MODEL_DIAGNOSTIC='+json.dumps({'sourceType':report.get('source',{}).get('type'),'sourceTargetKeys':list(report.get('source',{}).get('target',{})),'db':report.get('descriptor',{}).get('db')}))
+                        status=report.get('descriptor',{}).get('db',{}).get('status',{})
+                        print('NATIVE_MODEL_DIAGNOSTIC='+json.dumps({'sourceType':report.get('source',{}).get('type'),'sourceTargetKeys':list(report.get('source',{}).get('target',{})),
+                            'databaseStatus':{k:status.get(k) for k in ('schemaVersion','built','valid')},'databaseErrorPresent':bool(status.get('error'))}))
                 self.assertEqual(scanned.returncode,0,'REAL_OFFLINE_GRYPE_REVIEW_FAILED')
                 facts=json.loads((reviewed/'receipt.json').read_bytes())
                 self.assertFalse(facts['allScannerSeverityThresholdsMet'])
