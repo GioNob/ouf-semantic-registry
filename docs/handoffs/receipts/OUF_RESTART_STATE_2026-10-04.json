@@ -472,7 +472,14 @@
       "sameAuthorizedScope": true,
       "localTestsPassed": 15,
       "localTestsSkipped": 0,
-      "ciStatus": "PENDING"
+      "ciStatus": "READBACK_WORKFLOW_SUCCESS",
+      "preparedCommit": "41a03e492d2dd76c6c0f7749d7c9cd9987475790",
+      "ciRootTests": 41,
+      "ciRootSkipped": 0,
+      "ciDockerTests": 1,
+      "ciReadbackRun": 37263946062,
+      "ciRootJob": 111616698801,
+      "ciDockerJob": 111616698530
     }
   },
   "productReadSmoke": {
