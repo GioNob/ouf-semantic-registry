@@ -1,4 +1,4 @@
-import base64,copy,hashlib,json,os,sys,unittest
+import base64,copy,hashlib,json,os,re,subprocess,sys,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from tools import prepare_semantic_image_sbom as m
@@ -41,4 +41,14 @@ class Sbom(unittest.TestCase):
     def test_generated_closure_is_byte_identical(self):
         root=Path(__file__).resolve().parents[1]/'tools'
         self.assertEqual((root/'semantic_image_sbom_preparer.py').read_text(),builder.build(root))
+    def test_operator_wrapper_pins_exact_tested_closure_scanner_and_target_images(self):
+        root=Path(__file__).resolve().parents[1]
+        wrapper=root/'docs/handoffs/commands/OUF_PREPARE_IMAGE_SBOM_2026-10-05.sh';raw=wrapper.read_text()
+        expected=hashlib.sha256((root/'tools/semantic_image_sbom_preparer.py').read_bytes()).hexdigest()
+        self.assertEqual(re.search(r'^SOURCE_SHA256=([0-9a-f]{64})$',raw,re.M)[1],expected)
+        self.assertIn(m.SCANNER_ARCHIVE_SHA256,raw)
+        self.assertIn('PREPARED_SCOPE_NOT_GRANTED',raw)
+        self.assertIn('a697bf75bf7d51afadadfaccd3d80537e9a5fb2a08f0d194c6dfd9462e812468',raw)
+        self.assertIn('84e6b5e787e9f889ebff88161cb9a16599bafcffa236c6b54c7f779a0655940d',raw)
+        subprocess.run(['/usr/bin/bash','-n',str(wrapper)],check=True,capture_output=True)
 if __name__=='__main__':unittest.main()
