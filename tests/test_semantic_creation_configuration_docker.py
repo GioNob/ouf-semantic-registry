@@ -46,6 +46,10 @@ class Native(unittest.TestCase):
                     '--manifest-hash',pin,'--creation-hash',m.sha(rawj),'--installation','ci','--docker-path',str(docker),
                     '--docker-hash',m.binary(docker,m.Budget()),'--docker-host',host,'--public-scratch-root',str(root)]
                 before={p.name:p.read_bytes() for p in root.iterdir() if p.is_file()}
+                # Direct native verifier adds a source-line-only diagnostic if
+                # the isolated CLI fails on a new Engine representation. Full
+                # inspect JSON and private fixture values are never printed.
+                m.collect([raw,rawj],[pin,m.sha(rawj)],'ci',m.Query(docker,m.binary(docker,m.Budget()),root,host))
                 p=subprocess.run(args,capture_output=True,timeout=65)
                 self.assertEqual(p.returncode,0,p.stdout+p.stderr);self.assertIn(b'SEMANTIC_CREATION_CONFIGURATION=PASS',p.stdout)
                 self.assertNotIn(b'CI_PRIVATE_VALUE',p.stdout+p.stderr);self.assertNotIn(str(root).encode(),p.stdout+p.stderr)
@@ -83,6 +87,21 @@ class Native(unittest.TestCase):
                 for private_value in (materialized['secret'],str(root).encode(),env_bytes()):
                     self.assertNotIn(private_value,envproc.stdout+envproc.stderr)
                 self.assertEqual(envbefore,{path.name:path.read_bytes() for path in root.iterdir() if path.is_file()})
+                for cid in ids:self.assertEqual(run('inspect','--format','{{.State.Status}}',cid),'created')
+                from test_semantic_creation_fields_binding import embedded as fields_embedded
+                fieldcli=root/'fields-reader.py';fieldcli.write_text(fields_embedded());fieldcli.chmod(0o600)
+                fieldargs=list(envargs);fieldargs[3]=str(fieldcli)
+                fieldargs+=['--expected-section46',m.encoded({k:m.sha(v) for k,v in materialized.items()}).decode()]
+                fieldbefore={path.name:path.read_bytes() for path in root.iterdir() if path.is_file()}
+                fieldproc=subprocess.run(fieldargs,capture_output=True,timeout=65)
+                self.assertEqual(fieldproc.returncode,0,fieldproc.stdout+fieldproc.stderr)
+                self.assertIn(b'SEMANTIC_CREATION_FIELDS=PASS',fieldproc.stdout)
+                fieldresult=json.loads(fieldproc.stdout.decode().splitlines()[0].split('=',1)[1])
+                self.assertTrue(fieldresult['declaredRequestConforms']);self.assertFalse(fieldresult['acceptanceGranted'])
+                self.assertFalse(fieldresult['allConfigurationFieldsSemanticallyAccepted'])
+                for private_value in (materialized['secret'],str(root).encode(),env_bytes()):
+                    self.assertNotIn(private_value,fieldproc.stdout+fieldproc.stderr)
+                self.assertEqual(fieldbefore,{path.name:path.read_bytes() for path in root.iterdir() if path.is_file()})
                 for cid in ids:self.assertEqual(run('inspect','--format','{{.State.Status}}',cid),'created')
                 (root/'client-secret').write_bytes(b'CI_WRONG_SECRET_0123456789')
                 envproc=subprocess.run(envargs,capture_output=True,timeout=65);self.assertEqual(envproc.returncode,1)

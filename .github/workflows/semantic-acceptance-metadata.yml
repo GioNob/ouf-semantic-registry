@@ -91,6 +91,8 @@ jobs:
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_environment_binding.py
       - name: Test exhaustive creation-field rules and typed denials
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_fields.py
+      - name: Test exhaustive field-to-sealed-input binding
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_fields_binding.py
       - name: Verify sealed environment wrapper embeds tested closure
         run: |
           bash -n docs/handoffs/commands/OUF_VERIFY_ENVIRONMENT_BINDING_2026-10-05.sh
