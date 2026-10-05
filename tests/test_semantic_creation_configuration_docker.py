@@ -10,7 +10,9 @@ def embedded():
     return source.replace('from tools.read_semantic_acceptance_metadata import private,decode,sha,encoded,attrs',helper)
 class Native(unittest.TestCase):
     def test_real_private_inspect_two_never_started_candidates_and_isolated_cli(self):
-        self.assertEqual(os.geteuid(),0);docker=Path('/usr/bin/docker');host='unix:///var/run/docker.sock'
+        self.assertEqual(os.geteuid(),0)
+        docker=Path(os.environ.get('OUF_CREATION_DOCKER_PATH','/usr/bin/docker'))
+        host=os.environ.get('OUF_CREATION_DOCKER_HOST','unix:///var/run/docker.sock')
         token=uuid.uuid4().hex;tag='ouf-ci-creation-'+token;ids=[]
         def run(*args):return subprocess.check_output([str(docker),'--host',host,*map(str,args)],stderr=subprocess.DEVNULL,timeout=45).decode().strip()
         with tempfile.TemporaryDirectory(dir=os.environ['OUF_TEST_ROOT']) as d:
@@ -20,7 +22,8 @@ class Native(unittest.TestCase):
                 image=run('image','inspect','--format','{{.Id}}',tag);specs=[]
                 for i in range(2):specs.append({'name':tag+'-'+str(i),'image':image,'user':'0:0','command':[],
                     'envFile':None,'readOnlyRoot':i==0,'memoryBytes':192*1024*1024,'pidsLimit':32,'dnsServers':[],
-                    'mounts':[{'source':str(root/'proof'),'target':'/proof','readOnly':True}]})
+                    'mounts':[{'source':str(root/'proof'),'target':'/proof','readOnly':True}],
+                    'networks':[{'id':'bridge','name':'bridge'}]})
                 from test_semantic_environment_binding import env_bytes,materialize,embedded as env_embedded
                 (root/'southbound.env').write_bytes(env_bytes());(root/'southbound.env').chmod(0o600)
                 specs[1]['envFile']=str(root/'southbound.env')
@@ -28,7 +31,7 @@ class Native(unittest.TestCase):
                 raw=m.encoded(manifest);pin=m.sha(raw)
                 for s in specs:
                     args=['create','--name',s['name'],'--user','0:0','--restart','no','--cap-drop','ALL',
-                        '--memory',str(s['memoryBytes']),'--memory-swap',str(s['memoryBytes']),'--pids-limit','32','--no-healthcheck',
+                        '--memory',str(s['memoryBytes']),'--memory-swap',str(s['memoryBytes']),'--pids-limit','32','--no-healthcheck','--network','bridge',
                         '--label','ouf.semantic.candidate.transaction='+token,'--label','ouf.semantic.candidate.manifest='+pin,
                         '--mount','type=bind,source='+str(root/'proof')+',target=/proof,readonly']
                     if s['readOnlyRoot']:args.append('--read-only')
@@ -48,6 +51,22 @@ class Native(unittest.TestCase):
                 self.assertNotIn(b'CI_PRIVATE_VALUE',p.stdout+p.stderr);self.assertNotIn(str(root).encode(),p.stdout+p.stderr)
                 self.assertEqual(before,{p.name:p.read_bytes() for p in root.iterdir() if p.is_file()})
                 for cid in ids:self.assertEqual(run('inspect','--format','{{.State.Status}}',cid),'created')
+                from tools.review_semantic_creation_fields import review_fields
+                base=json.loads(run('image','inspect','--format','{{json .Config}}',image))
+                for s,cid in zip(specs,ids):
+                    inspected=json.loads(run('container','inspect','--format','{{json .}}',cid))
+                    sealed_env=list(base['Env'])+(env_bytes().decode().splitlines() if s['envFile'] else [])
+                    field_result=review_fields(inspected['Config'],inspected['HostConfig'],base,s,journal,cid,sealed_env)
+                    self.assertTrue(field_result['declaredRequestConforms'],m.encoded(field_result).decode())
+                    self.assertFalse(field_result['allConfigurationFieldsSemanticallyAccepted'])
+                    self.assertFalse(field_result['acceptanceGranted'])
+                    self.assertTrue(field_result['hostConfig']['effectivePolicyEvidenceRequired'])
+                    for known in ('config','hostConfig'):
+                        self.assertNotIn('UNCLASSIFIED',field_result[known]['fields'].values())
+                    for private_value in ('CI_PRIVATE_VALUE',str(root)):
+                        self.assertNotIn(private_value,m.encoded(field_result).decode())
+                    altered=json.loads(json.dumps(inspected['HostConfig']));altered['SecurityOpt']=['seccomp=unconfined']
+                    self.assertFalse(review_fields(inspected['Config'],altered,base,s,journal,cid,sealed_env)['declaredRequestConforms'])
                 expected={r['role']:r for r in json.loads(p.stdout.decode().splitlines()[0].split('=',1)[1])['candidates']}
                 materialized=materialize(root,raw,rawj)
                 cli=root/'env-reader.py';cli.write_text(env_embedded());cli.chmod(0o600)

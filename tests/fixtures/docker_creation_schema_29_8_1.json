@@ -1,0 +1,565 @@
+{
+  "schema": "ouf.docker-creation-field-schema.v1",
+  "repository": "moby/moby",
+  "tag": "docker-v29.8.1",
+  "commit": "464cd50c3d9e92877d56940ea160de6fca7bea23",
+  "sourcePaths": [
+    "api/types/container/config.go",
+    "api/types/container/hostconfig.go",
+    "api/types/mount/mount.go"
+  ],
+  "config": [
+    {
+      "name": "Hostname",
+      "optional": false,
+      "goType": "string"
+    },
+    {
+      "name": "Domainname",
+      "optional": false,
+      "goType": "string"
+    },
+    {
+      "name": "User",
+      "optional": false,
+      "goType": "string"
+    },
+    {
+      "name": "AttachStdin",
+      "optional": false,
+      "goType": "bool"
+    },
+    {
+      "name": "AttachStdout",
+      "optional": false,
+      "goType": "bool"
+    },
+    {
+      "name": "AttachStderr",
+      "optional": false,
+      "goType": "bool"
+    },
+    {
+      "name": "ExposedPorts",
+      "optional": true,
+      "goType": "network.PortSet"
+    },
+    {
+      "name": "Tty",
+      "optional": false,
+      "goType": "bool"
+    },
+    {
+      "name": "OpenStdin",
+      "optional": false,
+      "goType": "bool"
+    },
+    {
+      "name": "StdinOnce",
+      "optional": false,
+      "goType": "bool"
+    },
+    {
+      "name": "Env",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "Cmd",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "Healthcheck",
+      "optional": true,
+      "goType": "*HealthConfig"
+    },
+    {
+      "name": "ArgsEscaped",
+      "optional": true,
+      "goType": "bool"
+    },
+    {
+      "name": "Image",
+      "optional": false,
+      "goType": "string"
+    },
+    {
+      "name": "Volumes",
+      "optional": false,
+      "goType": "map[string]struct{}"
+    },
+    {
+      "name": "WorkingDir",
+      "optional": false,
+      "goType": "string"
+    },
+    {
+      "name": "Entrypoint",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "NetworkDisabled",
+      "optional": true,
+      "goType": "bool"
+    },
+    {
+      "name": "OnBuild",
+      "optional": true,
+      "goType": "[]string"
+    },
+    {
+      "name": "Labels",
+      "optional": false,
+      "goType": "map[string]string"
+    },
+    {
+      "name": "StopSignal",
+      "optional": true,
+      "goType": "string"
+    },
+    {
+      "name": "StopTimeout",
+      "optional": true,
+      "goType": "*int"
+    },
+    {
+      "name": "Shell",
+      "optional": true,
+      "goType": "[]string"
+    }
+  ],
+  "hostConfig": [
+    {
+      "name": "Binds",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "ContainerIDFile",
+      "optional": false,
+      "goType": "string"
+    },
+    {
+      "name": "LogConfig",
+      "optional": false,
+      "goType": "LogConfig"
+    },
+    {
+      "name": "NetworkMode",
+      "optional": false,
+      "goType": "NetworkMode"
+    },
+    {
+      "name": "PortBindings",
+      "optional": false,
+      "goType": "network.PortMap"
+    },
+    {
+      "name": "RestartPolicy",
+      "optional": false,
+      "goType": "RestartPolicy"
+    },
+    {
+      "name": "AutoRemove",
+      "optional": false,
+      "goType": "bool"
+    },
+    {
+      "name": "VolumeDriver",
+      "optional": false,
+      "goType": "string"
+    },
+    {
+      "name": "VolumesFrom",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "ConsoleSize",
+      "optional": false,
+      "goType": "[2]uint"
+    },
+    {
+      "name": "Annotations",
+      "optional": true,
+      "goType": "map[string]string"
+    },
+    {
+      "name": "CapAdd",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "CapDrop",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "CgroupnsMode",
+      "optional": false,
+      "goType": "CgroupnsMode"
+    },
+    {
+      "name": "Dns",
+      "optional": false,
+      "goType": "[]netip.Addr"
+    },
+    {
+      "name": "DnsOptions",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "DnsSearch",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "ExtraHosts",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "GroupAdd",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "IpcMode",
+      "optional": false,
+      "goType": "IpcMode"
+    },
+    {
+      "name": "Cgroup",
+      "optional": false,
+      "goType": "CgroupSpec"
+    },
+    {
+      "name": "Links",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "OomScoreAdj",
+      "optional": false,
+      "goType": "int"
+    },
+    {
+      "name": "PidMode",
+      "optional": false,
+      "goType": "PidMode"
+    },
+    {
+      "name": "Privileged",
+      "optional": false,
+      "goType": "bool"
+    },
+    {
+      "name": "PublishAllPorts",
+      "optional": false,
+      "goType": "bool"
+    },
+    {
+      "name": "ReadonlyRootfs",
+      "optional": false,
+      "goType": "bool"
+    },
+    {
+      "name": "SecurityOpt",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "StorageOpt",
+      "optional": true,
+      "goType": "map[string]string"
+    },
+    {
+      "name": "Tmpfs",
+      "optional": true,
+      "goType": "map[string]string"
+    },
+    {
+      "name": "UTSMode",
+      "optional": false,
+      "goType": "UTSMode"
+    },
+    {
+      "name": "UsernsMode",
+      "optional": false,
+      "goType": "UsernsMode"
+    },
+    {
+      "name": "ShmSize",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "Sysctls",
+      "optional": true,
+      "goType": "map[string]string"
+    },
+    {
+      "name": "Runtime",
+      "optional": true,
+      "goType": "string"
+    },
+    {
+      "name": "Umask",
+      "optional": true,
+      "goType": "*uint32"
+    },
+    {
+      "name": "Isolation",
+      "optional": false,
+      "goType": "Isolation"
+    },
+    {
+      "name": "Mounts",
+      "optional": true,
+      "goType": "[]mount.Mount"
+    },
+    {
+      "name": "MaskedPaths",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "ReadonlyPaths",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "Init",
+      "optional": true,
+      "goType": "*bool"
+    },
+    {
+      "name": "CpuShares",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "Memory",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "NanoCpus",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "CgroupParent",
+      "optional": false,
+      "goType": "string"
+    },
+    {
+      "name": "BlkioWeight",
+      "optional": false,
+      "goType": "uint16"
+    },
+    {
+      "name": "BlkioWeightDevice",
+      "optional": false,
+      "goType": "[]*blkiodev.WeightDevice"
+    },
+    {
+      "name": "BlkioDeviceReadBps",
+      "optional": false,
+      "goType": "[]*blkiodev.ThrottleDevice"
+    },
+    {
+      "name": "BlkioDeviceWriteBps",
+      "optional": false,
+      "goType": "[]*blkiodev.ThrottleDevice"
+    },
+    {
+      "name": "BlkioDeviceReadIOps",
+      "optional": false,
+      "goType": "[]*blkiodev.ThrottleDevice"
+    },
+    {
+      "name": "BlkioDeviceWriteIOps",
+      "optional": false,
+      "goType": "[]*blkiodev.ThrottleDevice"
+    },
+    {
+      "name": "CpuPeriod",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "CpuQuota",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "CpuRealtimePeriod",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "CpuRealtimeRuntime",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "CpusetCpus",
+      "optional": false,
+      "goType": "string"
+    },
+    {
+      "name": "CpusetMems",
+      "optional": false,
+      "goType": "string"
+    },
+    {
+      "name": "Devices",
+      "optional": false,
+      "goType": "[]DeviceMapping"
+    },
+    {
+      "name": "DeviceCgroupRules",
+      "optional": false,
+      "goType": "[]string"
+    },
+    {
+      "name": "DeviceRequests",
+      "optional": false,
+      "goType": "[]DeviceRequest"
+    },
+    {
+      "name": "MemoryReservation",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "MemorySwap",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "MemorySwappiness",
+      "optional": false,
+      "goType": "*int64"
+    },
+    {
+      "name": "OomKillDisable",
+      "optional": false,
+      "goType": "*bool"
+    },
+    {
+      "name": "PidsLimit",
+      "optional": false,
+      "goType": "*int64"
+    },
+    {
+      "name": "Ulimits",
+      "optional": false,
+      "goType": "[]*Ulimit"
+    },
+    {
+      "name": "CpuCount",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "CpuPercent",
+      "optional": false,
+      "goType": "int64"
+    },
+    {
+      "name": "IOMaximumIOps",
+      "optional": false,
+      "goType": "uint64"
+    },
+    {
+      "name": "IOMaximumBandwidth",
+      "optional": false,
+      "goType": "uint64"
+    }
+  ],
+  "mount": [
+    {
+      "name": "Type",
+      "optional": true,
+      "goType": "Type"
+    },
+    {
+      "name": "Source",
+      "optional": true,
+      "goType": "string"
+    },
+    {
+      "name": "Target",
+      "optional": true,
+      "goType": "string"
+    },
+    {
+      "name": "ReadOnly",
+      "optional": true,
+      "goType": "bool"
+    },
+    {
+      "name": "Consistency",
+      "optional": true,
+      "goType": "Consistency"
+    },
+    {
+      "name": "BindOptions",
+      "optional": true,
+      "goType": "*BindOptions"
+    },
+    {
+      "name": "VolumeOptions",
+      "optional": true,
+      "goType": "*VolumeOptions"
+    },
+    {
+      "name": "ImageOptions",
+      "optional": true,
+      "goType": "*ImageOptions"
+    },
+    {
+      "name": "TmpfsOptions",
+      "optional": true,
+      "goType": "*TmpfsOptions"
+    },
+    {
+      "name": "ClusterOptions",
+      "optional": true,
+      "goType": "*ClusterOptions"
+    }
+  ],
+  "bindOptions": [
+    {
+      "name": "Propagation",
+      "optional": true,
+      "goType": "Propagation"
+    },
+    {
+      "name": "NonRecursive",
+      "optional": true,
+      "goType": "bool"
+    },
+    {
+      "name": "CreateMountpoint",
+      "optional": true,
+      "goType": "bool"
+    },
+    {
+      "name": "ReadOnlyNonRecursive",
+      "optional": true,
+      "goType": "bool"
+    },
+    {
+      "name": "ReadOnlyForceRecursive",
+      "optional": true,
+      "goType": "bool"
+    }
+  ],
+  "meaning": "API field coverage only; not publisher verification, effective OCI approval or production acceptance."
+}
