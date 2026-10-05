@@ -1,5 +1,12 @@
 # OUF — Manuale di installazione e bootstrap
 
+## §42 eseguito BLOCKED — diagnosi redatta pronta, causa ancora sconosciuta
+
+Il5 ottobre2026 alle06:28:51 Europe/Rome l'operatore ha restituito checksum wrapper OK e `SEMANTIC_IMAGE_BYTES=BLOCKED REASON=IMAGE_ARCHIVE_UNPROVEN NO_SECRETS_PRINTED=true`. Nessun JSON immagini/contatore ricevuto: non attribuire una causa, una lettura completata, image bytes PASS o acceptance. Ultimo VPS PASS resta §41. Receipt: `docs/handoffs/receipts/SEMANTIC_IMAGE_BYTES_BLOCKED_2026-10-05.json`. Non ripetere il wrapper originario immutabile ffe6a9b: il suo output accorpa ogni eccezione.
+
+Il follow-up `docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-05_DIAGNOSTIC.sh` mantiene **lo stesso scope §42 già autorizzato**, immagini, controlli e limiti180s/8GiB/100000 entries per immagine; aggiunge solo ruolo/fase/vocabulary classe errore/linea sorgente/counters numerici. Nessun messaggio eccezione, path/config/Env/file privato o stderr Docker stampato. Nessun controllo rilassato, nuova authority, firma/start/registry credentials/provider/consumer o lettura privata host. SHA256 `c6c64cbfe881261495be28b323c0c400612b62590e6156fc4a7b63bb68fc30bb`;15 test locali PASS,0 skip e parity/bash-n PASS; CI nuova da verificare. Follow-up PREPARATO_NON_ESEGUITO, nessun retry automatico sul VPS. Blocchi separati Search503 e full target acceptance restano aperti. Sezione corrente prevale sulle intestazioni storiche sotto.
+
+
 ## §42 AUTORIZZATO — esecuzione operatore ancora NON osservata
 
 Il5 ottobre2026 alle06:20:36 Europe/Rome l'utente ha risposto **“autorizzo”** allo scope concreto §42. La sola lettura privata config/layer bytes delle2 immagini esatte è conferita, inclusi eventuali segreti incorporati letti privatamente in memoria e mai stampati. Wrapper esecutivo immutabile `ffe6a9bceeee08bae95c93425f646bd354780d7c`, SHA256 `c8602ba1279481df8a7cbc66864bd5a978be0234678d6cc5515da6b2f7e45b57`;39 test root+1 Docker e7 workflow CI PASS già verificati. Il commento NOT GRANTED nel pin originario registra il momento di preparazione, non lo stato attuale: conferimento registrato in `docs/handoffs/receipts/SEMANTIC_IMAGE_BYTES_SCOPE_42_AUTHORIZATION_2026-10-05.json`.

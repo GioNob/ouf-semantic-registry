@@ -1,4 +1,5 @@
 import copy
+from unittest.mock import patch
 import gzip
 import importlib.util
 import io
@@ -155,11 +156,42 @@ class Tests(unittest.TestCase):
             self.assertNotIn(b'SENTINEL',proc.stdout+proc.stderr)
             args[args.index('--southbound-rootfs-descriptors-hash')+1]='f'*64
             proc=subprocess.run(args,capture_output=True);self.assertEqual(proc.returncode,1)
+            self.assertIn(b'ROOTFS_DESCRIPTOR_COMPARISON',proc.stdout)
+            self.assertIn(b'SOUTHBOUND',proc.stdout)
             self.assertNotIn(b'SENTINEL',proc.stdout+proc.stderr)
             args[args.index('--southbound-rootfs-descriptors-hash')+1]=descriptor
             args[args.index('--payload-hash')+1]='f'*64
             proc=subprocess.run(args,capture_output=True);self.assertEqual(proc.returncode,1)
             self.assertNotIn(b'SENTINEL',proc.stdout+proc.stderr);self.assertNotIn(d.encode(),proc.stdout+proc.stderr)
+
+    def test_diagnostic_never_serializes_error_message_or_foreign_frame(self):
+        secret = 'PRIVATE_KEY_SENTINEL=/secret/path'
+        try:
+            exec(compile('raise KeyError('+repr(secret)+')', '/secret/archive/path', 'exec'))
+        except Exception as error:
+            diagnostic = m.blocked_diagnostic(error)
+        raw = json.dumps(diagnostic)
+        self.assertEqual(diagnostic['errorClass'], 'KeyError')
+        self.assertEqual(diagnostic['verifierLine'], 0)
+        self.assertNotIn('SENTINEL', raw)
+        self.assertNotIn('/secret', raw)
+        class PrivateException(Exception): pass
+        self.assertEqual(m.blocked_diagnostic(PrivateException(secret))['errorClass'], 'OTHER')
+
+    def test_failed_export_reports_only_fixed_role_stage_and_numeric_budget(self):
+        data,image,payload,meta,_,_=fixture()
+        m.DIAGNOSTIC.clear();m.DIAGNOSTIC.update(imageRole='ADAPTER')
+        with patch.object(m, 'command_snapshot', return_value='a'*64), \
+             patch.object(m.subprocess, 'Popen', side_effect=FileNotFoundError('SECRET_STDERR')):
+            try:
+                m.docker_verify(Path('/usr/bin/docker'),'unix:///fixture',image,m.Budget(),payload,meta)
+            except Exception as error:
+                diagnostic=m.blocked_diagnostic(error)
+        self.assertEqual(diagnostic['stage'],'DOCKER_EXPORT_OPEN')
+        self.assertEqual(diagnostic['imageRole'],'ADAPTER')
+        self.assertEqual(diagnostic['parserBytes'],0)
+        self.assertIsNone(diagnostic['dockerExitCode'])
+        self.assertNotIn('SECRET',json.dumps(diagnostic))
 
     def test_pipe_deadline_on_stalled_export_and_early_image_argument_rejection(self):
         read,write=os.pipe();budget=m.Budget(seconds=1);budget.deadline=0
