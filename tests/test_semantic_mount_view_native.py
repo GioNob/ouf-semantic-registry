@@ -1,8 +1,9 @@
 """Mandatory real created runc PID/mount/source-inode evidence; no app start."""
-import copy,errno,json,os,shutil,subprocess,sys,tempfile,unittest,uuid
+import copy,errno,hashlib,json,os,shutil,subprocess,sys,tempfile,unittest,uuid
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from tools import observe_semantic_mount_view as m
+from tools import observe_semantic_creation_frame as frame
 from tools.review_semantic_oci_policy import Denied
 
 class Native(unittest.TestCase):
@@ -43,18 +44,29 @@ class Native(unittest.TestCase):
                 state=json.loads(run('state',cid));self.assertEqual(state['status'],'created');pid=state['pid']
                 expected=m.generation(pid,m.Budget());bindings=[{'source':str(source),'target':target,'readOnly':True}]
                 attrs=[m.attributes(source.lstat())];before=source.read_bytes()
+                source_policy={'source':str(source),'target':target,'readOnly':True,'uid':10006,'gid':10006,
+                    'mode':0o600,'sha256':hashlib.sha256(before).hexdigest(),'maxBytes':131072}
                 if variant=='generation':expected['startTicks']+=1
                 if variant=='source':
                     replaced=root/'replacement';replaced.write_bytes(before);replaced.chmod(0o600);os.chown(replaced,10006,10006)
                     os.replace(replaced,source);attrs=[m.attributes(source.lstat())]
                 if variant:
                     with self.assertRaises(Denied):m.observe(pid,expected,doc,bindings,attrs)
+                    with self.assertRaises(Denied):frame.source_mount_frame(pid,expected,doc,[source_policy])
                 else:
                     result=m.observe(pid,expected,doc,bindings,attrs)
                     self.assertTrue(result['effectiveReadOnlyFileBindingsObserved']);self.assertTrue(result['stableAcrossReads'])
                     self.assertTrue(result['allMountPointsExplained']);self.assertFalse(result['fullMountViewAccepted'])
                     self.assertEqual(result['privateFileContentsRead'],0);self.assertFalse(result['acceptanceGranted'])
                     self.assertNotIn('CI_PRIVATE',json.dumps(result));self.assertNotIn(str(root),json.dumps(result))
+                    joined=frame.source_mount_frame(pid,expected,doc,[source_policy])
+                    self.assertTrue(joined['sourceByteHashesMatchExpected']);self.assertTrue(joined['stableAcrossReads'])
+                    self.assertEqual(joined['sourceBytesRead'],len(before)*2)
+                    self.assertFalse(joined['atomicSnapshotProven']);self.assertFalse(joined['acceptanceGranted'])
+                    self.assertNotIn('CI_PRIVATE',json.dumps(joined));self.assertNotIn(str(root),json.dumps(joined))
+                    incorrect=dict(source_policy);incorrect['sha256']='0'*64
+                    with self.assertRaisesRegex(Denied,'SOURCE_FRAME_BYTE_HASH_DRIFT'):
+                        frame.source_mount_frame(pid,expected,doc,[incorrect])
                     fd=None
                     try:
                         fd=os.open('/proc/'+str(pid)+'/root'+target,os.O_WRONLY)

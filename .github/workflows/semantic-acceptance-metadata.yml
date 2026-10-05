@@ -93,6 +93,8 @@ jobs:
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_fields.py
       - name: Test bounded kernel mountinfo parsing and redacted generation inputs
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_mount_view.py
+      - name: Test contemporaneous source byte frame and exact policy bindings
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_frame.py
       - name: Test complete OCI schema, prepared-policy drift and hardening denials
         run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_oci_policy.py
       - name: Test exhaustive field-to-sealed-input binding
