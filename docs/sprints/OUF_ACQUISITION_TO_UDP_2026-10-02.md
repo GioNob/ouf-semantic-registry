@@ -1,5 +1,16 @@
 # OUF — acquisizione → onboarding → ingestion → UDP
 
+## §42 secondo BLOCKED — controllo identità config; correzione OCI pronta
+
+Output operatore5 ottobre2026 alle06:34:44 Europe/Rome: checksum wrapper41a03e4 OK; `dockerExitCode=0,errorClass=Blocked,imageRole=ADAPTER,parserBytes=223532435,parserEntries=5798,stage=ARCHIVE_VERIFICATION,verifierLine=167`; poi BLOCKED. La linea167 è nel Python incorporato (non la linea167 del file shell): confronto congiunto hash config==ID Docker e JSON config dict. Nessun PASS immagini, causa target ancora da confermare; non interpretare counters come prova della catena completa. Receipt `docs/handoffs/receipts/SEMANTIC_IMAGE_BYTES_DIAGNOSTIC_BLOCKED_2026-10-05.json`; ultimo VPS PASS resta §41.
+
+Il lettore aveva assunto ID==configSHA sempre. Moby backend containerd usa invece target.Digest per ID, con config separata: https://github.com/moby/moby/blob/master/daemon/containerd/image_inspect.go . Il follow-up `docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-05_CONTAINERD.sh` conserva scope42, immagini, --platform linux/amd64, controlli/limiti180s/8GiB/100000 entries. Accetta CONFIG esatto oppure **MANIFEST/INDEX esatto SHA-anchored**, con ogni edge selezionato validato per digest/size/mediaType, platform univoca, config esatta e layer ordinati identici al manifest Docker esportato, poi DiffID/rootfs/app/startup pins invariati. Nessun fallback a manifest non ancorato; se --platform omette l'indice target pinned, BLOCKED resta obbligatorio. Non omettere --platform né ampliare letture senza analisi/scope concreto.
+
+SHA256 nuovo wrapper `733e5fd1dfc12732b840003bce398a86ad8ca49e715568f635f0026c8ecdbeaa`;20 test locali PASS0 skip; CI standard e nuova fixture Docker29.8.1/containerd da verificare. Follow-up PREPARATO_NON_ESEGUITO. Campo configBytesMatchImageId diventa veritiero per CONFIG; identityBindingKind e imageTargetChainVerified riportano la catena in modo distinto. Niente acceptance/firma/start/provider/publisher/SBOM/full mount proof. Tutte le intestazioni precedenti sono storia, non stato corrente.
+
+Debito di rilascio discusso con utente: CI testa/parity wrapper già presente, non genera ancora tutti i pin a ogni build. Generazione automatica manifest/wrapper/versioned artefacts e preflight prerequisiti host python3/docker/privileged entry limitato restano da implementare; path fissato non prova integrità interprete. Questo repair non trasforma il wrapper amministrativo nel meccanismo definitivo release.
+
+
 ## §42 eseguito BLOCKED — diagnosi redatta pronta, causa ancora sconosciuta
 
 Il5 ottobre2026 alle06:28:51 Europe/Rome l'operatore ha restituito checksum wrapper OK e `SEMANTIC_IMAGE_BYTES=BLOCKED REASON=IMAGE_ARCHIVE_UNPROVEN NO_SECRETS_PRINTED=true`. Nessun JSON immagini/contatore ricevuto: non attribuire una causa, una lettura completata, image bytes PASS o acceptance. Ultimo VPS PASS resta §41. Receipt: `docs/handoffs/receipts/SEMANTIC_IMAGE_BYTES_BLOCKED_2026-10-05.json`. Non ripetere il wrapper originario immutabile ffe6a9b: il suo output accorpa ogni eccezione.

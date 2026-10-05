@@ -17,7 +17,7 @@ class DockerArchiveTest(unittest.TestCase):
     def test_real_local_save_and_layer_payload_bindings(self):
         self.assertEqual(os.geteuid(),0)
         self.assertEqual(os.environ.get('OUF_REQUIRE_IMAGE_ARCHIVE_DOCKER'),'1')
-        docker=Path('/usr/bin/docker');tag='ouf-ci-image-byte-'+uuid.uuid4().hex
+        docker=Path(os.environ.get('OUF_IMAGE_ARCHIVE_DOCKER_PATH','/usr/bin/docker'));host=os.environ.get('OUF_IMAGE_ARCHIVE_DOCKER_HOST','unix:///var/run/docker.sock');tag='ouf-ci-image-byte-'+uuid.uuid4().hex
         with tempfile.TemporaryDirectory(dir=os.environ.get('OUF_IMAGE_ARCHIVE_TEST_PARENT',str(ROOT.parent))) as d:
             context=Path(d);context.chmod(0o700)
             tools=context/'rootfs/app/tools';tools.mkdir(parents=True,mode=0o555)
@@ -40,18 +40,21 @@ ENTRYPOINT ["python3", "-B", "-m", "tools.semantic_provider_adapter"]
             payload_hash=m.digest(json.dumps(manifest,sort_keys=True,separators=(',',':')).encode())
             metadata=dict(user='10006:10006',sourceCommit='a'*40,payloadHash=payload_hash)
             try:
-                build=subprocess.run([str(docker),'build','--network=none','--pull=false','--tag',tag,
+                build=subprocess.run([str(docker),'--host',host,'build','--network=none','--pull=false','--tag',tag,
                     '--build-arg','SOURCE_REVISION='+metadata['sourceCommit'],'--build-arg','PAYLOAD_SHA256='+payload_hash,d],
                     capture_output=True,timeout=120)
                 self.assertEqual(build.returncode,0,build.stderr.decode()[-2000:])
-                image=subprocess.check_output([str(docker),'image','inspect','--format','{{.Id}}',tag],timeout=10).decode().strip()
-                result=m.docker_verify(docker,'unix:///var/run/docker.sock',image,m.Budget(seconds=30,max_bytes=10000000),payload,metadata)
+                image=subprocess.check_output([str(docker),'--host',host,'image','inspect','--format','{{.Id}}',tag],timeout=10).decode().strip()
+                result=m.docker_verify(docker,host,image,m.Budget(seconds=30,max_bytes=10000000),payload,metadata)
                 self.assertTrue(result['adapterPayloadVerified'])
                 self.assertTrue(result['layerDiffIdsMatchConfig'])
-                self.assertTrue(result['configBytesMatchImageId'])
+                self.assertTrue(result['imageTargetChainVerified'])
+                if os.environ.get('OUF_REQUIRE_CONTAINERD_IMAGE_ID') == '1':
+                    self.assertFalse(result['configBytesMatchImageId'])
+                    self.assertEqual(result['imageIdentityBindingKind'],'MANIFEST')
                 self.assertFalse(result['acceptanceGranted'])
             finally:
-                cleanup=subprocess.run([str(docker),'image','rm',tag],capture_output=True,timeout=15)
+                cleanup=subprocess.run([str(docker),'--host',host,'image','rm',tag],capture_output=True,timeout=15)
                 self.assertEqual(cleanup.returncode,0,cleanup.stderr.decode()[-1000:])
 
 if __name__=='__main__':unittest.main()

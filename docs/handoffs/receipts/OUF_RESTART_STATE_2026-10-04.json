@@ -52,8 +52,8 @@
     "startAuthorized": false,
     "runtimeRegistered": false,
     "section32Status": "EXECUTED_BLOCKED",
-    "nextWrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-05_DIAGNOSTIC.sh",
-    "nextWrapperSha256": "c6c64cbfe881261495be28b323c0c400612b62590e6156fc4a7b63bb68fc30bb",
+    "nextWrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-05_CONTAINERD.sh",
+    "nextWrapperSha256": "733e5fd1dfc12732b840003bce398a86ad8ca49e715568f635f0026c8ecdbeaa",
     "section33Status": "EXECUTED_BLOCKED",
     "section32Root": null,
     "partialEvidenceKnown": false,
@@ -79,11 +79,11 @@
     "lastPassSection": 41,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "AWAITING_REDACTED_IMAGE_BYTE_DIAGNOSTIC_42",
+    "nextStatus": "AWAITING_OCI_IMAGE_IDENTITY_VERIFICATION_42",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
-    "section42Status": "EXECUTED_BLOCKED"
+    "section42Status": "EXECUTED_BLOCKED_DIAGNOSTIC"
   },
   "nextTask": "Operator execute only pinned checksum-verified read-only scope42 wrapper; inspect returned result before any replay or target change.",
   "open": [
@@ -336,7 +336,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "AWAITING_REDACTED_IMAGE_BYTE_DIAGNOSTIC_42",
+  "nextStatus": "AWAITING_OCI_IMAGE_IDENTITY_VERIFICATION_42",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -433,7 +433,7 @@
   },
   "imageBytesReadback": {
     "section": 42,
-    "status": "EXECUTED_BLOCKED",
+    "status": "EXECUTED_BLOCKED_DIAGNOSTIC",
     "preparedCommit": "ffe6a9bceeee08bae95c93425f646bd354780d7c",
     "wrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-04.sh",
     "wrapperSha256": "c8602ba1279481df8a7cbc66864bd5a978be0234678d6cc5515da6b2f7e45b57",
@@ -464,9 +464,9 @@
     "authorizationReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_BYTES_SCOPE_42_AUTHORIZATION_2026-10-05.json",
     "executionObserved": true,
     "blockedReason": "IMAGE_ARCHIVE_UNPROVEN",
-    "resultReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_BYTES_BLOCKED_2026-10-05.json",
+    "resultReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_BYTES_DIAGNOSTIC_BLOCKED_2026-10-05.json",
     "diagnosticFollowup": {
-      "status": "PREPARED_NOT_EXECUTED",
+      "status": "EXECUTED_BLOCKED",
       "wrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-05_DIAGNOSTIC.sh",
       "wrapperSha256": "c6c64cbfe881261495be28b323c0c400612b62590e6156fc4a7b63bb68fc30bb",
       "sameAuthorizedScope": true,
@@ -479,7 +479,29 @@
       "ciDockerTests": 1,
       "ciReadbackRun": 37263946062,
       "ciRootJob": 111616698801,
-      "ciDockerJob": 111616698530
+      "ciDockerJob": 111616698530,
+      "executionObserved": true,
+      "diagnostic": {
+        "dockerExitCode": 0,
+        "errorClass": "Blocked",
+        "imageRole": "ADAPTER",
+        "parserBytes": 223532435,
+        "parserEntries": 5798,
+        "stage": "ARCHIVE_VERIFICATION",
+        "verifierLine": 167
+      }
+    },
+    "targetCauseConfirmed": false,
+    "ociFollowup": {
+      "status": "PREPARED_NOT_EXECUTED",
+      "wrapper": "docs/handoffs/commands/OUF_VERIFY_IMAGE_BYTES_2026-10-05_CONTAINERD.sh",
+      "wrapperSha256": "733e5fd1dfc12732b840003bce398a86ad8ca49e715568f635f0026c8ecdbeaa",
+      "sameAuthorizedScope": true,
+      "localTestsPassed": 20,
+      "localTestsSkipped": 0,
+      "ciStatus": "PENDING",
+      "requiresPinnedTargetChain": true,
+      "noUnanchoredFallback": true
     }
   },
   "productReadSmoke": {

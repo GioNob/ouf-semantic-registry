@@ -45,6 +45,24 @@ def fixture(compressed=False,entries=None,extra_layers=None):
         ('manifest.json',json.dumps(manifest).encode(),'file',0o644)]
     return tar(members),image,payload,metadata,members,cfg
 
+def oci_fixture(index=False, compressed=False):
+    data,config_id,payload,meta,members,cfg=fixture(compressed)
+    def desc(name,raw,media):return {'digest':'sha256:'+m.digest(raw),'size':len(raw),'mediaType':media}
+    config=desc(members[0][0],members[0][1],'application/vnd.oci.image.config.v1+json')
+    layer_type='application/vnd.oci.image.layer.v1.tar'+('+gzip' if compressed else '')
+    manifest={'schemaVersion':2,'mediaType':'application/vnd.oci.image.manifest.v1+json',
+              'config':config,'layers':[desc(x[0],x[1],layer_type) for x in members[1:-1]]}
+    raw=json.dumps(manifest,sort_keys=True).encode();target=desc('',raw,manifest['mediaType'])
+    members.append(('blobs/sha256/'+m.digest(raw),raw,'file',0o644))
+    if index:
+        target['platform']={'os':'linux','architecture':'amd64'}
+        doc={'schemaVersion':2,'mediaType':'application/vnd.oci.image.index.v1+json','manifests':[target]}
+        raw=json.dumps(doc,sort_keys=True).encode();target=desc('',raw,doc['mediaType'])
+        members.append(('blobs/sha256/'+m.digest(raw),raw,'file',0o644))
+    members.append(('index.json',json.dumps({'schemaVersion':2,'manifests':[target]}).encode(),'file',0o644))
+    members.append(('oci-layout',b'{"imageLayoutVersion":"1.0.0"}','file',0o644))
+    return tar(members),target['digest'],payload,meta,members
+
 class Tests(unittest.TestCase):
     def verify(self,data,image,payload=None,metadata=None,budget=None):
         return m.archive_verify(io.BytesIO(data),image,budget or m.Budget(),payload,metadata)
@@ -163,6 +181,58 @@ class Tests(unittest.TestCase):
             args[args.index('--payload-hash')+1]='f'*64
             proc=subprocess.run(args,capture_output=True);self.assertEqual(proc.returncode,1)
             self.assertNotIn(b'SENTINEL',proc.stdout+proc.stderr);self.assertNotIn(d.encode(),proc.stdout+proc.stderr)
+
+    def test_manifest_and_index_ids_bind_exact_config_and_ordered_layers(self):
+        for index in (False,True):
+            for compressed in (False,True):
+                data,image,payload,meta,_=oci_fixture(index,compressed)
+                result=self.verify(data,image,payload,meta)
+                self.assertTrue(result['imageTargetChainVerified'])
+                self.assertTrue(result['configByteHashVerified'])
+                self.assertFalse(result['configBytesMatchImageId'])
+                self.assertEqual(result['imageIdentityBindingKind'],'INDEX' if index else 'MANIFEST')
+
+    def test_unanchored_manifest_cannot_rescue_wrong_target_pin(self):
+        data,image,payload,meta,_=oci_fixture()
+        with self.assertRaises(ValueError):self.verify(data,'sha256:'+'f'*64,payload,meta)
+
+    def test_manifest_descriptor_size_digest_and_media_drift_rejected(self):
+        for kind in ('size','digest','media','layer_size','layer_digest'):
+            _,image,payload,meta,members=oci_fixture()
+            name,raw,typ,mode=members[-3];doc=json.loads(raw)
+            edge=doc['layers'][0] if kind.startswith('layer') else doc['config']
+            if 'size' in kind:edge['size']+=1
+            elif 'digest' in kind:edge['digest']='sha256:'+'f'*64
+            else:edge['mediaType']='application/unapproved'
+            raw=json.dumps(doc).encode();image='sha256:'+m.digest(raw)
+            members[-3]=('blobs/sha256/'+m.digest(raw),raw,typ,mode)
+            with self.subTest(kind=kind),self.assertRaises(ValueError):self.verify(tar(members),image,payload,meta)
+
+    def test_index_platform_ambiguity_wrong_platform_and_missing_target_rejected(self):
+        for kind in ('ambiguous','platform','missing','schema'):
+            _,image,payload,meta,members=oci_fixture(index=True)
+            name,raw,typ,mode=members[-3];doc=json.loads(raw)
+            if kind=='ambiguous':doc['manifests']*=2
+            elif kind=='platform':doc['manifests'][0]['platform']['architecture']='arm64'
+            elif kind=='schema':doc['schemaVersion']=True
+            else:
+                members.pop(-3)
+                with self.assertRaises(ValueError):self.verify(tar(members),image,payload,meta)
+                continue
+            raw=json.dumps(doc).encode();image='sha256:'+m.digest(raw)
+            members[-3]=('blobs/sha256/'+m.digest(raw),raw,typ,mode)
+            with self.subTest(kind=kind),self.assertRaises(ValueError):self.verify(tar(members),image,payload,meta)
+
+    def test_digest_valid_manifest_for_other_config_cannot_bind_exported_payload(self):
+        _,image,payload,meta,members=oci_fixture()
+        _,_,_,_,other,_=fixture(entries=[('outside',b'other','file',0o644)])
+        members.insert(0,other[0])
+        pos=next(i for i,x in enumerate(members) if x[0]=='blobs/sha256/'+image[7:])
+        name,raw,typ,mode=members[pos];doc=json.loads(raw)
+        doc['config'].update(digest='sha256:'+m.digest(other[0][1]),size=len(other[0][1]))
+        raw=json.dumps(doc).encode();image='sha256:'+m.digest(raw)
+        members[pos]=('blobs/sha256/'+m.digest(raw),raw,typ,mode)
+        with self.assertRaises(ValueError):self.verify(tar(members),image,payload,meta)
 
     def test_diagnostic_never_serializes_error_message_or_foreign_frame(self):
         secret = 'PRIVATE_KEY_SENTINEL=/secret/path'
