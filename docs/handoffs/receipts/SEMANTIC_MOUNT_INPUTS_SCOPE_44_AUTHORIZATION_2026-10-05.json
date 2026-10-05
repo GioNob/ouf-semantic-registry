@@ -1,0 +1,29 @@
+{
+  "schema": "ouf.semantic-static-mount-input-scope-authorization.v1",
+  "section": 44,
+  "authorized": true,
+  "authorizationSource": "Explicit user Autorizzo in this conversation",
+  "authorizedAt": "2026-10-05T12:52:29+02:00",
+  "sourceCommit": "7b084e207f882168b11137f27d9647fa0d35525e",
+  "wrapper": "docs/handoffs/commands/OUF_VERIFY_MOUNT_INPUTS_2026-10-05.sh",
+  "wrapperSha256": "d3aa10849587f3c46c6724764b86d2810eae0e01dbb22a245a8947d0b3e98b83",
+  "fixedInputFiles": 18,
+  "tlsPrivateKeyFiles": 2,
+  "macPrivateKeyFiles": 2,
+  "inlineTlsPrivateKeyRead": true,
+  "scope": "Read fixed existing mount inputs and trust artifacts; native OpenSSL validation and public compiler replay; redacted output; public CA/output temporary files only",
+  "excluded": [
+    "ca.key",
+    "deployment/node signing keys",
+    "Env",
+    "Docker/live OCI/rootfs",
+    "provider/network calls",
+    "signatures",
+    "consumer link",
+    "runtime registration",
+    "create/start"
+  ],
+  "executionObserved": false,
+  "acceptanceGranted": false,
+  "startAuthorized": false
+}

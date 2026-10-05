@@ -79,7 +79,7 @@
     "lastPassSection": 43,
     "lastPassRoot": null,
     "policyPreparationStatus": "PASS",
-    "nextStatus": "AWAITING_EXPLICIT_SCOPE44_PRIVATE_MOUNT_INPUT_READ",
+    "nextStatus": "SCOPE44_AUTHORIZED_AWAITING_OPERATOR_OUTPUT",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
@@ -591,11 +591,11 @@
   },
   "staticMountInputReview": {
     "section": 44,
-    "status": "PREPARED_NOT_AUTHORIZED",
+    "status": "AUTHORIZED_AWAITING_OPERATOR_EXECUTION",
     "sourceCommit": "7b084e207f882168b11137f27d9647fa0d35525e",
     "wrapper": "docs/handoffs/commands/OUF_VERIFY_MOUNT_INPUTS_2026-10-05.sh",
     "wrapperSha256": "d3aa10849587f3c46c6724764b86d2810eae0e01dbb22a245a8947d0b3e98b83",
-    "scopeGranted": false,
+    "scopeGranted": true,
     "executionObserved": false,
     "fixedInputCount": 18,
     "privateTlsKeysReadIfGranted": 2,
@@ -623,8 +623,9 @@
         111636119218
       ],
       "returnedPrWorkflows": 7,
-      "completedSuccess": 5,
-      "inProgress": 2
-    }
+      "completedSuccess": 7,
+      "inProgress": 0
+    },
+    "authorizationReceipt": "docs/handoffs/receipts/SEMANTIC_MOUNT_INPUTS_SCOPE_44_AUTHORIZATION_2026-10-05.json"
   }
 }
