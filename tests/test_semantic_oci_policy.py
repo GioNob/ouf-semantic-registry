@@ -114,6 +114,16 @@ class Policy(unittest.TestCase):
             inputs[1]=copy.deepcopy(inputs[0])
             with self.subTest(kind=kind),self.assertRaises(m.Denied):m.configured_profile(*inputs)
 
+    def test_recursive_readonly_request_still_rejects_rw_and_shared_options(self):
+        inputs=list(fixture());inputs[0]['mounts'][0]['options']=['rbind','rprivate','rro']
+        inputs[1]=copy.deepcopy(inputs[0])
+        result=m.configured_profile(*inputs)
+        self.assertTrue(result['configuredPolicyConforms']);self.assertFalse(result['kernelEnforcementObserved'])
+        for option in ('rw','shared','rshared','slave','rslave'):
+            altered=copy.deepcopy(inputs);altered[0]['mounts'][0]['options'].append(option)
+            altered[1]=copy.deepcopy(altered[0])
+            with self.subTest(option=option),self.assertRaises(m.Denied):m.configured_profile(*altered)
+
     def test_privileged_devices_seccomp_listener_action_and_index_denied(self):
         for kind in ('devices','device','listener','notify','index','errno'):
             inputs=list(fixture());linux=inputs[0]['linux']

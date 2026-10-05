@@ -156,7 +156,11 @@ def configured_profile(bundle,expected,spec,startup,approved_hooks,schema):
     declared={v['target']:v for v in spec['mounts']};require(len(declared)==len(spec['mounts']),'OCI_MOUNT_PROFILE_DRIFT')
     for target,item in declared.items():
         require(item['readOnly'] is True and target in seen,'OCI_MANIFEST_MOUNT_DRIFT');actual=seen[target]
-        require(actual.get('type')=='bind' and actual.get('source')==item['source'] and 'ro' in (actual.get('options') or [])
+        # Moby emits rro when runtime/kernel support recursive read-only binds;
+        # ro is its fallback. Either remains a configured request, not proof
+        # of kernel enforcement (which requires the separate PID observer).
+        require(actual.get('type')=='bind' and actual.get('source')==item['source']
+            and bool(set(actual.get('options') or [])&{'ro','rro'})
             and not set(actual.get('options') or [])&{'rw','shared','rshared','slave','rslave'},'OCI_MANIFEST_MOUNT_DRIFT')
     kernel={'/proc','/dev','/dev/pts','/dev/shm','/dev/mqueue','/sys','/sys/fs/cgroup','/etc/hosts','/etc/hostname','/etc/resolv.conf'}
     require(not set(seen)-set(declared)-kernel,'OCI_UNDECLARED_MOUNT_DENIED')
