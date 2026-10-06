@@ -279,7 +279,7 @@
       }
     ],
     "sourcePreparation": "upstream mirror-tarballs; HTTPS downloads locked by SHA256; documentation generation omitted; deterministic tar/gzip",
-    "vendorPatchSha256": "221247ef983ea2d5ed357f55c4afe416ae50579308c8ba5a95195047a4dc0d50"
+    "vendorPatchSha256": "c9125bdb0617eb5002c74c590e22eda54e2c754be7f8c1e2a8382193345f2bbf"
   },
   "modules": [
     {
