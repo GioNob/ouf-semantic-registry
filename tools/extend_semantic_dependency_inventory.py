@@ -157,12 +157,12 @@ def add_brotli(document, rows):
                 versionEvidence='Identical constant-return encoder/decoder ELF accessors, read without execution',
                 installedFileSha256={p:r['sha256'] for p,r in files.items()}, upstreamSourceProvenanceAccepted=False)
 
-def extend(original, sources, rows):
+def extend(original, sources, rows, configure):
     document = copy.deepcopy(original)
     elf = rows[NGINX]['raw']
-    candidates = [s.decode() for s in elf.split(b'\x00') if s.startswith(b'--prefix=') and b'--add-module=' in s]
-    require(len(candidates) == 1)
-    static = review(candidates[0], elf, sources, document)
+    # Nginx may concatenate its display label with NGX_CONFIGURE in the ELF.
+    # Reuse the recorded line only after requiring the exact bytes in the ELF.
+    static = review(configure, elf, sources, document)
     additions = []
     for row in static['modules']:
         directory = row['directory']; version = directory.split('-', 1)[1]
@@ -305,7 +305,10 @@ def main():
             original = json.loads(read('native/southbound.native.syft.json' if role == 'southbound' else 'sbom/adapter.syft.json'))
             document = copy.deepcopy(original); details = {}
             if role == 'southbound':
-                document, details = extend(original, json.loads(sources_raw), rows)
+                lines = read('native-runtime-link-proof.txt').decode().splitlines()
+                arguments = [line[len('configure arguments: '):] for line in lines if line.startswith('configure arguments: ')]
+                require(len(arguments) == 1)
+                document, details = extend(original, json.loads(sources_raw), rows, arguments[0])
                 details['luaRocks'] = rock_bindings(document, rows)
                 details['brotli'] = add_brotli(document, rows)
             details['elfOwnership'] = ownership(document, rows)
