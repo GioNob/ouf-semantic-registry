@@ -6,6 +6,8 @@ on:
       - 'Dockerfile.semantic-southbound-source-fixed'
       - 'tests/zlib-source-fixed.APKBUILD'
       - 'tests/build_semantic_native_runtime.py'
+      - 'tests/prepare_semantic_openresty_source.py'
+      - 'tests/semantic-native-api7-1.31.6.patch'
       - 'tests/semantic-native-runtime-sources.json'
       - 'tools/prepare_semantic_image_sbom.py'
       - 'tools/supplement_semantic_rebuilt_native_sbom.py'

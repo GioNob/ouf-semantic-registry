@@ -21,12 +21,8 @@ def main():
     work = Path('/native-source')
     work.mkdir()
     source = lock['openresty']
-    archive = work / 'openresty.tar.gz'
-    run('curl', '--fail', '--silent', '--show-error', '--location', '--proto', '=https',
-        '--tlsv1.2', '--max-time', '120', '--max-filesize', '16777216', source['url'],
-        '--output', str(archive))
-    assert hashlib.sha256(archive.read_bytes()).hexdigest() == source['sha256']
-    run('tar', 'xzf', str(archive), '-C', str(work))
+    from prepare_semantic_openresty_source import prepare
+    archive = prepare(work, source)
     source_files = {'openrestyArchiveSha256': source['sha256'], 'modules': []}
     for module in lock['modules']:
         target = work / module['directory']
@@ -42,8 +38,9 @@ def main():
                  for p in sorted(target.rglob('*')) if p.is_file()}
         source_files['modules'].append(dict(module, files=files))
     resty = work / ('openresty-' + source['version'])
-    run('./patch.sh', str(resty), cwd=work / 'ngx_multi_upstream_module-1.3.3')
-    run('./patch.sh', str(resty), cwd=work / 'apisix-nginx-module-1.19.9/patch')
+    patch = Path('/tmp/native-api7.patch')
+    assert hashlib.sha256(patch.read_bytes()).hexdigest() == source['vendorPatchSha256']
+    run('patch', '--batch', '--fuzz=0', '-p1', '-i', str(patch), cwd=resty)
     limit = resty / 'bundle/lua-resty-limit-traffic-0.09'
     assert limit.is_dir()
     shutil.rmtree(limit)

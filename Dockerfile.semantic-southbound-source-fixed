@@ -59,6 +59,8 @@ COPY --from=source-fixed-runtime /usr/local/openresty/openssl3/ /usr/local/openr
 COPY --from=source-fixed-runtime /usr/local/openresty/zlib/ /usr/local/openresty/zlib/
 COPY tests/semantic-native-runtime-sources.json /tmp/native-sources.json
 COPY tests/build_semantic_native_runtime.py /tmp/build-native-runtime.py
+COPY tests/prepare_semantic_openresty_source.py /tmp/prepare_semantic_openresty_source.py
+COPY tests/semantic-native-api7-1.31.6.patch /tmp/native-api7.patch
 RUN python3 -B /tmp/build-native-runtime.py
 FROM source-fixed-runtime
 USER 0:0
@@ -71,7 +73,7 @@ RUN set -eu; /usr/local/openresty/nginx/sbin/nginx -V > /usr/local/share/ouf/nat
     test ! -e /usr/local/openresty/wasmtime-c-api; \
     ! grep -E "wasmtime|wasm-nginx-module" /usr/local/share/ouf/native-runtime-link-proof.txt
 LABEL ouf.native.runtime.wasm=omitted-ci-candidate \
-      ouf.native.runtime.openresty=1.29.2.4 \
-      ouf.native.runtime.source.sha256=39bdac218249b7917464e6159acffef25a320ae89adaeb23514f078f473497bd
+      ouf.native.runtime.openresty=1.31.6.1 \
+      ouf.native.runtime.source.sha256=2e7e8a432fc4303833a1860f07620d989cab7024a326e0b5fdc93e2243ea84d0
 ARG RUNTIME_USER
 USER ${RUNTIME_USER}

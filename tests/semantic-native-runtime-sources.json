@@ -1,8 +1,285 @@
 {
   "openresty": {
-    "version": "1.29.2.4",
-    "url": "https://openresty.org/download/openresty-1.29.2.4.tar.gz",
-    "sha256": "39bdac218249b7917464e6159acffef25a320ae89adaeb23514f078f473497bd"
+    "version": "1.31.6.1",
+    "repository": "openresty/openresty",
+    "commit": "bc8bf89488f2d02572389158533b3f85ca0ded7f",
+    "releaseStatus": "unreleased upstream source snapshot; CI candidate only",
+    "sha256": "2e7e8a432fc4303833a1860f07620d989cab7024a326e0b5fdc93e2243ea84d0",
+    "mirrorScriptGitBlob": "f775b0a627a7d30d5a940250869510043041c2f9",
+    "archives": [
+      {
+        "url": "https://github.com/openresty/luajit2/archive/v2.1-20260824.tar.gz",
+        "file": "LuaJIT-2.1-20260824.tar.gz",
+        "sha256": "d73577495b63373079fe65e89613aee383db4369c22cf5b88a20a57be3d9f33a",
+        "bytes": 1184254
+      },
+      {
+        "url": "https://github.com/openresty/array-var-nginx-module/tarball/v0.06",
+        "file": "array-var-nginx-module-0.06.tar.gz",
+        "sha256": "6bde636cb9e8506a542c8f507601a63b5ea9ddd957c50ce805d5714235f82c9c",
+        "bytes": 12002
+      },
+      {
+        "url": "https://github.com/openresty/drizzle-nginx-module/tarball/v0.1.14",
+        "file": "drizzle-nginx-module-0.1.14.tar.gz",
+        "sha256": "c37e8e46d2ac20709f8ab49a7a28401ca9d4b464ecfd4c39ff085469c49141da",
+        "bytes": 52141
+      },
+      {
+        "url": "https://github.com/openresty/echo-nginx-module/tarball/v0.65",
+        "file": "echo-nginx-module-0.65.tar.gz",
+        "sha256": "66d007307a3fd7493a01905afd5d7676741be8a72f674ff30a9f137d7a4c9a43",
+        "bytes": 53601
+      },
+      {
+        "url": "https://github.com/openresty/encrypted-session-nginx-module/tarball/v0.10",
+        "file": "encrypted-session-nginx-module-0.10.tar.gz",
+        "sha256": "55128933287152947a0fe590bafba98a7774512ae82271bc7a38a465cf988ea6",
+        "bytes": 11867
+      },
+      {
+        "url": "https://github.com/calio/form-input-nginx-module/tarball/v0.12",
+        "file": "form-input-nginx-module-0.12.tar.gz",
+        "sha256": "1eba7d1d5858601ff1b7f406d99c15d3e3bcba118a31fb3339288e6b0dd50c2e",
+        "bytes": 11101
+      },
+      {
+        "url": "https://github.com/openresty/headers-more-nginx-module/tarball/v0.40",
+        "file": "headers-more-nginx-module-0.40.tar.gz",
+        "sha256": "87161ae898add9c5b61639a3822edea664f519ee093e83b62b36cbc0870c96a1",
+        "bytes": 29953
+      },
+      {
+        "url": "https://github.com/calio/iconv-nginx-module/tarball/v0.14",
+        "file": "iconv-nginx-module-0.14.tar.gz",
+        "sha256": "07a27dc8b7064bc356879898464fb9516c3e995fbfe9655b20f5047810df4674",
+        "bytes": 13135
+      },
+      {
+        "url": "https://github.com/openresty/lua-cjson/archive/2.1.0.19.tar.gz",
+        "file": "lua-cjson-2.1.0.19.tar.gz",
+        "sha256": "d1aded44b4cfe5ec6b395e178902aba3eed1dbe7999a753c0662222de2890ec0",
+        "bytes": 105159
+      },
+      {
+        "url": "https://github.com/openresty/lua-nginx-module/archive/v0.10.32rc5.tar.gz",
+        "file": "lua-nginx-module-0.10.32rc5.tar.gz",
+        "sha256": "f298a5a6daba979a39b445f59d92ee75ec06436cf271e7f005c446912cc596df",
+        "bytes": 927513
+      },
+      {
+        "url": "https://github.com/openresty/lua-rds-parser/tarball/v0.06",
+        "file": "lua-rds-parser-0.06.tar.gz",
+        "sha256": "de52eb79fa4f2cbf252dcabaae553ba9c27f92572eee065421153b3974ec1e1e",
+        "bytes": 8546
+      },
+      {
+        "url": "https://github.com/openresty/lua-redis-parser/archive/v0.13.tar.gz",
+        "file": "lua-redis-parser-0.13.tar.gz",
+        "sha256": "19414da5d00ec56378411c6a8322d50d55b3ff57a92ea1298439f487f283c07b",
+        "bytes": 10702
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-core/tarball/v0.1.35rc1",
+        "file": "lua-resty-core-0.1.35rc1.tar.gz",
+        "sha256": "772d2b7537163d30ed0f93ff462e79d784c8c75f5d5a0b190fc97459fd544c7b",
+        "bytes": 262583
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-dns/tarball/v0.23",
+        "file": "lua-resty-dns-0.23.tar.gz",
+        "sha256": "d9b3c58cc98e6125a57fdf828aac148ae360bd389c737f1d81ce2fdd692ec9f0",
+        "bytes": 20791
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-limit-traffic/tarball/v0.09",
+        "file": "lua-resty-limit-traffic-0.09.tar.gz",
+        "sha256": "6b6dab65f7cfc3a6bbdc7701597716d252c1babbc6b0bebffb622e8f43ff9174",
+        "bytes": 18641
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-lock/tarball/v0.09",
+        "file": "lua-resty-lock-0.09.tar.gz",
+        "sha256": "6aebf4412639a84eedc8b140aa48e065d625453859699a6712a62fa8085f2704",
+        "bytes": 10118
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-lrucache/tarball/v0.15",
+        "file": "lua-resty-lrucache-0.15.tar.gz",
+        "sha256": "adcbb1a95cc2ba2a484351bd1116619a4fb42f0856da220d2897876d472c6ce1",
+        "bytes": 17822
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-memcached/tarball/v0.18",
+        "file": "lua-resty-memcached-0.18.tar.gz",
+        "sha256": "60e21c167e8f935421c67546f6012ba5bbfed76f3520cf249eca78c35e25956e",
+        "bytes": 21351
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-mysql/tarball/v0.31",
+        "file": "lua-resty-mysql-0.31.tar.gz",
+        "sha256": "caa27d08d14f6fe4c07c4381c2fc7d68ed2e824395c58a61f1da486458fb63c0",
+        "bytes": 135272
+      },
+      {
+        "url": "https://github.com/fffonion/lua-resty-openssl/archive/refs/tags/1.9.0.tar.gz",
+        "file": "lua-resty-openssl-1.9.0.tar.gz",
+        "sha256": "d074ac5e6a2bc9c1bd57786b8d5784b6d13681d2fdc4dd7b215eb20f0bd6189c",
+        "bytes": 219333
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-redis/tarball/v0.33",
+        "file": "lua-resty-redis-0.33.tar.gz",
+        "sha256": "70accaf2d0f95ba0b120574cb176e67f850fafe579a6f146330f2512cfbbb493",
+        "bytes": 24759
+      },
+      {
+        "url": "https://github.com/spacewander/lua-resty-rsa/archive/refs/tags/v1.1.1.tar.gz",
+        "file": "lua-resty-rsa-1.1.1.tar.gz",
+        "sha256": "b27fc4abc510c587a93c377abbeedda8da0a7dcc887d480fcc5e0c3cdf505d6d",
+        "bytes": 89004
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-shell/tarball/v0.03",
+        "file": "lua-resty-shell-0.03.tar.gz",
+        "sha256": "34135c8c46c924716781672b62701af78c60a2a07a248ca810ff7e98a9a845f6",
+        "bytes": 5964
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-signal/tarball/v0.05",
+        "file": "lua-resty-signal-0.05.tar.gz",
+        "sha256": "98b37ad880199afd2fbdc95423081bfc318b1c235a06d0348165aca845ba656c",
+        "bytes": 6537
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-string/tarball/v0.19",
+        "file": "lua-resty-string-0.19.tar.gz",
+        "sha256": "ef38449665b1e4a0129201e2e0f19b7074204aba09ba3e7c747da8d112d4f273",
+        "bytes": 13576
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-upload/tarball/v0.11",
+        "file": "lua-resty-upload-0.11.tar.gz",
+        "sha256": "c7e94aefd32ed04068642fd5da2dcc41aa41a63a8dfac6d73b203bc73f1a3232",
+        "bytes": 9557
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-upstream-healthcheck/tarball/v0.10",
+        "file": "lua-resty-upstream-healthcheck-0.10.tar.gz",
+        "sha256": "8ca12155d0819929f946e9e75f4040b0ee8e7a0266ab8f324c0e7ea2888304d1",
+        "bytes": 18259
+      },
+      {
+        "url": "https://github.com/openresty/lua-resty-websocket/tarball/v0.14",
+        "file": "lua-resty-websocket-0.14.tar.gz",
+        "sha256": "c61bf4aa31310b5da56dd3494bf85b63da290dc8ff5a08bc7d32e27e4d773f1d",
+        "bytes": 31692
+      },
+      {
+        "url": "https://github.com/openresty/lua-tablepool/tarball/v0.03",
+        "file": "lua-tablepool-0.03.tar.gz",
+        "sha256": "9d618b937b95282760f2f0d09d271f41ceefbb50716044dd7fc9ec35fcae8cc8",
+        "bytes": 4996
+      },
+      {
+        "url": "https://github.com/openresty/lua-upstream-nginx-module/tarball/v0.08",
+        "file": "lua-upstream-nginx-module-0.08.tar.gz",
+        "sha256": "26f71fc96e64aa49e100f3c3032590601ad220f090f5e9bb874d4730e856592a",
+        "bytes": 12911
+      },
+      {
+        "url": "https://github.com/openresty/memc-nginx-module/tarball/v0.21",
+        "file": "memc-nginx-module-0.21.tar.gz",
+        "sha256": "0e984ff144fd049a466289932a93286ff36823f44e2d19e5b5c5ac1772de0af5",
+        "bytes": 34788
+      },
+      {
+        "url": "https://openresty.org/download/nginx-1.31.6.tar.gz",
+        "file": "nginx-1.31.6.tar.gz",
+        "sha256": "71f36987d3a8267ca596a725f5061fe5db4bf2cbf89971ea55001719a19b48fe",
+        "bytes": 1378756
+      },
+      {
+        "url": "https://github.com/FRiCKLE/ngx_coolkit/tarball/0.2",
+        "file": "ngx_coolkit-0.2.tar.gz",
+        "sha256": "74de6a6781a7d77cb6ac272d1651a9948c27fb3f2d0915580ea650b5db547d2b",
+        "bytes": 7541
+      },
+      {
+        "url": "https://github.com/openresty/ngx_devel_kit/tarball/v0.3.5",
+        "file": "ngx_devel_kit-0.3.5.tar.gz",
+        "sha256": "e73e8cc10758d794639683afb01747d99e348bddbaa09d1c2cd146166065f3de",
+        "bytes": 66560
+      },
+      {
+        "url": "https://github.com/openresty/ngx_postgres/tarball/1.1",
+        "file": "ngx_postgres-1.1.tar.gz",
+        "sha256": "7611f66063978765601e0bb806b462a866d318a6546b22095fd957927031cef3",
+        "bytes": 41773
+      },
+      {
+        "url": "https://github.com/openresty/opm/tarball/v0.0.10",
+        "file": "opm-0.0.10.tar.gz",
+        "sha256": "d68974e11967e51639fd48ebeabe7c73a30b9594fdb645b4fba538cf61043f3f",
+        "bytes": 308130
+      },
+      {
+        "url": "https://github.com/openresty/rds-csv-nginx-module/tarball/v0.10",
+        "file": "rds-csv-nginx-module-0.10.tar.gz",
+        "sha256": "079d790a8f424ad743f4b5d1f8e8150c6f2c54368ec878307461066d4b8bc0ca",
+        "bytes": 20612
+      },
+      {
+        "url": "https://github.com/openresty/rds-json-nginx-module/tarball/v0.17",
+        "file": "rds-json-nginx-module-0.17.tar.gz",
+        "sha256": "a8c7654e899cf312f58ebdcc0b3043be792cfdd51d6225df283f97c62caf99d8",
+        "bytes": 35778
+      },
+      {
+        "url": "https://github.com/openresty/ngx_http_redis/archive/refs/tags/v0.41.tar.gz",
+        "file": "redis-nginx-module-0.41.tar.gz",
+        "sha256": "7d58d6f97c26fcac99795afdbb2f4d984da78a6699001fcaa222a237e28b89fa",
+        "bytes": 13380
+      },
+      {
+        "url": "https://github.com/openresty/redis2-nginx-module/tarball/v0.15",
+        "file": "redis2-nginx-module-0.15.tar.gz",
+        "sha256": "6b2fcc6b54f6e5814a8dd55e010ca567ed61c526a2b80ecc6529f98953d70ec9",
+        "bytes": 25461
+      },
+      {
+        "url": "https://github.com/openresty/resty-cli/tarball/v0.36",
+        "file": "resty-cli-0.36.tar.gz",
+        "sha256": "5cc175ab8824e5dd5a943c918db11b2f1a0b678d28a2de460dc6e871ee79aeb4",
+        "bytes": 32487
+      },
+      {
+        "url": "https://github.com/openresty/set-misc-nginx-module/tarball/v0.34",
+        "file": "set-misc-nginx-module-0.34.tar.gz",
+        "sha256": "5f36b8c0bfb3b8ca57c04620a099e87d4127128283ab6a777bed1cff99bd6a70",
+        "bytes": 30245
+      },
+      {
+        "url": "https://github.com/openresty/srcache-nginx-module/tarball/v0.34",
+        "file": "srcache-nginx-module-0.34.tar.gz",
+        "sha256": "7ac91d7d8d3ad8e6f00012a6c7baf534d370517927f990b9d75fa4133cf5bf97",
+        "bytes": 51796
+      },
+      {
+        "url": "https://github.com/openresty/stream-lua-nginx-module/tarball/v0.0.20rc3",
+        "file": "stream-lua-nginx-module-0.0.20rc3.tar.gz",
+        "sha256": "e64da2df4a304aa0be8e28ecdb93291ceceb5f55e133cc7ed4435a3c10749f5d",
+        "bytes": 373152
+      },
+      {
+        "url": "https://github.com/openresty/xss-nginx-module/tarball/v0.07",
+        "file": "xss-nginx-module-0.07.tar.gz",
+        "sha256": "90ae27ff0a9e84b7e12d0b6f822b4ba39781fc5fd0406e2b7cbb02e9b218c565",
+        "bytes": 12925
+      }
+    ],
+    "sourcePreparation": "upstream mirror-tarballs; HTTPS downloads locked by SHA256; documentation generation omitted; deterministic tar/gzip",
+    "vendorPatchSha256": "221247ef983ea2d5ed357f55c4afe416ae50579308c8ba5a95195047a4dc0d50"
   },
   "modules": [
     {

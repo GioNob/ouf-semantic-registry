@@ -22,11 +22,11 @@ def supplement(original, rows, sources, binaries, lock):
         ('openssl', '3.4.8', 'openssl', 'openssl', 'openssl3/', None),
         ('zlib', '1.3.2.1-motley', 'zlib', 'zlib', 'zlib/', None),
         ('pcre', '8.45', 'pcre', 'pcre', 'pcre/', None),
-        ('luajit', '2.1-20260415', 'luajit', 'luajit', 'luajit/', 'LuaJIT-2.1-20260415'),
-        ('lua-cjson', '2.1.0.17', None, None, 'lualib/cjson.so', 'lua-cjson-2.1.0.17'),
-        ('lua-resty-signal', '0.04', None, None, 'lualib/librestysignal.so', 'lua-resty-signal-0.04'),
+        ('luajit', '2.1-20260824', 'luajit', 'luajit', 'luajit/', 'LuaJIT-2.1-20260824'),
+        ('lua-cjson', '2.1.0.19', None, None, 'lualib/cjson.so', 'lua-cjson-2.1.0.19'),
+        ('lua-resty-signal', '0.05', None, None, 'lualib/librestysignal.so', 'lua-resty-signal-0.05'),
         ('lua-redis-parser', '0.13', None, None, 'lualib/redis/parser.so', 'lua-redis-parser-0.13'),
-        ('openresty', '1.29.2.4', 'openresty', 'openresty', 'nginx/sbin/nginx', 'nginx-1.29.2'),
+        ('openresty', '1.31.6.1', 'openresty', 'openresty', 'nginx/sbin/nginx', 'nginx-1.31.6'),
     ]
     result = copy.deepcopy(original)
     proof = []
@@ -62,7 +62,7 @@ def supplement(original, rows, sources, binaries, lock):
             'cpes': [], 'purl': 'pkg:github/' + module['repository'] + '@' + module['commit'],
             'metadataType': '', 'metadata': None})
     return result, {'nativeComponents': proof, 'nativeElfFilesIdentified': len(actual),
-        'unresolvedNativeElfFiles': [], 'sourceClosureRecorded': True, 'wasmCompiled': False,
+        'nativeIdentityScope': '/' + ROOT, 'unresolvedNativeElfFiles': [], 'sourceClosureRecorded': True, 'wasmCompiled': False,
         'nativeVulnerabilityReviewComplete': False, 'dependencyCoverageAccepted': False,
         'publisherTrustAccepted': False, 'acceptanceGranted': False, 'startAuthorized': False}
 
