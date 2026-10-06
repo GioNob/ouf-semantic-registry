@@ -65,9 +65,10 @@ RUN rm -rf /usr/local/openresty
 COPY --from=native-build /usr/local/openresty/ /usr/local/openresty/
 COPY --from=native-build /usr/local/share/ouf/native-runtime-sources.json /usr/local/share/ouf/
 COPY --from=native-build /usr/local/share/ouf/native-runtime-binaries.json /usr/local/share/ouf/
-RUN set -eu; /usr/local/openresty/nginx/sbin/nginx -V 2>&1; \
+RUN set -eu; /usr/local/openresty/nginx/sbin/nginx -V > /usr/local/share/ouf/native-runtime-link-proof.txt 2>&1; \
+    ldd /usr/local/openresty/nginx/sbin/nginx >> /usr/local/share/ouf/native-runtime-link-proof.txt; \
     test ! -e /usr/local/openresty/wasmtime-c-api; \
-    ! ldd /usr/local/openresty/nginx/sbin/nginx | grep wasmtime
+    ! grep -E "wasmtime|wasm-nginx-module" /usr/local/share/ouf/native-runtime-link-proof.txt
 LABEL ouf.native.runtime.wasm=omitted-ci-candidate \
       ouf.native.runtime.openresty=1.29.2.4 \
       ouf.native.runtime.source.sha256=39bdac218249b7917464e6159acffef25a320ae89adaeb23514f078f473497bd
