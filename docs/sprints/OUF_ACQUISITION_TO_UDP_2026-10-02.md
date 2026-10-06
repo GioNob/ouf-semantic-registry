@@ -1,3 +1,20 @@
+## Gate 49 — report recuperati, soglia vulnerabilità non soddisfatta
+
+Diagnostica eseguita dall'operatore il 6 ottobre 2026 alle 06:35:06 Europe/Rome. Entrambi i report e la receipt finale esistono, sono leggibili con permessi attesi e hash stabili. I cinque input del gate 48 e l'archivio database coincidono con gli hash fissati; scanner/versione, database e binding dei due report coincidono con i valori attesi. Nessun alert o match ignorato, nessuna severity fuori formato.
+
+| Immagine | Critical | High | Unknown |
+| --- | ---: | ---: | ---: |
+| adapter | 0 | 56 | 0 |
+| southbound | 10 | 80 | 16 |
+
+Sono conteggi di match, non CVE uniche. La soglia del reviewer (zero High, Critical e Unknown e nessun alert) è falsa per entrambe le immagini. È un impedimento concreto all'accettazione. La diagnostica non ha esposto il valore del campo threshold della receipt, soltanto il suo tipo valido.
+
+**Causa del BLOCKED originario ancora sconosciuta.** Il wrapper stampa SCAN_COMPLETED anche se la soglia è falsa; BLOCKED indica un'eccezione. La presenza della receipt è compatibile con una review arrivata alla scrittura finale, senza provare l'esito del processo né spiegare stdout perduto. Non confondere vulnerabilità accertate e causa dell'eccezione.
+
+Evidenza redatta: `docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_DIAGNOSTIC_2026-10-06_OPERATOR.json`. Receipt privata SHA256 `138661f09fe4757978f602fc3726c7a2e2d78d49782b07ea09cdffc44f5de704`. Prossimo passo: leggerne solo decisioni e identificativi pubblici degli avvisi High/Critical, legando la lettura a questo hash, poi individuare dipendenze/base image da correggere. Non rilanciare Grype sulle stesse immagini per riprodurre gli stessi conteggi. Nuove immagini richiederanno nuovi binding e verifica supply chain; il PASS storico del gate 48 resta valido per i suoi digest.
+
+Nessuno start, firma, runtime registration o acceptance conferito. Questa evidenza prevale sulle istruzioni diagnostiche pendenti sotto riportate.
+
 ## Gate 49 BLOCKED — recupero diagnostico pronto
 
 Il 6 ottobre 2026 alle 06:26:49 Europe/Rome l'operatore riferisce BLOCKED dal comando 49 autorizzato, senza output conservato. Causa e ultimo stadio restano sconosciuti. Ultimo PASS sulla VPS: gate 48. Conservare gli artefatti; non ripetere la scansione né creare una nuova root prima della riconciliazione. Le 14 prove CI del reviewer restano valide per il software, senza sostituire l'esito VPS.
