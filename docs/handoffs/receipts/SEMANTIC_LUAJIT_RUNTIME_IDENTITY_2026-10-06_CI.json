@@ -376,7 +376,13 @@
   "runtimeRegistered": false,
   "startAuthorized": false,
   "databaseFreshnessEnds": "2026-10-07T08:45:38+02:00",
-  "nextAction": "Inspect existing GitHub CLI availability/version on target, then verify retained signed evidence with pinned producer identity; preserve original byte receipt and use a separate crypto receipt. No image import/start.",
+  "nextAction": "Complete runtime dependency/source coverage comparison and digest-consistent staging design before image import; no existing gateway/candidate replacement.",
   "targetEvidenceSnapshotCreated": true,
-  "targetRuntimeModified": false
+  "targetRuntimeModified": false,
+  "targetCryptoVerification": {
+    "verified": true,
+    "evidenceSource": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_TARGET_CRYPTO_2026-10-06_OPERATOR.json",
+    "reportDirectory": "/home/oufadmin/ouf-crypto-v2.zjJNdo",
+    "githubCliVersion": "2.102.0"
+  }
 }
