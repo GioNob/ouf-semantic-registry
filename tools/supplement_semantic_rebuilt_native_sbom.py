@@ -40,7 +40,7 @@ def supplement(original, rows, sources, binaries, lock):
         if component == 'openssl':
             require(any(b'OpenSSL 3.4.8' in r.get('raw', b'') for p, r in rows.items() if p.startswith(ROOT + path)))
         if component == 'zlib':
-            require(any(b'1.3.2.1-motley\x00' in r.get('raw', b'') for p, r in rows.items() if p.startswith(ROOT + path)))
+            require(all(b'1.3.2.1-motley\x00' in rows[p[1:]]['raw'] for p in matches))
         if component == 'pcre':
             require(any(b'8.45 2021-06-15\x00' in r.get('raw', b'') for p, r in rows.items() if p.startswith(ROOT + path)))
         identifier = sha(('ouf-source-native:' + component + ':' + json.dumps(matches, sort_keys=True)).encode())[:16]

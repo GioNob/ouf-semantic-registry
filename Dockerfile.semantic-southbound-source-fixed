@@ -54,6 +54,7 @@ USER ${RUNTIME_USER}
 # Explicit CI candidate: recompile the native runtime, omitting optional WASM.
 FROM build AS native-build
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git python3 libreadline-dev
+RUN rm -rf /usr/local/openresty/openssl3 /usr/local/openresty/zlib
 COPY --from=source-fixed-runtime /usr/local/openresty/openssl3/ /usr/local/openresty/openssl3/
 COPY --from=source-fixed-runtime /usr/local/openresty/zlib/ /usr/local/openresty/zlib/
 COPY tests/semantic-native-runtime-sources.json /tmp/native-sources.json
