@@ -4,7 +4,7 @@ from pathlib import Path
 
 CANDIDATES={'alpine-ubuntu':('python:3.13-alpine','apache/apisix:3.18.0-ubuntu'),
             'slim-debian':('python:3.13-slim','apache/apisix:3.18.0-debian')}
-def run(args,**kwargs):return subprocess.run(args,check=True,timeout=kwargs.pop('timeout',240),**kwargs)
+def run(args,**kwargs):return subprocess.run(args,check=kwargs.pop('check',True),timeout=kwargs.pop('timeout',240),**kwargs)
 def inspect(reference):
     return json.loads(subprocess.check_output(['docker','image','inspect',reference],text=True,timeout=20))[0]
 def main():
@@ -30,7 +30,10 @@ def main():
     assert adapter['tlsAdmissionProven'] is True and southbound['tlsOidcNegativeBoundariesProven'] is True
     (out/'compatibility.json').write_text(json.dumps({'adapter':adapter,'southbound':southbound},indent=2,sort_keys=True)+'\n')
     result=run(['sudo','/usr/bin/python3','-B',str(semantic/'tests/scan_semantic_image_remediation.py'),
-        '--adapter',adapter['imageId'],'--southbound',southbound['imageId']],capture_output=True,text=True,timeout=900)
+        '--adapter',adapter['imageId'],'--southbound',southbound['imageId']],capture_output=True,text=True,timeout=900,check=False)
+    if result.returncode:
+        print(result.stderr[-12000:],file=sys.stderr)
+        raise RuntimeError('CI_OFFLINE_SCAN_FAILED')
     receipt=json.loads(result.stdout);assert receipt['schema']=='ouf.semantic-image-remediation-experiment.v1'
     receipt.update(candidate=a.candidate,inputs=locks,gatewayCodeCommit=adapter['sourceRevision'],compatibilityProven=True)
     (out/'receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n')

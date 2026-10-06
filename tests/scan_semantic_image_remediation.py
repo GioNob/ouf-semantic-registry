@@ -15,6 +15,7 @@ def main():
     pin=sbom.decode((scanner_root/'database-pin.json').read_bytes());grype.database_pin(pin)
     docker=Path('/usr/bin/docker');unshare=Path('/usr/bin/unshare')
     tool_hashes={p:archive.command_snapshot(p) for p in (docker,unshare,syft,grype_bin)}
+    print('CI_SCAN_STAGE=ARCHIVE_BINDING',file=sys.stderr)
     rows=[]
     for role,image in (('adapter',a.adapter),('southbound',a.southbound)):
         path=base/(role+'.probe.tar')
@@ -24,9 +25,11 @@ def main():
             verified=archive.archive_verify(stream,image,archive.Budget(180,8589934592,100000))
         rows.append({'role':role,**{k:verified[k] for k in ('imageId','configByteSha256','rootfsDescriptorsHash')}})
     prepared=base/'sbom';prepared.mkdir(mode=0o700)
+    print('CI_SCAN_STAGE=SBOM_PREPARATION',file=sys.stderr)
     result=sbom.prepare(prepared,rows,docker,tool_hashes[docker],syft,tool_hashes[syft],unshare,tool_hashes[unshare])
     expected=result['images'];receipt_hash=hashlib.sha256((prepared/'receipt.json').read_bytes()).hexdigest()
     reviewed=base/'review';reviewed.mkdir(mode=0o700)
+    print('CI_SCAN_STAGE=VULNERABILITY_REVIEW',file=sys.stderr)
     result=grype.review(reviewed,prepared,expected,receipt_hash,pin,db,grype_bin,tool_hashes[grype_bin],unshare,tool_hashes[unshare])
     result['schema']='ouf.semantic-image-remediation-experiment.v1'
     result['imageArchivesVerified']=True
