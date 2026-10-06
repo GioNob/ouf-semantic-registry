@@ -1,0 +1,40 @@
+name: Semantic image remediation experiment
+on:
+  pull_request:
+    paths:
+      - 'tests/run_semantic_image_remediation.py'
+      - 'tests/scan_semantic_image_remediation.py'
+      - '.github/workflows/semantic-image-remediation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compatible-image-scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        candidate: [alpine-ubuntu, slim-debian]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: GioNob/ouf-api-gateway
+          ref: 7d5b4f58783ccca15c19dfb9c0d409b39566258e
+          path: .pairwise/gateway
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install -r .pairwise/gateway/requirements-dev.txt
+      - name: Prepare hash-pinned Syft, Grype and exact fresh DB
+        run: sudo /usr/bin/python3 -B tests/prepare_native_vulnerability_scanners.py
+      - name: Real compatibility, verified archive, offline SBOM and vulnerability review
+        run: python3 -B tests/run_semantic_image_remediation.py --candidate ${{ matrix.candidate }} --gateway .pairwise/gateway
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: image-remediation-${{ matrix.candidate }}-${{ github.run_id }}
+          path: generated/${{ matrix.candidate }}/
+          if-no-files-found: warn
+          retention-days: 30
