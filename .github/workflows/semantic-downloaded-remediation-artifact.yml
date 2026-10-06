@@ -1,0 +1,29 @@
+name: Semantic downloaded remediation artifact qualification
+on:
+  pull_request:
+    paths:
+      - 'tests/qualify_semantic_downloaded_remediation_artifact.py'
+      - 'tests/semantic-downloaded-remediation-artifact.json'
+      - '.github/workflows/semantic-downloaded-remediation-artifact.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  attestations: read
+jobs:
+  exact-downloaded-artifact:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Independently verify signatures and byte-qualify the exact downloadable ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -B tests/qualify_semantic_downloaded_remediation_artifact.py --lock tests/semantic-downloaded-remediation-artifact.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: downloaded-v2-artifact-qualification-${{ github.run_id }}
+          path: generated/downloaded-v2-artifact-qualification.json
+          if-no-files-found: warn
+          retention-days: 30

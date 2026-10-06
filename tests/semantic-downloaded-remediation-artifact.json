@@ -1,0 +1,11 @@
+{
+  "schema": "ouf.semantic-immutable-remediation-artifact.v1",
+  "artifactId": 11406755583,
+  "artifactBytes": 230675888,
+  "artifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+  "sourceRun": 37448782226,
+  "sourceCodeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
+  "sourceMergeCommit": "0a1b4460c52c74cefe806286f043f71cbf5a5647",
+  "qualifierSourceCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
+  "qualifierSha256": "f9634d518f6812a33953cf64f25a6217a9438d813379823cb69ffb39d697bc58"
+}
