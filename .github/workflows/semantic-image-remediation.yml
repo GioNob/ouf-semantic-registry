@@ -75,6 +75,16 @@ jobs:
           gh attestation verify generated/${{ matrix.candidate }}/southbound.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$PROVENANCE_BUNDLE" --format json > generated/${{ matrix.candidate }}/attestations/southbound-verification.json
           gh attestation verify generated/${{ matrix.candidate }}/adapter.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$ADAPTER_SBOM_BUNDLE" --predicate-type https://spdx.dev/Document --format json > generated/${{ matrix.candidate }}/attestations/adapter-sbom-verification.json
           gh attestation verify generated/${{ matrix.candidate }}/southbound.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$SOUTHBOUND_SBOM_BUNDLE" --predicate-type https://spdx.dev/Document --format json > generated/${{ matrix.candidate }}/attestations/southbound-sbom-verification.json
+      - name: Preserve separately downloadable evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: image-remediation-evidence-${{ matrix.candidate }}-${{ github.run_id }}
+          path: |
+            generated/${{ matrix.candidate }}/
+            !generated/${{ matrix.candidate }}/*.image.tar.gz
+          if-no-files-found: warn
+          retention-days: 30
       - uses: actions/upload-artifact@v4
         if: always()
         with:
