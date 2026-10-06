@@ -1,0 +1,51 @@
+{
+  "schema": "ouf.luajit-source-reconciliation-lock.v1",
+  "sourceCommit": "fbfc558aacd57a54623df0ced4c31a28f81f8ff2",
+  "sourceVersion": "2.1-20260824",
+  "findings": [
+    {
+      "id": "CVE-2024-25176",
+      "severity": "Critical",
+      "fixCommit": "343ce0edaf3906a62022936175b2f5410024cbfc",
+      "cnaBlob": "dd9cabeb3bf315ebb1578fa0133969f35acabb5f"
+    },
+    {
+      "id": "CVE-2024-25177",
+      "severity": "High",
+      "fixCommit": "85b4fed0b0353dd78c8c875c2f562d522a2b310f",
+      "cnaBlob": "54dd3765c00de7365803c1965dc0cca6823f5f3d"
+    },
+    {
+      "id": "CVE-2024-25178",
+      "severity": "Critical",
+      "fixCommit": "defe61a56751a0db5f00ff3ab7b8f45436ba74c8",
+      "cnaBlob": "a0ccdef41339d0ece390d23340be5ca4d28aaaae"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "src/lj_strfmt_num.c",
+      "blob": "b62bfc3bbbdfed5f2663bc5bc6059a4e21e09705"
+    },
+    {
+      "path": "src/lj_snap.c",
+      "blob": "7611068fa449214b92e20e81179da28aeb04b0cd"
+    },
+    {
+      "path": "src/lj_state.c",
+      "blob": "59391c2fb19a95206c141fbea346861a6520b0db"
+    },
+    {
+      "path": "src/lj_debug.c",
+      "blob": "55c94aa386c1ee2c73fde85ae0864ff9a352f90f"
+    },
+    {
+      "path": "src/lj_err.c",
+      "blob": "4e4163c2efc799e4851943175c63dbde05067f33"
+    },
+    {
+      "path": "src/lj_err.h",
+      "blob": "9b8fc8d214f5fc77ebe7ab7869d78f674ca6a8fc"
+    }
+  ]
+}
