@@ -87,6 +87,20 @@ def main():
         '--shdict','guard 1m','-e',guard_lua],capture_output=True,text=True,timeout=30)
     assert 'SHDICT_KEY_BOUNDARY_PASS' in guard.stdout
     (out/'native-shdict-regression.txt').write_text(guard.stdout)
+    grpc_config = 'server { listen 127.0.0.1:18082; http2 on; location / { ' \
+        'content_by_lua_block { ngx.say("AUTHORITY=" .. ngx.var.host) } } } ' \
+        'server { listen 127.0.0.1:18083; location / { ' \
+        'grpc_set_header :authority ouf-authority.example.invalid; grpc_pass grpc://127.0.0.1:18082; } }'
+    grpc_lua = "local s=ngx.socket.tcp(); s:settimeout(5000); assert(s:connect('127.0.0.1',18083)); " \
+        "assert(s:send('POST /probe HTTP/1.1\\r\\nHost: original.example.invalid\\r\\n" \
+        "Content-Type: application/grpc\\r\\nContent-Length: 0\\r\\nConnection: close\\r\\n\\r\\n')); " \
+        "local body=assert(s:receive('*a')); assert(body:find('AUTHORITY=ouf%-authority%.example%.invalid')); " \
+        "s:close(); print('GRPC_AUTHORITY_PASS')"
+    grpc=run(['docker','run','--rm','--network','none','--user','0:0',
+        '--entrypoint','/usr/local/openresty/bin/resty',southbound['imageId'],
+        '--http-conf',grpc_config,'-e',grpc_lua],capture_output=True,text=True,timeout=30)
+    assert 'GRPC_AUTHORITY_PASS' in grpc.stdout
+    (out/'native-grpc-authority-regression.txt').write_text(grpc.stdout)
     for filename in ('native-runtime-sources.json','native-runtime-binaries.json'):
         payload=run(['docker','run','--rm','--network','none','--user','0:0','--entrypoint','cat',southbound['imageId'],
             '/usr/local/share/ouf/'+filename],capture_output=True,timeout=30)

@@ -43,7 +43,7 @@ def native_evidence(bundle,names,receipt,row,pin,original_syft,image_path):
     sources_raw=small(bundle,names,'native-runtime-sources.json');sources=sbom.decode(sources_raw)
     binaries_raw=small(bundle,names,'native-runtime-binaries.json');binaries=sbom.decode(binaries_raw)
     lock={k:sources[k] for k in ('openresty','modules','wasm','upstreamRecipeReference','api7SharedDictPatch')}
-    require(sha(json.dumps(lock,sort_keys=True,separators=(',',':')).encode())=='aba45d1e2d40565ad6fb6c308e25902490240b33b02ff8682c6273e0f267d0a8')
+    require(sha(json.dumps(lock,sort_keys=True,separators=(',',':')).encode())=='0de8bf3bd4b18cc582fc1645ed53dfaef14d09cee5f35ccf09d055798f2c9f56')
     require(sha(sources_raw)==facts['nativeSourceManifestSha256'] and sha(binaries_raw)==facts['nativeBinaryManifestSha256'])
     require(facts['imageId']==row['imageId'] and facts['imageArchiveSha256']==row['archiveSha256'])
     with gzip.open(image_path,'rb') as incoming:
@@ -58,7 +58,7 @@ def native_evidence(bundle,names,receipt,row,pin,original_syft,image_path):
     expected=dict(row,syftJsonSha256=sha(native_syft));review=grype.summary(report,expected,pin)
     require(review['scannerSeverityThresholdMet'] is True and review['severityCounts']==facts['severityCounts'])
     return ['native/native-coverage.json','native/southbound.native.syft.json','native/southbound.native.grype.json',
-        'native-runtime-sources.json','native-runtime-binaries.json','native-runtime-link-proof.txt','native-shdict-regression.txt']
+        'native-runtime-sources.json','native-runtime-binaries.json','native-runtime-link-proof.txt','native-shdict-regression.txt','native-grpc-authority-regression.txt']
 
 def qualify(source,root,expected_hash,expected_commit):
     require(re.fullmatch('[0-9a-f]{64}',expected_hash) and re.fullmatch('[0-9a-f]{40}',expected_commit))
