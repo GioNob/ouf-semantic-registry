@@ -79,7 +79,7 @@
     "lastPassSection": 48,
     "lastPassRoot": "/etc/ouf/deploy-snapshots/semantic-image-sbom-20261005-v1/prepared",
     "policyPreparationStatus": "PASS",
-    "nextStatus": "GATE49_REPORTS_RECOVERED_VULNERABILITY_REMEDIATION_REQUIRED",
+    "nextStatus": "GATE49_SOURCE_BUILD_REMEDIATION_PENDING_NO_OPERATOR_COMMAND",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Read both existing hash-bound reports once for grouped vulnerable package/version/fix/namespace/matcher facts, then prepare source remediation. No scanner rerun or live gateway upgrade.",
+  "nextTask": "Autonomously prepare compatible alternative image builds in repository; available PCRE2/partial OpenSSL fixes alone cannot close gate49. No additional VPS diagnostic command pending; no repeat scan of current images.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Read both existing hash-bound reports once for grouped vulnerable package/version/fix/namespace/matcher facts, then prepare source remediation. No scanner rerun or live gateway upgrade.",
+  "nextStep": "Autonomously prepare compatible alternative image builds in repository; available PCRE2/partial OpenSSL fixes alone cannot close gate49. No additional VPS diagnostic command pending; no repeat scan of current images.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -1055,7 +1055,7 @@
   },
   "imageVulnerabilityGate": {
     "section": 49,
-    "status": "REPORTS_RECOVERED_SCANNER_SEVERITY_THRESHOLD_NOT_MET",
+    "status": "THRESHOLD_NOT_MET_PACKAGE_ANALYSIS_COMPLETE_BUILD_REMEDIATION_PENDING",
     "sourceCommit": "2c11fd6d37995b09de39f3d48b3f0373644ce7bc",
     "sourceSha256": "0060403c8336aab950012a44c9160f2b656ffa779479975ea44be6ec7a44ca43",
     "scopeGranted": true,
@@ -1070,7 +1070,7 @@
     "nextNativeRun": 37366132907,
     "nextNativeCommit": "dd8bb49b2150834dac9510a69b66c9da130822e4",
     "sourceReceiptSha256": "6e0a436d8da6b55c3286811140efd46b679d2ceb9dc202b33576a76425ed08fc",
-    "nextAction": "Read both existing hash-bound reports once for grouped vulnerable package/version/fix/namespace/matcher facts, then prepare source remediation. No scanner rerun or live gateway upgrade.",
+    "nextAction": "Autonomously prepare compatible alternative image builds in repository; available PCRE2/partial OpenSSL fixes alone cannot close gate49. No additional VPS diagnostic command pending; no repeat scan of current images.",
     "wrapperTestsPassed": 3,
     "wrapperPath": "docs/handoffs/commands/OUF_REVIEW_IMAGE_VULNERABILITIES_2026-10-05.sh",
     "wrapperSha256": "ec5b567d90849a533a45f65911795690f2ad22357b6cc79b80d2d9c821a93fd9",
@@ -1173,6 +1173,29 @@
     "advisoryReadPending": false,
     "packageReadWrapperPath": "docs/handoffs/commands/OUF_READ_VULNERABILITY_PACKAGES_2026-10-06.sh",
     "packageReadWrapperSha256": "b66912b5693b64d7989c88186b70c2c8b6a88756bc8f336139f550d4300a13e7",
-    "packageReadPending": true
+    "packageReadPending": false,
+    "packageReadExecuted": true,
+    "packageReadOperatorReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_PACKAGES_2026-10-06_OPERATOR.json",
+    "packageReadReportedAt": "2026-10-06T06:41:09+02:00",
+    "packageReadFieldsOmitted": 0,
+    "remediationPlanPath": "docs/installation/SEMANTIC_IMAGE_VULNERABILITY_REMEDIATION_2026-10-06.md",
+    "imagePackageSummary": {
+      "adapter": {
+        "distro": "debian:13.7",
+        "packageVersions": 22,
+        "matcher": "dpkg-matcher",
+        "critical": 0,
+        "high": 56,
+        "unknown": 0
+      },
+      "southbound": {
+        "distro": "debian:12.15",
+        "packageVersions": 28,
+        "matcher": "dpkg-matcher",
+        "critical": 10,
+        "high": 80,
+        "unknown": 16
+      }
+    }
   }
 }

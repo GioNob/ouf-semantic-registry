@@ -1,3 +1,11 @@
+## Gate 49 — analisi package completata, correzione delle immagini da preparare
+
+Ricevuto l'output allegato il 6 ottobre 2026 alle 06:41:09 Europe/Rome. Hash dei report verificati, zero campi omessi. Adapter Debian 13.7: 22 package/version, 56 High. Southbound Debian 12.15: 28 package/version, 10 Critical, 80 High, 16 Unknown. Tutti i finding riportati provengono da dpkg-matcher nella distribuzione corretta; non emerge un mismatch di distro.
+
+PCRE2 ha fix indicati per entrambe le immagini; OpenSSL nel southbound ha stati misti con correzioni parziali. Gli altri numerosi wont-fix/not-fixed impediscono di promettere PASS con un semplice upgrade. Non ignorare finding, non cancellare metadata package e non cambiare la soglia. Non aggiornare gateway live/candidati sotto lo scope diagnostico.
+
+Le letture sono concluse. Nessun altro comando VPS pendente. Piano concreto, versioni, evidenza e limiti: `docs/installation/SEMANTIC_IMAGE_VULNERABILITY_REMEDIATION_2026-10-06.md`; receipt redatta: `docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_PACKAGES_2026-10-06_OPERATOR.json`. Prossimo lavoro autonomo: preparare alternative di build e verifica di compatibilità nel repository, prima di proporre qualsiasi nuova operazione target. Non ripetere Grype sulle immagini attuali. Stato gate 49: soglia non soddisfatta, correzione build da preparare; causa del BLOCKED originale ancora sconosciuta.
+
 ## Gate 49 — receipt riconciliata, preparazione correzioni
 
 L'operatore ha letto la receipt due volte (6 ottobre 2026 alle 06:38:08 e 06:38:42 Europe/Rome), con risultati identici e hash verificato. Il campo `allScannerSeverityThresholdsMet` è false; anche entrambe le decisioni per immagine sono false. Elenchi High/Critical: adapter 15 identificativi, southbound 45, senza troncamento; gli Unknown del southbound non sono inclusi in questi elenchi. Evidenza: `docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_ADVISORIES_2026-10-06_OPERATOR.json`. Non ripetere la lettura degli stessi ID.
