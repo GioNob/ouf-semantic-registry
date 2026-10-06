@@ -147,13 +147,25 @@ def main():
     fixtures = json.loads(Path('tests/semantic-luajit-upstream-regressions.json').read_bytes())
     regressions = []
     for cve, source in fixtures.items():
+        program = source
+        expected_outcome = 'normal_exit'
+        if cve == 'CVE-2024-25177':
+            # The published fuzz input reaches a normal Lua sorting error on
+            # this version. Require that exact error; never accept a native
+            # crash, timeout, arbitrary stderr, or an unexpected Lua error.
+            program = ('local reproduce=assert(loadstring(' + json.dumps(source) + '))\n'
+                       'local ok,err=pcall(reproduce)\n'
+                       'assert(not ok and tostring(err):find("attempt to compare two table values",1,true), tostring(err))\n'
+                       'print("EXPECTED_LUA_TYPE_ERROR")\n')
+            expected_outcome = 'controlled_Lua_sorting_error'
         for mode in ('jit-on','jit-off'):
             args = [] if mode == 'jit-on' else ['-joff']
             run = subprocess.run(command+['-i','--entrypoint',binary_path,IMAGE]+args+['-'],
-                                 input=source.encode(),stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=45)
+                                 input=program.encode(),stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=45)
             require(run.returncode == 0, 'upstream regression failed: '+cve+' '+mode+': '+run.stderr.decode(errors='replace')[:1000])
             regressions.append(dict(id=cve,mode=mode,exitCode=run.returncode,
-                                    fixtureSha256=digest(source.encode()),stdoutSha256=digest(run.stdout)))
+                                    expectedOutcome=expected_outcome, fixtureSha256=digest(source.encode()),
+                                    executedProgramSha256=digest(program.encode()),stdoutSha256=digest(run.stdout)))
     result.update(fullArtifactSha256Verified=FULL_DIGEST,imageProvenanceCryptoVerified=True,
                   actualRuntimeBinarySha256=actual,actualImageRegressions=regressions,
                   runtimeTestsAreSanitizerInstrumented=False,ciImageImportPerformed=True,
