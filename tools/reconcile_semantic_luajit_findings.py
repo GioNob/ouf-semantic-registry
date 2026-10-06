@@ -144,6 +144,9 @@ def main():
     binary_path = '/usr/local/openresty/luajit/bin/luajit-2.1.1787558776'
     actual = subprocess.check_output(command+['--entrypoint','sha256sum',IMAGE,binary_path],timeout=30).decode().split()[0]
     require(actual == json.loads(binary_data)[binary_path], 'runtime binary hash differs')
+    runtime_version = subprocess.check_output(command+['--entrypoint',binary_path,IMAGE,'-e',
+        'print(jit.version)'],timeout=30).decode().strip()
+    require(runtime_version == 'LuaJIT 2.1.1787558776', 'unexpected actual runtime version')
     fixtures = json.loads(Path('tests/semantic-luajit-upstream-regressions.json').read_bytes())
     regressions = []
     for cve, source in fixtures.items():
@@ -167,6 +170,7 @@ def main():
                                     expectedOutcome=expected_outcome, fixtureSha256=digest(source.encode()),
                                     executedProgramSha256=digest(program.encode()),stdoutSha256=digest(run.stdout)))
     result.update(fullArtifactSha256Verified=FULL_DIGEST,imageProvenanceCryptoVerified=True,
+                  actualRuntimeVersion=runtime_version, sourceReleaseTag='v2.1-20260824',
                   actualRuntimeBinarySha256=actual,actualImageRegressions=regressions,
                   runtimeTestsAreSanitizerInstrumented=False,ciImageImportPerformed=True,
                   imageImportPerformedOnTarget=False,scannerInvoked=False)
