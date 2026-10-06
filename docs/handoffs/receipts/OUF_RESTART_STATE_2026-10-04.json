@@ -79,7 +79,7 @@
     "lastPassSection": 48,
     "lastPassRoot": "/etc/ouf/deploy-snapshots/semantic-image-sbom-20261005-v1/prepared",
     "policyPreparationStatus": "PASS",
-    "nextStatus": "AUTONOMOUS_SBOM_SUPPLY_CHAIN_AND_ACCEPTANCE_ISSUER_REVIEW",
+    "nextStatus": "GATE49_BLOCKED_READ_ONLY_DIAGNOSTIC_PENDING",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Autonomously prepare PET-conforming review of hash-bound SBOM/vulnerability/provenance and independent complete acceptance issuer; no operator command pending.",
+  "nextTask": "Run read-only fixed-artifact diagnostic within granted scope49; preserve all staging and reconcile before any scanner rerun.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Autonomously prepare PET-conforming review of hash-bound SBOM/vulnerability/provenance and independent complete acceptance issuer; no operator command pending.",
+  "nextStep": "Run read-only fixed-artifact diagnostic within granted scope49; preserve all staging and reconcile before any scanner rerun.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -1070,7 +1070,7 @@
     "nextNativeRun": 37366132907,
     "nextNativeCommit": "dd8bb49b2150834dac9510a69b66c9da130822e4",
     "sourceReceiptSha256": "6e0a436d8da6b55c3286811140efd46b679d2ceb9dc202b33576a76425ed08fc",
-    "nextAction": "Verify dedicated diagnostic CI, then one read-only fixed-artifact diagnostic; preserve all staging and no gate49 rerun before reconciliation.",
+    "nextAction": "Run read-only fixed-artifact diagnostic within granted scope49; preserve all staging and reconcile before any scanner rerun.",
     "wrapperTestsPassed": 3,
     "wrapperPath": "docs/handoffs/commands/OUF_REVIEW_IMAGE_VULNERABILITIES_2026-10-05.sh",
     "wrapperSha256": "ec5b567d90849a533a45f65911795690f2ad22357b6cc79b80d2d9c821a93fd9",
@@ -1119,6 +1119,17 @@
     "operatorBlockedReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_BLOCKED_2026-10-06_OPERATOR.json",
     "diagnosticSource": "tools/diagnose_semantic_image_vulnerabilities.py",
     "diagnosticSourceSha256": "4f6197c0dbf90056060c7435f2cffc807d5ede5c44a22205292bb0a54b2bc48a",
-    "diagnosticLocalTestsPassed": 3
+    "diagnosticLocalTestsPassed": 3,
+    "diagnosticCodeCommit": "56ab1db6f063290bfbcf15afb6638dddc8b242f4",
+    "diagnosticWrapperPath": "docs/handoffs/commands/OUF_DIAGNOSE_IMAGE_VULNERABILITIES_2026-10-06.sh",
+    "diagnosticWrapperSha256": "a574ec6014f3b80de18f140d8172b5c18214da71a663e3eeae9ece56e613d7d6",
+    "diagnosticCiRun": 37414101217,
+    "diagnosticCiJob": 112108780775,
+    "diagnosticCiStatus": "SUCCESS",
+    "diagnosticCiTestsPassed": 3,
+    "diagnosticCiSkips": 0,
+    "diagnosticCiLogsRead": true,
+    "diagnosticOperatorCommandPending": true,
+    "diagnosticTargetExecuted": false
   }
 }
