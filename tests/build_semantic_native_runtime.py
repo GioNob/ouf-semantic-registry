@@ -49,6 +49,10 @@ def main():
     assert limit.is_dir()
     shutil.rmtree(limit)
     shutil.copytree(work / 'lua-resty-limit-traffic-1.2.0', limit)
+    # Documentation generation is explicitly omitted; the upstream installer
+    # still requires its documentation-only index and POD directory.
+    (resty / 'bundle/resty.index').write_text('')
+    (resty / 'bundle/pod').mkdir()
     source_files['compiledSourceFiles'] = {str(p.relative_to(resty)): hashlib.sha256(p.read_bytes()).hexdigest()
         for p in sorted(resty.rglob('*')) if p.is_file() and not p.is_symlink()}
     lua_bundle = list((resty / 'bundle').glob('ngx_lua-*'))
