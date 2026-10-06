@@ -95,7 +95,7 @@ def main():
     assert 'SHDICT_KEY_BOUNDARY_PASS' in guard.stdout
     (out/'native-shdict-regression.txt').write_text(guard.stdout)
     grpc_config = 'server { listen 127.0.0.1:18082; http2 on; location / { ' \
-        'content_by_lua_block { ngx.say("AUTHORITY=" .. ngx.var.host) } } } ' \
+        'return 200 "AUTHORITY=$host"; } } ' \
         'server { listen 127.0.0.1:18083; location / { ' \
         'grpc_set_header :authority ouf-authority.example.invalid; grpc_pass grpc://127.0.0.1:18082; } }'
     grpc_lua = "local s=ngx.socket.tcp(); s:settimeout(5000); assert(s:connect('127.0.0.1',18083)); " \
