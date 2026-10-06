@@ -6,9 +6,14 @@ import hashlib
 import struct
 import unittest
 from unittest.mock import patch
-from tools.extend_semantic_dependency_inventory import literal_manifest, image_files, ownership, rock_bindings, extend, constant_elf_function
+from tools.extend_semantic_dependency_inventory import literal_manifest, image_files, ownership, rock_bindings, extend, constant_elf_function, add_package
 
 class ExtendedInventoryTests(unittest.TestCase):
+    def test_package_identity_uses_paths_and_accepts_binary_evidence_maps(self):
+        left={'artifacts':[]};right={'artifacts':[]}
+        add_package(left,'brotli','1.1.0','google/brotli',{'usr/lib/example.so':{'raw':b'ELF'}})
+        add_package(right,'brotli','1.1.0','google/brotli',['usr/lib/example.so'])
+        self.assertEqual(left,right)
     def test_shared_lua_bytes_retain_every_proven_source_component(self):
         digest='a'*64
         sources={'modules':[], 'sourceFiles':{'modules':[], 'compiledSourceFiles':{
