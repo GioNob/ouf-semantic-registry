@@ -11,6 +11,9 @@ on:
       - 'Dockerfile.semantic-southbound-security-update'
       - 'tests/run_semantic_image_remediation.py'
       - 'tests/scan_semantic_image_remediation.py'
+      - 'tests/qualify_semantic_remediation_ci.py'
+      - 'tests/test_semantic_remediation_bundle.py'
+      - 'tools/*semantic_remediation_bundle*.py'
       - '.github/workflows/semantic-image-remediation.yml'
   workflow_dispatch:
 permissions:
@@ -36,6 +39,11 @@ jobs:
         with:
           python-version: '3.13'
       - run: pip install -r .pairwise/gateway/requirements-dev.txt
+      - name: Verify byte-qualification rejection checks and source closure
+        run: |
+          python3 -B -m unittest tests.test_semantic_remediation_bundle
+          python3 -B tools/build_semantic_remediation_bundle_qualifier.py
+          git diff --exit-code -- tools/semantic_remediation_bundle_qualifier.py
       - name: Prepare hash-pinned Syft, Grype and exact fresh DB
         run: sudo /usr/bin/python3 -B tests/prepare_native_vulnerability_scanners.py
       - name: Real compatibility, verified archive, offline SBOM and vulnerability review
@@ -75,6 +83,8 @@ jobs:
           gh attestation verify generated/${{ matrix.candidate }}/southbound.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$PROVENANCE_BUNDLE" --format json > generated/${{ matrix.candidate }}/attestations/southbound-verification.json
           gh attestation verify generated/${{ matrix.candidate }}/adapter.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$ADAPTER_SBOM_BUNDLE" --predicate-type https://spdx.dev/Document --format json > generated/${{ matrix.candidate }}/attestations/adapter-sbom-verification.json
           gh attestation verify generated/${{ matrix.candidate }}/southbound.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$SOUTHBOUND_SBOM_BUNDLE" --predicate-type https://spdx.dev/Document --format json > generated/${{ matrix.candidate }}/attestations/southbound-sbom-verification.json
+      - name: Qualify the actual signed archives with the target command
+        run: python3 -B tests/qualify_semantic_remediation_ci.py
       - name: Preserve separately downloadable evidence
         uses: actions/upload-artifact@v4
         if: always()
