@@ -62,7 +62,7 @@ def decode(raw):
         for k,v in items:require(k not in out);out[k]=v
         return out
     return json.loads(raw,object_pairs_hook=unique,parse_constant=lambda _:(_ for _ in ()).throw(Denied()))
-def export(docker,image,out,env):
+def export(docker,image,out,env,max_archive_bytes=536870912):
     child=subprocess.Popen([str(docker),'--host','unix:///var/run/docker.sock','image','save',image],
         stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,stdin=subprocess.DEVNULL,env=env,start_new_session=True)
     done=False;end=time.monotonic()+60;size=0
@@ -73,7 +73,7 @@ def export(docker,image,out,env):
                 left=end-time.monotonic();require(left>0)
                 require(selector.select(left));raw=os.read(child.stdout.fileno(),65536)
                 if not raw:break
-                size+=len(raw);require(size<=536870912);out.write(raw)
+                size+=len(raw);require(size<=max_archive_bytes);out.write(raw)
         left=end-time.monotonic();require(left>0);require(child.wait(timeout=left)==0);done=True
     finally:
         if not done:
@@ -104,7 +104,8 @@ def summarize(syft_raw,spdx_raw,verified):
         'sbomProduced':True,'sbomImageIdentityBound':True,'networkIsolatedScanner':True,
         'dependencySbomAccepted':False,'vulnerabilityReviewProven':False,'imagePublisherProvenanceVerified':False,
         'completeCreationAccepted':False,'acceptanceGranted':False,'startAuthorized':False}
-def prepare(root,images,docker,docker_hash,scanner,scanner_hash,unshare,unshare_hash,include_owned_native_binaries=False):
+def prepare(root,images,docker,docker_hash,scanner,scanner_hash,unshare,unshare_hash,include_owned_native_binaries=False,max_archive_bytes=536870912):
+    require(type(max_archive_bytes) is int and 536870912<=max_archive_bytes<=1073741824)
     require(len(images)==2 and {r['role'] for r in images}=={'adapter','southbound'})
     require(len({r['imageId'] for r in images})==2)
     require(all(set(r)=={'role','imageId','configByteSha256','rootfsDescriptorsHash'} for r in images))
@@ -123,7 +124,7 @@ def prepare(root,images,docker,docker_hash,scanner,scanner_hash,unshare,unshare_
     for row in images:
         role=row['role'];tar=root/(role+'.tar');fd=os.open(tar,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
         with os.fdopen(fd,'wb') as out:
-            export(docker,row['imageId'],out,env);out.flush();os.fsync(out.fileno())
+            export(docker,row['imageId'],out,env,max_archive_bytes);out.flush();os.fsync(out.fileno())
         s=tar.lstat();require(stat.S_ISREG(s.st_mode) and 0<s.st_size<=8589934592)
         with tar.open('rb') as stream:verified=archive.archive_verify(stream,row['imageId'],archive.Budget(180,8589934592,100000))
         require(all(verified[k]==row[k] for k in ('configByteSha256','rootfsDescriptorsHash')))

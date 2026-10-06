@@ -41,7 +41,7 @@ def main():
         rows.append({'role':role,**{k:verified[k] for k in ('imageId','configByteSha256','rootfsDescriptorsHash')}})
     prepared=base/'sbom';prepared.mkdir(mode=0o700)
     print('CI_SCAN_STAGE=SBOM_PREPARATION',file=sys.stderr)
-    result=sbom.prepare(prepared,rows,docker,tool_hashes[docker],syft,tool_hashes[syft],unshare,tool_hashes[unshare],include_owned_native_binaries=True)
+    result=sbom.prepare(prepared,rows,docker,tool_hashes[docker],syft,tool_hashes[syft],unshare,tool_hashes[unshare],include_owned_native_binaries=True,max_archive_bytes=1073741824)
     expected=result['images'];receipt_hash=hashlib.sha256((prepared/'receipt.json').read_bytes()).hexdigest()
     reviewed=base/'review';reviewed.mkdir(mode=0o700)
     print('CI_SCAN_STAGE=VULNERABILITY_REVIEW',file=sys.stderr)
