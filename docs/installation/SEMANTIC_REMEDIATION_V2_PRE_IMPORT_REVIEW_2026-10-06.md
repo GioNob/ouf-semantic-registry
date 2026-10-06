@@ -1,3 +1,27 @@
+> Revisione aggiornata dopo gli output VPS delle 19:21 e 19:34 Europe/Rome. [CI 37505168458](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37505168458) PASS: otto controlli negativi e confronto sullo ZIP v2 effettivo, nuovamente verificato per hash/firme/byte. **16 moduli OpenResty realmente compilati non hanno identità individuali nella SBOM supplementare corrente.** [Receipt completa](/docs/handoffs/receipts/SEMANTIC_STATIC_MODULE_COVERAGE_2026-10-06_CI.json). Questo è un gap di inventario, non una nuova dichiarazione di vulnerabilità. Copertura completa e acceptance restano false; nessuna nuova operazione richiesta sul VPS per questa revisione.
+
+## Riepiloghi e percorsi ricevuti dall'operatore
+
+Adapter: 38 package (29 APK, 8 binary, 1 Python), zero versioni mancanti. I sei Simple Launcher 1.1.0.14 sono sei file distinti t32/t64/t64-arm/w32/w64/w64-arm.exe sotto pip/_vendor/distlib. Non sono prova di sei servizi in esecuzione, né questo dato autorizza rimozioni o esclusioni dallo scanner.
+
+Southbound: 191 package (110 DEB, 75 LuaRocks, 6 binary), zero versioni mancanti. Le versioni duplicate di LuaFileSystem, api7-lua-resty-http, lua-protobuf, lua-resty-expr e penlight corrispondono a rockspec in directory di versione distinte. I percorsi non stabiliscono da soli quale modulo viene caricato; le identità scoperte restano tutte conservate.
+
+OpenSSL di sistema: /usr/bin/openssl, versione binaria 3.0.13 e package Ubuntu 3.0.13-0ubuntu3.16. OpenSSL OpenResty: /usr/local/openresty/openssl3/bin/openssl 3.4.8. La prova registrata per Nginx riporta libssl/libcrypto del prefisso OpenResty. La sola versione upstream del binario Ubuntu non valuta le patch riportate nel package distro. [Receipt dei percorsi](/docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_PACKAGE_PATHS_2026-10-06_OPERATOR.json).
+
+## Gap di inventario dimostrato
+
+Il nuovo controllo lega la stringa configure al vero ELF Nginx nello stesso archivio southbound, verifica l'hash del manifesto sorgente e del supplemento contro le evidenze del bundle e riconcilia ciascun --add-module=../... con un archivio bloccato e file sorgente compilati registrati. Esclude gli archivi scaricati ma assenti dalle opzioni di compilazione.
+
+Tutti i 16 moduli bundled configurati sono privi di una voce individuale nel supplemento: ngx_devel_kit, echo, xss, ngx_coolkit, set-misc, form-input, encrypted-session, srcache, ngx_lua, ngx_lua_upstream, headers-more, array-var, memc, redis2, redis-nginx e ngx_stream_lua. Repository, directory, hash degli archivi e conteggi dei file compilati sono nella receipt. Il package openresty aggregato e la copertura dei 17 ELF non dimostrano questa copertura individuale.
+
+Non sono stati modificati le immagini o gli SBOM originali. La CI non importa immagini o invoca un nuovo scanner per questo confronto. Il PASS significa che la misurazione del gap è completata e che le prove v2 restano verificabili; non rende completa l'accettazione delle dipendenze.
+
+Prossimo lavoro: integrare l'inventario dei moduli effettivi e delle dipendenze Lua installate, ripetere scansione e firma delle evidenze aggiornate, quindi preparare il dossier isolato dei nuovi digest. Restano revisione custom/publisher, scelta Wasm e vincolo dello stager al gateway live. Non forzare importazione o avvio e non ripetere il qualificatore VPS v2.
+
+---
+
+Le sezioni seguenti conservano la revisione precedente.
+
 # Revisione prima dell'importazione v2 — 6 ottobre 2026
 
 Qualificazione byte e verifica crittografica VPS PASS secondo gli output forniti dall'operatore alle 13:43:48 e 13:49:47 Europe/Rome. [Receipt delle firme](/docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_TARGET_CRYPTO_2026-10-06_OPERATOR.json). Le due immagini e i tre documenti nativi hanno firme di provenienza verificate; due SBOM hanno firme verificate. Repository, workflow, merge produttore e ref sono fissati. I risultati completi sono conservati in /home/oufadmin/ouf-crypto-v2.zjJNdo. La receipt byte originale rimane immutata: il suo targetAttestationCryptoVerified=false descrive quella fase precedente.

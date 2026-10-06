@@ -376,7 +376,7 @@
   "runtimeRegistered": false,
   "startAuthorized": false,
   "databaseFreshnessEnds": "2026-10-07T08:45:38+02:00",
-  "nextAction": "Complete runtime dependency/source coverage comparison and digest-consistent staging design before image import; no existing gateway/candidate replacement.",
+  "nextAction": "Extend source- and byte-bound inventory with the 16 actual compiled OpenResty bundled modules and installed Lua dependencies, then scan and sign revised evidence. Prepare a separate digest-consistent staging dossier; do not repeat VPS v2 qualification or import/start the current bundle.",
   "targetEvidenceSnapshotCreated": true,
   "targetRuntimeModified": false,
   "targetCryptoVerification": {
@@ -384,5 +384,11 @@
     "evidenceSource": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_TARGET_CRYPTO_2026-10-06_OPERATOR.json",
     "reportDirectory": "/home/oufadmin/ouf-crypto-v2.zjJNdo",
     "githubCliVersion": "2.102.0"
+  },
+  "staticModuleCoverageReview": {
+    "receipt": "docs/handoffs/receipts/SEMANTIC_STATIC_MODULE_COVERAGE_2026-10-06_CI.json",
+    "runId": 37505168458,
+    "unrepresentedConfiguredBundledModules": 16,
+    "dependencyCoverageAccepted": false
   }
 }

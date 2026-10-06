@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Complete runtime dependency/source coverage comparison and digest-consistent staging design before image import; no existing gateway/candidate replacement.",
+  "nextTask": "Extend source- and byte-bound inventory with the 16 actual compiled OpenResty bundled modules and installed Lua dependencies, then scan and sign revised evidence. Prepare a separate digest-consistent staging dossier; do not repeat VPS v2 qualification or import/start the current bundle.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Complete runtime dependency/source coverage comparison and digest-consistent staging design before image import; no existing gateway/candidate replacement.",
+  "nextStep": "Extend source- and byte-bound inventory with the 16 actual compiled OpenResty bundled modules and installed Lua dependencies, then scan and sign revised evidence. Prepare a separate digest-consistent staging dossier; do not repeat VPS v2 qualification or import/start the current bundle.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Complete runtime dependency/source coverage comparison and digest-consistent staging design before image import; no existing gateway/candidate replacement.",
+  "currentAction": "Extend source- and byte-bound inventory with the 16 actual compiled OpenResty bundled modules and installed Lua dependencies, then scan and sign revised evidence. Prepare a separate digest-consistent staging dossier; do not repeat VPS v2 qualification or import/start the current bundle.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Complete runtime dependency/source coverage comparison and digest-consistent staging design before image import; no existing gateway/candidate replacement.",
+  "nextAction": "Extend source- and byte-bound inventory with the 16 actual compiled OpenResty bundled modules and installed Lua dependencies, then scan and sign revised evidence. Prepare a separate digest-consistent staging dossier; do not repeat VPS v2 qualification or import/start the current bundle.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -3653,7 +3653,9 @@
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json",
     "targetAttestationCryptoVerified": true,
     "targetCryptoEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_TARGET_CRYPTO_2026-10-06_OPERATOR.json",
-    "preImportReview": "docs/installation/SEMANTIC_REMEDIATION_V2_PRE_IMPORT_REVIEW_2026-10-06.md"
+    "preImportReview": "docs/installation/SEMANTIC_REMEDIATION_V2_PRE_IMPORT_REVIEW_2026-10-06.md",
+    "staticModuleCoverageMissingCount": 16,
+    "staticModuleCoverageReceipt": "docs/handoffs/receipts/SEMANTIC_STATIC_MODULE_COVERAGE_2026-10-06_CI.json"
   },
   "semanticLuaJitReconciliation": {
     "schema": "ouf.semantic-luajit-reconciliation-ci-evidence.v1",
@@ -4377,5 +4379,256 @@
     "acceptanceGranted": false,
     "startAuthorized": false,
     "nextAction": "Complete runtime dependency/source coverage comparison and digest-consistent staging design before image import; no existing gateway/candidate replacement."
+  },
+  "semanticRemediationV2PackagePaths": {
+    "schema": "ouf.semantic-remediation-v2-package-path-review.v1",
+    "evidenceSource": "User-pasted read-only snapshot summaries; no direct SSH readback by assistant.",
+    "reportedAt": "2026-10-06T19:34:02+02:00",
+    "adapter": {
+      "packageCount": 38,
+      "types": {
+        "apk": 29,
+        "binary": 8,
+        "python": 1
+      },
+      "packagesWithoutVersion": 0,
+      "simpleLauncher": {
+        "version": "1.1.0.14",
+        "count": 6,
+        "paths": [
+          "/usr/local/lib/python3.13/site-packages/pip/_vendor/distlib/t32.exe",
+          "/usr/local/lib/python3.13/site-packages/pip/_vendor/distlib/t64-arm.exe",
+          "/usr/local/lib/python3.13/site-packages/pip/_vendor/distlib/t64.exe",
+          "/usr/local/lib/python3.13/site-packages/pip/_vendor/distlib/w32.exe",
+          "/usr/local/lib/python3.13/site-packages/pip/_vendor/distlib/w64-arm.exe",
+          "/usr/local/lib/python3.13/site-packages/pip/_vendor/distlib/w64.exe"
+        ],
+        "disposition": "Six distinct files within pip's vendored distlib directory; no cleanup or vulnerability exemption inferred."
+      }
+    },
+    "southbound": {
+      "packageCount": 191,
+      "types": {
+        "deb": 110,
+        "lua-rocks": 75,
+        "binary": 6
+      },
+      "packagesWithoutVersion": 0,
+      "duplicateRockVersions": {
+        "LuaFileSystem": [
+          "1.7.0-2",
+          "1.8.0-1"
+        ],
+        "api7-lua-resty-http": [
+          "0.2.0-0",
+          "0.2.2-0",
+          "0.2.3-0"
+        ],
+        "lua-protobuf": [
+          "0.3.3-1",
+          "0.4.1-1",
+          "0.5.3-1"
+        ],
+        "lua-resty-expr": [
+          "1.3.0-0",
+          "1.3.2-0"
+        ],
+        "penlight": [
+          "1.14.0-3",
+          "1.9.2-1"
+        ]
+      },
+      "duplicateRockDisposition": "Distinct rockspecs in separate version directories. This does not establish which implementation is loaded; retain every discovered identity.",
+      "openssl": {
+        "systemBinary": "/usr/bin/openssl",
+        "systemReportedBinaryVersion": "3.0.13",
+        "systemDebVersion": "3.0.13-0ubuntu3.16",
+        "openrestyBinary": "/usr/local/openresty/openssl3/bin/openssl",
+        "openrestyVersion": "3.4.8",
+        "nginxRecordedLinkPaths": [
+          "/usr/local/openresty/openssl3/lib/libssl.so.3",
+          "/usr/local/openresty/openssl3/lib/libcrypto.so.3"
+        ],
+        "disposition": "Separate system and OpenResty installations; raw upstream version alone does not evaluate Ubuntu package backports."
+      }
+    },
+    "targetFilesModified": false,
+    "containerOperations": 0,
+    "dependencyCoverageAccepted": false,
+    "publisherTrustAccepted": false,
+    "acceptanceGranted": false,
+    "startAuthorized": false
+  },
+  "semanticStaticModuleCoverage": {
+    "schema": "ouf.semantic-static-module-coverage-ci-evidence.v1",
+    "codeCommit": "32e0aafc503479e1b8695419eeaa8e05e95f7bd4",
+    "runId": 37505168458,
+    "jobId": 112411865313,
+    "workflowConclusion": "success",
+    "localNegativeTestsPassed": 8,
+    "ciNegativeTestsPassed": 8,
+    "existingPublishedZipRequalified": true,
+    "existingPublishedZipSignaturesReverified": true,
+    "result": {
+      "acceptanceGranted": false,
+      "configureArgumentsBoundToActualNginxElf": true,
+      "configuredBundledModuleCount": 16,
+      "dependencyCoverageAccepted": false,
+      "imageId": "sha256:d4c47bbeca75d94e2231e17ca14552885b7b339a5f33dbace411e275c79ded04",
+      "imageImportPerformed": false,
+      "modules": [
+        {
+          "compiledSourceFileCount": 88,
+          "directory": "ngx_devel_kit-0.3.5",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/ngx_devel_kit",
+          "sourceArchiveSha256": "e73e8cc10758d794639683afb01747d99e348bddbaa09d1c2cd146166065f3de"
+        },
+        {
+          "compiledSourceFileCount": 58,
+          "directory": "echo-nginx-module-0.65",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/echo-nginx-module",
+          "sourceArchiveSha256": "66d007307a3fd7493a01905afd5d7676741be8a72f674ff30a9f137d7a4c9a43"
+        },
+        {
+          "compiledSourceFileCount": 19,
+          "directory": "xss-nginx-module-0.07",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/xss-nginx-module",
+          "sourceArchiveSha256": "90ae27ff0a9e84b7e12d0b6f822b4ba39781fc5fd0406e2b7cbb02e9b218c565"
+        },
+        {
+          "compiledSourceFileCount": 15,
+          "directory": "ngx_coolkit-0.2",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "FRiCKLE/ngx_coolkit",
+          "sourceArchiveSha256": "74de6a6781a7d77cb6ac272d1651a9948c27fb3f2d0915580ea650b5db547d2b"
+        },
+        {
+          "compiledSourceFileCount": 60,
+          "directory": "set-misc-nginx-module-0.34",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/set-misc-nginx-module",
+          "sourceArchiveSha256": "5f36b8c0bfb3b8ca57c04620a099e87d4127128283ab6a777bed1cff99bd6a70"
+        },
+        {
+          "compiledSourceFileCount": 15,
+          "directory": "form-input-nginx-module-0.12",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "calio/form-input-nginx-module",
+          "sourceArchiveSha256": "1eba7d1d5858601ff1b7f406d99c15d3e3bcba118a31fb3339288e6b0dd50c2e"
+        },
+        {
+          "compiledSourceFileCount": 12,
+          "directory": "encrypted-session-nginx-module-0.10",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/encrypted-session-nginx-module",
+          "sourceArchiveSha256": "55128933287152947a0fe590bafba98a7774512ae82271bc7a38a465cf988ea6"
+        },
+        {
+          "compiledSourceFileCount": 61,
+          "directory": "srcache-nginx-module-0.34",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/srcache-nginx-module",
+          "sourceArchiveSha256": "7ac91d7d8d3ad8e6f00012a6c7baf534d370517927f990b9d75fa4133cf5bf97"
+        },
+        {
+          "compiledSourceFileCount": 432,
+          "directory": "ngx_lua-0.10.32rc5",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/lua-nginx-module",
+          "sourceArchiveSha256": "f298a5a6daba979a39b445f59d92ee75ec06436cf271e7f005c446912cc596df"
+        },
+        {
+          "compiledSourceFileCount": 13,
+          "directory": "ngx_lua_upstream-0.08",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/lua-upstream-nginx-module",
+          "sourceArchiveSha256": "26f71fc96e64aa49e100f3c3032590601ad220f090f5e9bb874d4730e856592a"
+        },
+        {
+          "compiledSourceFileCount": 29,
+          "directory": "headers-more-nginx-module-0.40",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/headers-more-nginx-module",
+          "sourceArchiveSha256": "87161ae898add9c5b61639a3822edea664f519ee093e83b62b36cbc0870c96a1"
+        },
+        {
+          "compiledSourceFileCount": 12,
+          "directory": "array-var-nginx-module-0.06",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/array-var-nginx-module",
+          "sourceArchiveSha256": "6bde636cb9e8506a542c8f507601a63b5ea9ddd957c50ce805d5714235f82c9c"
+        },
+        {
+          "compiledSourceFileCount": 48,
+          "directory": "memc-nginx-module-0.21",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/memc-nginx-module",
+          "sourceArchiveSha256": "0e984ff144fd049a466289932a93286ff36823f44e2d19e5b5c5ac1772de0af5"
+        },
+        {
+          "compiledSourceFileCount": 27,
+          "directory": "redis2-nginx-module-0.15",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/redis2-nginx-module",
+          "sourceArchiveSha256": "6b2fcc6b54f6e5814a8dd55e010ca567ed61c526a2b80ecc6529f98953d70ec9"
+        },
+        {
+          "compiledSourceFileCount": 9,
+          "directory": "redis-nginx-module-0.41",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/ngx_http_redis",
+          "sourceArchiveSha256": "7d58d6f97c26fcac99795afdbb2f4d984da78a6699001fcaa222a237e28b89fa"
+        },
+        {
+          "compiledSourceFileCount": 262,
+          "directory": "ngx_stream_lua-0.0.20rc3",
+          "individuallyRepresentedInSupplement": false,
+          "repository": "openresty/stream-lua-nginx-module",
+          "sourceArchiveSha256": "e64da2df4a304aa0be8e28ecdb93291ceceb5f55e133cc7ed4435a3c10749f5d"
+        }
+      ],
+      "nativeSourceManifestSha256": "b632f89236799dec18bf6a7a62ae278283b81a928b8f5714de04b59175b89872",
+      "originalSbomModified": false,
+      "publisherTrustAccepted": false,
+      "scannerInvoked": false,
+      "schema": "ouf.semantic-static-module-coverage-review.v1",
+      "sourceArtifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+      "startAuthorized": false,
+      "supplementedSyftSha256": "7fd0a2be04438a76be50105f8966033f3a414ddcefdd2fa854ac1450dbbc43b3",
+      "unrepresentedStaticModules": [
+        "ngx_devel_kit-0.3.5",
+        "echo-nginx-module-0.65",
+        "xss-nginx-module-0.07",
+        "ngx_coolkit-0.2",
+        "set-misc-nginx-module-0.34",
+        "form-input-nginx-module-0.12",
+        "encrypted-session-nginx-module-0.10",
+        "srcache-nginx-module-0.34",
+        "ngx_lua-0.10.32rc5",
+        "ngx_lua_upstream-0.08",
+        "headers-more-nginx-module-0.40",
+        "array-var-nginx-module-0.06",
+        "memc-nginx-module-0.21",
+        "redis2-nginx-module-0.15",
+        "redis-nginx-module-0.41",
+        "ngx_stream_lua-0.0.20rc3"
+      ]
+    },
+    "evidenceArtifact": {
+      "id": 11430584505,
+      "bytes": 2911,
+      "sha256": "ba91f2f8a77c0239e4c476ed5f2d5c3aa27c848b13b598573500820505a33d3b",
+      "downloadedHashVerifiedAndRead": true
+    },
+    "targetModified": false,
+    "containerOperations": 0,
+    "dependencyCoverageAccepted": false,
+    "publisherTrustAccepted": false,
+    "acceptanceGranted": false,
+    "startAuthorized": false,
+    "nextAction": "Extend source- and byte-bound inventory with the 16 actual compiled OpenResty bundled modules and installed Lua dependencies, then scan and sign revised evidence. Prepare a separate digest-consistent staging dossier; do not repeat VPS v2 qualification or import/start the current bundle."
   }
 }
