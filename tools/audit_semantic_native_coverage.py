@@ -187,7 +187,7 @@ def audit(bundle_path, release_path, output):
         with release_path.open('rb') as release:
             release_hash = wasmtime_release(release)
         sbom, result = supplement(json.loads(raw), rows, release_hash)
-    output.mkdir(mode=0o700)
+    output.mkdir(mode=0o700, parents=True)
     (output / 'southbound.native.syft.json').write_text(json.dumps(sbom, sort_keys=True) + '\n')
     result.update(schema='ouf.semantic-native-coverage-audit.v1', sourceArtifactSha256=ORIGINAL_ZIP,
                   imageId=row['imageId'], originalSyftSha256=sha(raw),
