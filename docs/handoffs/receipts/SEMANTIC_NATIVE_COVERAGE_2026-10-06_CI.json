@@ -7,7 +7,7 @@
   "interpretation": "measurement completed; vulnerability threshold FAILED; original VPS byte qualification remains valid",
   "originalCiAttestationCryptoVerified": true,
   "supplementalAttestationIssued": true,
-  "supplementalAttestationIndependentlyCryptoVerified": false,
+  "supplementalAttestationIndependentlyCryptoVerified": true,
   "evidenceArtifact": {
     "id": 11395230041,
     "sha256": "02a1b44a1b737e5c95b74cb7e310c014f78526a41ce44652a08b8056167776c8",
@@ -553,8 +553,111 @@
       }
     }
   ],
-  "nextAction": "CI-only source rebuild or compatible upgrade of Wasmtime module, then measured complete native coverage and TLS/OIDC regression. No target command is ready.",
+  "nextAction": "Original Wasmtime findings retained. New CI rebuild without WASM passes regressions but remains blocked on three LuaJIT scanner findings; see SEMANTIC_NATIVE_RUNTIME_REBUILD_2026-10-06_CI.json. No target command ready.",
   "targetModified": false,
   "acceptanceGranted": false,
-  "startAuthorized": false
+  "startAuthorized": false,
+  "independentAttestationReadback": {
+    "codeCommit": "6d8508c8626b20a4a742c38be7d6cf78df9319fe",
+    "runId": 37432727620,
+    "jobId": 112167131719,
+    "conclusion": "success",
+    "receipt": {
+      "acceptanceGranted": false,
+      "artifactId": 11395230041,
+      "artifactSha256": "02a1b44a1b737e5c95b74cb7e310c014f78526a41ce44652a08b8056167776c8",
+      "blockingFindings": [
+        {
+          "id": "CVE-2023-26489",
+          "namespace": "nvd:cpe",
+          "package": "wasmtime",
+          "severity": "Critical",
+          "version": "0.38.1"
+        },
+        {
+          "id": "CVE-2022-31146",
+          "namespace": "nvd:cpe",
+          "package": "wasmtime",
+          "severity": "High",
+          "version": "0.38.1"
+        },
+        {
+          "id": "CVE-2022-39393",
+          "namespace": "nvd:cpe",
+          "package": "wasmtime",
+          "severity": "High",
+          "version": "0.38.1"
+        },
+        {
+          "id": "CVE-2026-27572",
+          "namespace": "nvd:cpe",
+          "package": "wasmtime",
+          "severity": "High",
+          "version": "0.38.1"
+        },
+        {
+          "id": "CVE-2022-39392",
+          "namespace": "nvd:cpe",
+          "package": "wasmtime",
+          "severity": "High",
+          "version": "0.38.1"
+        },
+        {
+          "id": "CVE-2026-47261",
+          "namespace": "nvd:cpe",
+          "package": "wasmtime",
+          "severity": "High",
+          "version": "0.38.1"
+        },
+        {
+          "id": "CVE-2026-34941",
+          "namespace": "nvd:cpe",
+          "package": "wasmtime",
+          "severity": "High",
+          "version": "0.38.1"
+        },
+        {
+          "id": "CVE-2023-30624",
+          "namespace": "nvd:cpe",
+          "package": "wasmtime",
+          "severity": "High",
+          "version": "0.38.1"
+        },
+        {
+          "id": "CVE-2026-34943",
+          "namespace": "nvd:cpe",
+          "package": "wasmtime",
+          "severity": "High",
+          "version": "0.38.1"
+        },
+        {
+          "id": "CVE-2022-39394",
+          "namespace": "nvd:cpe",
+          "package": "wasmtime",
+          "severity": "Critical",
+          "version": "0.38.1"
+        }
+      ],
+      "containerOperations": 0,
+      "dependencyCoverageAccepted": false,
+      "publisherTrustAccepted": false,
+      "scannerInvoked": false,
+      "schema": "ouf.semantic-native-attestation-readback.v1",
+      "severityCounts": {
+        "Critical": 2,
+        "High": 8,
+        "Low": 19,
+        "Medium": 148,
+        "Negligible": 4,
+        "Unknown": 0
+      },
+      "sourceCodeCommit": "150e059e8722c27ce0949254aa850ff82c64af7b",
+      "sourceMergeCommit": "9057fc957e19ecec27c22bf886cd37d024b4a879",
+      "sourceRun": 37424720686,
+      "startAuthorized": false,
+      "supplementalAttestationIndependentlyCryptoVerified": true,
+      "targetModified": false,
+      "wholeArchiveHashVerified": true
+    }
+  }
 }

@@ -1,0 +1,396 @@
+{
+  "schema": "ouf.semantic-native-rebuild-review.v1",
+  "baselineRun": 37427596293,
+  "baselineSourceCommit": "4fbe04d8eb739fbd3a42e9e5e6b6b4cba55e3456",
+  "baselineEvidenceArtifact": {
+    "id": 11396271185,
+    "sha256": "47e3427e58082d4468cf550891d9d0451c846b0bc78ab295aa513266da7b7af9",
+    "bytes": 7114875,
+    "downloadedAndHashVerified": true
+  },
+  "baseline": {
+    "nativeElfFilesUnderOpenResty": 17,
+    "unresolvedNativeElfFilesUnderOpenResty": [],
+    "wasmCompiled": false,
+    "tlsOidcCompatibilityProven": true,
+    "rawSeverityCounts": {
+      "Critical": 1,
+      "High": 8,
+      "Unknown": 0
+    },
+    "supplementedSeverityCounts": {
+      "Critical": 3,
+      "High": 10,
+      "Unknown": 0
+    },
+    "scannerSeverityThresholdMet": false
+  },
+  "candidateSourceCommit": "385809bde50a20e4987c9c55c2b57a614dc240e0",
+  "candidateRun": 37433261779,
+  "candidateStatus": "BUILD_AND_REGRESSIONS_PASS_NATIVE_SCANNER_THRESHOLD_BLOCKED",
+  "luajitSourceReview": [
+    {
+      "cve": "CVE-2024-25176",
+      "cnaDescription": "LuaJIT through 2.1 and OpenRusty luajit2 before v2.1-20240626 have a stack-buffer-overflow in lj_strfmt_wfnum in lj_strfmt_num.c.",
+      "fixCommit": "343ce0edaf3906a62022936175b2f5410024cbfc",
+      "sourceCommit": "fbfc558aacd57a54623df0ced4c31a28f81f8ff2",
+      "tag": "v2.1-20260824",
+      "upstreamCompareStatus": "ahead",
+      "upstreamMergeBase": "343ce0edaf3906a62022936175b2f5410024cbfc",
+      "fixIsAncestor": true,
+      "fixBodiesObservedInLockedSourceArchive": true,
+      "scannerFindingSuppressed": false,
+      "rawThresholdOverride": false
+    },
+    {
+      "cve": "CVE-2024-25177",
+      "cnaDescription": "LuaJIT through 2.1 and OpenRusty luajit2 before v2.1-20240314 have an unsinking of IR_FSTORE for NULL metatable, which leads to Denial of Service (DoS).",
+      "fixCommit": "85b4fed0b0353dd78c8c875c2f562d522a2b310f",
+      "sourceCommit": "fbfc558aacd57a54623df0ced4c31a28f81f8ff2",
+      "tag": "v2.1-20260824",
+      "upstreamCompareStatus": "ahead",
+      "upstreamMergeBase": "85b4fed0b0353dd78c8c875c2f562d522a2b310f",
+      "fixIsAncestor": true,
+      "fixBodiesObservedInLockedSourceArchive": true,
+      "scannerFindingSuppressed": false,
+      "rawThresholdOverride": false
+    },
+    {
+      "cve": "CVE-2024-25178",
+      "cnaDescription": "LuaJIT through 2.1 and OpenRusty luajit2 before v2.1-20240314 have an out-of-bounds read in the stack-overflow handler in lj_state.c.",
+      "fixCommit": "defe61a56751a0db5f00ff3ab7b8f45436ba74c8",
+      "sourceCommit": "fbfc558aacd57a54623df0ced4c31a28f81f8ff2",
+      "tag": "v2.1-20260824",
+      "upstreamCompareStatus": "ahead",
+      "upstreamMergeBase": "defe61a56751a0db5f00ff3ab7b8f45436ba74c8",
+      "fixIsAncestor": true,
+      "fixBodiesObservedInLockedSourceArchive": true,
+      "scannerFindingSuppressed": false,
+      "rawThresholdOverride": false
+    }
+  ],
+  "publisherTrustAccepted": false,
+  "dependencyCoverageAccepted": false,
+  "acceptanceGranted": false,
+  "startAuthorized": false,
+  "targetOperationsPerformed": 0,
+  "oldTargetSnapshotPreserved": true,
+  "candidateCompileProven": true,
+  "candidateInstallationProven": true,
+  "candidateTlsOidcCompatibilityProven": true,
+  "candidateSharedDictionaryGuardProven": true,
+  "candidateGrpcAuthorityRegressionProven": true,
+  "candidateScannerInvoked": true,
+  "diagnosticSourceCommit": "9282308d2af905e0565a70ece1075f8ac800144f",
+  "diagnosticRun": 37432444318,
+  "grpcDiagnostic": {
+    "runId": 37432444318,
+    "jobId": 112166226697,
+    "runtimeAuthorityValueObserved": "ouf-authority.example.invalid",
+    "failureCause": "resty CLI redirects ngx.say to stdout; fixture HTTP response body empty",
+    "sourceCodeModifiedForThisFix": false,
+    "fixtureCorrectionCommit": "385809bde50a20e4987c9c55c2b57a614dc240e0",
+    "fixtureCorrectionVerification": "PENDING",
+    "verification": "PASS",
+    "verificationRun": 37433261779
+  },
+  "independentOriginalAuditAttestation": {
+    "runId": 37432727620,
+    "jobId": 112167131719,
+    "cryptoVerified": true
+  },
+  "candidateJob": 112168860142,
+  "candidateMergeCommit": "1c7e31a26c664a12f2588292d38b3896b4c4e7ec",
+  "candidateRawScannerThresholdMet": true,
+  "candidateNativeScannerThresholdMet": false,
+  "candidateCombinedScannerThresholdMet": false,
+  "candidateNativeEvidence": {
+    "acceptanceGranted": false,
+    "dependencyCoverageAccepted": false,
+    "imageArchiveSha256": "c13e1a39a131102afcb99f03b82a19c27d307d899141742391ae7f2711816441",
+    "imageId": "sha256:516f49278f48c808427d346ad8d1520f60433d071949435774395e6c0ebc29b3",
+    "nativeBinaryManifestSha256": "bdfbb271995b48095b113dbd04abd700bfddb935fabb89cf17fcc8770f85b4da",
+    "nativeComponents": [
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/openssl3/bin/openssl": "a037c746990e7b95b25deb8dbd8d50f8f6176c6c1b56f7c9448db78c9717be67",
+          "/usr/local/openresty/openssl3/lib/engines-3/afalg.so": "29787d2b53befc1560006ac75df63fbdf96e963ae09008598a25129afc0e9e4d",
+          "/usr/local/openresty/openssl3/lib/engines-3/capi.so": "8a48bd5686c36e656a236b78b23459de08b618defaeb44569058604969bd452b",
+          "/usr/local/openresty/openssl3/lib/engines-3/loader_attic.so": "40ba74bcfb94c468729f74cc6911a8690fb53bb1a44a5414a9f2bda95cce15ed",
+          "/usr/local/openresty/openssl3/lib/engines-3/padlock.so": "6d15e05e646605ad335250fb3fb55c93f01c730ee99d931a224f7942bd14576e",
+          "/usr/local/openresty/openssl3/lib/libcrypto.so.3": "fc836908de36d3d010662269b3e22246848b7713567ccc20f84721325e95fd3a",
+          "/usr/local/openresty/openssl3/lib/libssl.so.3": "2def0004883d6da74aa520c051cc73983365ae51bb3f252b19e0b1e8cdef2bf9",
+          "/usr/local/openresty/openssl3/lib/ossl-modules/legacy.so": "55e6e9285d385b5e94c27bd97a6f9b89fa31ac5c05f0b846a6218157717f1bc3"
+        },
+        "component": "openssl",
+        "sourceDirectory": null,
+        "version": "3.4.8"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/zlib/lib/libz.so.1.3.2.1-motley": "bb40f2404ed5c18ae53314e4036f65f875dd56f7af1db0c3d0a3a541caa70f55"
+        },
+        "component": "zlib",
+        "sourceDirectory": null,
+        "version": "1.3.2.1-motley"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/pcre/lib/libpcre.so.1.2.13": "3917e1f46fdf33145183188f4ccfde50e578dd1593518b65bafa66f0dc14e8bc",
+          "/usr/local/openresty/pcre/lib/libpcreposix.so.0.0.7": "cd691028fa3e811931d817c7d63fb449e1a5d4ca53bd7ae388d9bfaa963982fa"
+        },
+        "component": "pcre",
+        "sourceDirectory": null,
+        "version": "8.45"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/luajit/bin/luajit-2.1.1787558776": "9eeb150ad8a90d3c71034aa592305c038ade805a6d7ae3f9b2b52a8e8ac726a1",
+          "/usr/local/openresty/luajit/lib/libluajit-5.1.so.2.1.1787558776": "87a56ac8ccc203b95de113abd0c7b38db31c18e6ab6c0010c0f8897b66dbc562"
+        },
+        "component": "luajit",
+        "sourceDirectory": "LuaJIT-2.1-20260824",
+        "version": "2.1-20260824"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/lualib/cjson.so": "33a5603d0f58e1cead89aea6b1193e7f55208e38362ad02453d82bb5a992fbaf"
+        },
+        "component": "lua-cjson",
+        "sourceDirectory": "lua-cjson-2.1.0.19",
+        "version": "2.1.0.19"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/lualib/librestysignal.so": "3d4e5e94f2fbbaa59fdbf8fe9c1a591f0c71a24b2fa835d20a5704c02f27b966"
+        },
+        "component": "lua-resty-signal",
+        "sourceDirectory": "lua-resty-signal-0.05",
+        "version": "0.05"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/lualib/redis/parser.so": "0ce7a8a960be4b27cd347d97f08e254a14af67e9d973782cfbb54e4c3703b602"
+        },
+        "component": "lua-redis-parser",
+        "sourceDirectory": "lua-redis-parser-0.13",
+        "version": "0.13"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/nginx/sbin/nginx": "f2a8f32687265e83c35c7f1ea7681c7ac525d28cd371f31edd0d95577d1c2fdc"
+        },
+        "component": "openresty",
+        "sourceDirectory": "nginx-1.31.6",
+        "version": "1.31.6.1"
+      }
+    ],
+    "nativeElfFilesIdentified": 17,
+    "nativeIdentityScope": "/usr/local/openresty/",
+    "nativeSourceManifestSha256": "b632f89236799dec18bf6a7a62ae278283b81a928b8f5714de04b59175b89872",
+    "nativeVulnerabilityReviewComplete": false,
+    "networkIsolatedScanner": true,
+    "originalPackagesPreserved": true,
+    "originalSyftSha256": "10b436b9c9d0e5a19dbadc951de3780ec88c38c4a556d2b1dfc344cf157feaa5",
+    "publisherTrustAccepted": false,
+    "scannerInvoked": true,
+    "scannerSeverityThresholdMet": false,
+    "schema": "ouf.semantic-rebuilt-native-identity.v1",
+    "severityCounts": {
+      "Critical": 2,
+      "High": 1,
+      "Low": 18,
+      "Medium": 141,
+      "Negligible": 4,
+      "Unknown": 0
+    },
+    "sourceClosureRecorded": true,
+    "startAuthorized": false,
+    "supplementedSyftSha256": "3c23b3a76bdd3d896cad9a06c048b21ede1a707fc5edfad9da09fdb5ba345416",
+    "unresolvedNativeElfFiles": [],
+    "wasmCompiled": false
+  },
+  "candidateImages": [
+    {
+      "acceptanceGranted": false,
+      "completeCreationAccepted": false,
+      "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+      "databaseBuilt": "2026-10-05T06:45:38Z",
+      "databaseSchemaVersion": "v6.1.10",
+      "dependencyCoverageAccepted": false,
+      "dependencySbomAccepted": false,
+      "highCriticalPublicAdvisoryIds": [],
+      "highCriticalPublicAdvisoryIdsTruncated": false,
+      "imageId": "sha256:29b7863b4a2b62892153e6b1ce7336e607ad3266bc66155d43d11da26bd744b9",
+      "imagePublisherProvenanceVerified": false,
+      "packageAlertCount": 0,
+      "reportSha256": "4daa5201044e153df6c2140617a498b4902930dc1815c8a028be30d0e16f65b7",
+      "role": "adapter",
+      "scannerSeverityThresholdMet": true,
+      "schema": "ouf.semantic-image-vulnerability-facts.v1",
+      "severityCounts": {
+        "Critical": 0,
+        "High": 0,
+        "Low": 0,
+        "Medium": 5,
+        "Negligible": 0,
+        "Unknown": 0
+      },
+      "startAuthorized": false,
+      "syftJsonSha256": "041e5251344e3b488c211388f83de0f52f953c184749436935ff42a895dd4b26"
+    },
+    {
+      "acceptanceGranted": false,
+      "completeCreationAccepted": false,
+      "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+      "databaseBuilt": "2026-10-05T06:45:38Z",
+      "databaseSchemaVersion": "v6.1.10",
+      "dependencyCoverageAccepted": false,
+      "dependencySbomAccepted": false,
+      "highCriticalPublicAdvisoryIds": [],
+      "highCriticalPublicAdvisoryIdsTruncated": false,
+      "imageId": "sha256:516f49278f48c808427d346ad8d1520f60433d071949435774395e6c0ebc29b3",
+      "imagePublisherProvenanceVerified": false,
+      "packageAlertCount": 0,
+      "reportSha256": "8311380819526d235160d9cff7d86dc192c5a2cb2f722f5299d595f1d4069325",
+      "role": "southbound",
+      "scannerSeverityThresholdMet": true,
+      "schema": "ouf.semantic-image-vulnerability-facts.v1",
+      "severityCounts": {
+        "Critical": 0,
+        "High": 0,
+        "Low": 18,
+        "Medium": 141,
+        "Negligible": 4,
+        "Unknown": 0
+      },
+      "startAuthorized": false,
+      "syftJsonSha256": "10b436b9c9d0e5a19dbadc951de3780ec88c38c4a556d2b1dfc344cf157feaa5"
+    }
+  ],
+  "candidateArchives": [
+    {
+      "bytes": 20581487,
+      "file": "adapter.image.tar.gz",
+      "imageId": "sha256:29b7863b4a2b62892153e6b1ce7336e607ad3266bc66155d43d11da26bd744b9",
+      "kind": "docker-save-tar-gzip",
+      "role": "adapter",
+      "sha256": "27ce7f578e3b7a534983b869e7a456bfbe86e0ae36d7a7fa688ec041dd674504",
+      "uncompressedBytes": 54939136,
+      "uncompressedSha256": "36c8151fc9665ba3666acb3ad693316605ff2c30e7aa62d97f9478a4d7496bf4"
+    },
+    {
+      "bytes": 204087997,
+      "file": "southbound.image.tar.gz",
+      "imageId": "sha256:516f49278f48c808427d346ad8d1520f60433d071949435774395e6c0ebc29b3",
+      "kind": "docker-save-tar-gzip",
+      "role": "southbound",
+      "sha256": "8b1042906bf4d48a5fc07f1e0797cbe343d1c38b9e352ee1d51dfdd6322cc6e8",
+      "uncompressedBytes": 572065280,
+      "uncompressedSha256": "c13e1a39a131102afcb99f03b82a19c27d307d899141742391ae7f2711816441"
+    }
+  ],
+  "ciAttestationsVerified": true,
+  "positiveV2QualificationProven": false,
+  "candidateEvidenceArtifact": {
+    "id": 11397838781,
+    "size": 7236277,
+    "sha256": "c3a284af013942a0fc33b2a7855e84d347315f061f5bf65072101403e7a51312",
+    "independentlyRead": true,
+    "readScope": [
+      "native/native-coverage.json",
+      "native/southbound.native.syft.json",
+      "native/southbound.native.grype.json",
+      "attestations/provenance.json"
+    ]
+  },
+  "candidateFullArtifact": {
+    "id": 11397709159,
+    "size": 230682834,
+    "sha256": "0614b43d8843b8ebe24b4a6a4d564dfb1d36271b8660e8d0379d147a1db231c0",
+    "downloaded": false
+  },
+  "targetCommandReady": false,
+  "candidateIndependentAttestation": {
+    "codeCommit": "46f74912a66a24bb4bb9947dc7f0015ec91325f9",
+    "runId": 37434717230,
+    "jobId": 112173608320,
+    "conclusion": "success",
+    "receipt": {
+      "acceptanceGranted": false,
+      "artifactId": 11397838781,
+      "artifactSha256": "c3a284af013942a0fc33b2a7855e84d347315f061f5bf65072101403e7a51312",
+      "blockingFindings": [
+        {
+          "id": "CVE-2024-25178",
+          "namespace": "nvd:cpe",
+          "package": "luajit",
+          "severity": "Critical",
+          "version": "2.1-20260824"
+        },
+        {
+          "id": "CVE-2024-25176",
+          "namespace": "nvd:cpe",
+          "package": "luajit",
+          "severity": "Critical",
+          "version": "2.1-20260824"
+        },
+        {
+          "id": "CVE-2024-25177",
+          "namespace": "nvd:cpe",
+          "package": "luajit",
+          "severity": "High",
+          "version": "2.1-20260824"
+        }
+      ],
+      "containerOperations": 0,
+      "dependencyCoverageAccepted": false,
+      "nativeElfFilesIdentified": 17,
+      "publisherTrustAccepted": false,
+      "scannerInvoked": false,
+      "schema": "ouf.semantic-rebuilt-native-attestation-readback.v1",
+      "severityCounts": {
+        "Critical": 2,
+        "High": 1,
+        "Low": 18,
+        "Medium": 141,
+        "Negligible": 4,
+        "Unknown": 0
+      },
+      "sourceCodeCommit": "385809bde50a20e4987c9c55c2b57a614dc240e0",
+      "sourceMergeCommit": "1c7e31a26c664a12f2588292d38b3896b4c4e7ec",
+      "sourceRun": 37433261779,
+      "startAuthorized": false,
+      "supplementalAttestationIndependentlyCryptoVerified": true,
+      "targetModified": false,
+      "wasmCompiled": false,
+      "wholeArchiveHashVerified": true
+    }
+  },
+  "blockingFindings": [
+    {
+      "id": "CVE-2024-25178",
+      "namespace": "nvd:cpe",
+      "package": "luajit",
+      "severity": "Critical",
+      "version": "2.1-20260824"
+    },
+    {
+      "id": "CVE-2024-25176",
+      "namespace": "nvd:cpe",
+      "package": "luajit",
+      "severity": "Critical",
+      "version": "2.1-20260824"
+    },
+    {
+      "id": "CVE-2024-25177",
+      "namespace": "nvd:cpe",
+      "package": "luajit",
+      "severity": "High",
+      "version": "2.1-20260824"
+    }
+  ],
+  "opensslSelectedUnitTestsRun": false,
+  "opensslSelectedUnitTestsResult": "NOTESTS",
+  "nextAction": "Reconcile the three LuaJIT generic-CPE findings against locked-source fixes without suppression or severity changes; retain blocked combined threshold until verified. Then review full dependency coverage/publisher trust and coherent digest dossier before any target step."
+}

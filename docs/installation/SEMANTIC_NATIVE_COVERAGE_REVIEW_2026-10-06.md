@@ -1,3 +1,5 @@
+> Stato corrente 6 ottobre 2026 — ricompilazione CI [37433261779](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37433261779): build e regressioni reali TLS/OIDC, shared-dict e gRPC PASS; Wasmtime assente, 17 ELF identificati sotto /usr/local/openresty/. La scansione completa supplementare resta **BLOCKED: 2 Critical / 1 High / 0 Unknown**, tre match LuaJIT CVE-2024-25176/25177/25178. Fix upstream presenti nel sorgente bloccato, ma nessuna soppressione/VEX/deroga alla soglia. Hash e firme dei report verificati indipendentemente (run37434717230). Originale audit Wasmtime2Critical/8High conservato e firma ora verificata indipendentemente (run37432727620). ZIP originale qualificato sul VPS: byte PASS, non ripetere; snapshot v1 e ambiente test preservati. Nessuna operazione VPS o nuovo comando pronto. Acceptance, publisher trust, copertura accettata, runtime/start false. Dettagli: docs/installation/SEMANTIC_NATIVE_RUNTIME_REBUILD_2026-10-06.md e relativa receipt CI. Questo stato prevale sui paragrafi storici.
+
 # Revisione delle dipendenze native — 6 ottobre 2026
 
 La qualificazione byte VPS resta PASS. L'immagine southbound qualificata non supera la scansione supplementare: 2 Critical e 8 High, tutti Wasmtime 0.38.1. Nessuna importazione o operazione container è stata eseguita da questa revisione.
@@ -8,7 +10,7 @@ La qualificazione byte VPS resta PASS. L'immagine southbound qualificata non sup
 - Immagine: `sha256:213ff3377465784bc1f5dd82863d65d6585a3c22062eb4e7d78c7c0239af0334`.
 - [CI 37424720686](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37424720686), codice `150e059e8722c27ce0949254aa850ff82c64af7b`: tre test negativi/strutturali PASS, scansione Grype offline sul DB fissato e ancora fresco, originale attestazione verificata.
 - [Artifact 11395230041](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37424720686/artifacts/11395230041), SHA256 `02a1b44a1b737e5c95b74cb7e310c014f78526a41ce44652a08b8056167776c8`, 883798 byte; scaricato, hash verificato e report letti.
-- La nuova attestazione dell'evidenza è stata emessa dalla CI; la sua verifica crittografica indipendente resta da eseguire. Non equivale a publisher trust approvato.
+- La firma dei tre documenti supplementari è verificata indipendentemente dal run37432727620/job112167131719, con hash dell'intero artifact, codice produttore, merge, workflow e ref fissati. Non equivale a publisher trust approvato.
 
 Il Syft originale enumera 182 package ma non identifica separatamente alcune librerie native possedute dal package APISIX. Il nuovo documento conserva package/relazioni originali e aggiunge quattro componenti con evidenza di versione e hash: OpenSSL 3.4.8, zlib 1.3.2.1-motley, PCRE 8.45 e Wasmtime 0.38.1. Non modifica il vecchio SBOM o il report qualificato sulla VPS. Il binario libwasmtime.so corrisponde byte per byte al C API x86_64 Linux ufficiale v0.38.1 (SHA256 `ec2b5868c0e602c5e233607d422fad3422758c7a12bd38faded483da62081c2d`).
 
@@ -28,6 +30,6 @@ Riferimenti primari:
 - https://github.com/api7/wasm-nginx-module/blob/0.7.0/install-wasmtime.sh
 - https://github.com/api7/apisix-build-tools/blob/35292b649a01887cd54597fd16b2bea99648cdf5/build-apisix-runtime.sh
 
-Lo script upstream installa ancora v0.38.1 e collega il modulo WASM staticamente a Nginx. Sostituire/cancellare soltanto libwasmtime non è una correzione dimostrata. Alternative da esercitare in CI: aggiornare e ricompilare modulo/Wasmtime con ABI verificata, oppure runtime ricompilato senza modulo opzionale WASM dopo aver verificato i contratti richiesti. Nessuna build corretta o compatibilità di queste alternative è ancora dichiarata.
+Lo script upstream installa ancora v0.38.1 e collega il modulo WASM staticamente a Nginx. Sostituire/cancellare soltanto libwasmtime non è una correzione dimostrata. Alternative da esercitare in CI: aggiornare e ricompilare modulo/Wasmtime con ABI verificata, oppure runtime ricompilato senza modulo opzionale WASM dopo aver verificato i contratti richiesti. Il nuovo candidato senza WASM supera build e regressioni reali; la soglia completa resta bloccata da tre segnalazioni LuaJIT. Vedere SEMANTIC_NATIVE_RUNTIME_REBUILD_2026-10-06.md per il risultato corrente.
 
 Prima di nuovi passi VPS servono build corretta, identità/provenienza delle dipendenze native, scansione completa su DB fresco, regressioni reali TLS/OIDC e nuovo dossier coerente coi digest. Il gateway live e lo snapshot già qualificato restano invariati. Acceptance/runtime/start false; gate49 storico aperto.
