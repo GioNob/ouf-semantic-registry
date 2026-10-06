@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Read hash-bound final receipt safe public advisory IDs and per-image decisions; map advisories to source dependencies/base image, remediate before a newly scoped rescan.",
+  "nextTask": "Read both existing hash-bound reports once for grouped vulnerable package/version/fix/namespace/matcher facts, then prepare source remediation. No scanner rerun or live gateway upgrade.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Read hash-bound final receipt safe public advisory IDs and per-image decisions; map advisories to source dependencies/base image, remediate before a newly scoped rescan.",
+  "nextStep": "Read both existing hash-bound reports once for grouped vulnerable package/version/fix/namespace/matcher facts, then prepare source remediation. No scanner rerun or live gateway upgrade.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -1070,7 +1070,7 @@
     "nextNativeRun": 37366132907,
     "nextNativeCommit": "dd8bb49b2150834dac9510a69b66c9da130822e4",
     "sourceReceiptSha256": "6e0a436d8da6b55c3286811140efd46b679d2ceb9dc202b33576a76425ed08fc",
-    "nextAction": "Read hash-bound final receipt safe public advisory IDs and per-image decisions; map advisories to source dependencies/base image, remediate before a newly scoped rescan.",
+    "nextAction": "Read both existing hash-bound reports once for grouped vulnerable package/version/fix/namespace/matcher facts, then prepare source remediation. No scanner rerun or live gateway upgrade.",
     "wrapperTestsPassed": 3,
     "wrapperPath": "docs/handoffs/commands/OUF_REVIEW_IMAGE_VULNERABILITIES_2026-10-05.sh",
     "wrapperSha256": "ec5b567d90849a533a45f65911795690f2ad22357b6cc79b80d2d9c821a93fd9",
@@ -1161,6 +1161,18 @@
       }
     },
     "originalBlockedFailureCause": "UNKNOWN_OUTPUT_NOT_RETAINED",
-    "receiptSha256": "138661f09fe4757978f602fc3726c7a2e2d78d49782b07ea09cdffc44f5de704"
+    "receiptSha256": "138661f09fe4757978f602fc3726c7a2e2d78d49782b07ea09cdffc44f5de704",
+    "allScannerSeverityThresholdsMet": false,
+    "receiptThresholdConfirmed": true,
+    "advisoriesOperatorReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_ADVISORIES_2026-10-06_OPERATOR.json",
+    "advisoryCounts": {
+      "adapter": 15,
+      "southbound": 45
+    },
+    "advisoryIdsTruncated": false,
+    "advisoryReadPending": false,
+    "packageReadWrapperPath": "docs/handoffs/commands/OUF_READ_VULNERABILITY_PACKAGES_2026-10-06.sh",
+    "packageReadWrapperSha256": "b66912b5693b64d7989c88186b70c2c8b6a88756bc8f336139f550d4300a13e7",
+    "packageReadPending": true
   }
 }

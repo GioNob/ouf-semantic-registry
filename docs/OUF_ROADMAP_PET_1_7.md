@@ -1,3 +1,15 @@
+## Gate 49 — receipt riconciliata, preparazione correzioni
+
+L'operatore ha letto la receipt due volte (6 ottobre 2026 alle 06:38:08 e 06:38:42 Europe/Rome), con risultati identici e hash verificato. Il campo `allScannerSeverityThresholdsMet` è false; anche entrambe le decisioni per immagine sono false. Elenchi High/Critical: adapter 15 identificativi, southbound 45, senza troncamento; gli Unknown del southbound non sono inclusi in questi elenchi. Evidenza: `docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_ADVISORIES_2026-10-06_OPERATOR.json`. Non ripetere la lettura degli stessi ID.
+
+Ispezionate le ricette nel gateway al commit `516133e59be869012d3003758e545a5b5aa0060a`: `Dockerfile.semantic-provider` richiede Python 3.13 e base fissata per digest, copia solo cinque moduli Python; `scripts/stage_semantic_provider_candidates.py` riusa per southbound l'immagine verificata del gateway. Non cambiare la base o aggiornare il gateway live sulla sola base degli ID. Una nuova immagine cambia i binding del dossier e richiede rivalutazione coerente.
+
+La verifica preliminare degli avvisi pubblici individua componenti OS (es. glibc, PCRE2, OpenLDAP). Fonte Debian per CVE-2026-5435: https://security-tracker.debian.org/tracker/CVE-2026-5435 ; al momento bookworm/trixie indicati vulnerable, non una prova di fix disponibile con semplice upgrade. Fonte Debian per CVE-2026-86145: https://security-tracker.debian.org/tracker/CVE-2026-86145 ; versioni corrette dipendono dalla distribuzione. Questi riferimenti non identificano da soli package/version/distro reali nei due report e non autorizzano deroghe di soglia.
+
+Prossima unica lettura: `docs/handoffs/commands/OUF_READ_VULNERABILITY_PACKAGES_2026-10-06.sh`, SHA256 `b66912b5693b64d7989c88186b70c2c8b6a88756bc8f336139f550d4300a13e7`. Legge i due report già autorizzati e vincolati agli hash attestati; raggruppa High/Critical/Unknown per package, versione installata, fix state/versioni, namespace e matcher. Non restituisce percorsi, URL, descrizioni, ambiente o configurazioni; omette campi fuori formato e ne conta la redazione. Nessun Grype, import, Docker o scrittura privata. Verificati bash/Python syntax e fixture per raggruppamento, redazione e input malformato; non presentati come nuova prova scanner CI.
+
+Dopo questa lettura: distinguere aggiornamenti disponibili, dipendenze eliminabili e findings senza fix o da verificare; preparare la modifica alle ricette con verifica di compatibilità, poi definire la build di nuove immagini senza toccare live/stopped candidate o riscrivere dossier storici. Soglia PET e acceptance non cambiano. È lavoro sul gate 49; nessun gate nuovo.
+
 ## Gate 49 — report recuperati, soglia vulnerabilità non soddisfatta
 
 Diagnostica eseguita dall'operatore il 6 ottobre 2026 alle 06:35:06 Europe/Rome. Entrambi i report e la receipt finale esistono, sono leggibili con permessi attesi e hash stabili. I cinque input del gate 48 e l'archivio database coincidono con gli hash fissati; scanner/versione, database e binding dei due report coincidono con i valori attesi. Nessun alert o match ignorato, nessuna severity fuori formato.
