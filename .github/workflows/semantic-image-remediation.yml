@@ -2,6 +2,10 @@ name: Semantic image remediation experiment
 on:
   pull_request:
     paths:
+      - 'Dockerfile.semantic-provider-source-fixed'
+      - 'Dockerfile.semantic-southbound-source-fixed'
+      - 'tests/zlib-source-fixed.APKBUILD'
+      - 'tests/openssl-3.4.1-sess_set_get_cb_yield.patch'
       - 'Dockerfile.semantic-provider-security-update'
       - 'Dockerfile.semantic-southbound-security-update'
       - 'tests/run_semantic_image_remediation.py'
@@ -13,11 +17,11 @@ permissions:
 jobs:
   compatible-image-scan:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        candidate: [alpine-ubuntu-updated]
+        candidate: [alpine-ubuntu-source-fixed]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4

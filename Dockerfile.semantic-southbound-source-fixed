@@ -1,0 +1,25 @@
+# CI prototype: preserve APISIX 3.18.0 and OpenResty's SSL callback patch.
+ARG INPUT_IMAGE
+FROM ${INPUT_IMAGE} AS build
+USER 0:0
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential curl ca-certificates zlib1g-dev
+COPY tests/openssl-3.4.1-sess_set_get_cb_yield.patch /tmp/openresty.patch
+RUN set -eu; \
+    curl -fSL https://github.com/openssl/openssl/releases/download/openssl-3.4.8/openssl-3.4.8.tar.gz -o /tmp/openssl.tar.gz; \
+    echo '9de9ce2f29e584044ae07ab93fc601637be01fdc91d109c5a655ec7419e6022b  /tmp/openssl.tar.gz' | sha256sum -c -; \
+    mkdir /src; tar xzf /tmp/openssl.tar.gz -C /src --strip-components=1; \
+    cd /src; patch -p1 < /tmp/openresty.patch; \
+    ./config shared zlib --prefix=/usr/local/openresty/openssl3 --libdir=lib -Wl,-rpath,/usr/local/openresty/openssl3/lib; \
+    make -j2; \
+    make test TESTS='test_dtls_mtu test_dtls_bad_ver test_dtlslisten test_sslapi'; \
+    make DESTDIR=/out install_sw
+FROM ${INPUT_IMAGE}
+USER 0:0
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --only-upgrade libssl3t64 openssl && rm -rf /var/lib/apt/lists/*
+COPY --from=build /out/usr/local/openresty/openssl3/ /usr/local/openresty/openssl3/
+RUN /usr/local/openresty/openssl3/bin/openssl version | grep -F 'OpenSSL 3.4.8'
+LABEL ouf.openresty.openssl.version=3.4.8 \
+      ouf.openresty.openssl.source.sha256=9de9ce2f29e584044ae07ab93fc601637be01fdc91d109c5a655ec7419e6022b \
+      ouf.openresty.patch.source.commit=bc8bf89488f2d02572389158533b3f85ca0ded7f
+ARG RUNTIME_USER
+USER ${RUNTIME_USER}
