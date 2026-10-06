@@ -1,0 +1,93 @@
+name: Semantic native coverage of qualified images
+on:
+  pull_request:
+    paths:
+      - 'tools/audit_semantic_native_coverage.py'
+      - 'tests/test_semantic_native_coverage.py'
+      - 'tests/scan_semantic_native_coverage.py'
+      - '.github/workflows/semantic-native-coverage.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+  attestations: write
+jobs:
+  same-image-native-coverage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Negative and layer semantics checks
+        run: python3 -B -m unittest discover -s tests -p test_semantic_native_coverage.py
+      - name: Download immutable previously qualified public bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir coverage-input
+          gh api /repos/GioNob/ouf-semantic-registry/actions/artifacts/11392623308/zip > coverage-input/original.zip
+          printf '%s  %s\n' bf369a5e445a7e84c51d0252b6714912b0d92897097f3afeb2a21c85db38fa2a coverage-input/original.zip | sha256sum --check --strict
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 --max-time 120 --max-filesize 16777216 https://github.com/bytecodealliance/wasmtime/releases/download/v0.38.1/wasmtime-v0.38.1-x86_64-linux-c-api.tar.xz --output coverage-input/wasmtime.tar.xz
+      - name: Bind original CI signatures to exact archive hashes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import zipfile,pathlib
+          with zipfile.ZipFile('coverage-input/original.zip') as archive:
+              for name in ('southbound.image.tar.gz','attestations/provenance.json'):
+                  destination=pathlib.Path('coverage-input')/pathlib.Path(name).name
+                  with destination.open('xb') as out,archive.open(name) as incoming:
+                      while chunk:=incoming.read(1048576):out.write(chunk)
+          PY
+          gh attestation verify coverage-input/southbound.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest 226b1d3cb0562ed1cd840c758873f92ab3401991 --source-ref refs/pull/26/merge --deny-self-hosted-runners --bundle coverage-input/provenance.json --format json > coverage-input/original-verification.json
+      - name: Audit exact archive and supplement native identities
+        run: python3 -B tools/audit_semantic_native_coverage.py --bundle coverage-input/original.zip --wasmtime-release coverage-input/wasmtime.tar.xz --output generated/native-coverage
+      - name: Prepare original pinned scanner and fresh database
+        run: sudo /usr/bin/python3 -B tests/prepare_native_vulnerability_scanners.py
+      - name: Scan original packages plus native supplement offline
+        run: sudo /usr/bin/python3 -B tests/scan_semantic_native_coverage.py --sbom generated/native-coverage/southbound.native.syft.json > generated/native-coverage/southbound.native.grype.json
+      - name: Preserve applicable primary-source Wasmtime advisories
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api '/advisories?ecosystem=rust&affects=wasmtime%400.38.1&per_page=100' > generated/native-coverage/wasmtime-advisories.json
+      - name: Record measured findings without accepting coverage
+        run: |
+          python3 - <<'PY'
+          import json,pathlib,collections,hashlib
+          out=pathlib.Path('generated/native-coverage')
+          report=json.loads((out/'southbound.native.grype.json').read_text())
+          counts={k:0 for k in ('Critical','High','Medium','Low','Negligible','Unknown')}
+          for match in report['matches']:
+              counts[match['vulnerability']['severity']]+=1
+          facts=json.loads((out/'native-coverage.json').read_text())
+          advisories=json.loads((out/'wasmtime-advisories.json').read_text())
+          assert type(advisories) is list and len(advisories)<100
+          facts.update(scannerInvoked=True,networkIsolatedScanner=True,severityCounts=counts,
+              scannerSeverityThresholdMet=not any(counts[k] for k in ('Critical','High','Unknown')) and not report.get('alertsByPackage'),
+              applicableWasmtimeAdvisories=[{'ghsaId':a['ghsa_id'],'cveId':a['cve_id'],'severity':a['severity']} for a in advisories],
+              measuredScanComplete=True,dependencyCoverageAccepted=False,acceptanceGranted=False,startAuthorized=False)
+          (out/'native-coverage.json').write_text(json.dumps(facts,indent=2,sort_keys=True)+'\n')
+          print('SEMANTIC_NATIVE_COVERAGE='+json.dumps(facts,sort_keys=True))
+          names=('native-coverage.json','southbound.native.syft.json','southbound.native.grype.json','wasmtime-advisories.json')
+          (out/'checksums.sha256').write_text(''.join(hashlib.sha256((out/n).read_bytes()).hexdigest()+'  '+str(out/n)+'\n' for n in names))
+          PY
+      - name: Attest supplemental evidence for unchanged image
+        id: evidence
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-checksums: generated/native-coverage/checksums.sha256
+          create-storage-record: false
+      - name: Preserve signature and original verification
+        env:
+          EVIDENCE_BUNDLE: ${{ steps.evidence.outputs.bundle-path }}
+        run: |
+          cp "$EVIDENCE_BUNDLE" generated/native-coverage/attestation.json
+          cp coverage-input/original-verification.json generated/native-coverage/original-verification.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semantic-native-coverage-${{ github.run_id }}
+          path: generated/native-coverage/
+          if-no-files-found: warn
+          retention-days: 30
