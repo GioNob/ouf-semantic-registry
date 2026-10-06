@@ -1,0 +1,852 @@
+{
+  "schema": "ouf.semantic-image-remediation-ci-evidence.v1",
+  "gatewayCodeCommit": "c0b1f97bdb1fbcd6a88117dea6520ea9c322f265",
+  "gatewayWorkflows": [
+    {
+      "id": 37416029730,
+      "status": "SUCCESS"
+    },
+    {
+      "id": 37416029638,
+      "status": "SUCCESS"
+    }
+  ],
+  "initial": {
+    "codeCommit": "d813497b51f7c17a49c360a2ad71d0a86b1035ae",
+    "runId": 37415582191,
+    "alpineUbuntu": {
+      "acceptanceGranted": false,
+      "allScannerSeverityThresholdsMet": false,
+      "candidate": "alpine-ubuntu",
+      "compatibilityProven": true,
+      "containerOperations": 0,
+      "dependencyCoverageAccepted": false,
+      "experimentOnly": true,
+      "fullReceiptSha256": "5d9ecf03494984df1b3617d9b3c6b46f191e1dd45cbe5a15b3b80b50f62316c5",
+      "gatewayCodeCommit": "7d5b4f58783ccca15c19dfb9c0d409b39566258e",
+      "imageArchivesVerified": true,
+      "images": [
+        {
+          "acceptanceGranted": false,
+          "completeCreationAccepted": false,
+          "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+          "databaseBuilt": "2026-10-05T06:45:38Z",
+          "databaseSchemaVersion": "v6.1.10",
+          "dependencyCoverageAccepted": false,
+          "dependencySbomAccepted": false,
+          "highCriticalPublicAdvisoryIds": [
+            "CVE-2026-85091"
+          ],
+          "highCriticalPublicAdvisoryIdsTruncated": false,
+          "imageId": "sha256:20bf3895b2952e00c7fe1ea7f8d55fe28d6bcaff79018ebcd0bd31a1f5bc9b73",
+          "imagePublisherProvenanceVerified": false,
+          "packageAlertCount": 0,
+          "reportSha256": "9c66cc5919a3b6a49dde9a80cb01a086a875ed0aac1668e33d7e7043d49a1bb0",
+          "role": "adapter",
+          "scannerSeverityThresholdMet": false,
+          "schema": "ouf.semantic-image-vulnerability-facts.v1",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 1,
+            "Low": 0,
+            "Medium": 5,
+            "Negligible": 0,
+            "Unknown": 0
+          },
+          "startAuthorized": false,
+          "syftJsonSha256": "cd334e48cc7881df5377b88257fe00b60b06e38c92c2faee93cd98223b24795a"
+        },
+        {
+          "acceptanceGranted": false,
+          "completeCreationAccepted": false,
+          "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+          "databaseBuilt": "2026-10-05T06:45:38Z",
+          "databaseSchemaVersion": "v6.1.10",
+          "dependencyCoverageAccepted": false,
+          "dependencySbomAccepted": false,
+          "highCriticalPublicAdvisoryIds": [
+            "CVE-2026-84782"
+          ],
+          "highCriticalPublicAdvisoryIdsTruncated": false,
+          "imageId": "sha256:5e5500c92116de1f9886b174623d6874e6beadd4d5d66c8ba1e5bffa0b2f575e",
+          "imagePublisherProvenanceVerified": false,
+          "packageAlertCount": 0,
+          "reportSha256": "6f7b14fe2e8a2d9af471826b6e9ad300040979d8b46a31031f74de801926f453",
+          "role": "southbound",
+          "scannerSeverityThresholdMet": false,
+          "schema": "ouf.semantic-image-vulnerability-facts.v1",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 2,
+            "Low": 34,
+            "Medium": 145,
+            "Negligible": 4,
+            "Unknown": 0
+          },
+          "startAuthorized": false,
+          "syftJsonSha256": "c5e2985ce59f3bd57534e47fb44e24bf8b68c206c062b21a0c5c6c4bc2c84ce2"
+        }
+      ],
+      "inputs": {
+        "adapter": {
+          "discoveryTag": "python:3.13-alpine",
+          "pulledImageId": "sha256:050f6d1f4e5f89af62e03f6fcd1c06be2a401339b3694adc4c0a2850d9d8b1e7",
+          "resolvedDigest": "python@sha256:2d9aefe2fef018a7eb2c13064c89c71929800fd2e5dccdbf52ea5da5bb8d929a"
+        },
+        "southbound": {
+          "discoveryTag": "apache/apisix:3.18.0-ubuntu",
+          "pulledImageId": "sha256:5e5500c92116de1f9886b174623d6874e6beadd4d5d66c8ba1e5bffa0b2f575e",
+          "resolvedDigest": "apache/apisix@sha256:9ee5df1611f98a902d1bbacf760b35632498006854a223837ab290d27a928846"
+        }
+      },
+      "networkIsolatedScanner": true,
+      "privateReportsProduced": true,
+      "providerCalls": 0,
+      "runtimeRegistered": false,
+      "sbomPackageCounts": {
+        "adapter": 37,
+        "southbound": 182
+      },
+      "sbomPackageWithoutVersionCounts": {
+        "adapter": 0,
+        "southbound": 0
+      },
+      "scannerBinarySha256": "4de6935c80c111d3d37b2b09f86d1a30b3d10a2f7146d4dbe74ed86c81f35790",
+      "scannerVersion": "0.120.0",
+      "schema": "ouf.semantic-image-remediation-experiment.v1",
+      "signaturesIssued": 0,
+      "sourceReceiptSha256": "a2e8e0970ca31a86b654769a82ebf23033cfe3f6d32438daea026e0acc543f2a",
+      "startAuthorized": false
+    },
+    "slimDebian": {
+      "acceptanceGranted": false,
+      "allScannerSeverityThresholdsMet": false,
+      "candidate": "slim-debian",
+      "compatibilityProven": true,
+      "containerOperations": 0,
+      "dependencyCoverageAccepted": false,
+      "experimentOnly": true,
+      "fullReceiptSha256": "a3fc8d74fd266c6af9b1ef94d9b3bdc94b8a23836639162695244b1d6d38fd1b",
+      "gatewayCodeCommit": "7d5b4f58783ccca15c19dfb9c0d409b39566258e",
+      "imageArchivesVerified": true,
+      "images": [
+        {
+          "acceptanceGranted": false,
+          "completeCreationAccepted": false,
+          "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+          "databaseBuilt": "2026-10-05T06:45:38Z",
+          "databaseSchemaVersion": "v6.1.10",
+          "dependencyCoverageAccepted": false,
+          "dependencySbomAccepted": false,
+          "highCriticalPublicAdvisoryIds": [
+            "CVE-2025-69720",
+            "CVE-2026-102010",
+            "CVE-2026-103111",
+            "CVE-2026-19499",
+            "CVE-2026-5435",
+            "CVE-2026-54369",
+            "CVE-2026-54370",
+            "CVE-2026-76642",
+            "CVE-2026-78408",
+            "CVE-2026-78409",
+            "CVE-2026-78410",
+            "CVE-2026-82560",
+            "CVE-2026-85091",
+            "CVE-2026-9538",
+            "CVE-2026-95619"
+          ],
+          "highCriticalPublicAdvisoryIdsTruncated": false,
+          "imageId": "sha256:03404341f8d9f5b026a7924881a1c13b880642c3e71092fa9380d94b88e54fbe",
+          "imagePublisherProvenanceVerified": false,
+          "packageAlertCount": 0,
+          "reportSha256": "487c08387ff80097f814dba39ae0d7810d88e7ad7f28a952591e32bdba6036ca",
+          "role": "adapter",
+          "scannerSeverityThresholdMet": false,
+          "schema": "ouf.semantic-image-vulnerability-facts.v1",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 56,
+            "Low": 10,
+            "Medium": 51,
+            "Negligible": 46,
+            "Unknown": 0
+          },
+          "startAuthorized": false,
+          "syftJsonSha256": "c733ae1e54d92ea909900fa69a2e1472cf598c652256140a61d14850046ab43d"
+        },
+        {
+          "acceptanceGranted": false,
+          "completeCreationAccepted": false,
+          "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+          "databaseBuilt": "2026-10-05T06:45:38Z",
+          "databaseSchemaVersion": "v6.1.10",
+          "dependencyCoverageAccepted": false,
+          "dependencySbomAccepted": false,
+          "highCriticalPublicAdvisoryIds": [
+            "CVE-2023-2953",
+            "CVE-2025-13151",
+            "CVE-2025-69720",
+            "CVE-2026-102010",
+            "CVE-2026-103111",
+            "CVE-2026-12087",
+            "CVE-2026-13221",
+            "CVE-2026-19499",
+            "CVE-2026-41992",
+            "CVE-2026-42496",
+            "CVE-2026-42497",
+            "CVE-2026-48959",
+            "CVE-2026-48962",
+            "CVE-2026-5435",
+            "CVE-2026-54369",
+            "CVE-2026-54370",
+            "CVE-2026-5450",
+            "CVE-2026-54874",
+            "CVE-2026-57432",
+            "CVE-2026-57433",
+            "CVE-2026-5928",
+            "CVE-2026-63072",
+            "CVE-2026-63076",
+            "CVE-2026-6653",
+            "CVE-2026-7017",
+            "CVE-2026-74860",
+            "CVE-2026-75803",
+            "CVE-2026-76642",
+            "CVE-2026-78408",
+            "CVE-2026-78409",
+            "CVE-2026-78410",
+            "CVE-2026-82560",
+            "CVE-2026-8376",
+            "CVE-2026-84782",
+            "CVE-2026-85091",
+            "CVE-2026-86138",
+            "CVE-2026-86140",
+            "CVE-2026-86142",
+            "CVE-2026-86143",
+            "CVE-2026-86144",
+            "CVE-2026-86145",
+            "CVE-2026-89157",
+            "CVE-2026-89161",
+            "CVE-2026-9538",
+            "CVE-2026-95619"
+          ],
+          "highCriticalPublicAdvisoryIdsTruncated": false,
+          "imageId": "sha256:b6fd21b8c341f3bf274ddabbad2e3c1bbb6a17566f0e41bf618166e63e4641e4",
+          "imagePublisherProvenanceVerified": false,
+          "packageAlertCount": 0,
+          "reportSha256": "34a476acdb3e0c6ca553d15c21c96bdabd73a31d00b880343b1a4eb268162eb8",
+          "role": "southbound",
+          "scannerSeverityThresholdMet": false,
+          "schema": "ouf.semantic-image-vulnerability-facts.v1",
+          "severityCounts": {
+            "Critical": 10,
+            "High": 80,
+            "Low": 17,
+            "Medium": 90,
+            "Negligible": 83,
+            "Unknown": 16
+          },
+          "startAuthorized": false,
+          "syftJsonSha256": "bb7bb955a4666488aadd64c1b8930a024ce72bdc424356065f51007396a924ed"
+        }
+      ],
+      "inputs": {
+        "adapter": {
+          "discoveryTag": "python:3.13-slim",
+          "pulledImageId": "sha256:5bf8cf1bb031eb18d0ad53aa07efe45199a2c5818f152883ad80e1c45c64362d",
+          "resolvedDigest": "python@sha256:3dd7cc108ec1493442514f5c2a871af6af0ec31d768ff6e378a93340c3b3db5f"
+        },
+        "southbound": {
+          "discoveryTag": "apache/apisix:3.18.0-debian",
+          "pulledImageId": "sha256:b6fd21b8c341f3bf274ddabbad2e3c1bbb6a17566f0e41bf618166e63e4641e4",
+          "resolvedDigest": "apache/apisix@sha256:84e6b5e787e9f889ebff88161cb9a16599bafcffa236c6b54c7f779a0655940d"
+        }
+      },
+      "networkIsolatedScanner": true,
+      "privateReportsProduced": true,
+      "providerCalls": 0,
+      "runtimeRegistered": false,
+      "sbomPackageCounts": {
+        "adapter": 95,
+        "southbound": 179
+      },
+      "sbomPackageWithoutVersionCounts": {
+        "adapter": 0,
+        "southbound": 0
+      },
+      "scannerBinarySha256": "4de6935c80c111d3d37b2b09f86d1a30b3d10a2f7146d4dbe74ed86c81f35790",
+      "scannerVersion": "0.120.0",
+      "schema": "ouf.semantic-image-remediation-experiment.v1",
+      "signaturesIssued": 0,
+      "sourceReceiptSha256": "4a17ed8a9764046531a152a5e69490bd0ebca66a10c254e63d45d49a82c7b238",
+      "startAuthorized": false
+    }
+  },
+  "osUpdated": {
+    "codeCommit": "4829582261e28fb7bbcdcf8a242f5169126693b4",
+    "runId": 37416554985,
+    "jobId": 112116328651,
+    "status": "SUCCESS",
+    "logsRead": true,
+    "artifactId": 11391281721,
+    "artifactSha256": "abc232a1a90206945e2dc6b0bb45a9c463a432385d512f93528a9286f5c7a2a3",
+    "receipt": {
+      "acceptanceGranted": false,
+      "allScannerSeverityThresholdsMet": false,
+      "candidate": "alpine-ubuntu-updated",
+      "compatibilityProven": true,
+      "containerOperations": 0,
+      "dependencyCoverageAccepted": false,
+      "experimentOnly": true,
+      "fullReceiptSha256": "4f474a7698d0309516326132ad113dca7db75d1ad7874b53cd35f847e959c839",
+      "gatewayCodeCommit": "c0b1f97bdb1fbcd6a88117dea6520ea9c322f265",
+      "imageArchivesVerified": true,
+      "images": [
+        {
+          "acceptanceGranted": false,
+          "completeCreationAccepted": false,
+          "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+          "databaseBuilt": "2026-10-05T06:45:38Z",
+          "databaseSchemaVersion": "v6.1.10",
+          "dependencyCoverageAccepted": false,
+          "dependencySbomAccepted": false,
+          "highCriticalPublicAdvisoryIds": [
+            "CVE-2026-85091"
+          ],
+          "highCriticalPublicAdvisoryIdsTruncated": false,
+          "imageId": "sha256:24476daca05853fc60aa39b72dc86f9161595cf5e9a6f258da620f4dace17d64",
+          "imagePublisherProvenanceVerified": false,
+          "packageAlertCount": 0,
+          "reportSha256": "9b3e62de947d244557edd066260a7a9842628fa97c81d9e5f51a22a9c86e672b",
+          "role": "adapter",
+          "scannerSeverityThresholdMet": false,
+          "schema": "ouf.semantic-image-vulnerability-facts.v1",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 1,
+            "Low": 0,
+            "Medium": 5,
+            "Negligible": 0,
+            "Unknown": 0
+          },
+          "startAuthorized": false,
+          "syftJsonSha256": "b8a71257b623caa113d8c1e672f2794b24438cf9aaafeea66912ccc9b0e80a95"
+        },
+        {
+          "acceptanceGranted": false,
+          "completeCreationAccepted": false,
+          "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+          "databaseBuilt": "2026-10-05T06:45:38Z",
+          "databaseSchemaVersion": "v6.1.10",
+          "dependencyCoverageAccepted": false,
+          "dependencySbomAccepted": false,
+          "highCriticalPublicAdvisoryIds": [],
+          "highCriticalPublicAdvisoryIdsTruncated": false,
+          "imageId": "sha256:4c87c8ffa39527cf37bf77a2aec3a621b350de24539ae30ac28192fe3460b281",
+          "imagePublisherProvenanceVerified": false,
+          "packageAlertCount": 0,
+          "reportSha256": "1498cf0db000f5cec764445813bdafd73626692bc9a6d9021c06877bdb39b476",
+          "role": "southbound",
+          "scannerSeverityThresholdMet": true,
+          "schema": "ouf.semantic-image-vulnerability-facts.v1",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 0,
+            "Low": 18,
+            "Medium": 141,
+            "Negligible": 4,
+            "Unknown": 0
+          },
+          "startAuthorized": false,
+          "syftJsonSha256": "565ff4c5b2d33f04875b1a22f602602a9fb3ce66fb1d010612be2fe0a590f950"
+        }
+      ],
+      "inputs": {
+        "adapter": {
+          "discoveryTag": "python@sha256:2d9aefe2fef018a7eb2c13064c89c71929800fd2e5dccdbf52ea5da5bb8d929a",
+          "pulledImageId": "sha256:050f6d1f4e5f89af62e03f6fcd1c06be2a401339b3694adc4c0a2850d9d8b1e7",
+          "resolvedDigest": "python@sha256:2d9aefe2fef018a7eb2c13064c89c71929800fd2e5dccdbf52ea5da5bb8d929a",
+          "updatedImageId": "sha256:24476daca05853fc60aa39b72dc86f9161595cf5e9a6f258da620f4dace17d64"
+        },
+        "southbound": {
+          "discoveryTag": "apache/apisix@sha256:9ee5df1611f98a902d1bbacf760b35632498006854a223837ab290d27a928846",
+          "pulledImageId": "sha256:5e5500c92116de1f9886b174623d6874e6beadd4d5d66c8ba1e5bffa0b2f575e",
+          "resolvedDigest": "apache/apisix@sha256:9ee5df1611f98a902d1bbacf760b35632498006854a223837ab290d27a928846",
+          "updatedImageId": "sha256:4c87c8ffa39527cf37bf77a2aec3a621b350de24539ae30ac28192fe3460b281"
+        }
+      },
+      "networkIsolatedScanner": true,
+      "privateReportsProduced": true,
+      "providerCalls": 0,
+      "remainingHighCriticalUnknown": {
+        "adapter": [
+          {
+            "fix": {
+              "state": "",
+              "versions": []
+            },
+            "id": "CVE-2026-85091",
+            "matchers": [
+              "apk-matcher"
+            ],
+            "name": "zlib",
+            "namespace": "nvd:cpe",
+            "severity": "High",
+            "type": "apk",
+            "version": "1.3.2-r0"
+          }
+        ],
+        "southbound": []
+      },
+      "runtimeRegistered": false,
+      "sbomPackageCounts": {
+        "adapter": 37,
+        "southbound": 182
+      },
+      "sbomPackageWithoutVersionCounts": {
+        "adapter": 0,
+        "southbound": 0
+      },
+      "scannerBinarySha256": "4de6935c80c111d3d37b2b09f86d1a30b3d10a2f7146d4dbe74ed86c81f35790",
+      "scannerVersion": "0.120.0",
+      "schema": "ouf.semantic-image-remediation-experiment.v1",
+      "signaturesIssued": 0,
+      "sourceReceiptSha256": "6e47b3eeea0e34de4a471170e73a5915d18522132d6132190e3c2c495a815275",
+      "startAuthorized": false
+    }
+  },
+  "bundledCoverageGap": {
+    "component": "OpenResty bundled OpenSSL",
+    "version": "3.4.1",
+    "runtimePath": "/usr/local/openresty/openssl3/lib",
+    "advisory": "CVE-2026-84782",
+    "upstreamFixedVersion": "3.4.8",
+    "grypeThresholdSufficient": false,
+    "discovery": "same CI public runtime inventory and ldd"
+  },
+  "sourceFixed": {
+    "codeCommit": "b6be410449c7dc5b11d227d732f9776a1ab24b52",
+    "ciMergeCommit": "226b1d3cb0562ed1cd840c758873f92ab3401991",
+    "runId": 37420144098,
+    "jobId": 112127446154,
+    "status": "SUCCESS",
+    "logsRead": true,
+    "receipt": {
+      "acceptanceGranted": false,
+      "allScannerSeverityThresholdsMet": true,
+      "candidate": "alpine-ubuntu-source-fixed",
+      "candidateArchives": [
+        {
+          "bytes": 20580288,
+          "file": "adapter.image.tar.gz",
+          "imageId": "sha256:2cd0de3f03bc289f1ab4668940df94181059d00b2525a851d1c81211c3d5cf38",
+          "kind": "docker-save-tar-gzip",
+          "role": "adapter",
+          "sha256": "186a74a5d33b4b02dd13ea769211ddfe16453714e1ecf82dd354c59ed23bbc41",
+          "uncompressedBytes": 54939136,
+          "uncompressedSha256": "0d53ee904af7a3e187322da43eecdbd56e7dd085655fe124adc55aa55f4a67e4"
+        },
+        {
+          "bytes": 179625000,
+          "file": "southbound.image.tar.gz",
+          "imageId": "sha256:213ff3377465784bc1f5dd82863d65d6585a3c22062eb4e7d78c7c0239af0334",
+          "kind": "docker-save-tar-gzip",
+          "role": "southbound",
+          "sha256": "4de4e82802082ed8eb045d0d6eec01ec3190301a8842243d78da18af9f904784",
+          "uncompressedBytes": 508349440,
+          "uncompressedSha256": "cace5b42abfb89da5ab4bf001ef281e42a99e237f3e804b48a76bfbff819cafe"
+        }
+      ],
+      "compatibilityProven": true,
+      "containerOperations": 0,
+      "dependencyCoverageAccepted": false,
+      "experimentOnly": true,
+      "fullReceiptSha256": "7267a1f7b0e230827269da2d0ebbdf3e7516d77990a22e6067ac8d105ea55dbf",
+      "gatewayCodeCommit": "c0b1f97bdb1fbcd6a88117dea6520ea9c322f265",
+      "imageArchiveBindings": [
+        {
+          "archiveBytes": 54939136,
+          "archiveSha256": "0d53ee904af7a3e187322da43eecdbd56e7dd085655fe124adc55aa55f4a67e4",
+          "configByteSha256": "2cd0de3f03bc289f1ab4668940df94181059d00b2525a851d1c81211c3d5cf38",
+          "imageId": "sha256:2cd0de3f03bc289f1ab4668940df94181059d00b2525a851d1c81211c3d5cf38",
+          "role": "adapter",
+          "rootfsDescriptorsHash": "5cb6114e3c3d69563b37f1c46d10619044ba10758220eb0f77c0c2a075593c13"
+        },
+        {
+          "archiveBytes": 508349440,
+          "archiveSha256": "cace5b42abfb89da5ab4bf001ef281e42a99e237f3e804b48a76bfbff819cafe",
+          "configByteSha256": "213ff3377465784bc1f5dd82863d65d6585a3c22062eb4e7d78c7c0239af0334",
+          "imageId": "sha256:213ff3377465784bc1f5dd82863d65d6585a3c22062eb4e7d78c7c0239af0334",
+          "role": "southbound",
+          "rootfsDescriptorsHash": "433fad7ac9e0403e96f642217328418f7e89c886abc4bd67883f0fcddec2f069"
+        }
+      ],
+      "imageArchivesVerified": true,
+      "images": [
+        {
+          "acceptanceGranted": false,
+          "completeCreationAccepted": false,
+          "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+          "databaseBuilt": "2026-10-05T06:45:38Z",
+          "databaseSchemaVersion": "v6.1.10",
+          "dependencyCoverageAccepted": false,
+          "dependencySbomAccepted": false,
+          "highCriticalPublicAdvisoryIds": [],
+          "highCriticalPublicAdvisoryIdsTruncated": false,
+          "imageId": "sha256:2cd0de3f03bc289f1ab4668940df94181059d00b2525a851d1c81211c3d5cf38",
+          "imagePublisherProvenanceVerified": false,
+          "packageAlertCount": 0,
+          "reportSha256": "3746f3a336c853fb48596211f323d38791017d695935168f91d03adf1c7682f7",
+          "role": "adapter",
+          "scannerSeverityThresholdMet": true,
+          "schema": "ouf.semantic-image-vulnerability-facts.v1",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 0,
+            "Low": 0,
+            "Medium": 5,
+            "Negligible": 0,
+            "Unknown": 0
+          },
+          "startAuthorized": false,
+          "syftJsonSha256": "99f46fdcaa59543c817da4d52c79a6be941c37e99f26949498a41b1a36198157"
+        },
+        {
+          "acceptanceGranted": false,
+          "completeCreationAccepted": false,
+          "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+          "databaseBuilt": "2026-10-05T06:45:38Z",
+          "databaseSchemaVersion": "v6.1.10",
+          "dependencyCoverageAccepted": false,
+          "dependencySbomAccepted": false,
+          "highCriticalPublicAdvisoryIds": [],
+          "highCriticalPublicAdvisoryIdsTruncated": false,
+          "imageId": "sha256:213ff3377465784bc1f5dd82863d65d6585a3c22062eb4e7d78c7c0239af0334",
+          "imagePublisherProvenanceVerified": false,
+          "packageAlertCount": 0,
+          "reportSha256": "905016f7e6b47671b079252173f81c53025b673a8a498b55ea02d4a11a503f5b",
+          "role": "southbound",
+          "scannerSeverityThresholdMet": true,
+          "schema": "ouf.semantic-image-vulnerability-facts.v1",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 0,
+            "Low": 17,
+            "Medium": 141,
+            "Negligible": 4,
+            "Unknown": 0
+          },
+          "startAuthorized": false,
+          "syftJsonSha256": "2cc466faf9e88442f59ab05dca6aaec6e538713b09bf2d4bd4afa87b85c966a0"
+        }
+      ],
+      "inputs": {
+        "adapter": {
+          "discoveryTag": "python@sha256:2d9aefe2fef018a7eb2c13064c89c71929800fd2e5dccdbf52ea5da5bb8d929a",
+          "pulledImageId": "sha256:050f6d1f4e5f89af62e03f6fcd1c06be2a401339b3694adc4c0a2850d9d8b1e7",
+          "resolvedDigest": "python@sha256:2d9aefe2fef018a7eb2c13064c89c71929800fd2e5dccdbf52ea5da5bb8d929a",
+          "updatedImageId": "sha256:2cd0de3f03bc289f1ab4668940df94181059d00b2525a851d1c81211c3d5cf38"
+        },
+        "southbound": {
+          "discoveryTag": "apache/apisix@sha256:9ee5df1611f98a902d1bbacf760b35632498006854a223837ab290d27a928846",
+          "pulledImageId": "sha256:5e5500c92116de1f9886b174623d6874e6beadd4d5d66c8ba1e5bffa0b2f575e",
+          "resolvedDigest": "apache/apisix@sha256:9ee5df1611f98a902d1bbacf760b35632498006854a223837ab290d27a928846",
+          "updatedImageId": "sha256:213ff3377465784bc1f5dd82863d65d6585a3c22062eb4e7d78c7c0239af0334"
+        },
+        "zlibSource": {
+          "commit": "df84af25dc1942490e1d1c899a07619152a46148",
+          "gitTree": "619928cbde76ba39b0785a544ba36822bfef8fc9",
+          "releaseStatus": "unreleased upstream",
+          "sourceManifestSha256": "104462001e5bbc252171e57c3d68b0a4f5f05462a73494112ee6dad13e8d5c34"
+        }
+      },
+      "networkIsolatedScanner": true,
+      "privateReportsProduced": true,
+      "providerCalls": 0,
+      "remainingHighCriticalUnknown": {
+        "adapter": [],
+        "southbound": []
+      },
+      "runtimeRegistered": false,
+      "sbomPackageCounts": {
+        "adapter": 37,
+        "southbound": 182
+      },
+      "sbomPackageWithoutVersionCounts": {
+        "adapter": 0,
+        "southbound": 0
+      },
+      "scannerBinarySha256": "4de6935c80c111d3d37b2b09f86d1a30b3d10a2f7146d4dbe74ed86c81f35790",
+      "scannerCountersScope": "offline vulnerability reviewer only; CI build and compatibility containers run separately",
+      "scannerVersion": "0.120.0",
+      "schema": "ouf.semantic-image-remediation-experiment.v1",
+      "semanticBuildCommit": "226b1d3cb0562ed1cd840c758873f92ab3401991",
+      "signaturesIssued": 0,
+      "sourceReceiptSha256": "8c75658c2dbbfd2edb5716360c6a7ff0ad803a15e25d7bff84604d589b6d93b9",
+      "startAuthorized": false
+    },
+    "byteQualification": {
+      "acceptanceGranted": false,
+      "ciAttestationEvidenceRetained": true,
+      "ciSourceCommit": "226b1d3cb0562ed1cd840c758873f92ab3401991",
+      "containerOperations": 0,
+      "dependencyCoverageAccepted": false,
+      "imageImportPerformed": false,
+      "images": [
+        {
+          "archiveSha256": "186a74a5d33b4b02dd13ea769211ddfe16453714e1ecf82dd354c59ed23bbc41",
+          "bytesVerified": true,
+          "imageId": "sha256:2cd0de3f03bc289f1ab4668940df94181059d00b2525a851d1c81211c3d5cf38",
+          "role": "adapter",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 0,
+            "Low": 0,
+            "Medium": 5,
+            "Negligible": 0,
+            "Unknown": 0
+          }
+        },
+        {
+          "archiveSha256": "4de4e82802082ed8eb045d0d6eec01ec3190301a8842243d78da18af9f904784",
+          "bytesVerified": true,
+          "imageId": "sha256:213ff3377465784bc1f5dd82863d65d6585a3c22062eb4e7d78c7c0239af0334",
+          "role": "southbound",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 0,
+            "Low": 17,
+            "Medium": 141,
+            "Negligible": 4,
+            "Unknown": 0
+          }
+        }
+      ],
+      "publisherTrustAccepted": false,
+      "runtimeRegistered": false,
+      "scannerInvoked": false,
+      "schema": "ouf.semantic-remediation-bundle-byte-qualification.v1",
+      "sourceArtifactSha256": "dbc0b5933f5f3cc7e55c4846c5dd6853424edce75777571082a33773e0a6a73c",
+      "startAuthorized": false,
+      "targetAttestationCryptoVerified": false
+    },
+    "nativeCompatibilityTestsPassed": 2,
+    "nativeCompatibilitySkips": 0,
+    "qualifierRejectionTestsPassed": 3,
+    "selectedOpenSslTestsPassed": 7,
+    "opensslFipsPreparationSkipped": true,
+    "ciAttestationsIssued": 3,
+    "ciCryptographicVerificationsPassed": 4,
+    "signedPredicateTypes": [
+      "https://slsa.dev/provenance/v1",
+      "https://spdx.dev/Document/v2.3"
+    ],
+    "rawSyftSbomEnumeratesOpenRestyBundledLibraries": false,
+    "dependencyCoverageAccepted": false,
+    "fullArtifact": {
+      "id": 11392623308,
+      "sha256": "bf369a5e445a7e84c51d0252b6714912b0d92897097f3afeb2a21c85db38fa2a",
+      "bytes": 205454159
+    },
+    "evidenceArtifact": {
+      "id": 11392867551,
+      "sha256": "3d5b8f484d87d5f030eafad5e24c050833a412c101f24d4fd86c9e3e1c6e5c77",
+      "bytes": 6238684,
+      "downloadedAndRead": true
+    }
+  },
+  "originalGate49ExceptionCause": "UNKNOWN",
+  "targetModified": false,
+  "targetAcceptanceGranted": false,
+  "startAuthorized": false,
+  "sourceFixedEarlierAttempt": {
+    "codeCommit": "c51fe31215efac37308ff6fcb9c577ac475a256f",
+    "status": "COMPATIBILITY_SCAN_PASS_SPDX_PREDICATE_VERIFICATION_FAILED",
+    "zlibSourceCommit": "df84af25dc1942490e1d1c899a07619152a46148",
+    "zlibSourceReleaseStatus": "unreleased 1.3.2.1-motley",
+    "opensslVersion": "3.4.8",
+    "opensslArchiveSha256": "9de9ce2f29e584044ae07ab93fc601637be01fdc91d109c5a655ec7419e6022b",
+    "openrestyPatchCommit": "bc8bf89488f2d02572389158533b3f85ca0ded7f",
+    "runId": 37419645343,
+    "jobId": 112125914702,
+    "receipt": {
+      "acceptanceGranted": false,
+      "allScannerSeverityThresholdsMet": true,
+      "candidate": "alpine-ubuntu-source-fixed",
+      "candidateArchives": [
+        {
+          "bytes": 20580602,
+          "file": "adapter.image.tar.gz",
+          "imageId": "sha256:4ee664b85fb7b918f969c81762912eab65476094d09c95bf1403b0dd27504bd9",
+          "kind": "docker-save-tar-gzip",
+          "role": "adapter",
+          "sha256": "6a26cc67796c4bf0b4448b497ea9c3499f72b834156232603979c9f945d09f39",
+          "uncompressedBytes": 54939136,
+          "uncompressedSha256": "27f0de9437421548d374b98b37793e238e340f3492750245f7daa6258bc88bb2"
+        },
+        {
+          "bytes": 179616007,
+          "file": "southbound.image.tar.gz",
+          "imageId": "sha256:4dcac61f084dbdb8f7b95d2088479af5ce69b32a0200678de5fcce5e295ead47",
+          "kind": "docker-save-tar-gzip",
+          "role": "southbound",
+          "sha256": "c4cfcd42c837ff8f8b66b10907de46238e813c5a13d91de3a28c62ae08c4d47a",
+          "uncompressedBytes": 508349440,
+          "uncompressedSha256": "228735b591f1e24cf424824aa674329157b800241685029138d213a7f5e7ba49"
+        }
+      ],
+      "compatibilityProven": true,
+      "containerOperations": 0,
+      "dependencyCoverageAccepted": false,
+      "experimentOnly": true,
+      "fullReceiptSha256": "86894920f4623dc00c4e26fba78563e4d0ec8df3fc4bdf4ada1b961c98bccdbc",
+      "gatewayCodeCommit": "c0b1f97bdb1fbcd6a88117dea6520ea9c322f265",
+      "imageArchiveBindings": [
+        {
+          "archiveBytes": 54939136,
+          "archiveSha256": "27f0de9437421548d374b98b37793e238e340f3492750245f7daa6258bc88bb2",
+          "configByteSha256": "4ee664b85fb7b918f969c81762912eab65476094d09c95bf1403b0dd27504bd9",
+          "imageId": "sha256:4ee664b85fb7b918f969c81762912eab65476094d09c95bf1403b0dd27504bd9",
+          "role": "adapter",
+          "rootfsDescriptorsHash": "a3b2a61f870b97032e57e125a993e5b0f8fac67e89c16dc8f8dc95689e4bdb48"
+        },
+        {
+          "archiveBytes": 508349440,
+          "archiveSha256": "228735b591f1e24cf424824aa674329157b800241685029138d213a7f5e7ba49",
+          "configByteSha256": "4dcac61f084dbdb8f7b95d2088479af5ce69b32a0200678de5fcce5e295ead47",
+          "imageId": "sha256:4dcac61f084dbdb8f7b95d2088479af5ce69b32a0200678de5fcce5e295ead47",
+          "role": "southbound",
+          "rootfsDescriptorsHash": "682cecb20db30214c7234a4dc453cde1c9a3fdad0a197569a177b51bbc0898bc"
+        }
+      ],
+      "imageArchivesVerified": true,
+      "images": [
+        {
+          "acceptanceGranted": false,
+          "completeCreationAccepted": false,
+          "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+          "databaseBuilt": "2026-10-05T06:45:38Z",
+          "databaseSchemaVersion": "v6.1.10",
+          "dependencyCoverageAccepted": false,
+          "dependencySbomAccepted": false,
+          "highCriticalPublicAdvisoryIds": [],
+          "highCriticalPublicAdvisoryIdsTruncated": false,
+          "imageId": "sha256:4ee664b85fb7b918f969c81762912eab65476094d09c95bf1403b0dd27504bd9",
+          "imagePublisherProvenanceVerified": false,
+          "packageAlertCount": 0,
+          "reportSha256": "3fcfca5ea6b1b190827f5153f5a2855b37e13a49e8ae02123faa104ab3ffa619",
+          "role": "adapter",
+          "scannerSeverityThresholdMet": true,
+          "schema": "ouf.semantic-image-vulnerability-facts.v1",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 0,
+            "Low": 0,
+            "Medium": 5,
+            "Negligible": 0,
+            "Unknown": 0
+          },
+          "startAuthorized": false,
+          "syftJsonSha256": "3ed541a71778d44abb788924a30c9fdd499a6d2716e50d2b1ebf60cce8d69b0c"
+        },
+        {
+          "acceptanceGranted": false,
+          "completeCreationAccepted": false,
+          "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+          "databaseBuilt": "2026-10-05T06:45:38Z",
+          "databaseSchemaVersion": "v6.1.10",
+          "dependencyCoverageAccepted": false,
+          "dependencySbomAccepted": false,
+          "highCriticalPublicAdvisoryIds": [],
+          "highCriticalPublicAdvisoryIdsTruncated": false,
+          "imageId": "sha256:4dcac61f084dbdb8f7b95d2088479af5ce69b32a0200678de5fcce5e295ead47",
+          "imagePublisherProvenanceVerified": false,
+          "packageAlertCount": 0,
+          "reportSha256": "8c2039470a86cf617455680f452615f4c084b9142c5bef7b385c1ba3a90b70f4",
+          "role": "southbound",
+          "scannerSeverityThresholdMet": true,
+          "schema": "ouf.semantic-image-vulnerability-facts.v1",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 0,
+            "Low": 17,
+            "Medium": 141,
+            "Negligible": 4,
+            "Unknown": 0
+          },
+          "startAuthorized": false,
+          "syftJsonSha256": "265c333d2706ba5302620d5a3329048d09bfdd9974375ea58e039896bee109a3"
+        }
+      ],
+      "inputs": {
+        "adapter": {
+          "discoveryTag": "python@sha256:2d9aefe2fef018a7eb2c13064c89c71929800fd2e5dccdbf52ea5da5bb8d929a",
+          "pulledImageId": "sha256:050f6d1f4e5f89af62e03f6fcd1c06be2a401339b3694adc4c0a2850d9d8b1e7",
+          "resolvedDigest": "python@sha256:2d9aefe2fef018a7eb2c13064c89c71929800fd2e5dccdbf52ea5da5bb8d929a",
+          "updatedImageId": "sha256:4ee664b85fb7b918f969c81762912eab65476094d09c95bf1403b0dd27504bd9"
+        },
+        "southbound": {
+          "discoveryTag": "apache/apisix@sha256:9ee5df1611f98a902d1bbacf760b35632498006854a223837ab290d27a928846",
+          "pulledImageId": "sha256:5e5500c92116de1f9886b174623d6874e6beadd4d5d66c8ba1e5bffa0b2f575e",
+          "resolvedDigest": "apache/apisix@sha256:9ee5df1611f98a902d1bbacf760b35632498006854a223837ab290d27a928846",
+          "updatedImageId": "sha256:4dcac61f084dbdb8f7b95d2088479af5ce69b32a0200678de5fcce5e295ead47"
+        },
+        "zlibSource": {
+          "commit": "df84af25dc1942490e1d1c899a07619152a46148",
+          "gitTree": "619928cbde76ba39b0785a544ba36822bfef8fc9",
+          "releaseStatus": "unreleased upstream",
+          "sourceManifestSha256": "104462001e5bbc252171e57c3d68b0a4f5f05462a73494112ee6dad13e8d5c34"
+        }
+      },
+      "networkIsolatedScanner": true,
+      "privateReportsProduced": true,
+      "providerCalls": 0,
+      "remainingHighCriticalUnknown": {
+        "adapter": [],
+        "southbound": []
+      },
+      "runtimeRegistered": false,
+      "sbomPackageCounts": {
+        "adapter": 37,
+        "southbound": 182
+      },
+      "sbomPackageWithoutVersionCounts": {
+        "adapter": 0,
+        "southbound": 0
+      },
+      "scannerBinarySha256": "4de6935c80c111d3d37b2b09f86d1a30b3d10a2f7146d4dbe74ed86c81f35790",
+      "scannerCountersScope": "offline vulnerability reviewer only; CI build and compatibility containers run separately",
+      "scannerVersion": "0.120.0",
+      "schema": "ouf.semantic-image-remediation-experiment.v1",
+      "semanticBuildCommit": "89696218f518bbfbf006270a6df6074209fe22ef",
+      "signaturesIssued": 0,
+      "sourceReceiptSha256": "64b47a20a03163481c6097a8cd6f1803268575c3486808b7d6e24fefc7617005",
+      "startAuthorized": false
+    },
+    "logsRead": true,
+    "rawSyftSbomEnumeratesOpenRestyBundledLibraries": false,
+    "dependencyCoverageAccepted": false,
+    "nextVerificationCommit": "b6be410449c7dc5b11d227d732f9776a1ab24b52"
+  },
+  "operatorQualification": {
+    "wrapperCommit": "120eee43c2ff02a204c58363538d60b57b3d6a79",
+    "wrapperPath": "docs/handoffs/commands/OUF_QUALIFY_REMEDIATED_IMAGES_2026-10-06.sh",
+    "wrapperSha256": "5c47d7c14e260d7ebb1d245dd83476646df61cbb9e378dd00fddb45eb5fa0697",
+    "sourceCommit": "c51fe31215efac37308ff6fcb9c577ac475a256f",
+    "sourceSha256": "db95b97cce62a4c3e164d0dad20a8674052dced80ff7e683e84ac21cef925112",
+    "targetRoot": "/etc/ouf/deploy-snapshots/semantic-image-remediation-20261006-v1",
+    "operatorExecutionPending": true,
+    "targetExecuted": false,
+    "containerOperations": 0,
+    "imageImportPerformed": false,
+    "acceptanceGranted": false,
+    "runtimeRegistered": false,
+    "startAuthorized": false
+  },
+  "livePairwise": {
+    "runId": 37420144065,
+    "jobId": 112127445970,
+    "status": "FAILURE_HTTP_503",
+    "logsRead": true,
+    "independentFromImageRemediation": true
+  }
+}

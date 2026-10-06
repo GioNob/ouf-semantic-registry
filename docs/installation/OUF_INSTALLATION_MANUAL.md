@@ -1,3 +1,5 @@
+> Stato operativo 6 ottobre 2026 — source-fixed CI37420144098/job112127446154 SUCCESS: entrambe0Critical/High/Unknown, test reali, tre attestazioni/quattro verifiche e qualificazione archivi PASS. Pronto il [comando VPS di sole evidenze](SEMANTIC_IMAGE_REMEDIATION_TARGET_QUALIFICATION_2026-10-06.md), esecuzione operatore pendente. Nessuna importazione/sostituzione/start; vecchi digest49 ancora a soglia falsa, copertura/publisher/acceptance non concessi. Le sezioni successive conservano la storia; lo stato operativo corrente è questo aggiornamento e il restart state.
+
 ## Gate 49 — analisi package completata, correzione delle immagini da preparare
 
 Ricevuto l'output allegato il 6 ottobre 2026 alle 06:41:09 Europe/Rome. Hash dei report verificati, zero campi omessi. Adapter Debian 13.7: 22 package/version, 56 High. Southbound Debian 12.15: 28 package/version, 10 Critical, 80 High, 16 Unknown. Tutti i finding riportati provengono da dpkg-matcher nella distribuzione corretta; non emerge un mismatch di distro.
