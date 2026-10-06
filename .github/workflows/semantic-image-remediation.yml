@@ -21,6 +21,7 @@ on:
       - 'tests/scan_semantic_image_remediation.py'
       - 'tests/qualify_semantic_remediation_ci.py'
       - 'tests/test_semantic_remediation_bundle.py'
+      - 'tests/test_semantic_luajit_runtime_identity.py'
       - 'tools/*semantic_remediation_bundle*.py'
       - '.github/workflows/semantic-image-remediation.yml'
   workflow_dispatch:
@@ -49,7 +50,7 @@ jobs:
       - run: pip install -r .pairwise/gateway/requirements-dev.txt
       - name: Verify byte-qualification rejection checks and source closure
         run: |
-          python3 -B -m unittest tests.test_semantic_remediation_bundle
+          python3 -B -m unittest tests.test_semantic_remediation_bundle tests.test_semantic_luajit_runtime_identity
           python3 -B tools/build_semantic_remediation_bundle_qualifier.py
           git diff --exit-code -- tools/semantic_remediation_bundle_qualifier.py
       - name: Prepare hash-pinned Syft, Grype and exact fresh DB

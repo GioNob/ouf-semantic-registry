@@ -7,8 +7,28 @@ import argparse
 import copy
 import hashlib
 import json
+import re
 from pathlib import Path
 from tools.audit_semantic_native_coverage import ROOT, native_files, require, sha
+
+
+def luajit_runtime_version(rows, sources):
+    """Use the version built into both ELFs, retaining the separate source tag."""
+    paths = [p for p, row in rows.items() if row.get('elf') and p.startswith(ROOT + 'luajit/')]
+    require(len(paths) == 2)
+    versions = set()
+    for path in paths:
+        name = re.fullmatch(re.escape(ROOT) + r'luajit/(?:bin/luajit-|lib/libluajit-5\.1\.so\.)(2\.1\.[0-9]{9,12})', path)
+        require(name is not None)
+        version = name.group(1)
+        embedded = set(v.decode('ascii') for v in re.findall(rb'LuaJIT (2\.1\.[0-9]{9,12})(?![0-9])', rows[path]['raw']))
+        require(embedded == {version})
+        versions.add(version)
+    require(len(versions) == 1)
+    version = versions.pop()
+    relver = (version.split('.')[-1] + '\n').encode('ascii')
+    require(sources['sourceFiles']['compiledSourceFiles']['bundle/LuaJIT-2.1-20260824/.relver'] == sha(relver))
+    return version
 
 
 def supplement(original, rows, sources, binaries, lock):
@@ -17,12 +37,13 @@ def supplement(original, rows, sources, binaries, lock):
     require(not any('wasmtime' in p or 'wasm-nginx-module' in p for p in rows))
     actual = {'/' + p: r['sha256'] for p, r in rows.items() if r.get('elf')}
     require(actual == binaries and len(actual) >= 10)
+    luajit_version = luajit_runtime_version(rows, sources)
     embedded = sources['embeddedSourceDirectories']
     components = [
         ('openssl', '3.4.8', 'openssl', 'openssl', 'openssl3/', None),
         ('zlib', '1.3.2.1-motley', 'zlib', 'zlib', 'zlib/', None),
         ('pcre', '8.45', 'pcre', 'pcre', 'pcre/', None),
-        ('luajit', '2.1-20260824', 'luajit', 'luajit', 'luajit/', 'LuaJIT-2.1-20260824'),
+        ('luajit', luajit_version, 'luajit', 'luajit', 'luajit/', 'LuaJIT-2.1-20260824'),
         ('lua-cjson', '2.1.0.19', None, None, 'lualib/cjson.so', 'lua-cjson-2.1.0.19'),
         ('lua-resty-signal', '0.05', None, None, 'lualib/librestysignal.so', 'lua-resty-signal-0.05'),
         ('lua-redis-parser', '0.13', None, None, 'lualib/redis/parser.so', 'lua-redis-parser-0.13'),
@@ -52,6 +73,9 @@ def supplement(original, rows, sources, binaries, lock):
                 'source': 'ouf-reviewed-native-identity'}] if vendor else []),
             'purl': f'pkg:generic/{component}@{version}', 'metadataType': '', 'metadata': None})
         proof.append({'component': component, 'version': version, 'sourceDirectory': directory, 'binaryHashes': matches})
+        if component == 'luajit':
+            proof[-1].update(sourceReleaseTag='v2.1-20260824',
+                             versionEvidence='Both ELF embedded LuaJIT versions, installed names and compiled .relver hash agree')
     require(covered == set(actual))
     # Static APISIX modules are inventoried from their immutable source closure.
     for module in sources['modules']:
