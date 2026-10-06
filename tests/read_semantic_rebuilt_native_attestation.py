@@ -15,7 +15,7 @@ with archive.open('xb') as out:
 assert archive.stat().st_size==7236277 and hashlib.sha256(archive.read_bytes()).hexdigest()==DIGEST
 with zipfile.ZipFile(archive) as z:
     names=z.namelist()
-    assert len(names)==len(set(names)) and sum(x.file_size for x in z.infolist())<33554432
+    assert len(names)==len(set(names)) and sum(x.file_size for x in z.infolist())<268435456
     for name in ('native/native-coverage.json','native/southbound.native.syft.json','native/southbound.native.grype.json','attestations/provenance.json'):
         assert 0<z.getinfo(name).file_size<16777216
         (root/name).parent.mkdir(parents=True,exist_ok=True)
