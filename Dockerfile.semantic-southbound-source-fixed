@@ -3,6 +3,18 @@ ARG INPUT_IMAGE
 FROM ${INPUT_IMAGE} AS build
 USER 0:0
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential curl ca-certificates zlib1g-dev
+COPY generated/alpine-ubuntu-source-fixed/source-zlib/ /source-zlib/
+RUN set -eu; cd /source-zlib; \
+    grep -F '#define ZLIB_VERSION "1.3.2.1-motley"' zlib.h; \
+    ./configure --prefix=/usr --shared; make -j2; make check; \
+    make DESTDIR=/zlib-pkg install; \
+    rm -rf /zlib-pkg/usr/include /zlib-pkg/usr/lib/pkgconfig /zlib-pkg/usr/share; \
+    rm -f /zlib-pkg/usr/lib/libz.a; \
+    mkdir /zlib-pkg/DEBIAN /packages; \
+    printf '%s\n' 'Package: zlib1g' 'Source: ouf-ci-zlib-upstream' 'Version: 1:1.3.2.1+git20260917-ouf1' 'Architecture: amd64' 'Maintainer: OUF CI <ci@example.invalid>' 'Section: libs' 'Priority: optional' 'Depends: libc6 (>= 2.39)' 'Description: CI prototype zlib df84af25dc1942490e1d1c899a07619152a46148, upstream 1.3.2.1-motley' > /zlib-pkg/DEBIAN/control; \
+    printf '%s\n' '#!/bin/sh' 'set -e' '/sbin/ldconfig' > /zlib-pkg/DEBIAN/postinst; \
+    chmod 0755 /zlib-pkg/DEBIAN/postinst; \
+    dpkg-deb --build --root-owner-group /zlib-pkg /packages/ouf-zlib.deb
 COPY tests/openssl-3.4.8-sess_set_get_cb_yield.patch /tmp/openresty.patch
 RUN set -eu; \
     curl -fSL https://github.com/openssl/openssl/releases/download/openssl-3.4.8/openssl-3.4.8.tar.gz -o /tmp/openssl.tar.gz; \
@@ -11,13 +23,17 @@ RUN set -eu; \
     cd /src; echo 'acf063b2848342272881d7f6a03da6cd58ac03de95c0a88ac94193cc3ee1b2ea  /tmp/openresty.patch' | sha256sum -c -; patch --fuzz=0 -p1 < /tmp/openresty.patch; \
     ./config shared zlib --prefix=/usr/local/openresty/openssl3 --libdir=lib -Wl,-rpath,/usr/local/openresty/openssl3/lib; \
     make -j2; \
-    make test TESTS='test_dtls_mtu test_dtls_bad_ver test_dtlslisten test_sslapi'; \
+    make test TESTS='test_bad_dtls test_dtls test_dtlsv1listen test_sslapi'; \
     make DESTDIR=/out install_sw
 FROM ${INPUT_IMAGE}
 USER 0:0
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --only-upgrade libssl3t64 openssl && rm -rf /var/lib/apt/lists/*
+COPY --from=build /packages/ouf-zlib.deb /tmp/ouf-zlib.deb
+RUN dpkg -i /tmp/ouf-zlib.deb && rm /tmp/ouf-zlib.deb && ldconfig
 COPY --from=build /out/usr/local/openresty/openssl3/ /usr/local/openresty/openssl3/
 RUN /usr/local/openresty/openssl3/bin/openssl version | grep -F 'OpenSSL 3.4.8'
+LABEL ouf.zlib.source.commit=df84af25dc1942490e1d1c899a07619152a46148 \
+      ouf.zlib.release.status=unreleased-upstream-ci-prototype
 LABEL ouf.openresty.openssl.version=3.4.8 \
       ouf.openresty.openssl.source.sha256=9de9ce2f29e584044ae07ab93fc601637be01fdc91d109c5a655ec7419e6022b \
       ouf.openresty.patch.source.commit=bc8bf89488f2d02572389158533b3f85ca0ded7f

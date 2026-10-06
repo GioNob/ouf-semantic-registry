@@ -1,5 +1,5 @@
 """Root CI-only offline archive/SBOM/report proof on already tested owned images."""
-import argparse,hashlib,json,os,subprocess,sys
+import argparse,hashlib,json,os,subprocess,sys,tarfile
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from tools import verify_semantic_image_archive as archive
@@ -20,13 +20,24 @@ def main():
         sbom.executable(scanner,h)
         tool_hashes[scanner]=h
     print('CI_SCAN_STAGE=ARCHIVE_BINDING',file=sys.stderr)
-    rows=[]
+    rows=[];bindings=[]
     for role,image in (('adapter',a.adapter),('southbound',a.southbound)):
         path=base/(role+'.probe.tar')
         with path.open('xb') as out:
             subprocess.run([str(docker),'image','save',image],stdout=out,stderr=subprocess.DEVNULL,check=True,timeout=120)
-        with path.open('rb') as stream:
-            verified=archive.archive_verify(stream,image,archive.Budget(180,8589934592,100000))
+        print('CI_ARCHIVE_ROLE='+role,file=sys.stderr)
+        try:
+            with path.open('rb') as stream:
+                verified=archive.archive_verify(stream,image,archive.Budget(180,8589934592,100000))
+        except Exception:
+            with tarfile.open(path,'r') as diagnostic:
+                manifest=json.load(diagnostic.extractfile('manifest.json'));assert len(manifest)==1
+                config=json.load(diagnostic.extractfile(manifest[0]['Config']))
+                layers=manifest[0]['Layers'];diffs=config['rootfs']['diff_ids']
+                # CI-owned public image; structure counts only, never target data.
+                print('CI_PUBLIC_ARCHIVE_STRUCTURE='+json.dumps({'role':role,'layerReferences':len(layers),'uniqueLayerReferences':len(set(layers)),'diffIds':len(diffs),'uniqueDiffIds':len(set(diffs)),'repeatedLayerPositions':[i for i,name in enumerate(layers) if name in layers[:i]]}),file=sys.stderr)
+            raise
+        bindings.append({'role':role,**verified})
         rows.append({'role':role,**{k:verified[k] for k in ('imageId','configByteSha256','rootfsDescriptorsHash')}})
     prepared=base/'sbom';prepared.mkdir(mode=0o700)
     print('CI_SCAN_STAGE=SBOM_PREPARATION',file=sys.stderr)
@@ -37,6 +48,8 @@ def main():
     result=grype.review(reviewed,prepared,expected,receipt_hash,pin,db,grype_bin,tool_hashes[grype_bin],unshare,tool_hashes[unshare])
     result['schema']='ouf.semantic-image-remediation-experiment.v1'
     result['imageArchivesVerified']=True
+    result['imageArchiveBindings']=bindings
+    result['scannerCountersScope']='offline vulnerability reviewer only; CI build and compatibility containers run separately'
     result['sbomPackageCounts']={row['role']:row['packageCount'] for row in expected}
     result['sbomPackageWithoutVersionCounts']={row['role']:row['packageWithoutVersionCount'] for row in expected}
     result['fullReceiptSha256']=hashlib.sha256((reviewed/'receipt.json').read_bytes()).hexdigest()

@@ -1,5 +1,5 @@
 """CI-only compatibility experiment; public owned fixtures, never target deployment."""
-import argparse,hashlib,json,os,re,shutil,subprocess,sys
+import argparse,gzip,hashlib,json,os,re,shutil,subprocess,sys,time
 from pathlib import Path
 
 CANDIDATES={'alpine-ubuntu':('python:3.13-alpine','apache/apisix:3.18.0-ubuntu'),
@@ -70,7 +70,7 @@ def main():
     southbound=json.loads((gateway/'generated/semantic-southbound-package-proof.json').read_text())
     assert adapter['baseImage']==images['adapter'] and southbound['requestedImage']==env['OUF_PROVIDER_TEST_APISIX_IMAGE']
     assert adapter['tlsAdmissionProven'] is True and southbound['tlsOidcNegativeBoundariesProven'] is True
-    inventory=run(['docker','run','--rm','--network','none','--user','0:0','--entrypoint','sh',southbound['imageId'],'-c','/usr/local/openresty/openssl3/bin/openssl version; ldd /usr/local/openresty/nginx/sbin/nginx; sha256sum /usr/local/openresty/openssl3/lib/libssl.so.3 /usr/local/openresty/openssl3/lib/libcrypto.so.3'],capture_output=True,text=True,timeout=30)
+    inventory=run(['docker','run','--rm','--network','none','--user','0:0','--entrypoint','sh',southbound['imageId'],'-c','/usr/local/openresty/openssl3/bin/openssl version; dpkg-query -W zlib1g; ldd /usr/local/openresty/nginx/sbin/nginx; sha256sum /usr/local/openresty/openssl3/lib/libssl.so.3 /usr/local/openresty/openssl3/lib/libcrypto.so.3'],capture_output=True,text=True,timeout=30)
     assert 'OpenSSL 3.4.8' in inventory.stdout
     assert 'libssl.so.3 => /usr/local/openresty/openssl3/lib/libssl.so.3' in inventory.stdout
     assert 'libcrypto.so.3 => /usr/local/openresty/openssl3/lib/libcrypto.so.3' in inventory.stdout
@@ -89,7 +89,33 @@ def main():
             (destination/name).write_bytes(public.stdout)
     receipt=json.loads(result.stdout);assert receipt['schema']=='ouf.semantic-image-remediation-experiment.v1'
     receipt.update(candidate=a.candidate,inputs=locks,gatewayCodeCommit=adapter['sourceRevision'],compatibilityProven=True)
+    receipt['semanticBuildCommit']=subprocess.check_output(['git','rev-parse','HEAD'],cwd=semantic,text=True).strip()
+    receipt['candidateArchives']=[]
+    for binding in receipt['imageArchiveBindings']:
+        role=binding['role'];target=out/(role+'.image.tar.gz')
+        reader=subprocess.Popen(['sudo','cat','/root/ouf-ci-image-remediation/'+role+'.probe.tar'],stdout=subprocess.PIPE)
+        raw_hash=hashlib.sha256();raw_size=0;deadline=time.monotonic()+180
+        try:
+            with target.open('xb') as file:
+                with gzip.GzipFile(filename='',mode='wb',compresslevel=3,mtime=0,fileobj=file) as compressed:
+                    while chunk:=reader.stdout.read(1024*1024):
+                        assert time.monotonic()<deadline
+                        raw_size+=len(chunk);assert raw_size<=8589934592
+                        raw_hash.update(chunk);compressed.write(chunk)
+            assert reader.wait(timeout=10)==0
+        finally:
+            reader.stdout.close()
+            if reader.poll() is None:reader.kill();reader.wait()
+        assert raw_hash.hexdigest()==binding['archiveSha256'] and raw_size==binding['archiveBytes']
+        with target.open('rb') as file:compressed_hash=hashlib.file_digest(file,'sha256').hexdigest()
+        receipt['candidateArchives'].append({'role':role,'file':target.name,'sha256':compressed_hash,'bytes':target.stat().st_size,'uncompressedSha256':binding['archiveSha256'],'uncompressedBytes':raw_size,'imageId':binding['imageId'],'kind':'docker-save-tar-gzip'})
     (out/'receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n')
+    sums=[]
+    for file in sorted(out.rglob('*')):
+        if not file.is_file() or 'source-zlib' in file.parts:continue
+        with file.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+        sums.append(digest+'  '+str(file.relative_to(semantic)))
+    (out/'checksums.sha256').write_text('\n'.join(sums)+'\n')
     print('SEMANTIC_IMAGE_REMEDIATION_EXPERIMENT='+json.dumps(receipt,sort_keys=True))
     print('EXPERIMENT_COMPLETED=true THRESHOLD_MET='+str(receipt['allScannerSeverityThresholdsMet']).lower()+' TARGET_ACCEPTANCE=false')
 if __name__=='__main__':main()

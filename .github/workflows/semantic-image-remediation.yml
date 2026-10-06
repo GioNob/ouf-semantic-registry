@@ -15,6 +15,8 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  id-token: write
+  attestations: write
 jobs:
   compatible-image-scan:
     runs-on: ubuntu-24.04
@@ -38,6 +40,41 @@ jobs:
         run: sudo /usr/bin/python3 -B tests/prepare_native_vulnerability_scanners.py
       - name: Real compatibility, verified archive, offline SBOM and vulnerability review
         run: python3 -B tests/run_semantic_image_remediation.py --candidate ${{ matrix.candidate }} --gateway .pairwise/gateway
+      - name: Attest exact public CI images and evidence
+        id: provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-checksums: generated/${{ matrix.candidate }}/checksums.sha256
+          create-storage-record: false
+      - name: Attest adapter SBOM for the image archive
+        id: adapter_sbom
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-path: generated/${{ matrix.candidate }}/adapter.image.tar.gz
+          sbom-path: generated/${{ matrix.candidate }}/sbom/adapter.spdx.json
+          create-storage-record: false
+      - name: Attest southbound SBOM for the image archive
+        id: southbound_sbom
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-path: generated/${{ matrix.candidate }}/southbound.image.tar.gz
+          sbom-path: generated/${{ matrix.candidate }}/sbom/southbound.spdx.json
+          create-storage-record: false
+      - name: Preserve and verify CI signatures
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVENANCE_BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+          ADAPTER_SBOM_BUNDLE: ${{ steps.adapter_sbom.outputs.bundle-path }}
+          SOUTHBOUND_SBOM_BUNDLE: ${{ steps.southbound_sbom.outputs.bundle-path }}
+        run: |
+          mkdir generated/${{ matrix.candidate }}/attestations
+          cp "$PROVENANCE_BUNDLE" generated/${{ matrix.candidate }}/attestations/provenance.json
+          cp "$ADAPTER_SBOM_BUNDLE" generated/${{ matrix.candidate }}/attestations/adapter-sbom.json
+          cp "$SOUTHBOUND_SBOM_BUNDLE" generated/${{ matrix.candidate }}/attestations/southbound-sbom.json
+          gh attestation verify generated/${{ matrix.candidate }}/adapter.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$PROVENANCE_BUNDLE" --format json > generated/${{ matrix.candidate }}/attestations/adapter-verification.json
+          gh attestation verify generated/${{ matrix.candidate }}/southbound.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$PROVENANCE_BUNDLE" --format json > generated/${{ matrix.candidate }}/attestations/southbound-verification.json
+          gh attestation verify generated/${{ matrix.candidate }}/adapter.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$ADAPTER_SBOM_BUNDLE" --predicate-type https://spdx.dev/Document --format json > generated/${{ matrix.candidate }}/attestations/adapter-sbom-verification.json
+          gh attestation verify generated/${{ matrix.candidate }}/southbound.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$SOUTHBOUND_SBOM_BUNDLE" --predicate-type https://spdx.dev/Document --format json > generated/${{ matrix.candidate }}/attestations/southbound-sbom-verification.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
