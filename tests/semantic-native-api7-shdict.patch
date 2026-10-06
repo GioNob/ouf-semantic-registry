@@ -1,0 +1,26 @@
+--- a/src/meta/ngx_meta_lua_shdict.c
++++ b/src/meta/ngx_meta_lua_shdict.c
+@@ -1359,6 +1359,11 @@
+ 
+     dd("exptime: %ld", exptime);
+ 
++    if (key_len > 65535) {
++        *errmsg = "key too long";
++        return NGX_ERROR;
++    }
++
+     ctx = zone->data;
+ 
+     *forcible = 0;
+@@ -1761,6 +1766,11 @@
+         tp = ngx_timeofday();
+     }
+ 
++    if (key_len > 65535) {
++        *err = "key too long";
++        return NGX_ERROR;
++    }
++
+     ctx = zone->data;
+ 
+     *forcible = 0;

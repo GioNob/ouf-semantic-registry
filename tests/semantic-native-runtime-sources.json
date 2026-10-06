@@ -322,5 +322,9 @@
     "compiled": false,
     "reason": "CI candidate for semantic provider TLS/OIDC contract; optional WASM omitted to remove byte-proven vulnerable Wasmtime 0.38.1. No target feature acceptance implied."
   },
-  "upstreamRecipeReference": "api7/apisix-build-tools@35292b649a01887cd54597fd16b2bea99648cdf5"
+  "upstreamRecipeReference": "api7/apisix-build-tools@35292b649a01887cd54597fd16b2bea99648cdf5",
+  "api7SharedDictPatch": {
+    "sha256": "e4f73010ee45894d36d9c3ea41a4ad40dff76d065b4524294e00457a3dc159a7",
+    "source": "OpenResty pinned ngx_lua-0.10.32rc5 src/ngx_http_lua_shdict.c: key_len > 65535 guards in FFI store and incr; port to APISIX shared meta dictionary"
+  }
 }

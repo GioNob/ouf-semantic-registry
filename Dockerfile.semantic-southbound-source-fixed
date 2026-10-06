@@ -61,6 +61,7 @@ COPY tests/semantic-native-runtime-sources.json /tmp/native-sources.json
 COPY tests/build_semantic_native_runtime.py /tmp/build-native-runtime.py
 COPY tests/prepare_semantic_openresty_source.py /tmp/prepare_semantic_openresty_source.py
 COPY tests/semantic-native-api7-1.31.6.patch /tmp/native-api7.patch
+COPY tests/semantic-native-api7-shdict.patch /tmp/native-shdict.patch
 RUN python3 -B /tmp/build-native-runtime.py
 FROM source-fixed-runtime
 USER 0:0

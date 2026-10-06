@@ -34,6 +34,10 @@ def main():
         assert actual == module['commit']
         run('git', '-C', str(target), 'fsck', '--full')
         shutil.rmtree(target / '.git')
+        if module['repository'] == 'api7/apisix-nginx-module':
+            guard = Path('/tmp/native-shdict.patch')
+            assert hashlib.sha256(guard.read_bytes()).hexdigest() == lock['api7SharedDictPatch']['sha256']
+            run('patch', '--batch', '--fuzz=0', '-p1', '-i', str(guard), cwd=target)
         files = {str(p.relative_to(target)): hashlib.sha256(p.read_bytes()).hexdigest()
                  for p in sorted(target.rglob('*')) if p.is_file()}
         source_files['modules'].append(dict(module, files=files))
@@ -45,6 +49,8 @@ def main():
     assert limit.is_dir()
     shutil.rmtree(limit)
     shutil.copytree(work / 'lua-resty-limit-traffic-1.2.0', limit)
+    source_files['compiledSourceFiles'] = {str(p.relative_to(resty)): hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in sorted(resty.rglob('*')) if p.is_file() and not p.is_symlink()}
     lua_bundle = list((resty / 'bundle').glob('ngx_lua-*'))
     assert len(lua_bundle) == 1
     os.environ['NGX_HTTP_LUA_MODULE_DIR'] = str(lua_bundle[0])

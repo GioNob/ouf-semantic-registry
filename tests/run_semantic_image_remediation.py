@@ -79,6 +79,14 @@ def main():
         '-c', 'test ! -e /usr/local/openresty/wasmtime-c-api && /usr/local/openresty/nginx/sbin/nginx -V 2>&1 && ldd /usr/local/openresty/nginx/sbin/nginx'],capture_output=True,text=True,timeout=30)
     assert 'wasmtime' not in native.stdout and 'wasm-nginx-module' not in native.stdout
     (out/'native-runtime-link-proof.txt').write_text(native.stdout)
+    guard_lua = "local d=ngx.shared.guard; assert(d:set('ok',1)); assert(d:get('ok')==1); " \
+        "local k=string.rep('x',65536); local ok,err=d:set(k,1); assert(ok==nil and err=='key too long'); " \
+        "local v,e=d:incr(k,1,0); assert(v==nil and e=='key too long'); print('SHDICT_KEY_BOUNDARY_PASS')"
+    guard=run(['docker','run','--rm','--network','none','--user','0:0',
+        '--entrypoint','/usr/local/openresty/bin/resty',southbound['imageId'],
+        '--shdict','guard 1m','-e',guard_lua],capture_output=True,text=True,timeout=30)
+    assert 'SHDICT_KEY_BOUNDARY_PASS' in guard.stdout
+    (out/'native-shdict-regression.txt').write_text(guard.stdout)
     for filename in ('native-runtime-sources.json','native-runtime-binaries.json'):
         payload=run(['docker','run','--rm','--network','none','--user','0:0','--entrypoint','cat',southbound['imageId'],
             '/usr/local/share/ouf/'+filename],capture_output=True,timeout=30)
