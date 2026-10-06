@@ -6,6 +6,7 @@ on:
       - 'Dockerfile.semantic-southbound-source-fixed'
       - 'tests/zlib-source-fixed.APKBUILD'
       - 'tests/openssl-3.4.1-sess_set_get_cb_yield.patch'
+      - 'tests/openssl-3.4.8-sess_set_get_cb_yield.patch'
       - 'Dockerfile.semantic-provider-security-update'
       - 'Dockerfile.semantic-southbound-security-update'
       - 'tests/run_semantic_image_remediation.py'

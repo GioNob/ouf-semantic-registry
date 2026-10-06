@@ -3,12 +3,12 @@ ARG INPUT_IMAGE
 FROM ${INPUT_IMAGE} AS build
 USER 0:0
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential curl ca-certificates zlib1g-dev
-COPY tests/openssl-3.4.1-sess_set_get_cb_yield.patch /tmp/openresty.patch
+COPY tests/openssl-3.4.8-sess_set_get_cb_yield.patch /tmp/openresty.patch
 RUN set -eu; \
     curl -fSL https://github.com/openssl/openssl/releases/download/openssl-3.4.8/openssl-3.4.8.tar.gz -o /tmp/openssl.tar.gz; \
     echo '9de9ce2f29e584044ae07ab93fc601637be01fdc91d109c5a655ec7419e6022b  /tmp/openssl.tar.gz' | sha256sum -c -; \
     mkdir /src; tar xzf /tmp/openssl.tar.gz -C /src --strip-components=1; \
-    cd /src; patch -p1 < /tmp/openresty.patch; \
+    cd /src; echo 'acf063b2848342272881d7f6a03da6cd58ac03de95c0a88ac94193cc3ee1b2ea  /tmp/openresty.patch' | sha256sum -c -; patch --fuzz=0 -p1 < /tmp/openresty.patch; \
     ./config shared zlib --prefix=/usr/local/openresty/openssl3 --libdir=lib -Wl,-rpath,/usr/local/openresty/openssl3/lib; \
     make -j2; \
     make test TESTS='test_dtls_mtu test_dtls_bad_ver test_dtlslisten test_sslapi'; \

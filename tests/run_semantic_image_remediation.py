@@ -47,7 +47,7 @@ def main():
         source_manifest=json.dumps(source_hashes,sort_keys=True,separators=(',',':'))
         locks['zlibSource']={'commit':source_commit,'gitTree':source_tree,'sourceManifestSha256':hashlib.sha256(source_manifest.encode()).hexdigest(),'releaseStatus':'unreleased upstream'}
         (out/'zlib-source-files.json').write_text(source_manifest+'\n')
-        (out/'openssl-source-lock.json').write_text(json.dumps({'version':'3.4.8','archiveSha256':'9de9ce2f29e584044ae07ab93fc601637be01fdc91d109c5a655ec7419e6022b','openrestyPatchCommit':'bc8bf89488f2d02572389158533b3f85ca0ded7f','openrestyPatchSha256':hashlib.sha256((semantic/'tests/openssl-3.4.1-sess_set_get_cb_yield.patch').read_bytes()).hexdigest()},indent=2)+'\n')
+        (out/'openssl-source-lock.json').write_text(json.dumps({'version':'3.4.8','archiveSha256':'9de9ce2f29e584044ae07ab93fc601637be01fdc91d109c5a655ec7419e6022b','openrestyPatchCommit':'bc8bf89488f2d02572389158533b3f85ca0ded7f','openrestyOriginalPatchSha256':hashlib.sha256((semantic/'tests/openssl-3.4.1-sess_set_get_cb_yield.patch').read_bytes()).hexdigest(),'openrestyPortPatchSha256':'acf063b2848342272881d7f6a03da6cd58ac03de95c0a88ac94193cc3ee1b2ea'},indent=2)+'\n')
         initial=json.loads((gateway/'generated/semantic-provider-package-proof.json').read_text())
         initial_tag='ouf-provider-package-ci:'+initial['sourceRevision'][:12]
         assert inspect(initial_tag)['Id']==initial['imageId']
