@@ -26,6 +26,13 @@ def main():
         OUF_PROVIDER_TEST_BASE_IMAGE=images['adapter'],OUF_PROVIDER_TEST_APISIX_IMAGE=images['southbound'])
     run([sys.executable,'-B','-m','unittest','tests.test_semantic_provider_container'],cwd=gateway,env=env,timeout=420)
     if a.candidate=='alpine-ubuntu-updated':
+        inventory_command=['docker','run','--rm','--network','none','--user','0:0','--entrypoint','sh',images['southbound'],
+            '-c', "cat /etc/os-release; dpkg-query -W -f='$"+"{binary:Package} $"+"{Version}\\n' 'libssl*' openssl 2>/dev/null || true; openssl version; ldd /usr/local/openresty/nginx/sbin/nginx | grep -E 'ssl|crypto' || true"]
+        # Only public base-image OS/package/link facts; no fixture config or credentials.
+        inventory=run(inventory_command,capture_output=True,text=True,timeout=30)
+        (out/'public-runtime-inventory.txt').write_text(inventory.stdout)
+        print('PUBLIC_SOUTHBOUND_RUNTIME_INVENTORY='+inventory.stdout)
+
         initial=json.loads((gateway/'generated/semantic-provider-package-proof.json').read_text())
         initial_tag='ouf-provider-package-ci:'+initial['sourceRevision'][:12]
         assert inspect(initial_tag)['Id']==initial['imageId']
