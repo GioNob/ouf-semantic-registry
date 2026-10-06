@@ -110,7 +110,7 @@ def leaves(tree, prefix=''):
             require(re.fullmatch('[0-9a-f]{32}', value)); yield path, value
 
 def add_package(document, identity, version, repository, paths):
-    identifier = sha(('ouf-extended:' + identity + ':' + version + ':' + json.dumps(paths, sort_keys=True)).encode())[:16]
+    identifier = sha(('ouf-extended:' + identity + ':' + version + ':' + json.dumps(sorted(paths))).encode())[:16]
     require(not any(p['id'] == identifier for p in document['artifacts']))
     document['artifacts'].append(dict(id=identifier, name=identity, version=version, type='binary',
         foundBy='ouf-byte-bound-source-inventory', locations=[{'path': '/' + p} for p in sorted(paths)],
