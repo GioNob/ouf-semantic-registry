@@ -40,6 +40,18 @@ def main():
     result['sbomPackageCounts']={row['role']:row['packageCount'] for row in expected}
     result['sbomPackageWithoutVersionCounts']={row['role']:row['packageWithoutVersionCount'] for row in expected}
     result['fullReceiptSha256']=hashlib.sha256((reviewed/'receipt.json').read_bytes()).hexdigest()
+    result['remainingHighCriticalUnknown']={}
+    for row in expected:
+        role=row['role'];report=json.loads((reviewed/(role+'.grype.json')).read_bytes())
+        remaining=[]
+        for match in report['matches']:
+            v=match['vulnerability']
+            if v['severity'] not in ('High','Critical','Unknown'):continue
+            artifact=match['artifact']
+            remaining.append({k:artifact.get(k) for k in ('name','version','type')} | {
+                'id':v['id'],'severity':v['severity'],'namespace':v.get('namespace'),'fix':v.get('fix'),
+                'matchers':[d.get('matcher') for d in match.get('matchDetails',[])]})
+        result['remainingHighCriticalUnknown'][role]=remaining
     result['experimentOnly']=True
     print(json.dumps(result,sort_keys=True))
 if __name__=='__main__':main()

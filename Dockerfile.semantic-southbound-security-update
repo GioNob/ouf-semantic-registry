@@ -1,0 +1,12 @@
+# Keep APISIX 3.18.0; apply official OS security packages, not an APISIX minor upgrade.
+ARG INPUT_IMAGE
+FROM ${INPUT_IMAGE}
+USER 0:0
+RUN set -eu; \
+    SSL_PACKAGE="$(dpkg-query -W -f='${binary:Package}\n' 'libssl3*' | sed -En '/^libssl3(t64)?(:amd64)?$/p')"; \
+    case "$SSL_PACKAGE" in libssl3|libssl3:amd64|libssl3t64|libssl3t64:amd64) ;; *) exit 1 ;; esac; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --only-upgrade "$SSL_PACKAGE" openssl; \
+    rm -rf /var/lib/apt/lists/*
+ARG RUNTIME_USER
+USER ${RUNTIME_USER}

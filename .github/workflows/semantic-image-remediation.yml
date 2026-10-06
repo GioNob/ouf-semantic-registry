@@ -2,6 +2,8 @@ name: Semantic image remediation experiment
 on:
   pull_request:
     paths:
+      - 'Dockerfile.semantic-provider-security-update'
+      - 'Dockerfile.semantic-southbound-security-update'
       - 'tests/run_semantic_image_remediation.py'
       - 'tests/scan_semantic_image_remediation.py'
       - '.github/workflows/semantic-image-remediation.yml'
@@ -15,13 +17,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        candidate: [alpine-ubuntu, slim-debian]
+        candidate: [alpine-ubuntu-updated]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
           repository: GioNob/ouf-api-gateway
-          ref: 7d5b4f58783ccca15c19dfb9c0d409b39566258e
+          ref: c0b1f97bdb1fbcd6a88117dea6520ea9c322f265
           path: .pairwise/gateway
       - uses: actions/setup-python@v5
         with:

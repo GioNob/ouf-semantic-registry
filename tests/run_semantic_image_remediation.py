@@ -3,7 +3,9 @@ import argparse,json,os,re,subprocess,sys
 from pathlib import Path
 
 CANDIDATES={'alpine-ubuntu':('python:3.13-alpine','apache/apisix:3.18.0-ubuntu'),
-            'slim-debian':('python:3.13-slim','apache/apisix:3.18.0-debian')}
+            'slim-debian':('python:3.13-slim','apache/apisix:3.18.0-debian'),
+            'alpine-ubuntu-updated':('python@sha256:2d9aefe2fef018a7eb2c13064c89c71929800fd2e5dccdbf52ea5da5bb8d929a',
+              'apache/apisix@sha256:9ee5df1611f98a902d1bbacf760b35632498006854a223837ab290d27a928846')}
 def run(args,**kwargs):return subprocess.run(args,check=kwargs.pop('check',True),timeout=kwargs.pop('timeout',240),**kwargs)
 def inspect(reference):
     return json.loads(subprocess.check_output(['docker','image','inspect',reference],text=True,timeout=20))[0]
@@ -22,11 +24,29 @@ def main():
     (out/'inputs.json').write_text(json.dumps(locks,sort_keys=True,indent=2)+'\n')
     env=dict(os.environ,OUF_PROVIDER_CONTAINER_TEST='1',OUF_SEMANTIC_PROVIDER_APISIX_TEST='1',
         OUF_PROVIDER_TEST_BASE_IMAGE=images['adapter'],OUF_PROVIDER_TEST_APISIX_IMAGE=images['southbound'])
-    for test in ('tests.test_semantic_provider_container','tests.test_semantic_provider_apisix_live'):
-        run([sys.executable,'-B','-m','unittest',test],cwd=gateway,env=env,timeout=420)
+    run([sys.executable,'-B','-m','unittest','tests.test_semantic_provider_container'],cwd=gateway,env=env,timeout=420)
+    if a.candidate=='alpine-ubuntu-updated':
+        initial=json.loads((gateway/'generated/semantic-provider-package-proof.json').read_text())
+        initial_tag='ouf-provider-package-ci:'+initial['sourceRevision'][:12]
+        assert inspect(initial_tag)['Id']==initial['imageId']
+        adapter_tag='ouf-remediation-updated-adapter:ci'
+        southbound_tag='ouf-remediation-updated-southbound:ci'
+        for role,source,tag,dockerfile in (
+                ('adapter',initial_tag,adapter_tag,'Dockerfile.semantic-provider-security-update'),
+                ('southbound',images['southbound'],southbound_tag,'Dockerfile.semantic-southbound-security-update')):
+            command=['docker','build','--pull=false','--file',str(semantic/dockerfile),'--tag',tag,
+                '--build-arg','INPUT_IMAGE='+source]
+            if role=='southbound':
+                command+=['--build-arg','RUNTIME_USER='+(inspect(source)['Config'].get('User') or '0:0')]
+            command.append(str(semantic));run(command,timeout=420)
+            locks[role]['updatedImageId']=inspect(tag)['Id']
+        env['OUF_PROVIDER_TEST_FINAL_IMAGE']=locks['adapter']['updatedImageId']
+        env['OUF_PROVIDER_TEST_APISIX_IMAGE']=locks['southbound']['updatedImageId']
+        run([sys.executable,'-B','-m','unittest','tests.test_semantic_provider_container'],cwd=gateway,env=env,timeout=420)
+    run([sys.executable,'-B','-m','unittest','tests.test_semantic_provider_apisix_live'],cwd=gateway,env=env,timeout=420)
     adapter=json.loads((gateway/'generated/semantic-provider-package-proof.json').read_text())
     southbound=json.loads((gateway/'generated/semantic-southbound-package-proof.json').read_text())
-    assert adapter['baseImage']==images['adapter'] and southbound['requestedImage']==images['southbound']
+    assert adapter['baseImage']==images['adapter'] and southbound['requestedImage']==env['OUF_PROVIDER_TEST_APISIX_IMAGE']
     assert adapter['tlsAdmissionProven'] is True and southbound['tlsOidcNegativeBoundariesProven'] is True
     (out/'compatibility.json').write_text(json.dumps({'adapter':adapter,'southbound':southbound},indent=2,sort_keys=True)+'\n')
     result=run(['sudo','/usr/bin/python3','-B',str(semantic/'tests/scan_semantic_image_remediation.py'),

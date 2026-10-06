@@ -1,0 +1,6 @@
+# CI-tested custom derivative; never deploy without image/dossier acceptance.
+ARG INPUT_IMAGE
+FROM ${INPUT_IMAGE}
+USER 0:0
+RUN apk upgrade --no-cache
+USER 10006:10006
