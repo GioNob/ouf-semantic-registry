@@ -187,12 +187,12 @@ def extend(original, sources, rows, configure):
     for path, record in rows.items():
         if not path.startswith(PREFIX) or not path.endswith('.lua') or 'sha256' not in record: continue
         matches = by_hash.get(record['sha256'], [])
-        require(len({(kind, directory) for kind, directory, _ in matches}) <= 1 or
-                all(directory.startswith('lua-resty-limit-traffic-') for _, directory, _ in matches))
         if not matches:
             unresolved_lua.append(path); continue
-        kind, directory, source_path = matches[0]
-        lua_groups.setdefault(directory, {})[path] = dict(sha256=record['sha256'], sourceFile=source_path)
+        # Identical installed bytes can occur in more than one source component.
+        # Retain every proven association rather than guessing one owner.
+        for kind, directory, source_path in matches:
+            lua_groups.setdefault(directory, {})[path] = dict(sha256=record['sha256'], sourceFile=source_path)
     for directory, files in sorted(lua_groups.items()):
         module = next((m for m in sources['modules'] if m['directory'] == directory), None)
         # The OpenResty slot has been replaced with the API7 pinned source before hashing.
