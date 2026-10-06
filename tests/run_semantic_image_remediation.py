@@ -79,6 +79,13 @@ def main():
         '-c', 'test ! -e /usr/local/openresty/wasmtime-c-api && /usr/local/openresty/nginx/sbin/nginx -V 2>&1 && ldd /usr/local/openresty/nginx/sbin/nginx'],capture_output=True,text=True,timeout=30)
     assert 'wasmtime' not in native.stdout and 'wasm-nginx-module' not in native.stdout
     (out/'native-runtime-link-proof.txt').write_text(native.stdout)
+    for filename in ('native-runtime-sources.json','native-runtime-binaries.json'):
+        payload=run(['docker','run','--rm','--network','none','--user','0:0','--entrypoint','cat',southbound['imageId'],
+            '/usr/local/share/ouf/'+filename],capture_output=True,timeout=30)
+        parsed=json.loads(payload.stdout)
+        assert type(parsed) is dict
+        (out/filename).write_bytes(payload.stdout)
+
     guard_lua = "local d=ngx.shared.guard; assert(d:set('ok',1)); assert(d:get('ok')==1); " \
         "local k=string.rep('x',65536); local ok,err=d:set(k,1); assert(ok==nil and err=='key too long'); " \
         "local v,e=d:incr(k,1,0); assert(v==nil and e=='key too long'); print('SHDICT_KEY_BOUNDARY_PASS')"
@@ -94,19 +101,15 @@ def main():
     grpc_lua = "local s=ngx.socket.tcp(); s:settimeout(5000); assert(s:connect('127.0.0.1',18083)); " \
         "assert(s:send('POST /probe HTTP/1.1\\r\\nHost: original.example.invalid\\r\\n" \
         "Content-Type: application/grpc\\r\\nContent-Length: 0\\r\\nConnection: close\\r\\n\\r\\n')); " \
-        "local body=assert(s:receive('*a')); assert(body:find('AUTHORITY=ouf%-authority%.example%.invalid')); " \
+        "local body=assert(s:receive('*a')); assert(body:find('AUTHORITY=ouf%-authority%.example%.invalid'),body); " \
         "s:close(); print('GRPC_AUTHORITY_PASS')"
     grpc=run(['docker','run','--rm','--network','none','--user','0:0',
         '--entrypoint','/usr/local/openresty/bin/resty',southbound['imageId'],
-        '--http-conf',grpc_config,'-e',grpc_lua],capture_output=True,text=True,timeout=30)
-    assert 'GRPC_AUTHORITY_PASS' in grpc.stdout
+        '--http-conf',grpc_config,'-e',grpc_lua],capture_output=True,text=True,timeout=30,check=False)
+    (out/'native-grpc-authority-diagnostic.txt').write_text(grpc.stdout+grpc.stderr)
+    print('GRPC_AUTHORITY_DIAGNOSTIC='+grpc.stdout+grpc.stderr)
+    assert grpc.returncode==0 and 'GRPC_AUTHORITY_PASS' in grpc.stdout
     (out/'native-grpc-authority-regression.txt').write_text(grpc.stdout)
-    for filename in ('native-runtime-sources.json','native-runtime-binaries.json'):
-        payload=run(['docker','run','--rm','--network','none','--user','0:0','--entrypoint','cat',southbound['imageId'],
-            '/usr/local/share/ouf/'+filename],capture_output=True,timeout=30)
-        parsed=json.loads(payload.stdout)
-        assert type(parsed) is dict
-        (out/filename).write_bytes(payload.stdout)
 
     (out/'compatibility.json').write_text(json.dumps({'adapter':adapter,'southbound':southbound},indent=2,sort_keys=True)+'\n')
     result=run(['sudo','/usr/bin/python3','-B',str(semantic/'tests/scan_semantic_image_remediation.py'),
