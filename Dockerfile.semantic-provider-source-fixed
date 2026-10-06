@@ -6,7 +6,8 @@ RUN apk add --no-cache abuild build-base
 COPY generated/alpine-ubuntu-source-fixed/source-zlib/ /source-zlib/
 COPY tests/zlib-source-fixed.APKBUILD /work/APKBUILD
 WORKDIR /work
-RUN abuild-keygen -a -i -n && abuild -F -r && mkdir /out && \
+ENV SUDO_APK=/sbin/apk
+RUN abuild-keygen -a -n && cp /root/.abuild/*.rsa.pub /etc/apk/keys/ && abuild -F -r && mkdir /out && \
     cp /root/.abuild/*.rsa.pub /out/ && \
     find /root/packages -name 'zlib-*.apk' -exec cp '{}' /out/ ';'
 FROM ${INPUT_IMAGE}
