@@ -1055,12 +1055,12 @@
   },
   "imageVulnerabilityGate": {
     "section": 49,
-    "status": "SCOPE49_GRANTED_OPERATOR_EXECUTION_PENDING",
+    "status": "EXECUTED_BLOCKED_OPERATOR_REPORTED_OUTPUT_NOT_RETAINED",
     "sourceCommit": "2c11fd6d37995b09de39f3d48b3f0373644ce7bc",
     "sourceSha256": "0060403c8336aab950012a44c9160f2b656ffa779479975ea44be6ec7a44ca43",
     "scopeGranted": true,
-    "targetExecuted": false,
-    "operatorCommandPending": true,
+    "targetExecuted": true,
+    "operatorCommandPending": false,
     "localTestsPassed": 10,
     "firstNativeRun": 37365819285,
     "firstNativeJob": 111950583923,
@@ -1070,7 +1070,7 @@
     "nextNativeRun": 37366132907,
     "nextNativeCommit": "dd8bb49b2150834dac9510a69b66c9da130822e4",
     "sourceReceiptSha256": "6e0a436d8da6b55c3286811140efd46b679d2ceb9dc202b33576a76425ed08fc",
-    "nextAction": "Operator executes immutable gate49 wrapper once on VPS and returns redacted output; preserve artifacts on BLOCKED. No replay39–48.",
+    "nextAction": "Verify dedicated diagnostic CI, then one read-only fixed-artifact diagnostic; preserve all staging and no gate49 rerun before reconciliation.",
     "wrapperTestsPassed": 3,
     "wrapperPath": "docs/handoffs/commands/OUF_REVIEW_IMAGE_VULNERABILITIES_2026-10-05.sh",
     "wrapperSha256": "ec5b567d90849a533a45f65911795690f2ad22357b6cc79b80d2d9c821a93fd9",
@@ -1110,6 +1110,15 @@
     "logsRead": true,
     "authorizedAt": "2026-10-05T23:18:54+02:00",
     "authorizationReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_SCOPE_49_AUTHORIZATION_2026-10-05.json",
-    "operatorOutputReceived": false
+    "operatorOutputReceived": false,
+    "targetExecutionReported": true,
+    "operatorReportedAt": "2026-10-06T06:26:49+02:00",
+    "failureCause": "UNKNOWN_OUTPUT_NOT_RETAINED",
+    "scanStarted": null,
+    "targetArtifactsExist": null,
+    "operatorBlockedReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_BLOCKED_2026-10-06_OPERATOR.json",
+    "diagnosticSource": "tools/diagnose_semantic_image_vulnerabilities.py",
+    "diagnosticSourceSha256": "4f6197c0dbf90056060c7435f2cffc807d5ede5c44a22205292bb0a54b2bc48a",
+    "diagnosticLocalTestsPassed": 3
   }
 }
