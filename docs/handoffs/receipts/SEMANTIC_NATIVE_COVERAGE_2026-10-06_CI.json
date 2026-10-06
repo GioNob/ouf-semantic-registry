@@ -1,0 +1,560 @@
+{
+  "schema": "ouf.semantic-native-coverage-ci-evidence.v1",
+  "codeCommit": "150e059e8722c27ce0949254aa850ff82c64af7b",
+  "runId": 37424720686,
+  "jobId": 112141668252,
+  "workflowConclusion": "success",
+  "interpretation": "measurement completed; vulnerability threshold FAILED; original VPS byte qualification remains valid",
+  "originalCiAttestationCryptoVerified": true,
+  "supplementalAttestationIssued": true,
+  "supplementalAttestationIndependentlyCryptoVerified": false,
+  "evidenceArtifact": {
+    "id": 11395230041,
+    "sha256": "02a1b44a1b737e5c95b74cb7e310c014f78526a41ce44652a08b8056167776c8",
+    "bytes": 883798,
+    "downloadedHashVerifiedAndRead": true
+  },
+  "baseline": {
+    "filename": "OUF_Reality_Baseline_Package_v1_7(4).zip",
+    "sha256": "e63df67e8817eec38a9d4b3eb736b020f693b932f3360dc02f4555330f2201ce",
+    "internalChecksumsPassed": 323,
+    "reviewedContracts": [
+      "Gateway v1.5 T16",
+      "Gateway v1.5 T33.13",
+      "Semantic v1.3 159.1-159.2",
+      "Semantic v1.3 160"
+    ]
+  },
+  "result": {
+    "acceptanceGranted": false,
+    "applicableWasmtimeAdvisories": [
+      {
+        "cveId": "CVE-2026-35195",
+        "ghsaId": "GHSA-394w-hwhg-8vgm",
+        "severity": "medium"
+      },
+      {
+        "cveId": "CVE-2026-34944",
+        "ghsaId": "GHSA-qqfj-4vcm-26hv",
+        "severity": "medium"
+      },
+      {
+        "cveId": "CVE-2026-34943",
+        "ghsaId": "GHSA-m758-wjhj-p3jq",
+        "severity": "medium"
+      },
+      {
+        "cveId": "CVE-2026-34942",
+        "ghsaId": "GHSA-jxhv-7h78-9775",
+        "severity": "medium"
+      },
+      {
+        "cveId": "CVE-2026-34941",
+        "ghsaId": "GHSA-hx6p-xpx3-jvvv",
+        "severity": "medium"
+      },
+      {
+        "cveId": "CVE-2026-27572",
+        "ghsaId": "GHSA-243v-98vx-264h",
+        "severity": "medium"
+      },
+      {
+        "cveId": "CVE-2026-27204",
+        "ghsaId": "GHSA-852m-cvvp-9p4w",
+        "severity": "medium"
+      },
+      {
+        "cveId": "CVE-2025-64345",
+        "ghsaId": "GHSA-hc7m-r6v8-hg9q",
+        "severity": "low"
+      },
+      {
+        "cveId": "CVE-2024-51745",
+        "ghsaId": "GHSA-c2f5-jxjv-2hh8",
+        "severity": "low"
+      },
+      {
+        "cveId": "CVE-2022-39394",
+        "ghsaId": "GHSA-h84q-m8rr-3v9q",
+        "severity": "low"
+      },
+      {
+        "cveId": "CVE-2023-30624",
+        "ghsaId": "GHSA-ch89-5g45-qwc7",
+        "severity": "low"
+      },
+      {
+        "cveId": "CVE-2023-26489",
+        "ghsaId": "GHSA-ff4p-7xrq-q5r8",
+        "severity": "critical"
+      },
+      {
+        "cveId": "CVE-2022-39393",
+        "ghsaId": "GHSA-wh6w-3828-g9qf",
+        "severity": "high"
+      },
+      {
+        "cveId": "CVE-2022-39392",
+        "ghsaId": "GHSA-44mr-8vmm-wjhg",
+        "severity": "medium"
+      },
+      {
+        "cveId": "CVE-2022-31169",
+        "ghsaId": "GHSA-7f6x-jwh5-m9r4",
+        "severity": "medium"
+      },
+      {
+        "cveId": "CVE-2022-31146",
+        "ghsaId": "GHSA-5fhj-g3p3-pq9g",
+        "severity": "medium"
+      }
+    ],
+    "components": [
+      {
+        "component": "openssl",
+        "path": "/usr/local/openresty/openssl3/lib/libssl.so.3",
+        "sha256": "2def0004883d6da74aa520c051cc73983365ae51bb3f252b19e0b1e8cdef2bf9",
+        "version": "3.4.8"
+      },
+      {
+        "component": "zlib",
+        "path": "/usr/local/openresty/zlib/lib/libz.so.1.3.2.1-motley",
+        "sha256": "bb40f2404ed5c18ae53314e4036f65f875dd56f7af1db0c3d0a3a541caa70f55",
+        "version": "1.3.2.1-motley"
+      },
+      {
+        "component": "pcre",
+        "path": "/usr/local/openresty/pcre/lib/libpcre.so.1.2.13",
+        "sha256": "3917e1f46fdf33145183188f4ccfde50e578dd1593518b65bafa66f0dc14e8bc",
+        "version": "8.45"
+      },
+      {
+        "component": "wasmtime",
+        "path": "/usr/local/openresty/wasmtime-c-api/lib/libwasmtime.so",
+        "sha256": "ec2b5868c0e602c5e233607d422fad3422758c7a12bd38faded483da62081c2d",
+        "version": "0.38.1"
+      }
+    ],
+    "containerOperations": 0,
+    "dependencyCoverageAccepted": false,
+    "imageId": "sha256:213ff3377465784bc1f5dd82863d65d6585a3c22062eb4e7d78c7c0239af0334",
+    "imageImportPerformed": false,
+    "measuredScanComplete": true,
+    "nativeElfFiles": [
+      {
+        "bytes": 3256328,
+        "path": "/usr/local/openresty/luajit/bin/luajit-2.1.ROLLING",
+        "sha256": "d4e26fd774a8173607f8663225bb91484aff9510c520437052f8f9ee4d35c02c"
+      },
+      {
+        "bytes": 3225800,
+        "path": "/usr/local/openresty/luajit/lib/libluajit-5.1.so.2.1.ROLLING",
+        "sha256": "ebe7f3178938f1df6826aaf581338d5a4f4f05d160355b2d7f9e49278c6b8432"
+      },
+      {
+        "bytes": 130784,
+        "path": "/usr/local/openresty/lualib/cjson.so",
+        "sha256": "c9d52b14fb023b7b403ed5b90ec96ae97267b3240cf4d6bf50a4a69e7174b297"
+      },
+      {
+        "bytes": 17040,
+        "path": "/usr/local/openresty/lualib/librestysignal.so",
+        "sha256": "25b1847376460caf7597ecfb866982592794ff78be4013eaa4d5f333c07e7161"
+      },
+      {
+        "bytes": 36992,
+        "path": "/usr/local/openresty/lualib/redis/parser.so",
+        "sha256": "fbcf1a945a7532304d3efc20b120ae047866f61d7b5d284182b6b3205389a046"
+      },
+      {
+        "bytes": 17547992,
+        "path": "/usr/local/openresty/nginx/sbin/nginx",
+        "sha256": "53f3da50fcf2fec0bff832cc20ab921b0d495ce657de5b32d9287cf505a687a2"
+      },
+      {
+        "bytes": 1264200,
+        "path": "/usr/local/openresty/openssl3/bin/openssl",
+        "sha256": "a037c746990e7b95b25deb8dbd8d50f8f6176c6c1b56f7c9448db78c9717be67"
+      },
+      {
+        "bytes": 28288,
+        "path": "/usr/local/openresty/openssl3/lib/engines-3/afalg.so",
+        "sha256": "29787d2b53befc1560006ac75df63fbdf96e963ae09008598a25129afc0e9e4d"
+      },
+      {
+        "bytes": 15152,
+        "path": "/usr/local/openresty/openssl3/lib/engines-3/capi.so",
+        "sha256": "8a48bd5686c36e656a236b78b23459de08b618defaeb44569058604969bd452b"
+      },
+      {
+        "bytes": 75840,
+        "path": "/usr/local/openresty/openssl3/lib/engines-3/loader_attic.so",
+        "sha256": "40ba74bcfb94c468729f74cc6911a8690fb53bb1a44a5414a9f2bda95cce15ed"
+      },
+      {
+        "bytes": 32480,
+        "path": "/usr/local/openresty/openssl3/lib/engines-3/padlock.so",
+        "sha256": "6d15e05e646605ad335250fb3fb55c93f01c730ee99d931a224f7942bd14576e"
+      },
+      {
+        "bytes": 6600488,
+        "path": "/usr/local/openresty/openssl3/lib/libcrypto.so.3",
+        "sha256": "21c4981a01384a35dba18de33c6c34430d89335cf9771803fead8173f24bd4f5"
+      },
+      {
+        "bytes": 1251888,
+        "path": "/usr/local/openresty/openssl3/lib/libssl.so.3",
+        "sha256": "2def0004883d6da74aa520c051cc73983365ae51bb3f252b19e0b1e8cdef2bf9"
+      },
+      {
+        "bytes": 170456,
+        "path": "/usr/local/openresty/openssl3/lib/ossl-modules/legacy.so",
+        "sha256": "55e6e9285d385b5e94c27bd97a6f9b89fa31ac5c05f0b846a6218157717f1bc3"
+      },
+      {
+        "bytes": 489816,
+        "path": "/usr/local/openresty/pcre/lib/libpcre.so.1.2.13",
+        "sha256": "3917e1f46fdf33145183188f4ccfde50e578dd1593518b65bafa66f0dc14e8bc"
+      },
+      {
+        "bytes": 14552,
+        "path": "/usr/local/openresty/pcre/lib/libpcreposix.so.0.0.7",
+        "sha256": "cd691028fa3e811931d817c7d63fb449e1a5d4ca53bd7ae388d9bfaa963982fa"
+      },
+      {
+        "bytes": 16094592,
+        "path": "/usr/local/openresty/wasmtime-c-api/lib/libwasmtime.so",
+        "sha256": "ec2b5868c0e602c5e233607d422fad3422758c7a12bd38faded483da62081c2d"
+      },
+      {
+        "bytes": 130128,
+        "path": "/usr/local/openresty/zlib/lib/libz.so.1.3.2.1-motley",
+        "sha256": "bb40f2404ed5c18ae53314e4036f65f875dd56f7af1db0c3d0a3a541caa70f55"
+      }
+    ],
+    "networkIsolatedScanner": true,
+    "originalPackagesPreserved": true,
+    "originalSyftSha256": "2cc466faf9e88442f59ab05dca6aaec6e538713b09bf2d4bd4afa87b85c966a0",
+    "scannerInvoked": true,
+    "scannerSeverityThresholdMet": false,
+    "schema": "ouf.semantic-native-coverage-audit.v1",
+    "severityCounts": {
+      "Critical": 2,
+      "High": 8,
+      "Low": 19,
+      "Medium": 148,
+      "Negligible": 4,
+      "Unknown": 0
+    },
+    "sourceArtifactSha256": "bf369a5e445a7e84c51d0252b6714912b0d92897097f3afeb2a21c85db38fa2a",
+    "startAuthorized": false,
+    "supplementedSyftSha256": "6646626126ee97bfb3db9342f5ae5a7fcc6fdcb92f31c93af262d23107697731",
+    "unresolvedNativeIdentities": [
+      {
+        "path": "/usr/local/openresty/luajit/bin/luajit-2.1.ROLLING",
+        "sha256": "d4e26fd774a8173607f8663225bb91484aff9510c520437052f8f9ee4d35c02c"
+      },
+      {
+        "path": "/usr/local/openresty/luajit/lib/libluajit-5.1.so.2.1.ROLLING",
+        "sha256": "ebe7f3178938f1df6826aaf581338d5a4f4f05d160355b2d7f9e49278c6b8432"
+      },
+      {
+        "path": "/usr/local/openresty/lualib/cjson.so",
+        "sha256": "c9d52b14fb023b7b403ed5b90ec96ae97267b3240cf4d6bf50a4a69e7174b297"
+      },
+      {
+        "path": "/usr/local/openresty/lualib/librestysignal.so",
+        "sha256": "25b1847376460caf7597ecfb866982592794ff78be4013eaa4d5f333c07e7161"
+      },
+      {
+        "path": "/usr/local/openresty/lualib/redis/parser.so",
+        "sha256": "fbcf1a945a7532304d3efc20b120ae047866f61d7b5d284182b6b3205389a046"
+      },
+      {
+        "path": "/usr/local/openresty/nginx/sbin/nginx",
+        "sha256": "53f3da50fcf2fec0bff832cc20ab921b0d495ce657de5b32d9287cf505a687a2"
+      }
+    ],
+    "wasmtimeReleaseBinarySha256": "ec2b5868c0e602c5e233607d422fad3422758c7a12bd38faded483da62081c2d"
+  },
+  "blockingFindings": [
+    {
+      "component": "wasmtime",
+      "version": "0.38.1",
+      "id": "CVE-2023-26489",
+      "severity": "Critical",
+      "fix": {
+        "versions": [
+          "4.0.1"
+        ],
+        "state": "fixed",
+        "available": [
+          {
+            "version": "4.0.1",
+            "date": "2025-09-04",
+            "kind": "first-observed"
+          }
+        ]
+      }
+    },
+    {
+      "component": "wasmtime",
+      "version": "0.38.1",
+      "id": "CVE-2022-31146",
+      "severity": "High",
+      "fix": {
+        "versions": [
+          "0.38.2"
+        ],
+        "state": "fixed",
+        "available": [
+          {
+            "version": "0.38.2",
+            "date": "2025-09-04",
+            "kind": "first-observed"
+          }
+        ]
+      }
+    },
+    {
+      "component": "wasmtime",
+      "version": "0.38.1",
+      "id": "CVE-2022-39393",
+      "severity": "High",
+      "fix": {
+        "versions": [
+          "1.0.2",
+          "2.0.2"
+        ],
+        "state": "fixed",
+        "available": [
+          {
+            "version": "1.0.2",
+            "date": "2025-09-04",
+            "kind": "first-observed"
+          },
+          {
+            "version": "2.0.2",
+            "date": "2025-09-04",
+            "kind": "first-observed"
+          }
+        ]
+      }
+    },
+    {
+      "component": "wasmtime",
+      "version": "0.38.1",
+      "id": "CVE-2026-27572",
+      "severity": "High",
+      "fix": {
+        "versions": [
+          "24.0.6",
+          "36.0.6",
+          "40.0.4",
+          "41.0.4"
+        ],
+        "state": "fixed",
+        "available": [
+          {
+            "version": "24.0.6",
+            "date": "2026-03-03",
+            "kind": "first-observed"
+          },
+          {
+            "version": "36.0.6",
+            "date": "2026-03-03",
+            "kind": "first-observed"
+          },
+          {
+            "version": "40.0.4",
+            "date": "2026-03-03",
+            "kind": "first-observed"
+          },
+          {
+            "version": "41.0.4",
+            "date": "2026-03-03",
+            "kind": "first-observed"
+          }
+        ]
+      }
+    },
+    {
+      "component": "wasmtime",
+      "version": "0.38.1",
+      "id": "CVE-2022-39392",
+      "severity": "High",
+      "fix": {
+        "versions": [
+          "1.0.2",
+          "2.0.2"
+        ],
+        "state": "fixed",
+        "available": [
+          {
+            "version": "1.0.2",
+            "date": "2025-09-04",
+            "kind": "first-observed"
+          },
+          {
+            "version": "2.0.2",
+            "date": "2025-09-04",
+            "kind": "first-observed"
+          }
+        ]
+      }
+    },
+    {
+      "component": "wasmtime",
+      "version": "0.38.1",
+      "id": "CVE-2026-47261",
+      "severity": "High",
+      "fix": {
+        "versions": [
+          "24.0.9",
+          "36.0.10",
+          "44.0.2"
+        ],
+        "state": "fixed",
+        "available": [
+          {
+            "version": "24.0.9",
+            "date": "2026-06-17",
+            "kind": "first-observed"
+          },
+          {
+            "version": "36.0.10",
+            "date": "2026-06-17",
+            "kind": "first-observed"
+          },
+          {
+            "version": "44.0.2",
+            "date": "2026-06-17",
+            "kind": "first-observed"
+          }
+        ]
+      }
+    },
+    {
+      "component": "wasmtime",
+      "version": "0.38.1",
+      "id": "CVE-2026-34941",
+      "severity": "High",
+      "fix": {
+        "versions": [
+          "24.0.7",
+          "36.0.7",
+          "42.0.2",
+          "44.0.1"
+        ],
+        "state": "fixed",
+        "available": [
+          {
+            "version": "24.0.7",
+            "date": "2026-04-11",
+            "kind": "first-observed"
+          },
+          {
+            "version": "36.0.7",
+            "date": "2026-04-11",
+            "kind": "first-observed"
+          },
+          {
+            "version": "42.0.2",
+            "date": "2026-04-11",
+            "kind": "first-observed"
+          },
+          {
+            "version": "44.0.1",
+            "date": "2026-04-11",
+            "kind": "first-observed"
+          }
+        ]
+      }
+    },
+    {
+      "component": "wasmtime",
+      "version": "0.38.1",
+      "id": "CVE-2023-30624",
+      "severity": "High",
+      "fix": {
+        "versions": [
+          "6.0.2"
+        ],
+        "state": "fixed",
+        "available": [
+          {
+            "version": "6.0.2",
+            "date": "2025-09-04",
+            "kind": "first-observed"
+          }
+        ]
+      }
+    },
+    {
+      "component": "wasmtime",
+      "version": "0.38.1",
+      "id": "CVE-2026-34943",
+      "severity": "High",
+      "fix": {
+        "versions": [
+          "24.0.7",
+          "36.0.7",
+          "42.0.2",
+          "44.0.1"
+        ],
+        "state": "fixed",
+        "available": [
+          {
+            "version": "24.0.7",
+            "date": "2026-04-11",
+            "kind": "first-observed"
+          },
+          {
+            "version": "36.0.7",
+            "date": "2026-04-11",
+            "kind": "first-observed"
+          },
+          {
+            "version": "42.0.2",
+            "date": "2026-04-11",
+            "kind": "first-observed"
+          },
+          {
+            "version": "44.0.1",
+            "date": "2026-04-11",
+            "kind": "first-observed"
+          }
+        ]
+      }
+    },
+    {
+      "component": "wasmtime",
+      "version": "0.38.1",
+      "id": "CVE-2022-39394",
+      "severity": "Critical",
+      "fix": {
+        "versions": [
+          "1.0.2",
+          "2.0.2"
+        ],
+        "state": "fixed",
+        "available": [
+          {
+            "version": "1.0.2",
+            "date": "2025-09-04",
+            "kind": "first-observed"
+          },
+          {
+            "version": "2.0.2",
+            "date": "2025-09-04",
+            "kind": "first-observed"
+          }
+        ]
+      }
+    }
+  ],
+  "nextAction": "CI-only source rebuild or compatible upgrade of Wasmtime module, then measured complete native coverage and TLS/OIDC regression. No target command is ready.",
+  "targetModified": false,
+  "acceptanceGranted": false,
+  "startAuthorized": false
+}
