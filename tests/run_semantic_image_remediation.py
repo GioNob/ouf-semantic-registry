@@ -93,7 +93,7 @@ def main():
     receipt['candidateArchives']=[]
     for binding in receipt['imageArchiveBindings']:
         role=binding['role'];target=out/(role+'.image.tar.gz')
-        reader=subprocess.Popen(['sudo','cat','/root/ouf-ci-image-remediation/'+role+'.probe.tar'],stdout=subprocess.PIPE)
+        reader=subprocess.Popen(['sudo','cat','/root/ouf-ci-image-remediation/sbom/'+role+'.tar'],stdout=subprocess.PIPE)
         raw_hash=hashlib.sha256();raw_size=0;deadline=time.monotonic()+180
         try:
             with target.open('xb') as file:

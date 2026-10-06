@@ -48,7 +48,7 @@ def main():
     result=grype.review(reviewed,prepared,expected,receipt_hash,pin,db,grype_bin,tool_hashes[grype_bin],unshare,tool_hashes[unshare])
     result['schema']='ouf.semantic-image-remediation-experiment.v1'
     result['imageArchivesVerified']=True
-    result['imageArchiveBindings']=bindings
+    result['imageArchiveBindings']=[{k:r[k] for k in ('role','imageId','archiveSha256','archiveBytes','configByteSha256','rootfsDescriptorsHash')} for r in expected]
     result['scannerCountersScope']='offline vulnerability reviewer only; CI build and compatibility containers run separately'
     result['sbomPackageCounts']={row['role']:row['packageCount'] for row in expected}
     result['sbomPackageWithoutVersionCounts']={row['role']:row['packageWithoutVersionCount'] for row in expected}
