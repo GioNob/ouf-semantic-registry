@@ -364,8 +364,10 @@
     "wrapperCommit": "9db48efa8eb65f3d25aa6a0b58203cf7f644ca34",
     "wrapperSha256": "8e58a37aa91d24c27299fe19a8351535501a3c9c8c93aa7a353fe58fe3c033d2",
     "snapshot": "/etc/ouf/deploy-snapshots/semantic-image-remediation-20261006-v2",
-    "performedOnTarget": false,
-    "oldSnapshotPreserved": true
+    "performedOnTarget": true,
+    "oldSnapshotPreserved": true,
+    "evidenceSource": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json",
+    "status": "TARGET_BYTE_QUALIFICATION_PASS_OPERATOR_REPORTED"
   },
   "targetModified": false,
   "publisherTrustAccepted": false,
@@ -374,5 +376,7 @@
   "runtimeRegistered": false,
   "startAuthorized": false,
   "databaseFreshnessEnds": "2026-10-07T08:45:38+02:00",
-  "nextAction": "Operator transfers exact new ZIP to a new v2 directory and runs pinned byte-only qualification once. Then review full coverage/publisher trust and coherent digest dossier before import, runtime registration or start."
+  "nextAction": "Inspect existing GitHub CLI availability/version on target, then verify retained signed evidence with pinned producer identity; preserve original byte receipt and use a separate crypto receipt. No image import/start.",
+  "targetEvidenceSnapshotCreated": true,
+  "targetRuntimeModified": false
 }

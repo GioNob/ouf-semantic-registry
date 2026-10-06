@@ -1,3 +1,5 @@
+> Esecuzione VPS v2 completata secondo l'output fornito dall'operatore. Questa guida conserva i comandi storici: **non ripetere la qualificazione v2**. Nessuna immagine importata, container avviato o runtime registrato. Prossimo passo: verificare disponibilità di GitHub CLI per il controllo delle firme conservate.
+
 # Verifica byte del nuovo bundle v2 sul VPS — 6 ottobre 2026
 
 La nuova CI [37448782226](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37448782226) supera build, TLS/OIDC, shared-dict, gRPC e scansione completa: **0 Critical / 0 High / 0 Unknown**, anche nel supplemento nativo. La verifica indipendente [37450055158](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37450055158) scarica lo ZIP pubblicato da Actions, ne verifica hash e firme e lo qualifica con lo stesso comando standalone v2: PASS.
@@ -52,7 +54,7 @@ Il codice standalone è fissato al commit 1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18e
 
 Esito atteso SEMANTIC_REMEDIATION_BYTE_QUALIFICATION con schema v2, entrambe le immagini bytesVerified=true, nativeEvidenceByteVerified=true, nativeEvidenceRetained=true. SourceArtifactSha256 deve essere 2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0. Adapter5Medium; southbound141Medium/18Low/4Negligible; Critical/High/Unknown tutti zero. Container/scanner/import zero; publisher trust, copertura accettata, target crypto, acceptance/runtime/start false.
 
-Il percorso REPORT_REDACTED_SAVED indica il report riassuntivo da conservare. Incolla quel riepilogo; i report completi sono privati nello snapshot. Il PASS VPS v2 non è ancora stato osservato: questa guida è il passo operatore pronto, non una receipt di esecuzione.
+Il percorso REPORT_REDACTED_SAVED indica il report riassuntivo da conservare. Incolla quel riepilogo; i report completi sono privati nello snapshot. Il PASS VPS v2 è stato riportato dall'operatore il 6 ottobre 2026 alle 13:43:48 Europe/Rome. Entrambe le immagini e le evidenze native risultano verificate; hash ZIP e merge CI coincidono. Il report è stato copiato in /home/oufadmin/ouf-reports/qualification-v2-20261006.txt. Non rieseguire questi passi sullo snapshot già creato. [Receipt operatore](/docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json). La verifica crittografica sul target e l'accettazione restano da completare.
 
 La finestra del DB termina **7 ottobre 2026 alle 08:45:38 (Europe/Rome)**. Oltre il limite la procedura blocca: occorrono nuovo pin/scansione/bundle, senza bypass. Se lo snapshot v2 esiste già o compare BLOCKED, conserva l'evidenza e il report; non cancellare lo snapshot o forzare una ripetizione.
 
