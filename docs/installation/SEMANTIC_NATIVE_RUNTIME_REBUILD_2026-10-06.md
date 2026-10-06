@@ -1,3 +1,5 @@
+> Stato corrente 6 ottobre 2026 — riconciliazione LuaJIT [37447434158](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37447434158) PASS: otto test negativi, sei file identici ai manifesti compilati, fix upstream/CNA verificati, sei regressioni sulla stessa immagine firmata (JIT on/off). ZIP completo e hash del binario verificati. I tre finding sono corretti nel sorgente del runtime; il report scanner resta integro **2 Critical / 1 High / 0 Unknown** e il gate grezzo rimane false. Il blocco successivo è la riconciliazione dei dati/match CPE con il criterio automatico, non una nuova ricompilazione delle stesse tre correzioni. Nessuna soppressione/VEX/deroga autorizzata da questa prova. Qualificazione byte VPS v1 PASS, non ripetere; ambiente test preservato, nessuna operazione target. Copertura/publisher trust/acceptance/runtime/start false. Receipt SEMANTIC_LUAJIT_RECONCILIATION_2026-10-06_CI.json e revisione SEMANTIC_LUAJIT_RECONCILIATION_2026-10-06.md. Questo stato prevale sui paragrafi storici.
+
 # Ricompilazione del runtime nativo — 6 ottobre 2026
 
 La build CI [37433261779](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37433261779), codice `385809bde50a20e4987c9c55c2b57a614dc240e0`, supera compilazione, installazione e prove reali TLS/OIDC, shared-dict e gRPC authority. Wasmtime è assente. La soglia completa resta **BLOCKED: 2 Critical / 1 High / 0 Unknown** nel report supplementare. Nessun ignore, VEX, modifica di severità o deroga alla soglia.
@@ -30,11 +32,11 @@ APISIX resta3.18.0. L'adapter conserva Python3.13, UID10006, payload ed entrypoi
 
 Compilazione/installazione PASS; prove reali TLS/admission e APISIX/OIDC PASS; chiave shared-dict65536 rifiutata e normale set/get PASS; inoltro gRPC :authority osservato nel corpo HTTP PASS. Il fixture gRPC usa un response body prodotto da Nginx: il comando resty reindirizza ngx.say verso stdout, quindi il precedente fixture non misurava il corpo della risposta.
 
-Quattro test del qualificatore e verifica della chiusura sorgente standalone PASS in CI; tre test strutturali/negativi dell'audit nativo PASS nella revisione precedente. La qualificazione positiva v2 resta **non provata**, perché la soglia combinata è falsa e viene rifiutata prima dell'accettazione degli archivi. Il comando make test OpenSSL di questa nuova build riporta NOTESTS: non si dichiara una suite OpenSSL superata per questo run. Le prove TLS reali sono separate e passano.
+Quattro test del qualificatore e verifica della chiusura sorgente standalone PASS in CI; tre test strutturali/negativi dell'audit nativo PASS nella revisione precedente. La qualificazione positiva v2 resta **non provata**, perché la soglia combinata è falsa e viene rifiutata prima dell'accettazione degli archivi. OpenSSL: quattro suite, sette test PASS nel run37433261779. Il NOTESTS separato riguarda soltanto la preparazione FIPS saltata perché non è una build FIPS; la precedente interpretazione del riepilogo è corretta. Le prove TLS reali passano separatamente.
 
 ## Revisione delle segnalazioni LuaJIT
 
-I record CNA distinguono LuaJIT generico <=2.1 da OpenResty luajit2 precedente alle correzioni del2024. Il tag v2.1-20260824 risolve al commit `fbfc558aacd57a54623df0ced4c31a28f81f8ff2`; i tre fix sono antenati verificati tramite compare e i corpi corretti sono presenti nell'archivio bloccato. Il report firmato conferma che gli unici finding bloccanti sono CVE-2024-25178 e25176 (Critical), CVE-2024-25177 (High), tutti luajit2.1-20260824 nel namespace nvd:cpe. Questa evidenza va riconciliata con il match del report prima di poter dichiarare il gate superato. Il CPE generico e tutte le segnalazioni restano conservati.
+I record CNA distinguono LuaJIT generico <=2.1 da OpenResty luajit2 precedente alle correzioni del2024. Il tag v2.1-20260824 risolve al commit `fbfc558aacd57a54623df0ced4c31a28f81f8ff2`; i tre fix sono antenati verificati tramite compare e i corpi corretti sono presenti nell'archivio bloccato. Il report firmato conferma che gli unici finding bloccanti sono CVE-2024-25178 e25176 (Critical), CVE-2024-25177 (High), tutti luajit2.1-20260824 nel namespace nvd:cpe. La riconciliazione byte/sorgente e le regressioni sulla stessa immagine sono completate nel run37447434158. Il match CPE del report grezzo resta presente e la soglia automatica non viene modificata; vedere SEMANTIC_LUAJIT_RECONCILIATION_2026-10-06.md. Il CPE generico e tutte le segnalazioni restano conservati.
 
 | CVE | Fix upstream presente nel sorgente |
 |---|---|
@@ -54,7 +56,7 @@ Fonti primarie:
 
 ## Artifact e seguito
 
-Merge produttore `1c7e31a26c664a12f2588292d38b3896b4c4e7ec`, job112168860142. Evidence artifact11397838781: 7236277 byte, SHA256 `c3a284af013942a0fc33b2a7855e84d347315f061f5bf65072101403e7a51312`. ZIP completo11397709159: 230682834 byte, SHA256 `0614b43d8843b8ebe24b4a6a4d564dfb1d36271b8660e8d0379d147a1db231c0` (metadato Actions; ZIP completo non scaricato per questa revisione).
+Merge produttore `1c7e31a26c664a12f2588292d38b3896b4c4e7ec`, job112168860142. Evidence artifact11397838781: 7236277 byte, SHA256 `c3a284af013942a0fc33b2a7855e84d347315f061f5bf65072101403e7a51312`. ZIP completo11397709159: 230682834 byte, SHA256 `0614b43d8843b8ebe24b4a6a4d564dfb1d36271b8660e8d0379d147a1db231c0` (ora scaricato e SHA256 verificato sul runner del run37447434158; immagine estratta e firma verificata prima delle regressioni).
 
 Southbound `sha256:516f49278f48c808427d346ad8d1520f60433d071949435774395e6c0ebc29b3`; archivio gzip SHA256 `8b1042906bf4d48a5fc07f1e0797cbe343d1c38b9e352ee1d51dfdd6322cc6e8`; manifesti sorgenti/binari e digest Syft sono conservati nella receipt `docs/handoffs/receipts/SEMANTIC_NATIVE_RUNTIME_REBUILD_2026-10-06_CI.json`.
 
