@@ -23,7 +23,8 @@ PROBES = {
     'src/lj_debug.c': ['if (!ins) return NO_BCPOS;'],
     'src/lj_err.c': ['lj_state_checkstack(L, LUA_MINSTACK * 2);', 'void LJ_FASTCALL lj_err_stkov(lua_State *L)'],
     'src/lj_err.h': ['LJ_FUNC_NORET void LJ_FASTCALL lj_err_stkov(lua_State *L);'],
-    'src/lj_state.c': ['lj_err_stkov(L);', 'setframe_gc(L->base - 1, obj2gco(L));'],
+    'src/lj_state.c': ['lj_err_stkov(L);', 'if (L->top > tvref(L->maxstack))',
+                     'setframe_gc(L->base - 1 - LJ_FR2, obj2gco(L), LJ_TTHREAD);'],
 }
 
 
