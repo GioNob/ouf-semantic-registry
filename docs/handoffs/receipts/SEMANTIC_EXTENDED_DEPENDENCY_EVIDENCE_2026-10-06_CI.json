@@ -1,0 +1,95 @@
+{
+  "schema": "ouf.semantic-extended-dependency-evidence-ci.v1",
+  "producer": {
+    "codeCommit": "cea9ffd938d6a8780369baf9736cb4042c0afb5e",
+    "sourceMergeCommit": "e56a20aae8f8869bc760fd3b048c152680c1b854",
+    "runId": 37508392335,
+    "jobId": 112422818711,
+    "conclusion": "success"
+  },
+  "sourceArtifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+  "artifact": {
+    "id": 11433181340,
+    "bytes": 1154855,
+    "sha256": "d74b1e6406d013272806465b722903a082d63e171948a37e666ae59c45c32d87",
+    "downloadedHashVerifiedAndRead": true,
+    "signedSubjects": 5
+  },
+  "independentDownloadedReadback": {
+    "codeCommit": "c89e095484ac50b6ec3604879df9c3618c74974a",
+    "runId": 37509074379,
+    "jobId": 112425181103,
+    "conclusion": "success",
+    "portableGhVersion": "2.102.0",
+    "originalZipHashAndSignaturesReverified": true,
+    "sidecarHashVerified": true,
+    "imageAndReportBindingsVerified": true,
+    "fiveSignaturesVerified": true,
+    "testsPassed": 25,
+    "evidenceArtifact": {
+      "id": 11432943100,
+      "bytes": 43673,
+      "sha256": "a08ececba666a90bfb5a1da1ffc620986ceb9a35ada3c1de815030ca7caf09b0"
+    }
+  },
+  "coverage": {
+    "adapter": {
+      "packageCount": 38,
+      "elfFileCount": 111,
+      "unresolvedElfFiles": 0
+    },
+    "southbound": {
+      "packageCount": 238,
+      "elfFileCount": 810,
+      "unresolvedElfFiles": 0,
+      "configuredStaticModulesAdded": 16,
+      "distinctSourceBoundLuaFiles": 188,
+      "luaSourceComponents": 23,
+      "luaRocksVersionsRetained": 75,
+      "unboundRockManifestFiles": 0,
+      "unresolvedGeneratedLuaFiles": [
+        "usr/local/openresty/luajit/share/luajit-2.1/jit/vmdef.lua"
+      ]
+    },
+    "luaRocksBindingLimit": "Archive-bound manifest MD5 associations with measured installed SHA256; not upstream source provenance."
+  },
+  "scans": [
+    {
+      "role": "adapter",
+      "severityCounts": {
+        "Critical": 0,
+        "High": 0,
+        "Medium": 5,
+        "Low": 0,
+        "Negligible": 0,
+        "Unknown": 0
+      }
+    },
+    {
+      "role": "southbound",
+      "severityCounts": {
+        "Critical": 0,
+        "High": 0,
+        "Medium": 141,
+        "Low": 18,
+        "Negligible": 4,
+        "Unknown": 0
+      }
+    }
+  ],
+  "allScannerSeverityThresholdsMet": true,
+  "noSuppressionOrSeverityOverride": true,
+  "imagesModified": false,
+  "originalSyftDocumentsPreserved": true,
+  "targetRuntimeModified": false,
+  "targetOperations": 0,
+  "targetSidecarCryptoVerified": false,
+  "databaseFreshnessEnds": "2026-10-07T08:45:38+02:00",
+  "publisherTrustAccepted": false,
+  "dependencyCoverageAccepted": false,
+  "acceptanceGranted": false,
+  "runtimeRegistered": false,
+  "startAuthorized": false,
+  "nextAction": "Operator verifies the signed evidence sidecar against the retained original v2 ZIP using the pinned target guide. Reconcile generated LuaJIT vmdef.lua, review custom/publisher and Wasm feature decision, and prepare a separate digest-consistent isolated staging dossier. No import/start or repeated v2 qualification.",
+  "targetGuide": "docs/installation/SEMANTIC_EXTENDED_EVIDENCE_V2_TARGET_2026-10-06.md"
+}

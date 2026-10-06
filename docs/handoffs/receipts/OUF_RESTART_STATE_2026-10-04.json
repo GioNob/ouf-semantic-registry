@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Extend source- and byte-bound inventory with the 16 actual compiled OpenResty bundled modules and installed Lua dependencies, then scan and sign revised evidence. Prepare a separate digest-consistent staging dossier; do not repeat VPS v2 qualification or import/start the current bundle.",
+  "nextTask": "Operator verifies the signed evidence sidecar against the retained original v2 ZIP using the pinned target guide. Reconcile generated LuaJIT vmdef.lua, review custom/publisher and Wasm feature decision, and prepare a separate digest-consistent isolated staging dossier. No import/start or repeated v2 qualification.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Extend source- and byte-bound inventory with the 16 actual compiled OpenResty bundled modules and installed Lua dependencies, then scan and sign revised evidence. Prepare a separate digest-consistent staging dossier; do not repeat VPS v2 qualification or import/start the current bundle.",
+  "nextStep": "Operator verifies the signed evidence sidecar against the retained original v2 ZIP using the pinned target guide. Reconcile generated LuaJIT vmdef.lua, review custom/publisher and Wasm feature decision, and prepare a separate digest-consistent isolated staging dossier. No import/start or repeated v2 qualification.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -235,7 +235,7 @@
   "semanticHead": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
   "checkpointType": "remediation-target-byte-qualification-pass-normative-baseline-required",
-  "checkpointAt": "2026-10-06T08:21:50+02:00",
+  "checkpointAt": "2026-10-06T18:10:30Z",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
     "section": 39,
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Extend source- and byte-bound inventory with the 16 actual compiled OpenResty bundled modules and installed Lua dependencies, then scan and sign revised evidence. Prepare a separate digest-consistent staging dossier; do not repeat VPS v2 qualification or import/start the current bundle.",
+  "currentAction": "Operator verifies the signed evidence sidecar against the retained original v2 ZIP using the pinned target guide. Reconcile generated LuaJIT vmdef.lua, review custom/publisher and Wasm feature decision, and prepare a separate digest-consistent isolated staging dossier. No import/start or repeated v2 qualification.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Extend source- and byte-bound inventory with the 16 actual compiled OpenResty bundled modules and installed Lua dependencies, then scan and sign revised evidence. Prepare a separate digest-consistent staging dossier; do not repeat VPS v2 qualification or import/start the current bundle.",
+  "nextAction": "Operator verifies the signed evidence sidecar against the retained original v2 ZIP using the pinned target guide. Reconcile generated LuaJIT vmdef.lua, review custom/publisher and Wasm feature decision, and prepare a separate digest-consistent isolated staging dossier. No import/start or repeated v2 qualification.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4630,5 +4630,14 @@
     "acceptanceGranted": false,
     "startAuthorized": false,
     "nextAction": "Extend source- and byte-bound inventory with the 16 actual compiled OpenResty bundled modules and installed Lua dependencies, then scan and sign revised evidence. Prepare a separate digest-consistent staging dossier; do not repeat VPS v2 qualification or import/start the current bundle."
+  },
+  "semanticExtendedDependencyEvidence": {
+    "receipt": "docs/handoffs/receipts/SEMANTIC_EXTENDED_DEPENDENCY_EVIDENCE_2026-10-06_CI.json",
+    "producerRun": 37508392335,
+    "readbackRun": 37509074379,
+    "allScannerSeverityThresholdsMet": true,
+    "targetSidecarCryptoVerified": false,
+    "unresolvedGeneratedLuaFiles": 1,
+    "dependencyCoverageAccepted": false
   }
 }
