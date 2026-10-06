@@ -79,7 +79,7 @@
     "lastPassSection": 48,
     "lastPassRoot": "/etc/ouf/deploy-snapshots/semantic-image-sbom-20261005-v1/prepared",
     "policyPreparationStatus": "PASS",
-    "nextStatus": "GATE49_CUSTOM_SOURCE_BUILD_CI_IN_PROGRESS_NO_OPERATOR_COMMAND",
+    "nextStatus": "REMEDIATION_TARGET_BYTES_PASS_PET_BASELINE_REQUIRED",
     "section39Status": "EXECUTED_PASS_HISTORICAL_METADATA",
     "section40Status": "EXECUTED_PASS",
     "section41Status": "EXECUTED_PASS_HISTORICAL_LINEAGE",
@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Operator downloads full artifact11392623308, transfers ZIP to VPS and runs immutable byte-qualification wrapper120eee43c2ff02a204c58363538d60b57b3d6a79; return redacted output. No image import/replacement/start. Then review dependency coverage, custom publisher/dossier policy and coherent transition for new digest inputs.",
+  "nextTask": "Recover attached normative OUF Reality Baseline Package v1.7, unavailable in current workspace, per handoff section8; review custom/native dependency coverage and publisher/dossier transition against PET. Target byte qualification passed: do not replay, import, register or start.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Autonomously prepare compatible alternative image builds in repository; available PCRE2/partial OpenSSL fixes alone cannot close gate49. No additional VPS diagnostic command pending; no repeat scan of current images.",
+  "nextStep": "Recover attached normative OUF Reality Baseline Package v1.7, unavailable in current workspace, per handoff section8; review custom/native dependency coverage and publisher/dossier transition against PET. Target byte qualification passed: do not replay, import, register or start.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -234,8 +234,8 @@
   },
   "semanticHead": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
-  "checkpointType": "section47-pass-unsigned-oci-and-native-mount-ci-pass",
-  "checkpointAt": "2026-10-05T18:56:53+02:00",
+  "checkpointType": "remediation-target-byte-qualification-pass-normative-baseline-required",
+  "checkpointAt": "2026-10-06T08:21:50+02:00",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
     "section": 39,
@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "GATE49_REMEDIATION_CI_PASS_OPERATOR_BYTE_QUALIFICATION_PENDING",
+  "nextStatus": "REMEDIATION_TARGET_BYTES_PASS_PET_BASELINE_REQUIRED",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -1070,7 +1070,7 @@
     "nextNativeRun": 37366132907,
     "nextNativeCommit": "dd8bb49b2150834dac9510a69b66c9da130822e4",
     "sourceReceiptSha256": "6e0a436d8da6b55c3286811140efd46b679d2ceb9dc202b33576a76425ed08fc",
-    "nextAction": "Operator downloads full artifact11392623308, transfers ZIP to VPS and runs immutable byte-qualification wrapper120eee43c2ff02a204c58363538d60b57b3d6a79; return redacted output. No image import/replacement/start. Then review dependency coverage, custom publisher/dossier policy and coherent transition for new digest inputs.",
+    "nextAction": "Recover attached normative OUF Reality Baseline Package v1.7, unavailable in current workspace, per handoff section8; review custom/native dependency coverage and publisher/dossier transition against PET. Target byte qualification passed: do not replay, import, register or start.",
     "wrapperTestsPassed": 3,
     "wrapperPath": "docs/handoffs/commands/OUF_REVIEW_IMAGE_VULNERABILITIES_2026-10-05.sh",
     "wrapperSha256": "ec5b567d90849a533a45f65911795690f2ad22357b6cc79b80d2d9c821a93fd9",
@@ -2035,13 +2035,60 @@
       "sourceCommit": "c51fe31215efac37308ff6fcb9c577ac475a256f",
       "sourceSha256": "db95b97cce62a4c3e164d0dad20a8674052dced80ff7e683e84ac21cef925112",
       "targetRoot": "/etc/ouf/deploy-snapshots/semantic-image-remediation-20261006-v1",
-      "operatorExecutionPending": true,
-      "targetExecuted": false,
+      "operatorExecutionPending": false,
+      "targetExecuted": true,
       "containerOperations": 0,
       "imageImportPerformed": false,
       "acceptanceGranted": false,
       "runtimeRegistered": false,
-      "startAuthorized": false
+      "startAuthorized": false,
+      "status": "BYTE_QUALIFICATION_PASS",
+      "operatorReceipt": "docs/handoffs/receipts/SEMANTIC_IMAGE_REMEDIATION_TARGET_PASS_2026-10-06_OPERATOR.json",
+      "result": {
+        "acceptanceGranted": false,
+        "ciAttestationEvidenceRetained": true,
+        "ciSourceCommit": "226b1d3cb0562ed1cd840c758873f92ab3401991",
+        "containerOperations": 0,
+        "dependencyCoverageAccepted": false,
+        "imageImportPerformed": false,
+        "images": [
+          {
+            "archiveSha256": "186a74a5d33b4b02dd13ea769211ddfe16453714e1ecf82dd354c59ed23bbc41",
+            "bytesVerified": true,
+            "imageId": "sha256:2cd0de3f03bc289f1ab4668940df94181059d00b2525a851d1c81211c3d5cf38",
+            "role": "adapter",
+            "severityCounts": {
+              "Critical": 0,
+              "High": 0,
+              "Low": 0,
+              "Medium": 5,
+              "Negligible": 0,
+              "Unknown": 0
+            }
+          },
+          {
+            "archiveSha256": "4de4e82802082ed8eb045d0d6eec01ec3190301a8842243d78da18af9f904784",
+            "bytesVerified": true,
+            "imageId": "sha256:213ff3377465784bc1f5dd82863d65d6585a3c22062eb4e7d78c7c0239af0334",
+            "role": "southbound",
+            "severityCounts": {
+              "Critical": 0,
+              "High": 0,
+              "Low": 17,
+              "Medium": 141,
+              "Negligible": 4,
+              "Unknown": 0
+            }
+          }
+        ],
+        "publisherTrustAccepted": false,
+        "runtimeRegistered": false,
+        "scannerInvoked": false,
+        "schema": "ouf.semantic-remediation-bundle-byte-qualification.v1",
+        "sourceArtifactSha256": "bf369a5e445a7e84c51d0252b6714912b0d92897097f3afeb2a21c85db38fa2a",
+        "startAuthorized": false,
+        "targetAttestationCryptoVerified": false
+      }
     },
     "livePairwise": {
       "runId": 37420144065,
@@ -2050,5 +2097,65 @@
       "logsRead": true,
       "independentFromImageRemediation": true
     }
+  },
+  "imageRemediationTargetQualification": {
+    "schema": "ouf.semantic-remediation-target-operator-evidence.v1",
+    "receivedAt": "2026-10-06T08:21:50+02:00",
+    "evidenceOrigin": "operator-pasted stdout; not an independent target read",
+    "status": "BYTE_QUALIFICATION_PASS",
+    "wrapperCommit": "120eee43c2ff02a204c58363538d60b57b3d6a79",
+    "wrapperSha256": "5c47d7c14e260d7ebb1d245dd83476646df61cbb9e378dd00fddb45eb5fa0697",
+    "sourceSha256": "db95b97cce62a4c3e164d0dad20a8674052dced80ff7e683e84ac21cef925112",
+    "targetRoot": "/etc/ouf/deploy-snapshots/semantic-image-remediation-20261006-v1",
+    "operatorZipPath": "/home/oufadmin/ouf-remediation-transfer-20261006/ouf-remediation-20261006.zip",
+    "redactedReportPath": "/tmp/ouf-remediation-qualification.lT6Bz9",
+    "doNotReplay": true,
+    "result": {
+      "acceptanceGranted": false,
+      "ciAttestationEvidenceRetained": true,
+      "ciSourceCommit": "226b1d3cb0562ed1cd840c758873f92ab3401991",
+      "containerOperations": 0,
+      "dependencyCoverageAccepted": false,
+      "imageImportPerformed": false,
+      "images": [
+        {
+          "archiveSha256": "186a74a5d33b4b02dd13ea769211ddfe16453714e1ecf82dd354c59ed23bbc41",
+          "bytesVerified": true,
+          "imageId": "sha256:2cd0de3f03bc289f1ab4668940df94181059d00b2525a851d1c81211c3d5cf38",
+          "role": "adapter",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 0,
+            "Low": 0,
+            "Medium": 5,
+            "Negligible": 0,
+            "Unknown": 0
+          }
+        },
+        {
+          "archiveSha256": "4de4e82802082ed8eb045d0d6eec01ec3190301a8842243d78da18af9f904784",
+          "bytesVerified": true,
+          "imageId": "sha256:213ff3377465784bc1f5dd82863d65d6585a3c22062eb4e7d78c7c0239af0334",
+          "role": "southbound",
+          "severityCounts": {
+            "Critical": 0,
+            "High": 0,
+            "Low": 17,
+            "Medium": 141,
+            "Negligible": 4,
+            "Unknown": 0
+          }
+        }
+      ],
+      "publisherTrustAccepted": false,
+      "runtimeRegistered": false,
+      "scannerInvoked": false,
+      "schema": "ouf.semantic-remediation-bundle-byte-qualification.v1",
+      "sourceArtifactSha256": "bf369a5e445a7e84c51d0252b6714912b0d92897097f3afeb2a21c85db38fa2a",
+      "startAuthorized": false,
+      "targetAttestationCryptoVerified": false
+    },
+    "baselineAvailableInCurrentWorkspace": false,
+    "nextAction": "Reattach OUF Reality Baseline Package v1.7 for normative custom-image and coverage review; then prepare coherent dossier and bounded target attestation verification. No additional VPS command ready."
   }
 }

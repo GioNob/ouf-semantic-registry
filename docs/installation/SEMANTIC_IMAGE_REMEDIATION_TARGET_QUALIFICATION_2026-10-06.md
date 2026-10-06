@@ -1,6 +1,6 @@
 # Qualificazione delle evidenze remediation sul VPS — 6 ottobre 2026
 
-Stato: comando pronto, non ancora eseguito dall'operatore. È un nuovo snapshot di sole evidenze; il gate49 storico resta a soglia falsa. Nessuna immagine viene importata o avviata. La CI prova byte, test e attestazioni; copertura completa, publisher trust e verifica crittografica target restano non accettati.
+Stato: comando ESEGUITO/PASS dall'operatore il 6 ottobre 2026 alle 08:21:50 Europe/Rome. Non ripeterlo. È un nuovo snapshot di sole evidenze; il gate49 storico resta a soglia falsa. Nessuna immagine viene importata o avviata. La CI prova byte, test e attestazioni; copertura completa, publisher trust e verifica crittografica target restano non accettati.
 
 ## Prova letta
 
@@ -8,10 +8,10 @@ Stato: comando pronto, non ancora eseguito dall'operatore. È un nuovo snapshot 
 
 [Receipt CI](../handoffs/receipts/SEMANTIC_IMAGE_REMEDIATION_2026-10-06_CI.json) e [piano/limiti](SEMANTIC_IMAGE_VULNERABILITY_REMEDIATION_2026-10-06.md). Le librerie native OpenResty richiedono ancora revisione/integrazione della copertura SBOM prima di complete acceptance. Questa qualificazione conserva e verifica i byte, non concede tale accettazione.
 
-## Operazione concreta
+## Operazione eseguita — riferimento storico, non ripetere
 
 1. Scaricare lo ZIP **completo** [image-remediation-alpine-ubuntu-source-fixed-37420144098](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37420144098/artifacts/11392623308),205454159byte. Non usare l'artifact evidence più piccolo: non contiene le immagini. SHA256 dello ZIP bf369a5e445a7e84c51d0252b6714912b0d92897097f3afeb2a21c85db38fa2a.
-2. Copiarlo sul VPS, come utente oufadmin, con nome `$HOME/ouf-remediation-20261006.zip`. Non estrarlo e non eseguire docker load.
+2. Copiarlo sul VPS, come utente oufadmin, con nome `$HOME/ouf-remediation-transfer-20261006/ouf-remediation-20261006.zip`. Non estrarlo e non eseguire docker load.
 3. Sul VPS eseguire il wrapper immutabile qui sotto. Legge lo ZIP e crea esclusivamente `/etc/ouf/deploy-snapshots/semantic-image-remediation-20261006-v1`, directory root700 e file root600. Verifica ZIP bounded, SHA256, tar/config/rootfs, tar identico a quello letto da Syft, SBOM/report/receipt e soglia/freschezza del DB. I report sono conservati privati, stdout è redatto.
 
 ```bash
@@ -20,7 +20,7 @@ curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 --max-ti
   https://raw.githubusercontent.com/GioNob/ouf-semantic-registry/120eee43c2ff02a204c58363538d60b57b3d6a79/docs/handoffs/commands/OUF_QUALIFY_REMEDIATED_IMAGES_2026-10-06.sh \
   --output "$ouf_task/qualify.sh"
 printf '%s  %s\n' 5c47d7c14e260d7ebb1d245dd83476646df61cbb9e378dd00fddb45eb5fa0697 "$ouf_task/qualify.sh" | sha256sum --check --strict &&
-bash "$ouf_task/qualify.sh" "$HOME/ouf-remediation-20261006.zip"
+bash "$ouf_task/qualify.sh" "$HOME/ouf-remediation-transfer-20261006/ouf-remediation-20261006.zip"
 ```
 
 Il comando scarica soltanto il codice fissato, non scanner o nuovi database. Codice standalone c51fe31215efac37308ff6fcb9c577ac475a256f/SHA256db95b97cce62a4c3e164d0dad20a8674052dced80ff7e683e84ac21cef925112. L'artefatto e il merge CI sono fissati anche nel loader root; il codice viene letto, verificato e compilato dagli stessi byte stabili. Non sono lette chiavi del VPS.
@@ -32,3 +32,9 @@ Output `SEMANTIC_REMEDIATION_BYTE_QUALIFICATION={...}`, entrambe le immagini `by
 La finestra DB48h termina **7 ottobre2026 alle08:45:38Europe/Rome**. Oltre il limite, il wrapper blocca prima dello snapshot; preparare e provare un nuovo pin/scansione/bundle, senza bypass. Se il nuovo snapshot esiste già o un'operazione fallisce, non cancellarlo né forzare la ripetizione: conservare l'evidenza e leggere l'output redatto per un recupero esplicito.
 
 Gli snapshot48/49 e i due candidati fermati restano storici. Nessuna sostituzione, policy installata, publisher acceptance, firma autoritativa VPS, runtime registration o start è implicata da questa operazione.
+
+## Esito operatore ricevuto
+
+Receipt: [SEMANTIC_IMAGE_REMEDIATION_TARGET_PASS_2026-10-06_OPERATOR.json](../handoffs/receipts/SEMANTIC_IMAGE_REMEDIATION_TARGET_PASS_2026-10-06_OPERATOR.json). ZIP trasferito in una nuova cartella, senza sovrascrivere lo ZIP omonimo nella home. Output salvato in `/tmp/ouf-remediation-qualification.lT6Bz9`. Entrambe le immagini bytesVerified=true, 0 Critical/High/Unknown. Adapter conserva 5 Medium; southbound 141 Medium, 17 Low, 4 Negligible. Zero scanner/container/import; acceptance, runtime, start, publisher trust, coverage e verifica crittografica target false. È una qualificazione delle evidenze, non installazione o nuovo scan target. Nessuna prova atomica target aggiunta.
+
+Prossimo lavoro: revisione PET delle componenti custom/native, copertura SBOM e publisher/dossier. Nel workspace di ripresa il pacchetto normativo v1.7 non è disponibile; richiederlo come prescrive handoff §8. Non dedurre complete acceptance da questo PASS e non ripetere la qualificazione.
