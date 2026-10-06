@@ -5,9 +5,24 @@ import tarfile
 import hashlib
 import struct
 import unittest
+from unittest.mock import patch
 from tools.extend_semantic_dependency_inventory import literal_manifest, image_files, ownership, rock_bindings, extend, constant_elf_function
 
 class ExtendedInventoryTests(unittest.TestCase):
+    def test_shared_lua_bytes_retain_every_proven_source_component(self):
+        digest='a'*64
+        sources={'modules':[], 'sourceFiles':{'modules':[], 'compiledSourceFiles':{
+            'bundle/lua-resty-dns-0.23/lib/shared.lua':digest,
+            'bundle/lua-resty-core-0.1/lib/shared.lua':digest}},
+            'openresty':{'archives':[
+                {'file':'lua-resty-dns-0.23.tar.gz','url':'https://github.com/openresty/lua-resty-dns/tarball/v0.23','sha256':'b'*64},
+                {'file':'lua-resty-core-0.1.tar.gz','url':'https://github.com/openresty/lua-resty-core/tarball/v0.1','sha256':'c'*64}]}}
+        rows={'usr/local/openresty/nginx/sbin/nginx':{'raw':b'ELF'},
+              'usr/local/openresty/lualib/shared.lua':{'sha256':digest}}
+        with patch('tools.extend_semantic_dependency_inventory.review',return_value={'modules':[]}):
+            doc,details=extend({'artifacts':[]},sources,rows,'--prefix=example')
+        self.assertEqual({p['name'] for p in doc['artifacts']},{'lua-resty-dns','lua-resty-core'})
+        self.assertEqual(details['unresolvedOpenRestyLuaFiles'],[])
     def accessor(self, body):
         raw=bytearray(1024);raw[:6]=b'\x7fELF\x02\x01'
         struct.pack_into('<H',raw,18,62);struct.pack_into('<Q',raw,40,128);struct.pack_into('<HH',raw,58,64,4)

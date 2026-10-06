@@ -199,10 +199,15 @@ def extend(original, sources, rows, configure):
         if directory == 'lua-resty-limit-traffic-0.09': module = next(m for m in sources['modules'] if m['repository'] == 'api7/lua-resty-limit-traffic')
         if module: repository = module['repository']; version = module['commit']; source_hash = None
         else:
-            archive = next((a for a in sources['openresty']['archives'] if a['file'] == directory + '.tar.gz'), None)
+            archive_directory = directory
+            for old, new in (('ngx_lua-', 'lua-nginx-module-'), ('ngx_lua_upstream-', 'lua-upstream-nginx-module-'), ('ngx_stream_lua-', 'stream-lua-nginx-module-')):
+                if directory.startswith(old): archive_directory = new + directory[len(old):]
+            archive = next((a for a in sources['openresty']['archives'] if a['file'] == archive_directory + '.tar.gz'), None)
             require(archive is not None)
             match = re.match(r'https://github\.com/([^/]+/[^/]+)/', archive['url']); require(match is not None)
-            repository = match.group(1); version = directory[len(repository.split('/')[-1]) + 1:]
+            repository = match.group(1)
+            tag = re.search(r'(?:/tarball/|/archive/(?:refs/tags/)?)([^/]+?)(?:\.tar\.gz)?$', archive['url'])
+            require(tag is not None); version = tag.group(1).removeprefix('v')
             # LuaJIT and the renamed ngx_* build directories are handled separately below.
             if directory.startswith('LuaJIT-'): repository = 'openresty/luajit2'; version = directory[len('LuaJIT-'):]
             require(version); source_hash = archive['sha256']
