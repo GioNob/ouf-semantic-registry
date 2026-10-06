@@ -47,6 +47,9 @@ def main():
     require(receipt['sourceArtifactSha256']==pin['artifactSha256'] and receipt['nativeEvidenceByteVerified'] is True)
     require(all(r['bytesVerified'] is True for r in receipt['images']))
     require(all(receipt[k] is False for k in ('scannerInvoked','imageImportPerformed','acceptanceGranted','runtimeRegistered','startAuthorized')))
+    subprocess.run(['/usr/bin/python3','-B','-m','tools.review_semantic_static_module_coverage',
+                    '--bundle',str(full),'--sha256',pin['artifactSha256'],
+                    '--output','generated/static-module-coverage-review.json'],check=True,timeout=240)
     result=dict(schema='ouf.semantic-downloaded-remediation-artifact-qualification.v1',producer=pin,
                 wholeArchiveHashVerified=True,archiveAttestationsIndependentlyCryptoVerified=True,
                 nativeAttestationsIndependentlyCryptoVerified=True,actualDownloadedZipByteQualified=True,

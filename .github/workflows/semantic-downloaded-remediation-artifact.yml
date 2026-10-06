@@ -4,6 +4,8 @@ on:
     paths:
       - 'tests/qualify_semantic_downloaded_remediation_artifact.py'
       - 'tests/semantic-downloaded-remediation-artifact.json'
+      - 'tools/review_semantic_static_module_coverage.py'
+      - 'tests/test_semantic_static_module_coverage.py'
       - '.github/workflows/semantic-downloaded-remediation-artifact.yml'
   workflow_dispatch:
 permissions:
@@ -16,6 +18,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - name: Exercise static module coverage negative checks
+        run: python3 -B -m unittest tests.test_semantic_static_module_coverage -v
       - name: Independently verify signatures and byte-qualify the exact downloadable ZIP
         env:
           GH_TOKEN: ${{ github.token }}
@@ -24,6 +28,8 @@ jobs:
         if: always()
         with:
           name: downloaded-v2-artifact-qualification-${{ github.run_id }}
-          path: generated/downloaded-v2-artifact-qualification.json
+          path: |
+            generated/downloaded-v2-artifact-qualification.json
+            generated/static-module-coverage-review.json
           if-no-files-found: warn
           retention-days: 30
