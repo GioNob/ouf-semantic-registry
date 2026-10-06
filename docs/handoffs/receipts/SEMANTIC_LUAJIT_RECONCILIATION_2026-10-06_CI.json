@@ -167,5 +167,13 @@
   "dependencyCoverageAccepted": false,
   "acceptanceGranted": false,
   "startAuthorized": false,
-  "nextAction": "Existing strict raw-scanner gate remains blocked. Resolve the generic CPE data/matching upstream, or explicitly review a revised gate that accepts byte-bound fixed-source evidence. This receipt does not authorize suppression, gate override, or target start."
+  "nextAction": "Operator transfers exact new ZIP to a new v2 directory and runs pinned byte-only qualification once. Then review full coverage/publisher trust and coherent digest dossier before import, runtime registration or start.",
+  "historicalEvidencePreserved": true,
+  "currentRuntimeIdentityCorrection": {
+    "receipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
+    "version": "2.1.1787558776",
+    "run": 37448782226,
+    "allScannerSeverityThresholdsMet": true,
+    "exactLuaJitBinaryUnchanged": true
+  }
 }

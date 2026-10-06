@@ -1,3 +1,7 @@
+> Stato corrente 6 ottobre 2026 — versione effettiva LuaJIT `2.1.1787558776`, tag sorgente conservato `v2.1-20260824`. Build e scansioni [37448782226](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37448782226) PASS: **0 Critical / 0 High / 0 Unknown**, anche nel supplemento nativo. Verifica indipendente dello ZIP pubblicato [37450055158](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37450055158) PASS, firme e qualificazione byte v2 incluse. [Procedura VPS v2](/docs/installation/SEMANTIC_IMAGE_REMEDIATION_V2_TARGET_QUALIFICATION_2026-10-06.md) pronta; esecuzione sul VPS ancora da osservare. PASS VPS v1 storico, non ripetere. Ambiente test preservato; importazione, runtime, publisher trust, copertura accettata, acceptance e start restano non autorizzati. [Receipt corrente](/docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json).
+
+> Le sezioni conservate sotto documentano anche candidati storici. I precedenti conteggi 2 Critical / 1 High non descrivono il nuovo bundle v2.
+
 # Riconciliazione LuaJIT — 6 ottobre 2026
 
 I fix di CVE-2024-25176, 25177 e25178 sono presenti nelle sorgenti effettivamente compilate della stessa immagine southbound già analizzata. La prova aggiunta nella [CI37447434158](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37447434158), codice `b0a2f825297085dd391efd9bdb001bdafe5fff66`, job112215537016, passa. Otto controlli negativi e sei esecuzioni delle regressioni upstream, con JIT attivo/disattivo, PASS.
