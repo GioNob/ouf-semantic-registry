@@ -2,7 +2,7 @@
 import hashlib,json
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent
-NAMES=('verify_semantic_image_archive','prepare_semantic_image_sbom','review_semantic_image_vulnerabilities','qualify_semantic_remediation_bundle')
+NAMES=('verify_semantic_image_archive','prepare_semantic_image_sbom','review_semantic_image_vulnerabilities','audit_semantic_native_coverage','supplement_semantic_rebuilt_native_sbom','qualify_semantic_remediation_bundle')
 def main():
     sources={name:(ROOT/(name+'.py')).read_text() for name in NAMES}
     hashes={name:hashlib.sha256(code.encode()).hexdigest() for name,code in sources.items()}
@@ -22,3 +22,4 @@ raise SystemExit(sys.modules['tools.qualify_semantic_remediation_bundle'].main()
     # Dictionary insertion order is the dependency import order.
     (ROOT/'semantic_remediation_bundle_qualifier.py').write_text(entry)
 if __name__=='__main__':main()
+

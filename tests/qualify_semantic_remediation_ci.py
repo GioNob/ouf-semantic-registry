@@ -21,4 +21,6 @@ assert qualified['sourceArtifactSha256']==digest and len(qualified['images'])==2
 assert all(row['bytesVerified'] is True for row in qualified['images'])
 assert all(qualified[key] is False for key in ('imageImportPerformed','scannerInvoked','acceptanceGranted','runtimeRegistered','startAuthorized'))
 assert qualified['containerOperations']==0
+assert qualified['nativeEvidenceByteVerified'] is True and qualified['nativeEvidenceRetained'] is True
+assert qualified['schema']=='ouf.semantic-remediation-bundle-byte-qualification.v2'
 (out/'byte-qualification-ci.json').write_text(json.dumps(qualified,indent=2,sort_keys=True)+'\n')
