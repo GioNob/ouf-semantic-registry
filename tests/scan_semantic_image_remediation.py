@@ -41,7 +41,7 @@ def main():
         rows.append({'role':role,**{k:verified[k] for k in ('imageId','configByteSha256','rootfsDescriptorsHash')}})
     prepared=base/'sbom';prepared.mkdir(mode=0o700)
     print('CI_SCAN_STAGE=SBOM_PREPARATION',file=sys.stderr)
-    result=sbom.prepare(prepared,rows,docker,tool_hashes[docker],syft,tool_hashes[syft],unshare,tool_hashes[unshare])
+    result=sbom.prepare(prepared,rows,docker,tool_hashes[docker],syft,tool_hashes[syft],unshare,tool_hashes[unshare],include_owned_native_binaries=True)
     expected=result['images'];receipt_hash=hashlib.sha256((prepared/'receipt.json').read_bytes()).hexdigest()
     reviewed=base/'review';reviewed.mkdir(mode=0o700)
     print('CI_SCAN_STAGE=VULNERABILITY_REVIEW',file=sys.stderr)
@@ -65,6 +65,8 @@ def main():
                 'id':v['id'],'severity':v['severity'],'namespace':v.get('namespace'),'fix':v.get('fix'),
                 'matchers':[d.get('matcher') for d in match.get('matchDetails',[])]})
         result['remainingHighCriticalUnknown'][role]=remaining
+    result['includeOwnedNativeBinariesRequested']=True
     result['experimentOnly']=True
     print(json.dumps(result,sort_keys=True))
 if __name__=='__main__':main()
+

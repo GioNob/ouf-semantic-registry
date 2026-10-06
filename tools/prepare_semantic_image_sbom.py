@@ -104,7 +104,7 @@ def summarize(syft_raw,spdx_raw,verified):
         'sbomProduced':True,'sbomImageIdentityBound':True,'networkIsolatedScanner':True,
         'dependencySbomAccepted':False,'vulnerabilityReviewProven':False,'imagePublisherProvenanceVerified':False,
         'completeCreationAccepted':False,'acceptanceGranted':False,'startAuthorized':False}
-def prepare(root,images,docker,docker_hash,scanner,scanner_hash,unshare,unshare_hash):
+def prepare(root,images,docker,docker_hash,scanner,scanner_hash,unshare,unshare_hash,include_owned_native_binaries=False):
     require(len(images)==2 and {r['role'] for r in images}=={'adapter','southbound'})
     require(len({r['imageId'] for r in images})==2)
     require(all(set(r)=={'role','imageId','configByteSha256','rootfsDescriptorsHash'} for r in images))
@@ -116,6 +116,9 @@ def prepare(root,images,docker,docker_hash,scanner,scanner_hash,unshare,unshare_
     work=root/'scanner-home';work.mkdir(mode=0o700);(work/'tmp').mkdir(mode=0o700)
     env={'PATH':'/usr/bin:/bin','LC_ALL':'C','HOME':str(work),'XDG_CONFIG_HOME':str(work),
         'DOCKER_CONFIG':str(work),'TMPDIR':str(work/'tmp'),'SYFT_CHECK_FOR_APP_UPDATE':'false'}
+    require(type(include_owned_native_binaries) is bool)
+    if include_owned_native_binaries:
+        env['SYFT_PACKAGE_EXCLUDE_BINARY_OVERLAP_BY_OWNERSHIP']='false'
     rows=[]
     for row in images:
         role=row['role'];tar=root/(role+'.tar');fd=os.open(tar,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
@@ -130,6 +133,9 @@ def prepare(root,images,docker,docker_hash,scanner,scanner_hash,unshare,unshare_
             '--quiet','-o','spdx-json='+str(spdx),'-o','syft-json='+str(syft)],cwd=work,env=env,
             stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=90)
         require(result.returncode==0 and attributes(tar.lstat())==before)
+        if include_owned_native_binaries:
+            actual=decode(private(syft))['descriptor']['configuration']['relationships']
+            require(actual['exclude-binary-packages-with-file-ownership-overlap'] is False)
         summary=summarize(private(syft),private(spdx),verified);summary['role']=role;rows.append(summary)
         # Verify the archive again after scanning; receipt binds the exact bytes.
         with tar.open('rb') as stream:after=archive.archive_verify(stream,row['imageId'],archive.Budget(180,8589934592,100000))
@@ -157,3 +163,4 @@ def main():
     except Exception:
         print('SEMANTIC_IMAGE_SBOM=BLOCKED REASON=IMAGE_SBOM_PREPARATION_UNPROVEN NO_SECRETS_PRINTED=true');return 1
 if __name__=='__main__':raise SystemExit(main())
+

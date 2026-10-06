@@ -26,7 +26,7 @@ RUN set -eu; \
     make -j2; \
     make test TESTS='test_bad_dtls test_dtls test_dtlsv1listen test_sslapi'; \
     make DESTDIR=/out install_sw
-FROM ${INPUT_IMAGE}
+FROM ${INPUT_IMAGE} AS source-fixed-runtime
 USER 0:0
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --only-upgrade libssl3t64 openssl && rm -rf /var/lib/apt/lists/*
 COPY --from=build /packages/ouf-zlib.deb /tmp/ouf-zlib.deb
@@ -47,5 +47,29 @@ LABEL ouf.zlib.source.commit=df84af25dc1942490e1d1c899a07619152a46148 \
 LABEL ouf.openresty.openssl.version=3.4.8 \
       ouf.openresty.openssl.source.sha256=9de9ce2f29e584044ae07ab93fc601637be01fdc91d109c5a655ec7419e6022b \
       ouf.openresty.patch.source.commit=bc8bf89488f2d02572389158533b3f85ca0ded7f
+ARG RUNTIME_USER
+USER ${RUNTIME_USER}
+
+
+# Explicit CI candidate: recompile the native runtime, omitting optional WASM.
+FROM build AS native-build
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git python3 libreadline-dev
+COPY --from=source-fixed-runtime /usr/local/openresty/openssl3/ /usr/local/openresty/openssl3/
+COPY --from=source-fixed-runtime /usr/local/openresty/zlib/ /usr/local/openresty/zlib/
+COPY tests/semantic-native-runtime-sources.json /tmp/native-sources.json
+COPY tests/build_semantic_native_runtime.py /tmp/build-native-runtime.py
+RUN python3 -B /tmp/build-native-runtime.py
+FROM source-fixed-runtime
+USER 0:0
+RUN rm -rf /usr/local/openresty
+COPY --from=native-build /usr/local/openresty/ /usr/local/openresty/
+COPY --from=native-build /usr/local/share/ouf/native-runtime-sources.json /usr/local/share/ouf/
+COPY --from=native-build /usr/local/share/ouf/native-runtime-binaries.json /usr/local/share/ouf/
+RUN set -eu; /usr/local/openresty/nginx/sbin/nginx -V 2>&1; \
+    test ! -e /usr/local/openresty/wasmtime-c-api; \
+    ! ldd /usr/local/openresty/nginx/sbin/nginx | grep wasmtime
+LABEL ouf.native.runtime.wasm=omitted-ci-candidate \
+      ouf.native.runtime.openresty=1.29.2.4 \
+      ouf.native.runtime.source.sha256=39bdac218249b7917464e6159acffef25a320ae89adaeb23514f078f473497bd
 ARG RUNTIME_USER
 USER ${RUNTIME_USER}

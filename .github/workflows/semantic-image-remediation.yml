@@ -5,6 +5,9 @@ on:
       - 'Dockerfile.semantic-provider-source-fixed'
       - 'Dockerfile.semantic-southbound-source-fixed'
       - 'tests/zlib-source-fixed.APKBUILD'
+      - 'tests/build_semantic_native_runtime.py'
+      - 'tests/semantic-native-runtime-sources.json'
+      - 'tools/prepare_semantic_image_sbom.py'
       - 'tests/openssl-3.4.1-sess_set_get_cb_yield.patch'
       - 'tests/openssl-3.4.8-sess_set_get_cb_yield.patch'
       - 'Dockerfile.semantic-provider-security-update'
@@ -23,7 +26,7 @@ permissions:
 jobs:
   compatible-image-scan:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -102,3 +105,4 @@ jobs:
           path: generated/${{ matrix.candidate }}/
           if-no-files-found: warn
           retention-days: 30
+

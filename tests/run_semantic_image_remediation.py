@@ -60,7 +60,7 @@ def main():
                 '--build-arg','INPUT_IMAGE='+source]
             if role=='southbound':
                 command+=['--build-arg','RUNTIME_USER='+(inspect(source)['Config'].get('User') or '0:0')]
-            command.append(str(semantic));run(command,timeout=1200)
+            command.append(str(semantic));run(command,timeout=2400)
             locks[role]['updatedImageId']=inspect(tag)['Id']
         env['OUF_PROVIDER_TEST_FINAL_IMAGE']=locks['adapter']['updatedImageId']
         env['OUF_PROVIDER_TEST_APISIX_IMAGE']=locks['southbound']['updatedImageId']
@@ -75,6 +75,17 @@ def main():
     assert 'libssl.so.3 => /usr/local/openresty/openssl3/lib/libssl.so.3' in inventory.stdout
     assert 'libcrypto.so.3 => /usr/local/openresty/openssl3/lib/libcrypto.so.3' in inventory.stdout
     (out/'bundled-openssl-runtime-proof.txt').write_text(inventory.stdout)
+    native=run(['docker','run','--rm','--network','none','--user','0:0','--entrypoint','sh',southbound['imageId'],
+        '-c', 'test ! -e /usr/local/openresty/wasmtime-c-api && /usr/local/openresty/nginx/sbin/nginx -V 2>&1 && ldd /usr/local/openresty/nginx/sbin/nginx'],capture_output=True,text=True,timeout=30)
+    assert 'wasmtime' not in native.stdout and 'wasm-nginx-module' not in native.stdout
+    (out/'native-runtime-link-proof.txt').write_text(native.stdout)
+    for filename in ('native-runtime-sources.json','native-runtime-binaries.json'):
+        payload=run(['docker','run','--rm','--network','none','--user','0:0','--entrypoint','cat',southbound['imageId'],
+            '/usr/local/share/ouf/'+filename],capture_output=True,timeout=30)
+        parsed=json.loads(payload.stdout)
+        assert type(parsed) is dict
+        (out/filename).write_bytes(payload.stdout)
+
     (out/'compatibility.json').write_text(json.dumps({'adapter':adapter,'southbound':southbound},indent=2,sort_keys=True)+'\n')
     result=run(['sudo','/usr/bin/python3','-B',str(semantic/'tests/scan_semantic_image_remediation.py'),
         '--adapter',adapter['imageId'],'--southbound',southbound['imageId']],capture_output=True,text=True,timeout=900,check=False)
@@ -119,3 +130,4 @@ def main():
     print('SEMANTIC_IMAGE_REMEDIATION_EXPERIMENT='+json.dumps(receipt,sort_keys=True))
     print('EXPERIMENT_COMPLETED=true THRESHOLD_MET='+str(receipt['allScannerSeverityThresholdsMet']).lower()+' TARGET_ACCEPTANCE=false')
 if __name__=='__main__':main()
+
