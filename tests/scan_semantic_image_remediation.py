@@ -14,7 +14,11 @@ def main():
     syft=scanner_root/'syft';grype_bin=scanner_root/'grype';db=scanner_root/'database.tar.zst'
     pin=sbom.decode((scanner_root/'database-pin.json').read_bytes());grype.database_pin(pin)
     docker=Path('/usr/bin/docker');unshare=Path('/usr/bin/unshare')
-    tool_hashes={p:archive.command_snapshot(p) for p in (docker,unshare,syft,grype_bin)}
+    tool_hashes={p:archive.command_snapshot(p) for p in (docker,unshare)}
+    for scanner in (syft,grype_bin):
+        h=hashlib.sha256(scanner.read_bytes()).hexdigest()
+        sbom.executable(scanner,h)
+        tool_hashes[scanner]=h
     print('CI_SCAN_STAGE=ARCHIVE_BINDING',file=sys.stderr)
     rows=[]
     for role,image in (('adapter',a.adapter),('southbound',a.southbound)):
