@@ -7,6 +7,8 @@ on:
       - 'tests/scan_semantic_extended_inventory.py'
       - 'tests/reconcile_semantic_generated_luajit.py'
       - 'tests/test_semantic_generated_luajit.py'
+      - 'tools/plan_semantic_v2_isolated_dossier.py'
+      - 'tests/test_semantic_v2_isolated_dossier.py'
       - '.github/workflows/semantic-extended-dependency-inventory.yml'
   workflow_dispatch:
 permissions:
@@ -21,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Reject unsafe manifests and verify inventory boundary checks
-        run: python3 -B -m unittest tests.test_semantic_extended_inventory tests.test_semantic_static_module_coverage tests.test_semantic_generated_luajit -v
+        run: python3 -B -m unittest tests.test_semantic_extended_inventory tests.test_semantic_static_module_coverage tests.test_semantic_generated_luajit tests.test_semantic_v2_isolated_dossier -v
       - name: Independently download, verify and qualify the original v2 artifact
         env:
           GH_TOKEN: ${{ github.token }}
@@ -35,6 +37,11 @@ jobs:
       - name: Reproduce generated LuaJIT output from exactly matched source bytes
         run: |
           python3 -B -m tests.reconcile_semantic_generated_luajit \
+            --bundle "$RUNNER_TEMP/ouf-downloaded-v2-artifact/bundle.zip" \
+            --inventory-directory generated/extended-v2
+      - name: Prepare role-specific image dossier without invoking Docker
+        run: |
+          python3 -B -m tools.plan_semantic_v2_isolated_dossier \
             --bundle "$RUNNER_TEMP/ouf-downloaded-v2-artifact/bundle.zip" \
             --inventory-directory generated/extended-v2
       - name: Prepare hash-pinned scanner and exact fresh database
