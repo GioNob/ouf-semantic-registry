@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Read the actual packaged ouf-semantic defaults and configuration overrides using pinned scripts/r4a_read_semantic_national_discovery_configuration.py. Operator must run one sudo isolated Python command because agent has no VPS access. No provider calls, jobs, service mutations, image imports or start. Then repair exact national provider binding and typed MCP discovery under existing governance; no local model fallback.",
+  "nextTask": "Implement the national Discovery product path through typed MCP/Gateway/owner operations and installation configuration. Actual target configuration is now proved: provider disabled, worker enabled, Gateway origin missing. Do not ask the user to run further server diagnostics as product workflow steps; do not declare complete conversational acceptance from scan/CI/sudo scripts. Prepare cohesive reviewed changes before any governed release; no arbitrary direct provider egress, self-approval, provider startup or duplicate jobs.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Read the actual packaged ouf-semantic defaults and configuration overrides using pinned scripts/r4a_read_semantic_national_discovery_configuration.py. Operator must run one sudo isolated Python command because agent has no VPS access. No provider calls, jobs, service mutations, image imports or start. Then repair exact national provider binding and typed MCP discovery under existing governance; no local model fallback.",
+  "nextStep": "Implement the national Discovery product path through typed MCP/Gateway/owner operations and installation configuration. Actual target configuration is now proved: provider disabled, worker enabled, Gateway origin missing. Do not ask the user to run further server diagnostics as product workflow steps; do not declare complete conversational acceptance from scan/CI/sudo scripts. Prepare cohesive reviewed changes before any governed release; no arbitrary direct provider egress, self-approval, provider startup or duplicate jobs.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "FRESH_TARGET_EVIDENCE_PASS_NATIONAL_CONFIGURATION_READ_REQUIRED",
+  "nextStatus": "NATIONAL_PROVIDER_DISABLED_GATEWAY_MISSING_MCP_DISCOVERY_NOT_IMPLEMENTED",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Read the actual packaged ouf-semantic defaults and configuration overrides using pinned scripts/r4a_read_semantic_national_discovery_configuration.py. Operator must run one sudo isolated Python command because agent has no VPS access. No provider calls, jobs, service mutations, image imports or start. Then repair exact national provider binding and typed MCP discovery under existing governance; no local model fallback.",
+  "currentAction": "Implement the national Discovery product path through typed MCP/Gateway/owner operations and installation configuration. Actual target configuration is now proved: provider disabled, worker enabled, Gateway origin missing. Do not ask the user to run further server diagnostics as product workflow steps; do not declare complete conversational acceptance from scan/CI/sudo scripts. Prepare cohesive reviewed changes before any governed release; no arbitrary direct provider egress, self-approval, provider startup or duplicate jobs.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Read the actual packaged ouf-semantic defaults and configuration overrides using pinned scripts/r4a_read_semantic_national_discovery_configuration.py. Operator must run one sudo isolated Python command because agent has no VPS access. No provider calls, jobs, service mutations, image imports or start. Then repair exact national provider binding and typed MCP discovery under existing governance; no local model fallback.",
+  "nextAction": "Implement the national Discovery product path through typed MCP/Gateway/owner operations and installation configuration. Actual target configuration is now proved: provider disabled, worker enabled, Gateway origin missing. Do not ask the user to run further server diagnostics as product workflow steps; do not declare complete conversational acceptance from scan/CI/sudo scripts. Prepare cohesive reviewed changes before any governed release; no arbitrary direct provider egress, self-approval, provider startup or duplicate jobs.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4918,6 +4918,24 @@
         "configurationSnapshotModified": false,
         "secretValuesPrinted": false
       }
+    },
+    "conversationalAcceptanceCriterion": {
+      "confirmedAt": "2026-10-07T14:10:33+02:00",
+      "completeOperationalFlow": "CHATBOT_VIA_MCP",
+      "operatorServerAccessInProductFlowAllowed": false,
+      "operatorShellScriptsInProductFlowAllowed": false,
+      "technicalDiagnosticsAreProductAcceptance": false,
+      "requiredFlow": [
+        "FILE_UPLOAD",
+        "PROFILE",
+        "CHATBOT_SEMANTIC_MAPPING",
+        "GOVERNED_ONBOARDING",
+        "INGESTION",
+        "UDP_IDENTITY_AND_MATERIALIZATION",
+        "CHATBOT_RESULTS"
+      ],
+      "humanGovernancePreserved": true,
+      "completeFlowDelivered": false
     }
   },
   "semanticFreshDependencyEvidence": {
@@ -5029,7 +5047,7 @@
     "path": "scripts/r4a_read_semantic_national_discovery_configuration.py",
     "sha256": "0faa9f9b3fe7bdce893113a0c5164fbbdcd567bd9e14babfcf09a6e7effe53b4",
     "localTestsPassed": 5,
-    "targetExecuted": false,
+    "targetExecuted": true,
     "needsOriginalStageRoot": false,
     "sourceConfigurationSha256": "a2799f0a63c93464c0940957a9537da72b3ca13aebf89f510469fec7c1fb6572",
     "temporaryJarCopyDeleted": true,
@@ -5044,5 +5062,34 @@
       "logsRead": true,
       "targetExecuted": false
     }
+  },
+  "nationalDiscoveryConfigurationOperator": {
+    "schema": "ouf.teatri-national-discovery-configuration-operator.v1",
+    "reportedAt": "2026-10-07T14:10:33+02:00",
+    "status": "READ_ONLY_PACKAGED_CONFIGURATION",
+    "configurationProven": true,
+    "running": true,
+    "providerEnabled": false,
+    "workerEnabled": true,
+    "gatewayOriginConfigured": false,
+    "packagedDefaultsMatchReviewedSource": true,
+    "startupCommandMatchesReviewedSource": true,
+    "externalConfigurationPresent": false,
+    "packagedOverrideCount": 0,
+    "unexpectedMountCount": 0,
+    "overrideEnvironmentNames": [],
+    "configurationBlockers": [
+      "PROVIDER_DISABLED_OR_UNPROVEN",
+      "GATEWAY_ORIGIN_MISSING_OR_UNSAFE"
+    ],
+    "mcpDiscoveryBindingProven": false,
+    "providerConnectivityProven": false,
+    "configurationWrites": 0,
+    "containerLifecycleOperations": 0,
+    "discoveryJobsCreated": 0,
+    "providerCalls": 0,
+    "secretValuesPrinted": false,
+    "sourceCodeCommit": "fe5d7a304cfe3ad10f0b49d492342ce278175ac2",
+    "scriptSha256": "0faa9f9b3fe7bdce893113a0c5164fbbdcd567bd9e14babfcf09a6e7effe53b4"
   }
 }

@@ -1,5 +1,9 @@
 # OUF: percorso file → UDP tramite ChatGPT — stato corrente
 
+## Criterio di accettazione confermato il 7 ottobre alle 14:10 Europe/Rome
+
+La procedura operativa deve essere eseguita integralmente dalla chat tramite un chatbot compatibile MCP: caricamento, profilazione, mapping semantico assistito, onboarding governato, ingestion, UDP e risultati. SSH, sudo, script e trasferimenti di archivi eseguiti dall'utente non sono passi ammessi del flusso prodotto. I controlli tecnici finora eseguiti verificano la preparazione dell'infrastruttura; non valgono come dimostrazione del giro completo. La governance HUMAN/THS resta un requisito del prodotto e non viene sostituita da decisioni del chatbot.
+
 ## Risultato verificato il 7 ottobre 2026
 
 La ricerca Cinema funziona realmente tramite ChatGPT, account ouf-admin: **8 oggetti ACTIVE, revisione1, 4 pagine da2, zero duplicati, partial=false e cursore finale nullo**. Le sole proprietà restituite sono nome e indirizzo. Dati già materializzati, nessun nuovo upload o replay/run. La riparazione cambia soltanto il nome upstream della rotta di ricerca, da ouf-udp-object-resolution:8080 (non risolto) a ouf-udp:8080, qualificato verso UDPcorrente. Snapshot privato /etc/ouf/deploy-snapshots/search-upstream-tb4mcsuu; nessun restart o modifica ai file storici.
@@ -13,8 +17,8 @@ Da ChatGPT: selezione file, profilazione, mapping assistito, DRAFT Onboarding, r
 | Passaggio | Stato concreto | Prossimo passo |
 | --- | --- | --- |
 | Upload/profile Teatri | Asset6609b245-86ed-4315-8ce0-73f2a8555bf3, profile7984c39c-7396-4248-ab0a-f2efc390b49c v1; 13righe/20campi. Rilettura già autorizzata/PASS | Riutilizzare, nessun nuovo upload/profile |
-| Mapping Teatri | [Proposta dei20campi](TEATRI_MAPPING_REVIEW_CURRENT.md), non approvata | Decisione teatro/sala, semantica pubblicata con pin esatti, identitàsource, classificazione e gestione dubbi |
-| Discovery/adoption | Ricerche bounded Theatre/Teatro/teatr/Cultural, poi PerformingArtsTheater e culturaONTOLOGY vuote; non prova assenza globale. Cultural-ON/Schema candidati web, non pin pubblicati | Risolvere riferimenti tramite percorso governato; nessuna adozione/publication automatica |
+| Mapping Teatri | [Proposta dei20campi](TEATRI_MAPPING_REVIEW_CURRENT.md), non approvata | Granularità teatro/sala già confermata; semantica pubblicata con pin esatti, identitàsource, classificazione e gestione dubbi |
+| Discovery/adoption | Discovery nazionale selezionata. Configurazione VPS provata: provider disabilitato, worker abilitato, Gateway origin mancante. MCP attuale privo di discovery.request. Cultural-ON/Schema restano candidati, non pin pubblicati | Implementare raccordo nazionale governato e richiesta/stato/candidati via MCP; poi riferimenti pubblicati con governance HUMAN/THS |
 | DRAFT e review | Tool crea DRAFTbase, non ACTIVE; validator richiede contratti e semanticReferenceBindings | Riutilizzare completamentoCinema, freeze/challenge/HUMANTHS e ripresa da stato owner; non simulare attestazioni |
 | Ingestion/UDP Cinema | Storico run86809c17-3354-45ca-a7e6-57e903944b24 SUCCEEDED, 8handoffACKED e 8materializzati | Preservare. ingestion.status resta authorizationdenied, non prova runfallito; risolvere osservabilità distintamente |
 | Serving Cinema | Lettura ChatGPT8/8 provata con paginazione | Evitare regressioni: generator Gateway ancora hardcoded su vecchio hostname, correggere binding installazione prima di redeploy. Prove negative/authority/audit complete restano aperte |
@@ -22,4 +26,4 @@ Da ChatGPT: selezione file, profilazione, mapping assistito, DRAFT Onboarding, r
 
 ## Vincoli conservati
 
-Preservare Cinema8/8, Teatri, snapshot/report storici, Gatewaylive, candidati semanticifermati. PRdraft, nessun merge/deploy indiscriminato. Provideresterno è dipendenza condizionale quando serve al mapping, senza aggirare trust/compatibilità/start. Il nuovo ZIP evidenze resta sospeso come trasferimento immediato; non riproporlo automaticamente. Scansioni hanno validità nei propri scope/finestra, nessuna freshnessbypass. R-INSTALL, replayRAW, storageindipendente, seconda fonte sovrapposta e releaseacceptance restano aperti, senza trasformarli in nuovi prerequisiti indistinti per la prima prova. Nessuna nuova durata promessa.
+Preservare Cinema8/8, Teatri, snapshot/report storici, Gatewaylive, candidati semanticifermati. PRdraft, nessun merge/deploy indiscriminato. Provideresterno è dipendenza condizionale quando serve al mapping, senza aggirare trust/compatibilità/start. Nuove evidenze del 7 ottobre: producer, readback indipendente e firme VPS PASS; non riproporre trasferimenti o verifiche concluse. Scansioni hanno validità nei propri scope/finestra, nessuna freshnessbypass. R-INSTALL, replayRAW, storageindipendente, seconda fonte sovrapposta e releaseacceptance restano aperti, senza trasformarli in nuovi prerequisiti indistinti per la prima prova. Nessuna nuova durata promessa.

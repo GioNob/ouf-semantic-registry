@@ -1,0 +1,29 @@
+{
+  "schema": "ouf.teatri-national-discovery-configuration-operator.v1",
+  "reportedAt": "2026-10-07T14:10:33+02:00",
+  "status": "READ_ONLY_PACKAGED_CONFIGURATION",
+  "configurationProven": true,
+  "running": true,
+  "providerEnabled": false,
+  "workerEnabled": true,
+  "gatewayOriginConfigured": false,
+  "packagedDefaultsMatchReviewedSource": true,
+  "startupCommandMatchesReviewedSource": true,
+  "externalConfigurationPresent": false,
+  "packagedOverrideCount": 0,
+  "unexpectedMountCount": 0,
+  "overrideEnvironmentNames": [],
+  "configurationBlockers": [
+    "PROVIDER_DISABLED_OR_UNPROVEN",
+    "GATEWAY_ORIGIN_MISSING_OR_UNSAFE"
+  ],
+  "mcpDiscoveryBindingProven": false,
+  "providerConnectivityProven": false,
+  "configurationWrites": 0,
+  "containerLifecycleOperations": 0,
+  "discoveryJobsCreated": 0,
+  "providerCalls": 0,
+  "secretValuesPrinted": false,
+  "sourceCodeCommit": "fe5d7a304cfe3ad10f0b49d492342ce278175ac2",
+  "scriptSha256": "0faa9f9b3fe7bdce893113a0c5164fbbdcd567bd9e14babfcf09a6e7effe53b4"
+}

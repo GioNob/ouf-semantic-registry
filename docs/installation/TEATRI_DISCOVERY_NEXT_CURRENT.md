@@ -1,23 +1,19 @@
-# Discovery nazionale Teatri: prossimo passo
+# Discovery nazionale Teatri: collegamento applicativo
 
-## Risultati già conclusi
+## Stato provato
 
-Cinema ha restituito 8/8 oggetti in ChatGPT. Il file Teatri è già profilato: 13 righe e 20 campi. L'utente ha scelto la Discovery nazionale; la proposta di modello locale resta non selezionata.
+L'operatore ha eseguito il reader il7 ottobre14:10 Europe/Rome: configurazione confezionata nel JAR provata, senza override. Provider nazionale disabilitato; worker abilitato; indirizzo Gateway non configurato. Nessuna chiamata provider, job, scrittura o lifecycle. Il reader non va riproposto.
 
-Il 7 ottobre alle 13:55:40 Europe/Rome l'operatore ha riportato PASS della verifica fresca sul VPS: archivio, verifier, pin database e cinque firme. Report: `/home/oufadmin/ouf-extended-fresh-v2.Bs2U5B/reports`. Producer37613612404 e readback37614224542 PASS, quest'ultimo con38 test. Le immagini non sono cambiate; nessuna operazione runtime è stata eseguita. Il DB del7 ottobre resta fresco fino al9 ottobre08:31:48 Europe/Rome.
+Evidenze immagini fresche: CI producer e readback indipendente PASS, cinque firme sul VPS PASS. Report /home/oufadmin/ouf-extended-fresh-v2.Bs2U5B/reports. Queste prove non concedono avvio o governance.
 
-## Perché serve una lettura della configurazione
+## Criterio del prodotto
 
-Il precedente output descriveva solo le variabili Docker: provider e worker non dichiarati o invalidi. La sorgente esaminata usa provider=false e worker=true come default, ma non era provato che il JAR in esecuzione contenesse quei default né che file/opzioni aggiuntivi li sovrascrivessero. Il vecchio preflight richiede pin e snapshot storici; non va rieseguito con assunzioni sul runtime attuale.
+Tutto il percorso operativo avviene dalla chat tramite MCP: file, profilazione, mapping assistito, onboarding governato, ingestion, UDP e risultati. Nessun SSH, sudo, script o trasferimento manuale dell'utente come passaggio funzionale. Diagnostica/installazione non sono una dimostrazione end-to-end. Le decisioni umane e i controlli HUMAN/THS restano governati.
 
-Il nuovo reader `scripts/r4a_read_semantic_national_discovery_configuration.py` legge il JAR del container già avviato `ouf-semantic`, verifica il solo application.yml contro il testo pubblico esaminato e rileva altri file, mount, opzioni o variabili di configurazione. Se la prova è ambigua restituisce UNPROVEN. Non esegue il JAR, chiama provider, crea job, legge file chiavi o modifica servizi. La copia privata temporanea del JAR viene rimossa. Le variabili vengono trattate in memoria; i valori e gli endpoint non sono stampati.
+## Lavoro necessario
 
-Cinque test locali PASS: default, config differente, override Spring anche minuscoli, mount/opzioni aggiuntivi, endpoint con credenziali e redazione. Hash reader: `0faa9f9b3fe7bdce893113a0c5164fbbdcd567bd9e14babfcf09a6e7effe53b4`. Verifica target non eseguita; CI dedicata run37618407742/job112782267828 PASS: cinque nuovi test e tutti gli step del workflow riusciti; log letto. Source code pinned fe5d7a304cfe3ad10f0b49d492342ce278175ac2.
+1. Collegare la configurazione di installazione del provider nazionale al trasporto Gateway governato. Endpoint, TLS/OIDC, trust e avvio devono essere coerenti e verificati; non basta cambiare enabled=true. Le prove di publisher/copertura/dossier/authority/runtime restano tracciate senza essere autoaccettate.
+2. Implementare richiesta, stato e lettura candidati attraverso MCP/Gateway/owner. Il manifest corrente non espone Discovery. Endpoint owner reale: /api/semantic/v1/discovery-requests. Input chiusi, limiti, autorizzazione/delegazione e idempotenza; nessun endpoint arbitrario o SPARQL in input. Distinguere PENDING, risultato vuoto valido, errore/configurazione indisponibile: il codice attuale può segnare successo senza chiamare un provider abilitato. Nessuna richiesta di prova va creata con questa configurazione.
+3. Usare il file Teatri già profilato, richiedere CLASS/intento teatro/lingue it-en, confrontare candidati, adozione/pubblicazione governata, mapping dei20 campi e contratti Onboarding; DRAFT/review/compatibilità/ACTIVE, un run Teatri, materializzazione e lettura in chat.
 
-## Roadmap restante
-
-1. Dall'esito della lettura, correggere la configurazione effettiva del provider nazionale e il raccordo Gateway. L'avvio dei candidati resta subordinato ai controlli concreti di publisher/copertura, dossier, authority, runtime e trasporto già tracciati; nessuna nuova authority è dedotta dalle firme.
-2. Collegare richiesta e lettura candidati Discovery nel MCP con input chiusi, endpoint owner reale /api/semantic/v1/discovery-requests, idempotenza e receipt autorizzata. La versione corrente espone semantic.search/get, non discovery.request. Il chatbot non invia SPARQL o endpoint arbitrari.
-3. Richiedere CLASS, intent teatro, lingue it/en; confrontare candidati e governare adozione/pubblicazione tramite HUMAN/THS. Completare decisioni sui20 campi e contratti Onboarding, DRAFT/THS/compatibilità/ACTIVE, un solo run Teatri, materializzazione e lettura ChatGPT.
-
-Una riga rappresenta un teatro; capienza riferita a una sala va qualificata separatamente. Non rifare upload/profile o ingestion Cinema. Conservare candidati fermi, gateway e tutte le prove esistenti. Publisher trust, copertura completa, acceptance, registrazione runtime e avvio non sono concessi dalla verifica delle firme.
+Una riga rappresenta un teatro; la capienza di una sala si qualifica separatamente. Cinema8/8, file/profilo Teatri, candidati fermi e prove storiche sono preservati. Il flusso completo non è ancora consegnato. Non presentare test di fixture, scansioni o script amministrativi come prova operativa tramite chatbot.

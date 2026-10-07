@@ -1,3 +1,17 @@
+# Stato corrente: procedura prodotto integralmente chatbot/MCP
+
+L'utente ha ribadito il7 ottobre14:10:33 Europe/Rome: tutta la procedura operativa deve avvenire tramite chatbot compatibile MCP, senza accesso al server. SSH/sudo/script diagnostici non sono passaggi del prodotto e non dimostrano il giro completo. Registrato come criterio di accettazione nella roadmap e nel restart state; governance HUMAN/THS preservata.
+
+Reader configurazione eseguito dall'operatore: prova riuscita. Semantic running, application.yml e comando conformi, nessun override/mount/file alternativo; providerEnabled=false, workerEnabled=true, gatewayOriginConfigured=false. Zero scritture, lifecycle, job e provider calls. Receipt: docs/handoffs/receipts/TEATRI_NATIONAL_CONFIGURATION_2026-10-07_OPERATOR.json. Non riproporre questo reader né il wrapper di evidenze: entrambi conclusi.
+
+Prossimo lavoro è implementativo: raccordo provider nazionale in configurazione installazione, richiesta/stato/candidati tramite MCP e Gateway con vero owner endpoint, autorizzazione/delegazione e idempotenza. Manifest MCP runtime394b contiene solo semantic.search/get per consultazione, non Discovery. API owner /api/semantic/v1/discovery-requests crea sempre nuovo UUID e non espone ancora stato request; la sola lista vuota di candidati non dimostra completamento. Worker può oggi considerare successo un provider disabilitato che restituisce lista vuota: impedire false prove di funzionamento nel percorso. Nessuna nuova richiesta creata.
+
+Evidenze immagini fresche sul VPS PASS, report conservati; non equivalgono a provider readiness, publisher/coverage, acceptance/runtime/start. Preparare cambiamenti coerenti e reviewabili, mantenendo PR draft e avvio governato. Nessun modello locale selezionato, nuovo upload/profile o replay Cinema. Cinema8/8 e Teatri13righe20campi preservati.
+
+Le sezioni successive sono checkpoint storici, non comandi da ripetere.
+
+---
+
 # Stato corrente: evidenze fresche verificate sul VPS — 7 ottobre 13:55 Europe/Rome
 
 Operatore PASS: archivio, verifier, database pin e cinque firme. Report `/home/oufadmin/ouf-extended-fresh-v2.Bs2U5B/reports`; nessuna operazione runtime. L'autenticazione gh come GioNob e il wrapper precedente sono conclusi: non riproporre login, trasferimenti Windows o scansioni già provate. Receipt: docs/handoffs/receipts/SEMANTIC_FRESH_DEPENDENCY_EVIDENCE_2026-10-07_OPERATOR.json.
