@@ -6,6 +6,7 @@ Preserves a private route snapshot and restores on failed write/readback.
 import argparse
 import copy
 import hashlib
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -52,6 +53,75 @@ def diagnose_bindings(route, env, generated):
                           'generatedEnvDirectivePresent': env_directive_present(generated, name)}
     return {'status': 'READ_ONLY_BINDING_DIAGNOSIS', 'bindings': bindings, 'routeChanged': False,
             'positiveSearchProven': False}
+
+
+UNSIGNED_PROBE = r'''
+import json,sys,urllib.request,urllib.error
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self,*args,**kwargs): return None
+try:
+    address=json.load(sys.stdin)['address']
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
+    req=urllib.request.Request('http://'+address+':8080/api/udp/v1/objects/search',data=b'{"type":"https://api.ouf-lab.it/semantic/cinema","pageSize":1}',headers={'Content-Type':'application/json'},method='POST')
+    try:
+        with opener.open(req,timeout=4) as response: status=response.status
+    except urllib.error.HTTPError as error:
+        status=error.code;error.close()
+    print(json.dumps({'httpStatus':status,'responseBodyRead':False,'receiptSent':False}))
+except Exception:
+    print(json.dumps({'result':'CONNECTION_FAILED','responseBodyRead':False,'receiptSent':False}))
+'''
+
+
+def upstream_summary(route, gateway, udp):
+    networks = gateway['NetworkSettings']['Networks']
+    unets = udp['NetworkSettings']['Networks']
+    shared = set(networks).intersection(unets)
+    addresses = {unets[n].get('IPAddress') for n in shared} - {None, ''}
+    aliases = {udp.get('Name', '').lstrip('/')}
+    for n in shared:
+        aliases.update(unets[n].get('Aliases') or [])
+    up = route.get('upstream') or {}
+    nodes = up.get('nodes')
+    report = {'status':'READ_ONLY_UPSTREAM_DIAGNOSIS','sharedNetworkCount':len(shared),
+              'udpRunning':udp.get('State',{}).get('Running') is True,
+              'routeChanged':False,'positiveSearchProven':False}
+    if not isinstance(nodes,dict) or len(nodes)!=1 or up.get('scheme','http')!='http':
+        report['result']='INLINE_SINGLE_HTTP_UPSTREAM_REQUIRED';return report,None,addresses
+    node = next(iter(nodes))
+    if not isinstance(node,str) or not re.fullmatch(r'[A-Za-z0-9_.-]+:8080',node):
+        report['result']='EXPECTED_INTERNAL_PORT_REQUIRED';return report,None,addresses
+    host=node.rsplit(':',1)[0]
+    report['upstreamMatchesUdpAliasOrAddress']=host in aliases or host in addresses
+    if host not in aliases | addresses | {'ouf-udp-object-resolution','ouf-udp'}:
+        report['result']='UPSTREAM_OUTSIDE_EXPECTED_UDP_NAMES';return report,None,addresses
+    report['upstreamHost']=host
+    return report,host,addresses
+
+
+def diagnose_upstream(route, gateway, admin, args):
+    doc=subprocess.run([args.docker,'inspect','--type','container',args.udp],capture_output=True,check=True,timeout=10)
+    udp=json.loads(doc.stdout)[0]
+    report,host,expected=upstream_summary(route,gateway,udp)
+    if host is None: return report
+    dns=subprocess.run([args.docker,'exec',args.gateway,'getent','ahostsv4',host],capture_output=True,text=True,timeout=10)
+    if dns.returncode:
+        report['result']='NAME_NOT_RESOLVED' if dns.returncode==2 else 'RESOLVER_COMMAND_UNAVAILABLE_OR_FAILED'
+        return report
+    resolved={line.split()[0] for line in dns.stdout.splitlines() if line.split()}
+    report['resolvedAddressCount']=len(resolved)
+    report['resolvedAddressesMatchUdp']=bool(resolved) and resolved.issubset(expected)
+    if not report['resolvedAddressesMatchUdp']:
+        report['result']='RESOLVED_ADDRESS_NOT_CURRENT_UDP';return report
+    address=sorted(resolved)[0]
+    ip=ipaddress.ip_address(address)
+    if ip.version!=4 or not ip.is_private or ip.is_loopback or ip.is_unspecified:
+        raise ValueError('PRIVATE_CURRENT_UDP_IPV4_REQUIRED')
+    probe=subprocess.run([args.nsenter,'--net=/proc/self/fd/'+str(admin.namespace_fd),'/usr/bin/python3','-I','-B','-c',UNSIGNED_PROBE],input=json.dumps({'address':address}),capture_output=True,text=True,timeout=8,pass_fds=(admin.namespace_fd,))
+    if probe.returncode: raise ValueError('UNSIGNED_NAMESPACE_PROBE_FAILED')
+    result=json.loads(probe.stdout)
+    report['unsignedOwnerProbe']={k:result[k] for k in ('httpStatus','result','responseBodyRead','receiptSent') if k in result}
+    return report
 
 
 def canonical(route):
@@ -173,6 +243,8 @@ def main():
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument('--apply', action='store_true')
     mode.add_argument('--diagnose', action='store_true')
+    mode.add_argument('--diagnose-upstream', action='store_true')
+    parser.add_argument('--udp', default='ouf-udp')
     parser.add_argument('--docker', required=True)
     parser.add_argument('--gateway', required=True)
     parser.add_argument('--network', required=True)
@@ -181,7 +253,7 @@ def main():
     parser.add_argument('--nsenter', required=True)
     parser.add_argument('--backup-root', type=Path, required=True)
     args = parser.parse_args()
-    if os.geteuid() != 0 or not args.docker.startswith('/') or not args.nsenter.startswith('/') or args.admin_key_owner_uid < 0 or any(not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}', x) for x in (args.gateway, args.network)):
+    if os.geteuid() != 0 or not args.docker.startswith('/') or not args.nsenter.startswith('/') or args.admin_key_owner_uid < 0 or any(not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}', x) for x in (args.gateway, args.network,args.udp)):
         raise SystemExit('SEARCH_OWNER_BINDING=ROOT_AND_EXPLICIT_BINDINGS_REQUIRED')
     stage = 'CONTAINER_BINDING_READ'
     try:
@@ -207,6 +279,12 @@ def main():
         admin = Admin(gateway['State']['Pid'], key, args.nsenter, '/usr/bin/python3')
         stage = 'SEARCH_ROUTE_GET_AND_EXACT_DELTA_REVIEW'
         old = admin.call('GET')
+        if args.diagnose_upstream:
+            diagnose_bindings(old,env,generated)
+            stage='SEARCH_UPSTREAM_READ_ONLY_PROBE'
+            print('SEARCH_UPSTREAM=' + json.dumps(diagnose_upstream(old,gateway,admin,args)))
+            admin.close()
+            return
         if args.diagnose:
             print('SEARCH_KEY_BINDINGS=' + json.dumps(diagnose_bindings(old, env, generated)))
             admin.close()

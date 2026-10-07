@@ -40,6 +40,19 @@ class MemoryAdmin:
 
 
 class BindingRepairTest(unittest.TestCase):
+    def test_upstream_alias_and_foreign_targets(self):
+        gateway={'NetworkSettings':{'Networks':{'shared':{}}}}
+        udp={'Name':'/ouf-udp','State':{'Running':True},'NetworkSettings':{'Networks':{'shared':{'IPAddress':'172.20.0.4','Aliases':['ouf-udp']}}}}
+        route=fixture()
+        r,host,addresses=repair.upstream_summary(route,gateway,udp)
+        self.assertEqual(host,'ouf-udp-object-resolution')
+        self.assertFalse(r['upstreamMatchesUdpAliasOrAddress'])
+        self.assertEqual(addresses,{'172.20.0.4'})
+        udp['NetworkSettings']['Networks']['shared']['Aliases'].append(host)
+        self.assertTrue(repair.upstream_summary(route,gateway,udp)[0]['upstreamMatchesUdpAliasOrAddress'])
+        route['upstream']['nodes']={'foreign.example:8080':1}
+        self.assertIsNone(repair.upstream_summary(route,gateway,udp)[1])
+
     def test_generated_env_quotes_assignments_and_name_boundaries(self):
         name = 'OUF_UDP_SEARCH_OWNER_KEY'
         for line in ('env '+name+';', 'env "'+name+'";', "env '"+name+"';", 'env "'+name+'=secret"; # retained'):

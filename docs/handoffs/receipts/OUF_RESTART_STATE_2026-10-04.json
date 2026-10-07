@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "SEARCH_DECLARATIONS_PRESENT_BINDING_DIAGNOSIS_PENDING",
+  "nextStatus": "SEARCH_KEY_BINDINGS_PASS_UPSTREAM_DIAGNOSIS_PENDING",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Run read-only --diagnose for exact live search route delegation and owner environment names, container key format and generated quoted env directives. No route repair/reload/restart justified by existing evidence; investigate actual 503.",
+  "nextAction": "Run --diagnose-upstream on current Gateway/UDP: inspect exact live route host, current shared networks/aliases, resolve inside Gateway with getent, probe only matched current private UDP address from Gateway network namespace without any receipt; no body read or changes.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4784,7 +4784,32 @@
         "nextMode": "--diagnose, GET only; no PUT",
         "currentReceipt": "docs/handoffs/receipts/OUF_SEARCH_ENV_QUOTING_2026-10-07_OPERATOR.json"
       },
-      "inheritanceMeaning": "Generated directive confirmed present; not proof of getenv or signing in actual Nginx worker."
+      "inheritanceMeaning": "Generated directive confirmed present; not proof of getenv or signing in actual Nginx worker.",
+      "exactKeyBindings": {
+        "operatorReportedAt": "2026-10-07T09:06:10+02:00",
+        "status": "READ_ONLY_BINDING_DIAGNOSIS",
+        "delegation": {
+          "environmentName": "OUF_GATEWAY_DELEGATION_KEY",
+          "present": true,
+          "hex64": true,
+          "generatedDirectivePresent": true
+        },
+        "owner": {
+          "environmentName": "OUF_UDP_SEARCH_OWNER_KEY",
+          "present": true,
+          "hex64": true,
+          "generatedDirectivePresent": true
+        },
+        "routeChanged": false,
+        "positiveSearchProven": false
+      },
+      "upstreamDiagnosis": {
+        "status": "TARGET_PENDING",
+        "source": "scripts/repair_search_owner_binding.py",
+        "mode": "--diagnose-upstream",
+        "sha256": "4235c145b0d08ed1529760a9aa6f7ebdfc3a07fa4a03c6367894d671adbcea23",
+        "localTestsPassed": 11
+      }
     }
   }
 }
