@@ -48,7 +48,7 @@ def image_files(stream, expected_hash, expected_bytes):
                             whiteouts.append((parent if base == '.wh..wh..opq' else str(PurePosixPath(parent) / base[4:]), base == '.wh..wh..opq'))
                         elif item.isfile():
                             require(0 <= item.size <= CAP)
-                            retain = path == NGINX or path.startswith('usr/local/brotli/') or path == 'usr/local/lib/libpython3.so' or base == 'rock_manifest'
+                            retain = path == NGINX or path.startswith('usr/local/brotli/') or path == 'usr/local/lib/libpython3.so' or path == 'usr/local/openresty/luajit/share/luajit-2.1/jit/vmdef.lua' or base == 'rock_manifest'
                             require(not retain or item.size <= 67108864)
                             content = inner.extractfile(item); first = content.read(min(4, item.size))
                             sha256 = hashlib.sha256(first); md5 = hashlib.md5(first, usedforsecurity=False)
