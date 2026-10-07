@@ -1,3 +1,5 @@
+> **Output VPS 7 ottobre08:17:** UDP rifiuta la richiesta senza firma con403; Gateway ownerkey è presente ma inheritance Nginx non rilevata. [Lettura mirata della configurazione e del suo bind](../installation/OUF_GATEWAY_SEARCH_INHERITANCE_CURRENT.md) pronta per scegliere correzione/reload, preservando snapshot. Servingpositivo ancora non provato.
+
 > Aggiornamento 7 ottobre: profilo Teatri riletto/PASS dopo autorizzazione; proposta mapping completa dei 20 campi pronta. Diagnosi read-only UDP503 preparata e 4 test locali PASS, esecuzione VPS pendente. Nessuna DRAFT/ACTIVE/run o mutazione target.
 
 # OUF: percorso da ChatGPT a UDP — stato operativo 7 ottobre 2026
