@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Operator runs pinned scripts/verify-fresh-national-evidence-vps.sh on VPS: download fresh exact artifact and verify image/report/database bindings plus five signatures. No Windows transfer, sudo, Docker or service changes. Existing gh authentication required; report GH_AUTH_REQUIRED if absent. Then continue national provider readiness and typed MCP discovery; no milestones approvals.",
+  "nextTask": "Read the actual packaged ouf-semantic defaults and configuration overrides using pinned scripts/r4a_read_semantic_national_discovery_configuration.py. Operator must run one sudo isolated Python command because agent has no VPS access. No provider calls, jobs, service mutations, image imports or start. Then repair exact national provider binding and typed MCP discovery under existing governance; no local model fallback.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Operator runs pinned scripts/verify-fresh-national-evidence-vps.sh on VPS: download fresh exact artifact and verify image/report/database bindings plus five signatures. No Windows transfer, sudo, Docker or service changes. Existing gh authentication required; report GH_AUTH_REQUIRED if absent. Then continue national provider readiness and typed MCP discovery; no milestones approvals.",
+  "nextStep": "Read the actual packaged ouf-semantic defaults and configuration overrides using pinned scripts/r4a_read_semantic_national_discovery_configuration.py. Operator must run one sudo isolated Python command because agent has no VPS access. No provider calls, jobs, service mutations, image imports or start. Then repair exact national provider binding and typed MCP discovery under existing governance; no local model fallback.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "FRESH_SCAN_AND_INDEPENDENT_READBACK_PASS_VPS_VERIFICATION_PENDING",
+  "nextStatus": "FRESH_TARGET_EVIDENCE_PASS_NATIONAL_CONFIGURATION_READ_REQUIRED",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Operator runs pinned scripts/verify-fresh-national-evidence-vps.sh on VPS: download fresh exact artifact and verify image/report/database bindings plus five signatures. No Windows transfer, sudo, Docker or service changes. Existing gh authentication required; report GH_AUTH_REQUIRED if absent. Then continue national provider readiness and typed MCP discovery; no milestones approvals.",
+  "currentAction": "Read the actual packaged ouf-semantic defaults and configuration overrides using pinned scripts/r4a_read_semantic_national_discovery_configuration.py. Operator must run one sudo isolated Python command because agent has no VPS access. No provider calls, jobs, service mutations, image imports or start. Then repair exact national provider binding and typed MCP discovery under existing governance; no local model fallback.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Operator runs pinned scripts/verify-fresh-national-evidence-vps.sh on VPS: download fresh exact artifact and verify image/report/database bindings plus five signatures. No Windows transfer, sudo, Docker or service changes. Existing gh authentication required; report GH_AUTH_REQUIRED if absent. Then continue national provider readiness and typed MCP discovery; no milestones approvals.",
+  "nextAction": "Read the actual packaged ouf-semantic defaults and configuration overrides using pinned scripts/r4a_read_semantic_national_discovery_configuration.py. Operator must run one sudo isolated Python command because agent has no VPS access. No provider calls, jobs, service mutations, image imports or start. Then repair exact national provider binding and typed MCP discovery under existing governance; no local model fallback.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4975,8 +4975,8 @@
       }
     },
     "imagesModified": false,
-    "targetVerificationPending": true,
-    "targetAttestationCryptoVerified": false,
+    "targetVerificationPending": false,
+    "targetAttestationCryptoVerified": true,
     "imageImportPerformed": false,
     "containerOperations": 0,
     "publisherTrustAccepted": false,
@@ -4992,6 +4992,47 @@
       "requiresExistingGithubCliAuthentication": true,
       "shellSyntaxVerified": true,
       "runtimeOperations": false
-    }
+    },
+    "operatorReceipt": "docs/handoffs/receipts/SEMANTIC_FRESH_DEPENDENCY_EVIDENCE_2026-10-07_OPERATOR.json"
+  },
+  "semanticFreshEvidenceTargetCrypto": {
+    "schema": "ouf.semantic-fresh-dependency-evidence-operator.v1",
+    "reportedAt": "2026-10-07T13:55:40+02:00",
+    "status": "PASS",
+    "evidenceDirectory": "/home/oufadmin/ouf-extended-fresh-v2.Bs2U5B",
+    "reportDirectory": "/home/oufadmin/ouf-extended-fresh-v2.Bs2U5B/reports",
+    "sourceArtifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+    "sidecarSha256": "a23ee77e6f2e21fc9a7ca1beb144d11f22228cc801693cac5fad47ee30e863ea",
+    "producerRun": 37613612404,
+    "independentReadbackRun": 37614224542,
+    "archiveHashVerified": true,
+    "verifierHashVerified": true,
+    "databasePinHashVerified": true,
+    "targetAttestationCryptoVerified": true,
+    "fiveSubjectsVerified": [
+      "inventory.json",
+      "adapter.extended.syft.json",
+      "southbound.extended.syft.json",
+      "adapter.extended.grype.json",
+      "southbound.extended.grype.json"
+    ],
+    "imageImportPerformed": false,
+    "containerOperations": 0,
+    "publisherTrustAccepted": false,
+    "dependencyCoverageAccepted": false,
+    "acceptanceGranted": false,
+    "runtimeRegistered": false,
+    "startAuthorized": false,
+    "discoveryRequestCreated": false
+  },
+  "nationalDiscoveryConfigurationReader": {
+    "path": "scripts/r4a_read_semantic_national_discovery_configuration.py",
+    "sha256": "0faa9f9b3fe7bdce893113a0c5164fbbdcd567bd9e14babfcf09a6e7effe53b4",
+    "localTestsPassed": 5,
+    "targetExecuted": false,
+    "needsOriginalStageRoot": false,
+    "sourceConfigurationSha256": "a2799f0a63c93464c0940957a9537da72b3ca13aebf89f510469fec7c1fb6572",
+    "temporaryJarCopyDeleted": true,
+    "secretValuesPrinted": false
   }
 }

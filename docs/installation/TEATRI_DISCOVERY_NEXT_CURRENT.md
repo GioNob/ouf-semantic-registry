@@ -1,17 +1,23 @@
-# Discovery nazionale Teatri: percorso corrente
+# Discovery nazionale Teatri: prossimo passo
 
-Scelta esplicita utente7ottobre2026 13:03:07Europe/Rome. Modello locale non scelto/importato; conservare proposta soltanto per review. Defaultprovider schema.gov.it confermato dalle decisioni precedenti. Granularità una riga=teatro e capienza sala separata confermata; altri mapping/pin non approvati.
+## Risultati già conclusi
 
-## Tre passi necessari
+Cinema ha restituito 8/8 oggetti in ChatGPT. Il file Teatri è già profilato: 13 righe e 20 campi. L'utente ha scelto la Discovery nazionale; la proposta di modello locale resta non selezionata.
 
-1. Collegamento provider governato: mantenere v2 byte identici e verifiche storiche. Nuove scansioni servono perché pinDBprecedente è scaduto7ottobre08:45:38Europe/Rome. Non rifare upload/profileCinema/Teatri o dichiarare obsolete tutte le prove già concluse. Freshness non è publisher/advisory/custom review né acceptance/start. Nuovo dossier/receipt e issuer/runtime/start governati restano necessari quando si procede effettivamente all'avvio.
-2. Collegamento conversazionale: manifestMCP394b ha semantic.search/get ma non discovery.request; preparare request/candidate read chiusi su vero endpointOwner/discovery-requests, idempotenza/stato/receiptGateway. Nessun SPARQL/URL/providerendpoint in inputChatGPT. Adozione/publicazione restaHUMANTHS.
-3. Teatri: requestCLASS/intento breve teatro, confrontare candidati, adoption/review/pin pubblicati; completare20fielddecisioni e contratti, DRAFT/THS/compatibilità/ACTIVE; un run e letturaChatGPT. Cinema8/8 giàleggibile resta preservato.
+Il 7 ottobre alle 13:55:40 Europe/Rome l'operatore ha riportato PASS della verifica fresca sul VPS: archivio, verifier, pin database e cinque firme. Report: `/home/oufadmin/ouf-extended-fresh-v2.Bs2U5B/reports`. Producer37613612404 e readback37614224542 PASS, quest'ultimo con38 test. Le immagini non sono cambiate; nessuna operazione runtime è stata eseguita. Il DB del7 ottobre resta fresco fino al9 ottobre08:31:48 Europe/Rome.
 
-## Prossimo intervento operatore
+## Perché serve una lettura della configurazione
 
-Il serverdatiGrype non è stato leggibile attraverso il readerWeb della chat. FonteprimariaAnchoreGrype conferma distributionv6/latest.json e defaultbase grype.anchore.io/databases. Serve soloJSON pubblico status/schemaVersion/built/path/checksum, senza archivi/chiavi/filetarget. Usare curlHTTPSbounded con User-Agent già usato dallo scanner0.120.0. Nessuna installazione o scrittura. L'output va validato prima del nuovo pin; non usare vecchioDB e non inferire il nuovo checksum.
+Il precedente output descriveva solo le variabili Docker: provider e worker non dichiarati o invalidi. La sorgente esaminata usa provider=false e worker=true come default, ma non era provato che il JAR in esecuzione contenesse quei default né che file/opzioni aggiuntivi li sovrascrivessero. Il vecchio preflight richiede pin e snapshot storici; non va rieseguito con assunzioni sul runtime attuale.
 
-Il preparatoreCI tests/prepare_native_vulnerability_scanners.py accetta ora --database-pin per un file già nel repository. DefaultOct5 preservato; altri percorsi sono respinti mediante repository containment. Tutto il download/hash/validazioneetà/offlinescan resta invariato. Solo syntaxPASS effettuato in questa ripresa; nessun nuovo scan/CI PASS o startup dichiarato. Il workflowproduttore verrà collegato al nuovo pin reale dopo il readback, non a un placeholder.
+Il nuovo reader `scripts/r4a_read_semantic_national_discovery_configuration.py` legge il JAR del container già avviato `ouf-semantic`, verifica il solo application.yml contro il testo pubblico esaminato e rileva altri file, mount, opzioni o variabili di configurazione. Se la prova è ambigua restituisce UNPROVEN. Non esegue il JAR, chiama provider, crea job, legge file chiavi o modifica servizi. La copia privata temporanea del JAR viene rimossa. Le variabili vengono trattate in memoria; i valori e gli endpoint non sono stampati.
 
-Residui espliciti: firma della nuova sidecar sulVPS, custompublisher/coverage review, nuovo dossier digestconsistente, completecreation issuer/consumer/runtime/start e prove providerTLS/OIDC/egress; non autoaccettati dalla scelta nazionale. Nessuna nuova richiesta discovery creata mentre il provider non è provato disponibile.
+Cinque test locali PASS: default, config differente, override Spring anche minuscoli, mount/opzioni aggiuntivi, endpoint con credenziali e redazione. Hash reader: `0faa9f9b3fe7bdce893113a0c5164fbbdcd567bd9e14babfcf09a6e7effe53b4`. Verifica target non eseguita; CI dedicata da leggere dopo il push.
+
+## Roadmap restante
+
+1. Dall'esito della lettura, correggere la configurazione effettiva del provider nazionale e il raccordo Gateway. L'avvio dei candidati resta subordinato ai controlli concreti di publisher/copertura, dossier, authority, runtime e trasporto già tracciati; nessuna nuova authority è dedotta dalle firme.
+2. Collegare richiesta e lettura candidati Discovery nel MCP con input chiusi, endpoint owner reale /api/semantic/v1/discovery-requests, idempotenza e receipt autorizzata. La versione corrente espone semantic.search/get, non discovery.request. Il chatbot non invia SPARQL o endpoint arbitrari.
+3. Richiedere CLASS, intent teatro, lingue it/en; confrontare candidati e governare adozione/pubblicazione tramite HUMAN/THS. Completare decisioni sui20 campi e contratti Onboarding, DRAFT/THS/compatibilità/ACTIVE, un solo run Teatri, materializzazione e lettura ChatGPT.
+
+Una riga rappresenta un teatro; capienza riferita a una sala va qualificata separatamente. Non rifare upload/profile o ingestion Cinema. Conservare candidati fermi, gateway e tutte le prove esistenti. Publisher trust, copertura completa, acceptance, registrazione runtime e avvio non sono concessi dalla verifica delle firme.

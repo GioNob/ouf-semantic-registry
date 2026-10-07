@@ -1,3 +1,15 @@
+# Stato corrente: evidenze fresche verificate sul VPS — 7 ottobre 13:55 Europe/Rome
+
+Operatore PASS: archivio, verifier, database pin e cinque firme. Report `/home/oufadmin/ouf-extended-fresh-v2.Bs2U5B/reports`; nessuna operazione runtime. L'autenticazione gh come GioNob e il wrapper precedente sono conclusi: non riproporre login, trasferimenti Windows o scansioni già provate. Receipt: docs/handoffs/receipts/SEMANTIC_FRESH_DEPENDENCY_EVIDENCE_2026-10-07_OPERATOR.json.
+
+Prossimo intervento necessario dell'operatore: reader pinned scripts/r4a_read_semantic_national_discovery_configuration.py, SHA256 0faa9f9b3fe7bdce893113a0c5164fbbdcd567bd9e14babfcf09a6e7effe53b4. Legge la configurazione nel JAR effettivamente in esecuzione e possibili override; cinque test locali PASS. Non richiede vecchio stage root, non chiama provider o crea job, non modifica container/config né stampa segreti. Codice preparato; target NON ESEGUITO. CI da verificare separatamente.
+
+Poi correggere raccordo nazionale concreto e capability MCP Discovery/candidate-read; adozione/pubblicazione HUMAN/THS, mapping Onboarding e un solo run Teatri fino a ChatGPT. Provider startup/authority/publisher/coverage rimangono da provare e non sono autorizzati da una firma valida. Cinema8/8 e asset/profile Teatri13righe20campi restano preservati; nessun fallback locale selezionato.
+
+Guida corrente: docs/installation/TEATRI_DISCOVERY_NEXT_CURRENT.md. Le sezioni seguenti sono checkpoint storici, non passi da ripetere.
+
+---
+
 # Stato corrente: scansione fresca e readback indipendente PASS
 
 Discovery nazionale selezionata per Teatri; Cinema ha già restituito 8/8 oggetti in ChatGPT. Nessun nuovo job Discovery, upload, profilo o ingestion creato.

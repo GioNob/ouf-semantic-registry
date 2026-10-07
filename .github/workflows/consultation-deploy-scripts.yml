@@ -11,6 +11,8 @@ on:
       - 'scripts/r4a_*semantic_rdf_read.py'
       - 'tests/test_*semantic_rdf_read.py'
       - 'scripts/r4a_semantic_discovery_preflight.py'
+      - 'scripts/r4a_read_semantic_national_discovery_configuration.py'
+      - 'tests/test_national_discovery_configuration.py'
       - 'tests/test_semantic_discovery_preflight.py'
       - 'scripts/r4a_semantic_southbound_topology.py'
       - 'tests/test_semantic_southbound_topology.py'
@@ -49,6 +51,9 @@ jobs:
 
       - name: Verify read-only Semantic discovery configuration inventory
         run: python3 -B -m unittest discover -s tests -p 'test_semantic_discovery_preflight.py'
+
+      - name: Verify measured national discovery configuration and redaction
+        run: python3 -B -m unittest tests.test_national_discovery_configuration -v
 
       - name: Verify read-only southbound topology and redaction
         run: python3 -B -m unittest discover -s tests -p 'test_semantic_southbound_topology.py'
