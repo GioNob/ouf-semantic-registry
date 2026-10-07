@@ -6,7 +6,6 @@ Preserves a private route snapshot and restores on failed write/readback.
 import argparse
 import copy
 import hashlib
-import ipaddress
 import json
 import os
 from pathlib import Path
@@ -14,8 +13,6 @@ import re
 import stat
 import subprocess
 import tempfile
-import urllib.error
-import urllib.request
 
 ROUTE = 'execute-urban-object-search'
 URI = '/internal/capabilities/v1/execute/urban.object.search'
@@ -56,33 +53,60 @@ def proposed(route):
     return new
 
 
+ADMIN_WORKER = r"""
+import json,sys,urllib.request,urllib.error
 class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, *args, **kwargs):
-        return None
+    def redirect_request(self,*args,**kwargs): return None
+try:
+    doc=json.load(sys.stdin)
+    if doc['method'] not in ('GET','PUT'): raise ValueError()
+    data=None if doc['route'] is None else json.dumps(doc['route'],separators=(',',':')).encode()
+    request=urllib.request.Request('http://127.0.0.1:9180/apisix/admin/routes/execute-urban-object-search',method=doc['method'],data=data,headers={'X-API-KEY':doc['key'],'Content-Type':'application/json'})
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
+    with opener.open(request,timeout=5) as response:
+        body=response.read(2*1024*1024+1)
+        if len(body)>2*1024*1024: raise ValueError()
+        result=json.loads(body)
+        value=result.get('value') or (result.get('node') or {}).get('value')
+        if not isinstance(value,dict): raise ValueError()
+        print(json.dumps(value))
+except urllib.error.HTTPError as error:
+    print('ADMIN_HTTP_'+str(error.code),file=sys.stderr);sys.exit(1)
+except Exception:
+    print('ADMIN_TRANSPORT_OR_RESPONSE_INVALID',file=sys.stderr);sys.exit(1)
+"""
+
+
+def validate_admin_metadata(metadata, owner_uid):
+    if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != owner_uid or stat.S_IMODE(metadata.st_mode) & 0o077:
+        raise ValueError('PRIVATE_ADMIN_KEY_OWNER_OR_MODE_MISMATCH')
 
 
 class Admin:
-    def __init__(self, address, key):
-        ip = ipaddress.ip_address(address)
-        if ip.version != 4 or not ip.is_private or ip.is_loopback or ip.is_unspecified:
-            raise ValueError('PRIVATE_CONTAINER_IPV4_REQUIRED')
-        self.url = 'http://' + str(ip) + ':9180/apisix/admin/routes/' + ROUTE
-        self.key = key
-        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+    def __init__(self, pid, key, nsenter, python):
+        if not isinstance(pid,int) or pid <= 0:
+            raise ValueError('RUNNING_GATEWAY_PID_REQUIRED')
+        self.namespace_fd=os.open('/proc/'+str(pid)+'/ns/net',os.O_RDONLY)
+        self.key=key
+        self.nsenter=nsenter
+        self.python=python
 
     def call(self, method, route=None):
-        data = None if route is None else json.dumps(route, separators=(',', ':')).encode()
-        request = urllib.request.Request(self.url, method=method, data=data,
-                                        headers={'X-API-KEY': self.key, 'Content-Type': 'application/json'})
-        with self.opener.open(request, timeout=5) as response:
-            body = response.read(2 * 1024 * 1024 + 1)
-            if len(body) > 2 * 1024 * 1024:
-                raise ValueError('ADMIN_RESPONSE_TOO_LARGE')
-            doc = json.loads(body)
-            value = doc.get('value') or (doc.get('node') or {}).get('value')
-            if not isinstance(value, dict):
-                raise ValueError('ADMIN_ROUTE_RESPONSE_REQUIRED')
-            return value
+        result=subprocess.run([self.nsenter,'--net=/proc/self/fd/'+str(self.namespace_fd),self.python,'-I','-B','-c',ADMIN_WORKER],
+                              input=json.dumps({'key':self.key,'method':method,'route':route}),
+                              capture_output=True,text=True,timeout=10,pass_fds=(self.namespace_fd,))
+        if result.returncode:
+            code=result.stderr.strip()
+            if not re.fullmatch(r'ADMIN_HTTP_[0-9]{3}|ADMIN_TRANSPORT_OR_RESPONSE_INVALID',code):
+                code='ADMIN_WORKER_FAILED'
+            raise ValueError(code)
+        value=json.loads(result.stdout)
+        if not isinstance(value,dict):
+            raise ValueError('ADMIN_ROUTE_RESPONSE_REQUIRED')
+        return value
+
+    def close(self):
+        os.close(self.namespace_fd)
 
 
 def transaction(admin, old, new):
@@ -116,9 +140,11 @@ def main():
     parser.add_argument('--gateway', required=True)
     parser.add_argument('--network', required=True)
     parser.add_argument('--admin-key-file', type=Path, required=True)
+    parser.add_argument('--admin-key-owner-uid', type=int, required=True)
+    parser.add_argument('--nsenter', required=True)
     parser.add_argument('--backup-root', type=Path, required=True)
     args = parser.parse_args()
-    if os.geteuid() != 0 or not args.docker.startswith('/') or any(not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}', x) for x in (args.gateway, args.network)):
+    if os.geteuid() != 0 or not args.docker.startswith('/') or not args.nsenter.startswith('/') or args.admin_key_owner_uid < 0 or any(not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}', x) for x in (args.gateway, args.network)):
         raise SystemExit('SEARCH_OWNER_BINDING=ROOT_AND_EXPLICIT_BINDINGS_REQUIRED')
     stage = 'CONTAINER_BINDING_READ'
     try:
@@ -129,18 +155,19 @@ def main():
         env = dict(item.split('=', 1) for item in gateway['Config']['Env'])
         if not re.fullmatch(r'[a-fA-F0-9]{64}', env.get('OUF_UDP_SEARCH_OWNER_KEY', '')):
             raise ValueError('EXISTING_SEARCH_KEY_REQUIRED')
-        address = gateway['NetworkSettings']['Networks'][args.network]['IPAddress']
+        if args.network not in gateway['NetworkSettings']['Networks']:
+            raise ValueError('EXPECTED_GATEWAY_NETWORK_REQUIRED')
         stage = 'GENERATED_ENV_DIRECTIVE_READ'
         generated = subprocess.run([args.docker, 'exec', args.gateway, 'cat', '/usr/local/apisix/conf/nginx.conf'], capture_output=True, timeout=10, check=True).stdout.decode('utf-8')
         inherited = bool(re.search(r'^\s*env\s+OUF_UDP_SEARCH_OWNER_KEY(?:\s*=\s*[^;\n]+)?\s*;', generated, re.M))
         stage = 'EXISTING_ADMIN_KEY_READ'
         metadata = args.admin_key_file.lstat()
-        if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != 0 or stat.S_IMODE(metadata.st_mode) & 0o077:
-            raise ValueError('PRIVATE_ROOT_ADMIN_KEY_REQUIRED')
+        validate_admin_metadata(metadata, args.admin_key_owner_uid)
         key = args.admin_key_file.read_text().strip()
         if not key or any(c.isspace() for c in key) or len(key) > 4096:
             raise ValueError('ADMIN_KEY_FORMAT_INVALID')
-        admin = Admin(address, key)
+        stage = 'EXISTING_ADMIN_LOOPBACK_NAMESPACE'
+        admin = Admin(gateway['State']['Pid'], key, args.nsenter, '/usr/bin/python3')
         stage = 'SEARCH_ROUTE_GET_AND_EXACT_DELTA_REVIEW'
         old = admin.call('GET')
         new = proposed(old)
@@ -173,8 +200,9 @@ def main():
         print('SEARCH_OWNER_BINDING=' + json.dumps(report, sort_keys=True))
         if status != 'REPAIRED_AND_READBACK_VERIFIED':
             raise SystemExit(1)
-    except Exception:
-        raise SystemExit('SEARCH_OWNER_BINDING=BLOCKED STAGE=' + stage + ' NO_RAW_OUTPUT=true')
+    except Exception as error:
+        code=str(error) if isinstance(error,ValueError) and re.fullmatch(r'[A-Z][A-Z0-9_]{0,100}',str(error)) else type(error).__name__
+        raise SystemExit('SEARCH_OWNER_BINDING=BLOCKED STAGE=' + stage + ' REASON=' + code + ' NO_RAW_OUTPUT=true')
 
 
 if __name__ == '__main__':

@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Read only Admin key file type/mode/UID/GID including link target metadata; never print key content; do not rerun apply blindly.",
+  "nextTask": "Execute corrected conditional route repair with exact observed Admin key owner UID1000/mode600 and loopback Admin API in pinned Gateway network namespace; do not chmod/chown key.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Read only Admin key file type/mode/UID/GID including link target metadata; never print key content; do not rerun apply blindly.",
+  "nextStep": "Execute corrected conditional route repair with exact observed Admin key owner UID1000/mode600 and loopback Admin API in pinned Gateway network namespace; do not chmod/chown key.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -235,7 +235,7 @@
   "semanticHead": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
   "checkpointType": "PRODUCT_PATH_REFOCUS_WITH_LIVE_READ_PROBES",
-  "checkpointAt": "2026-10-07T06:31:32.587Z",
+  "checkpointAt": "2026-10-07T06:35:20.964Z",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
     "section": 39,
@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "SEARCH_REPAIR_ADMIN_KEY_METADATA_REQUIRED",
+  "nextStatus": "CORRECTED_SEARCH_ROUTE_BINDING_REPAIR_PENDING",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Read only Admin key file type/mode/UID/GID including link target metadata; never print key content; do not rerun apply blindly.",
+  "currentAction": "Execute corrected conditional route repair with exact observed Admin key owner UID1000/mode600 and loopback Admin API in pinned Gateway network namespace; do not chmod/chown key.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Read only Admin key file type/mode/UID/GID including link target metadata; never print key content; do not rerun apply blindly.",
+  "nextAction": "Execute corrected conditional route repair with exact observed Admin key owner UID1000/mode600 and loopback Admin API in pinned Gateway network namespace; do not chmod/chown key.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4759,16 +4759,25 @@
       "postReloadSearchStatus": 503,
       "ownerBindingRepair": {
         "source": "scripts/repair_search_owner_binding.py",
-        "sha256": "3e16a8e9242fa2a1d231acddbf9a08a186d3f616189368010eac0ade117872a1",
-        "localTests": 5,
-        "targetExecuted": true,
+        "sha256": "8df3b26571e98103663981fd9095cc515cfece109dccd05fa7fafdde1a4c2944",
+        "localTests": 8,
+        "targetExecuted": false,
         "readsExistingAdminKeyForExactRoute": true,
         "onlyMissingDeclarationMayChange": true,
         "privateSnapshotBeforeWrite": true,
         "concurrentDriftDenied": true,
         "rollbackOnOwnedNewState": true,
         "result": "BLOCKED_EXISTING_ADMIN_KEY_READ_NO_ROUTE_WRITE",
-        "blockedReceipt": "docs/handoffs/receipts/OUF_SEARCH_REPAIR_ADMIN_FILE_BLOCKED_2026-10-07_OPERATOR.json"
+        "blockedReceipt": "docs/handoffs/receipts/OUF_SEARCH_REPAIR_ADMIN_FILE_BLOCKED_2026-10-07_OPERATOR.json",
+        "observedAdminKey": {
+          "type": "regular file",
+          "mode": "600",
+          "uid": 1000,
+          "gid": 1000,
+          "userReportedAt": "2026-10-07T08:32:36+02:00",
+          "permissionChanges": 0
+        },
+        "adminTransport": "Loopback inside existing Gateway net namespace through inherited namespace FD and nsenter; no new container"
       }
     }
   }

@@ -2,6 +2,10 @@ import copy
 import importlib.util
 from pathlib import Path
 import unittest
+import stat
+import json
+from types import SimpleNamespace
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('repair', Path(__file__).parents[1] / 'scripts' / 'repair_search_owner_binding.py')
 repair = importlib.util.module_from_spec(spec)
@@ -36,6 +40,29 @@ class MemoryAdmin:
 
 
 class BindingRepairTest(unittest.TestCase):
+    def test_observed_private_operator_owned_file_accepted(self):
+        repair.validate_admin_metadata(SimpleNamespace(st_mode=stat.S_IFREG | 0o600, st_uid=1000), 1000)
+        for mode, uid in ((stat.S_IFREG | 0o644, 1000), (stat.S_IFREG | 0o600, 1001), (stat.S_IFLNK | 0o777, 1000)):
+            with self.assertRaises(ValueError):
+                repair.validate_admin_metadata(SimpleNamespace(st_mode=mode, st_uid=uid), 1000)
+
+    def test_admin_secret_only_in_stdin_and_namespace_fd_preserved(self):
+        with patch.object(repair.os, 'open', return_value=17), patch.object(repair.subprocess, 'run') as run:
+            run.return_value = SimpleNamespace(returncode=0, stdout=json.dumps(fixture()), stderr='')
+            admin = repair.Admin(123, 'secret-not-an-argument', '/usr/bin/nsenter', '/usr/bin/python3')
+            self.assertEqual(admin.call('GET'), fixture())
+            args, kwargs = run.call_args
+            self.assertNotIn('secret-not-an-argument', ' '.join(args[0]))
+            self.assertEqual(kwargs['pass_fds'], (17,))
+            self.assertEqual(json.loads(kwargs['input'])['key'], 'secret-not-an-argument')
+
+    def test_admin_failure_never_exposes_raw_stderr(self):
+        with patch.object(repair.os, 'open', return_value=17), patch.object(repair.subprocess, 'run') as run:
+            run.return_value = SimpleNamespace(returncode=1, stdout='', stderr='private key and raw response')
+            admin = repair.Admin(123, 'secret', '/usr/bin/nsenter', '/usr/bin/python3')
+            with self.assertRaisesRegex(ValueError, '^ADMIN_WORKER_FAILED$'):
+                admin.call('GET')
+
     def test_only_missing_declaration_changes(self):
         old = fixture()
         new = repair.proposed(old)
