@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Read the current APISIX config env declaration and its exact mounted source before choosing reload or a configuration repair that preserves historical snapshots.",
+  "nextTask": "Operator validates and reloads current APISIX configuration without modifying the sealed source; then assistant rechecks authorized Cinema search through the OUF connector.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Read the current APISIX config env declaration and its exact mounted source before choosing reload or a configuration repair that preserves historical snapshots.",
+  "nextStep": "Operator validates and reloads current APISIX configuration without modifying the sealed source; then assistant rechecks authorized Cinema search through the OUF connector.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -235,7 +235,7 @@
   "semanticHead": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
   "checkpointType": "PRODUCT_PATH_REFOCUS_WITH_LIVE_READ_PROBES",
-  "checkpointAt": "2026-10-07T06:21:20.450Z",
+  "checkpointAt": "2026-10-07T06:22:56.759Z",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
     "section": 39,
@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "GATEWAY_SEARCH_INHERITANCE_SOURCE_CHECK_PENDING",
+  "nextStatus": "APISIX_TEST_AND_RELOAD_PENDING",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Read the current APISIX config env declaration and its exact mounted source before choosing reload or a configuration repair that preserves historical snapshots.",
+  "currentAction": "Operator validates and reloads current APISIX configuration without modifying the sealed source; then assistant rechecks authorized Cinema search through the OUF connector.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Read the current APISIX config env declaration and its exact mounted source before choosing reload or a configuration repair that preserves historical snapshots.",
+  "nextAction": "Operator validates and reloads current APISIX configuration without modifying the sealed source; then assistant rechecks authorized Cinema search through the OUF connector.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4750,7 +4750,11 @@
       "operatorReceipt": "docs/handoffs/receipts/OUF_PRODUCT_SEARCH_DIAGNOSIS_2026-10-07_OPERATOR.json",
       "result": "OWNER_403_GATEWAY_ENV_INHERITANCE_MISSING",
       "gatewayOwnerKeyInheritedByNginx": false,
-      "positiveServingProven": false
+      "positiveServingProven": false,
+      "configEnvDeclared": true,
+      "configSource": "/etc/ouf/deploy-snapshots/consultation-human-read-20261002-1153/prepared/apisix-config.yaml",
+      "sourceReadbackReceipt": "docs/handoffs/receipts/OUF_GATEWAY_SEARCH_CONFIG_SOURCE_2026-10-07_OPERATOR.json",
+      "reloadExecuted": false
     }
   }
 }

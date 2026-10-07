@@ -1,0 +1,17 @@
+{
+  "schema": "ouf.gateway-search-inheritance-source.operator.v1",
+  "reportedAt": "2026-10-07T08:21:53+02:00",
+  "source": "Operator supplied stdout, no assistant SSH",
+  "configEnvLine": "present",
+  "configSource": "/etc/ouf/deploy-snapshots/consultation-human-read-20261002-1153/prepared/apisix-config.yaml",
+  "sourceSnapshotMustRemainUnchanged": true,
+  "previousGeneratedInheritanceObserved": false,
+  "nextAction": {
+    "command": "sudo docker exec ouf-apisix apisix test && sudo docker exec ouf-apisix apisix reload",
+    "configFileEdits": 0,
+    "containerRecreation": 0,
+    "reloadExecuted": false,
+    "positiveSearchProven": false
+  },
+  "limits": "A declared config entry plus missing generated plain env directive supports validating/reloading the existing configuration; it does not prove the exclusive cause or positive serving."
+}
