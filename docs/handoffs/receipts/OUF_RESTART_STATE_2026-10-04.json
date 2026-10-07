@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "CINEMA_CHATGPT_SERVING_8_OF_8_PROVEN_TEATRI_MAPPING_REVIEW_NEXT",
+  "nextStatus": "TEATRI_GRANULARITY_CONFIRMED_DISCOVERY_RUNTIME_READ_NEEDED",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Execute corrected conditional route repair with exact observed Admin key owner UID1000/mode600 and loopback Admin API in pinned Gateway network namespace; do not chmod/chown key.",
+  "currentAction": "Read current ouf-semantic declared provider/worker config and override presence on VPS. Wire bounded semantic.discovery.request through existing owner contract and Gateway delegation; do not create job before provider availability, do not treat empty-provider completed job as discovered evidence. Continue exact governed pins -> complete 20-field mapping -> draft/THS/compatibility/ACTIVE/run.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Obtain domain decision on Teatri row granularity (whole theatre vs single hall), retain prepared 20-field mapping. Resolve governed Teatri semantic revision/publication pins and exact source identity/access decisions before creating draft. Complete existing Onboarding/THS/execution path without replaying Cinema. Ingestion operational read authorization and generator/runtime-host reconciliation remain distinct open items.",
+  "nextAction": "Read current ouf-semantic declared provider/worker config and override presence on VPS. Wire bounded semantic.discovery.request through existing owner contract and Gateway delegation; do not create job before provider availability, do not treat empty-provider completed job as discovered evidence. Continue exact governed pins -> complete 20-field mapping -> draft/THS/compatibility/ACTIVE/run.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4753,7 +4753,7 @@
     "teatriMapping": {
       "document": "docs/sprints/TEATRI_MAPPING_REVIEW_CURRENT.md",
       "fieldsCovered": 20,
-      "status": "PROPOSED_NOT_APPROVED",
+      "status": "GRANULARITY_CONFIRMED_REMAINING_MAPPING_AND_PINS_PENDING",
       "draftCreated": false,
       "semanticPinsAvailable": false,
       "registryQueries": [
@@ -4763,7 +4763,20 @@
         "Cultural"
       ],
       "lookupScope": "BOUNDED_NOT_EXHAUSTIVE",
-      "rowGranularityDecision": "HUMAN_REQUIRED_WHOLE_THEATRE_OR_SINGLE_HALL"
+      "rowGranularityDecision": {
+        "confirmedAt": "2026-10-07T11:08:21+02:00",
+        "oneRow": "THEATRE",
+        "hallCapacity": "SEPARATELY_QUALIFIED",
+        "scope": "ONLY_GRANULARITY"
+      },
+      "discoveryProposal": "docs/sprints/TEATRI_DISCOVERY_INTENT_CURRENT.json",
+      "discoveryRequestCreated": false,
+      "integrationFindings": [
+        "MCP394b manifest has no semantic.discovery.request tool",
+        "OpenAPI lists /discovery while actual DiscoveryApi maps /discovery-requests",
+        "DiscoveryApi accepts only requestedArtifactType/intent/preferredLanguages, not full providerPolicy/expectedProperties contract",
+        "Provider runtime admission remains unproven; do not start candidates or create a doomed/duplicate job"
+      ]
     },
     "searchDiagnosis": {
       "source": "scripts/diagnose_product_search.py",

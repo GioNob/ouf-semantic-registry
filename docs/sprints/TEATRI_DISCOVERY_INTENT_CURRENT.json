@@ -1,0 +1,47 @@
+{
+  "schema": "ouf.teatri-discovery-proposal.v1",
+  "status": "PREPARED_NOT_SUBMITTED",
+  "assetId": "6609b245-86ed-4315-8ce0-73f2a8555bf3",
+  "profileId": "7984c39c-7396-4248-ab0a-f2efc390b49c",
+  "profileVersion": 1,
+  "rowCount": 13,
+  "fieldCount": 20,
+  "humanDecision": {
+    "confirmedAt": "2026-10-07T11:08:21+02:00",
+    "oneRowRepresents": "THEATRE",
+    "singleHallCapacity": "QUALIFIED_SEPARATELY_NOT_WHOLE_THEATRE_CAPACITY",
+    "scope": "GRANULARITY_ONLY_NOT_MAPPING_OR_PUBLICATION_APPROVAL"
+  },
+  "wireRequestBody": {
+    "requestedArtifactType": "ONTOLOGY",
+    "intent": "Ontologia per teatri e luoghi di spettacolo: distinguere teatro e singola sala; nome, indirizzo, coordinate con CRS, capienza qualificata per sala, misure riferite alla stagione e provenienza.",
+    "preferredLanguages": [
+      "it",
+      "en"
+    ]
+  },
+  "ownerEndpoint": "/api/semantic/v1/discovery-requests",
+  "providerSelection": "INSTALLATION_POLICY_DEFAULT_SCHEMA_GOV_CONFIG_NOT_PROVEN_CURRENT",
+  "externalCandidateSourcesForReview": [
+    "Cultural-ON",
+    "Schema.org PerformingArtsTheater"
+  ],
+  "externalCandidatesAdopted": false,
+  "publishedSemanticPinsAvailable": false,
+  "mcpDiscoveryToolAvailable": false,
+  "requestCreated": false,
+  "rawFileValuesIncluded": false,
+  "remainingDecisions": [
+    "Per-field INCLUDE/EXCLUDE and access labels",
+    "Source identity policy",
+    "Coordinate construction/CRS validation",
+    "Season/verification-date interpretation",
+    "Governed adopted/published semantic class/properties with exact revision/publication pins"
+  ],
+  "contractGaps": [
+    "MCP394b manifest has no semantic.discovery.request tool",
+    "OpenAPI lists /discovery while actual DiscoveryApi maps /discovery-requests",
+    "DiscoveryApi accepts only requestedArtifactType/intent/preferredLanguages, not full providerPolicy/expectedProperties contract",
+    "Provider runtime admission remains unproven; do not start candidates or create a doomed/duplicate job"
+  ]
+}
