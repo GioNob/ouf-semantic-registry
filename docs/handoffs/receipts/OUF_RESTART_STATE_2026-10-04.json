@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Complete the ChatGPT file-to-UDP path: diagnose current serving503 and ingestion read denial, complete existing Teatri mapping, link governed THS resume, execute one correlated run.",
+  "nextTask": "Execute bounded read-only diagnosis of current UDP search503; continue Teatri semantic review using existing profile, complete Onboarding/THS/activation linkage.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Complete the ChatGPT file-to-UDP path: diagnose current serving503 and ingestion read denial, complete existing Teatri mapping, link governed THS resume, execute one correlated run.",
+  "nextStep": "Execute bounded read-only diagnosis of current UDP search503; continue Teatri semantic review using existing profile, complete Onboarding/THS/activation linkage.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -235,7 +235,7 @@
   "semanticHead": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
   "checkpointType": "PRODUCT_PATH_REFOCUS_WITH_LIVE_READ_PROBES",
-  "checkpointAt": "2026-10-07T05:16:58.727Z",
+  "checkpointAt": "2026-10-07T05:58:52.410Z",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
     "section": 39,
@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "PRODUCT_FLOW_BLOCKERS_IDENTIFIED",
+  "nextStatus": "PRODUCT_SEARCH_TARGET_DIAGNOSIS_PENDING",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Complete the ChatGPT file-to-UDP path: diagnose current serving503 and ingestion read denial, complete existing Teatri mapping, link governed THS resume, execute one correlated run.",
+  "currentAction": "Execute bounded read-only diagnosis of current UDP search503; continue Teatri semantic review using existing profile, complete Onboarding/THS/activation linkage.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Complete the ChatGPT file-to-UDP path: diagnose current serving503 and ingestion read denial, complete existing Teatri mapping, link governed THS resume, execute one correlated run.",
+  "nextAction": "Execute bounded read-only diagnosis of current UDP search503; continue Teatri semantic review using existing profile, complete Onboarding/THS/activation linkage.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4708,10 +4708,16 @@
       "runFailureInferred": false
     },
     "teatriPreview": {
-      "autoReviewRejected": true,
-      "executed": false,
-      "reason": "Explicit asset-specific user authorization required",
-      "assetId": "6609b245-86ed-4315-8ce0-73f2a8555bf3"
+      "authorizedByUser": true,
+      "authorizationAt": "2026-10-07T07:52:40+02:00",
+      "executed": true,
+      "result": "PASS",
+      "assetId": "6609b245-86ed-4315-8ce0-73f2a8555bf3",
+      "profileId": "7984c39c-7396-4248-ab0a-f2efc390b49c",
+      "profileVersion": 1,
+      "rows": 13,
+      "columns": 20,
+      "rawSamplesPersisted": false
     },
     "evidenceTransfer": {
       "suspendedAsImmediateNext": true,
@@ -4720,6 +4726,27 @@
     "targetMutations": 0,
     "newUploads": 0,
     "newProfiles": 0,
-    "newIngestionRuns": 0
+    "newIngestionRuns": 0,
+    "teatriMapping": {
+      "document": "docs/sprints/TEATRI_MAPPING_REVIEW_CURRENT.md",
+      "fieldsCovered": 20,
+      "status": "PROPOSED_NOT_APPROVED",
+      "draftCreated": false,
+      "semanticPinsAvailable": false,
+      "registryQueries": [
+        "Theatre",
+        "Teatro",
+        "teatr",
+        "Cultural"
+      ],
+      "lookupScope": "BOUNDED_NOT_EXHAUSTIVE"
+    },
+    "searchDiagnosis": {
+      "source": "scripts/diagnose_product_search.py",
+      "sourceSha256": "ec80aba8e835781a2fa3b909c1799cc21d95c03ced2cf801dd3b37634682c114",
+      "localTestsPassed": 4,
+      "targetExecuted": false,
+      "scope": "Docker metadata of ouf-apisix/ouf-udp, Nginx env inheritance, anonymous read-only UDP search denial probe; no key file reads, changes or restarts"
+    }
   }
 }
