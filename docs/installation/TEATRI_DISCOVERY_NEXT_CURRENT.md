@@ -12,7 +12,7 @@ Il precedente output descriveva solo le variabili Docker: provider e worker non 
 
 Il nuovo reader `scripts/r4a_read_semantic_national_discovery_configuration.py` legge il JAR del container già avviato `ouf-semantic`, verifica il solo application.yml contro il testo pubblico esaminato e rileva altri file, mount, opzioni o variabili di configurazione. Se la prova è ambigua restituisce UNPROVEN. Non esegue il JAR, chiama provider, crea job, legge file chiavi o modifica servizi. La copia privata temporanea del JAR viene rimossa. Le variabili vengono trattate in memoria; i valori e gli endpoint non sono stampati.
 
-Cinque test locali PASS: default, config differente, override Spring anche minuscoli, mount/opzioni aggiuntivi, endpoint con credenziali e redazione. Hash reader: `0faa9f9b3fe7bdce893113a0c5164fbbdcd567bd9e14babfcf09a6e7effe53b4`. Verifica target non eseguita; CI dedicata da leggere dopo il push.
+Cinque test locali PASS: default, config differente, override Spring anche minuscoli, mount/opzioni aggiuntivi, endpoint con credenziali e redazione. Hash reader: `0faa9f9b3fe7bdce893113a0c5164fbbdcd567bd9e14babfcf09a6e7effe53b4`. Verifica target non eseguita; CI dedicata run37618407742/job112782267828 PASS: cinque nuovi test e tutti gli step del workflow riusciti; log letto. Source code pinned fe5d7a304cfe3ad10f0b49d492342ce278175ac2.
 
 ## Roadmap restante
 

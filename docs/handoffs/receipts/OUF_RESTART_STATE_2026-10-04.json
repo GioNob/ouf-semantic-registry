@@ -5033,6 +5033,16 @@
     "needsOriginalStageRoot": false,
     "sourceConfigurationSha256": "a2799f0a63c93464c0940957a9537da72b3ca13aebf89f510469fec7c1fb6572",
     "temporaryJarCopyDeleted": true,
-    "secretValuesPrinted": false
+    "secretValuesPrinted": false,
+    "ci": {
+      "sourceCodeCommit": "fe5d7a304cfe3ad10f0b49d492342ce278175ac2",
+      "runId": 37618407742,
+      "jobId": 112782267828,
+      "status": "PASS",
+      "newReaderTestsPassed": 5,
+      "allWorkflowStepsPassed": true,
+      "logsRead": true,
+      "targetExecuted": false
+    }
   }
 }
