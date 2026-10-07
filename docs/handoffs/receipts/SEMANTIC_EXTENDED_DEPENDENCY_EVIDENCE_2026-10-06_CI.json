@@ -83,13 +83,14 @@
   "originalSyftDocumentsPreserved": true,
   "targetRuntimeModified": false,
   "targetOperations": 0,
-  "targetSidecarCryptoVerified": false,
+  "targetSidecarCryptoVerified": true,
   "databaseFreshnessEnds": "2026-10-07T08:45:38+02:00",
   "publisherTrustAccepted": false,
   "dependencyCoverageAccepted": false,
   "acceptanceGranted": false,
   "runtimeRegistered": false,
   "startAuthorized": false,
-  "nextAction": "Operator verifies the signed evidence sidecar against the retained original v2 ZIP using the pinned target guide. Reconcile generated LuaJIT vmdef.lua, review custom/publisher and Wasm feature decision, and prepare a separate digest-consistent isolated staging dossier. No import/start or repeated v2 qualification.",
-  "targetGuide": "docs/installation/SEMANTIC_EXTENDED_EVIDENCE_V2_TARGET_2026-10-06.md"
+  "nextAction": "Reconcile the generated LuaJIT jit/vmdef.lua against the locked source/generator output; refresh the scanner database before new acceptance checks; prepare a separate digest-consistent isolated staging dossier. Preserve all VPS reports and existing test runtime.",
+  "targetGuide": "docs/installation/SEMANTIC_EXTENDED_EVIDENCE_V2_TARGET_2026-10-06.md",
+  "targetSidecarOperatorReceipt": "docs/handoffs/receipts/SEMANTIC_EXTENDED_EVIDENCE_TARGET_2026-10-07_OPERATOR.json"
 }

@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Operator verifies the signed evidence sidecar against the retained original v2 ZIP using the pinned target guide. Reconcile generated LuaJIT vmdef.lua, review custom/publisher and Wasm feature decision, and prepare a separate digest-consistent isolated staging dossier. No import/start or repeated v2 qualification.",
+  "nextTask": "Reconcile the generated LuaJIT jit/vmdef.lua against the locked source/generator output; refresh the scanner database before new acceptance checks; prepare a separate digest-consistent isolated staging dossier. Preserve all VPS reports and existing test runtime.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Operator verifies the signed evidence sidecar against the retained original v2 ZIP using the pinned target guide. Reconcile generated LuaJIT vmdef.lua, review custom/publisher and Wasm feature decision, and prepare a separate digest-consistent isolated staging dossier. No import/start or repeated v2 qualification.",
+  "nextStep": "Reconcile the generated LuaJIT jit/vmdef.lua against the locked source/generator output; refresh the scanner database before new acceptance checks; prepare a separate digest-consistent isolated staging dossier. Preserve all VPS reports and existing test runtime.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -235,7 +235,7 @@
   "semanticHead": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
   "checkpointType": "remediation-target-byte-qualification-pass-normative-baseline-required",
-  "checkpointAt": "2026-10-06T18:10:30Z",
+  "checkpointAt": "2026-10-07T06:46:39+02:00",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
     "section": 39,
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Operator verifies the signed evidence sidecar against the retained original v2 ZIP using the pinned target guide. Reconcile generated LuaJIT vmdef.lua, review custom/publisher and Wasm feature decision, and prepare a separate digest-consistent isolated staging dossier. No import/start or repeated v2 qualification.",
+  "currentAction": "Reconcile the generated LuaJIT jit/vmdef.lua against the locked source/generator output; refresh the scanner database before new acceptance checks; prepare a separate digest-consistent isolated staging dossier. Preserve all VPS reports and existing test runtime.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Operator verifies the signed evidence sidecar against the retained original v2 ZIP using the pinned target guide. Reconcile generated LuaJIT vmdef.lua, review custom/publisher and Wasm feature decision, and prepare a separate digest-consistent isolated staging dossier. No import/start or repeated v2 qualification.",
+  "nextAction": "Reconcile the generated LuaJIT jit/vmdef.lua against the locked source/generator output; refresh the scanner database before new acceptance checks; prepare a separate digest-consistent isolated staging dossier. Preserve all VPS reports and existing test runtime.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4636,8 +4636,35 @@
     "producerRun": 37508392335,
     "readbackRun": 37509074379,
     "allScannerSeverityThresholdsMet": true,
-    "targetSidecarCryptoVerified": false,
+    "targetSidecarCryptoVerified": true,
     "unresolvedGeneratedLuaFiles": 1,
     "dependencyCoverageAccepted": false
+  },
+  "semanticExtendedEvidenceTargetCrypto": {
+    "schema": "ouf.semantic-extended-evidence-target-crypto-operator.v1",
+    "reportedAt": "2026-10-07T06:46:39+02:00",
+    "evidenceSource": "Operator terminal output supplied in this conversation; no assistant SSH access",
+    "verifierSha256": "e109b4d4ac1e47fa33fba021ca47d3a2feb85b90d5a039b1442a02d1ac595db7",
+    "verifierHashCheckPassed": true,
+    "signedSubjectsVerified": [
+      "inventory.json",
+      "adapter.extended.syft.json",
+      "southbound.extended.syft.json",
+      "adapter.extended.grype.json",
+      "southbound.extended.grype.json"
+    ],
+    "targetAttestationCryptoVerified": true,
+    "reportDirectory": "/home/oufadmin/ouf-extended-v2.tXIpQD/reports",
+    "sourceArtifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+    "sidecarSha256": "d74b1e6406d013272806465b722903a082d63e171948a37e666ae59c45c32d87",
+    "evidenceSourceMergeCommit": "e56a20aae8f8869bc760fd3b048c152680c1b854",
+    "containerOperations": 0,
+    "imageImportPerformed": false,
+    "targetRuntimeModified": false,
+    "publisherTrustAccepted": false,
+    "dependencyCoverageAccepted": false,
+    "acceptanceGranted": false,
+    "runtimeRegistered": false,
+    "startAuthorized": false
   }
 }
