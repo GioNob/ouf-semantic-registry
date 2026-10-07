@@ -1,0 +1,19 @@
+{
+  "schema": "ouf.search-env-quoting-diagnosis.v1",
+  "operatorReportedAt": "2026-10-07T08:56:56+02:00",
+  "oldPinnedScript": "7edde1826366a942e8f3e30bdca9c75826714534",
+  "repairStatus": "ALREADY_DECLARED",
+  "routeChanged": false,
+  "generatedDirectiveFalseWasParserFalseNegative": true,
+  "operatorFollowupAt": "2026-10-07T08:59:46+02:00",
+  "followupOutput": "SEARCH_ENV_DIRECTIVE=present",
+  "postFollowupMcpSearch": {
+    "account": "ouf-admin",
+    "type": "https://api.ouf-lab.it/semantic/cinema",
+    "pageSize": 2,
+    "status": 503
+  },
+  "positiveSearchProven": false,
+  "next": "Read exact route delegation/owner binding format and generated directives, without changes",
+  "testsPassed": 10
+}

@@ -40,6 +40,22 @@ class MemoryAdmin:
 
 
 class BindingRepairTest(unittest.TestCase):
+    def test_generated_env_quotes_assignments_and_name_boundaries(self):
+        name = 'OUF_UDP_SEARCH_OWNER_KEY'
+        for line in ('env '+name+';', 'env "'+name+'";', "env '"+name+"';", 'env "'+name+'=secret"; # retained'):
+            self.assertTrue(repair.env_directive_present(line, name))
+        for line in ('# env '+name+';', 'env '+name+'_OTHER;', 'env OTHER='+name+';', 'env '+name):
+            self.assertFalse(repair.env_directive_present(line, name))
+
+    def test_diagnosis_only_reports_format_and_presence(self):
+        route = repair.proposed(fixture())
+        report = repair.diagnose_bindings(route, {'EXISTING_DELEGATION_KEY': 'a'*64, 'OUF_UDP_SEARCH_OWNER_KEY': 'b'*64}, 'env "OUF_UDP_SEARCH_OWNER_KEY";')
+        self.assertFalse(report['routeChanged'])
+        self.assertTrue(report['bindings']['OWNER_KEY_ENV']['generatedEnvDirectivePresent'])
+        self.assertFalse(report['bindings']['DELEGATION_KEY_ENV']['generatedEnvDirectivePresent'])
+        self.assertNotIn('a'*64, json.dumps(report))
+        self.assertNotIn('b'*64, json.dumps(report))
+
     def test_observed_private_operator_owned_file_accepted(self):
         repair.validate_admin_metadata(SimpleNamespace(st_mode=stat.S_IFREG | 0o600, st_uid=1000), 1000)
         for mode, uid in ((stat.S_IFREG | 0o644, 1000), (stat.S_IFREG | 0o600, 1001), (stat.S_IFLNK | 0o777, 1000)):

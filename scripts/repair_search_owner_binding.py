@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shlex
 import stat
 import subprocess
 import tempfile
@@ -17,6 +18,40 @@ import tempfile
 ROUTE = 'execute-urban-object-search'
 URI = '/internal/capabilities/v1/execute/urban.object.search'
 MARKER = 'local OWNER_KEY_ENV = "OUF_UDP_SEARCH_OWNER_KEY"\n'
+
+
+def env_directive_present(generated, name):
+    for line in generated.splitlines():
+        if not re.match(r'^\s*env\s+', line):
+            continue
+        try:
+            tokens = shlex.split(line, comments=True)
+        except ValueError:
+            continue
+        if len(tokens) == 2 and tokens[0] == 'env' and tokens[1].endswith(';'):
+            if tokens[1][:-1].split('=', 1)[0] == name:
+                return True
+    return False
+
+
+def diagnose_bindings(route, env, generated):
+    if route.get('id') != ROUTE or route.get('uri') != URI or route.get('methods') != ['POST']:
+        raise ValueError('SEARCH_ROUTE_IDENTITY_MISMATCH')
+    functions = route.get('plugins', {}).get('serverless-post-function', {}).get('functions')
+    if not isinstance(functions, list) or len(functions) != 1 or not isinstance(functions[0], str):
+        raise ValueError('ONE_SEARCH_FUNCTION_REQUIRED')
+    bindings = {}
+    for role in ('DELEGATION_KEY_ENV', 'OWNER_KEY_ENV'):
+        names = re.findall(r'^local ' + role + r' = "([A-Z][A-Z0-9_]*)"$', functions[0], re.M)
+        if len(names) != 1:
+            raise ValueError('EXACT_KEY_DECLARATION_REQUIRED')
+        name = names[0]
+        value = env.get(name, '')
+        bindings[role] = {'environmentName': name, 'containerValuePresent': bool(value),
+                          'containerValueHex64': bool(re.fullmatch(r'[a-fA-F0-9]{64}', value)),
+                          'generatedEnvDirectivePresent': env_directive_present(generated, name)}
+    return {'status': 'READ_ONLY_BINDING_DIAGNOSIS', 'bindings': bindings, 'routeChanged': False,
+            'positiveSearchProven': False}
 
 
 def canonical(route):
@@ -135,7 +170,9 @@ def transaction(admin, old, new):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--apply', action='store_true')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--apply', action='store_true')
+    mode.add_argument('--diagnose', action='store_true')
     parser.add_argument('--docker', required=True)
     parser.add_argument('--gateway', required=True)
     parser.add_argument('--network', required=True)
@@ -159,7 +196,7 @@ def main():
             raise ValueError('EXPECTED_GATEWAY_NETWORK_REQUIRED')
         stage = 'GENERATED_ENV_DIRECTIVE_READ'
         generated = subprocess.run([args.docker, 'exec', args.gateway, 'cat', '/usr/local/apisix/conf/nginx.conf'], capture_output=True, timeout=10, check=True).stdout.decode('utf-8')
-        inherited = bool(re.search(r'^\s*env\s+OUF_UDP_SEARCH_OWNER_KEY(?:\s*=\s*[^;\n]+)?\s*;', generated, re.M))
+        inherited = env_directive_present(generated, 'OUF_UDP_SEARCH_OWNER_KEY')
         stage = 'EXISTING_ADMIN_KEY_READ'
         metadata = args.admin_key_file.lstat()
         validate_admin_metadata(metadata, args.admin_key_owner_uid)
@@ -170,6 +207,10 @@ def main():
         admin = Admin(gateway['State']['Pid'], key, args.nsenter, '/usr/bin/python3')
         stage = 'SEARCH_ROUTE_GET_AND_EXACT_DELTA_REVIEW'
         old = admin.call('GET')
+        if args.diagnose:
+            print('SEARCH_KEY_BINDINGS=' + json.dumps(diagnose_bindings(old, env, generated)))
+            admin.close()
+            return
         new = proposed(old)
         if new is None:
             print('SEARCH_OWNER_BINDING=' + json.dumps({'status': 'ALREADY_DECLARED', 'generatedSearchEnvDirectivePresent': inherited, 'routeChanged': False, 'positiveSearchProven': False}))

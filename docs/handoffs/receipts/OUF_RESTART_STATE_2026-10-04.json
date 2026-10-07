@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "CORRECTED_SEARCH_ROUTE_BINDING_REPAIR_PENDING",
+  "nextStatus": "SEARCH_DECLARATIONS_PRESENT_BINDING_DIAGNOSIS_PENDING",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Execute corrected conditional route repair with exact observed Admin key owner UID1000/mode600 and loopback Admin API in pinned Gateway network namespace; do not chmod/chown key.",
+  "nextAction": "Run read-only --diagnose for exact live search route delegation and owner environment names, container key format and generated quoted env directives. No route repair/reload/restart justified by existing evidence; investigate actual 503.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4701,7 +4701,9 @@
     },
     "cinemaUrbanSearch": {
       "httpStatus": 503,
-      "cause": "UNPROVEN"
+      "cause": "UNPROVEN",
+      "checkedAt": "2026-10-07T08:59:46+02:00",
+      "account": "ouf-admin"
     },
     "cinemaIngestionStatus": {
       "result": "authorization denied",
@@ -4748,8 +4750,8 @@
       "targetExecuted": true,
       "scope": "Docker metadata of ouf-apisix/ouf-udp, Nginx env inheritance, anonymous read-only UDP search denial probe; no key file reads, changes or restarts",
       "operatorReceipt": "docs/handoffs/receipts/OUF_PRODUCT_SEARCH_DIAGNOSIS_2026-10-07_OPERATOR.json",
-      "result": "OWNER_403_GATEWAY_ENV_INHERITANCE_MISSING",
-      "gatewayOwnerKeyInheritedByNginx": false,
+      "result": "OWNER_403_SEARCH_ENV_DIRECTIVE_CONFIRMED_PRESENT_SERVING_STILL_503",
+      "gatewayOwnerKeyInheritedByNginx": true,
       "positiveServingProven": false,
       "configEnvDeclared": true,
       "configSource": "/etc/ouf/deploy-snapshots/consultation-human-read-20261002-1153/prepared/apisix-config.yaml",
@@ -4759,15 +4761,15 @@
       "postReloadSearchStatus": 503,
       "ownerBindingRepair": {
         "source": "scripts/repair_search_owner_binding.py",
-        "sha256": "8df3b26571e98103663981fd9095cc515cfece109dccd05fa7fafdde1a4c2944",
-        "localTests": 8,
-        "targetExecuted": false,
+        "sha256": "346a9e50969427522609f2fa2b6e7c15923f24e36c6dd775d765b8663d92f5da",
+        "localTests": 10,
+        "targetExecuted": true,
         "readsExistingAdminKeyForExactRoute": true,
         "onlyMissingDeclarationMayChange": true,
         "privateSnapshotBeforeWrite": true,
         "concurrentDriftDenied": true,
         "rollbackOnOwnedNewState": true,
-        "result": "BLOCKED_EXISTING_ADMIN_KEY_READ_NO_ROUTE_WRITE",
+        "result": "ALREADY_DECLARED_NO_ROUTE_CHANGE",
         "blockedReceipt": "docs/handoffs/receipts/OUF_SEARCH_REPAIR_ADMIN_FILE_BLOCKED_2026-10-07_OPERATOR.json",
         "observedAdminKey": {
           "type": "regular file",
@@ -4777,8 +4779,12 @@
           "userReportedAt": "2026-10-07T08:32:36+02:00",
           "permissionChanges": 0
         },
-        "adminTransport": "Loopback inside existing Gateway net namespace through inherited namespace FD and nsenter; no new container"
-      }
+        "adminTransport": "Loopback inside existing Gateway net namespace through inherited namespace FD and nsenter; no new container",
+        "obsoleteGeneratedDirectiveFalse": "False negative: parser omitted quoted env syntax; operator follow-up confirmed present.",
+        "nextMode": "--diagnose, GET only; no PUT",
+        "currentReceipt": "docs/handoffs/receipts/OUF_SEARCH_ENV_QUOTING_2026-10-07_OPERATOR.json"
+      },
+      "inheritanceMeaning": "Generated directive confirmed present; not proof of getenv or signing in actual Nginx worker."
     }
   }
 }
