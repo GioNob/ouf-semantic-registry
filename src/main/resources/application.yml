@@ -1,5 +1,6 @@
 spring:
   application.name: ouf-semantic-registry
+  http.converters.preferred-json-mapper: jackson2
   datasource:
     url: ${OUF_SEM_DB_URL:jdbc:postgresql://127.0.0.1:5432/ouf_semantic}
     username: ${OUF_SEM_DB_USER}
