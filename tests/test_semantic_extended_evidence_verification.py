@@ -30,6 +30,10 @@ class ExtendedEvidenceVerificationTests(unittest.TestCase):
     def test_accepts_bound_evidence_without_granting_acceptance(self):
         files,receipt,_=self.fixture()
         self.assertFalse(review(files,receipt)['acceptanceGranted'])
+    def test_required_generated_proof_and_dossier_cannot_be_omitted(self):
+        files,receipt,_=self.fixture()
+        with self.assertRaises((ValueError,KeyError)):review(files,receipt,require_generated=True)
+        with self.assertRaises((ValueError,KeyError)):review(files,receipt,require_dossier=True)
     def test_rejects_changed_report_and_incorrect_image(self):
         files,receipt,_=self.fixture();files['adapter.extended.grype.json']=b'{"matches":[],"changed":true}'
         with self.assertRaises(ValueError):review(files,receipt)

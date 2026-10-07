@@ -31,7 +31,7 @@ def read_sidecar(path, expected_sha):
         files = {e.filename: archive.read(e) for e in entries}
     return files
 
-def review(files, receipt):
+def review(files, receipt, require_generated=False, require_dossier=False):
     inventory = json.loads(files['inventory.json'])
     require(inventory['schema'] == 'ouf.semantic-extended-dependency-inventory.v1', 'INVENTORY_SCHEMA')
     require(inventory['sourceArtifactSha256'] == ORIGINAL_SHA, 'ORIGINAL_ARTIFACT_BINDING')
@@ -63,6 +63,43 @@ def review(files, receipt):
         require(scan['scannerSeverityThresholdMet'] is threshold, 'SCAN_THRESHOLD:' + role)
     require(inventory['allScannerSeverityThresholdsMet'] is all(s['scannerSeverityThresholdMet'] for s in inventory['scans']),
             'AGGREGATE_THRESHOLD')
+    if require_generated:
+        image = next(r for r in inventory['images'] if r['role'] == 'southbound')
+        proof = image['generatedLuaJitProof']
+        require(proof['schema'] == 'ouf.semantic-generated-luajit-output.v1' and
+                proof['sourceArtifactSha256'] == ORIGINAL_SHA and proof['imageId'] == image['imageId'],
+                'GENERATED_IMAGE_BINDING')
+        require(proof['sourceArchiveSha256'] == 'd73577495b63373079fe65e89613aee383db4369c22cf5b88a20a57be3d9f33a' and
+                proof['sourceManifestSha256'] == 'b632f89236799dec18bf6a7a62ae278283b81a928b8f5714de04b59175b89872' and
+                proof['verifiedSourceFileCount'] == 246, 'GENERATED_SOURCE_BINDING')
+        require(proof['reconstructedOutputMatchesInstalledBytes'] is True and
+                proof['imagePayloadExecuted'] is False and proof['imagesModified'] is False and
+                proof['containerOperations'] == 0 and image['unresolvedOpenRestyLuaFiles'] == [],
+                'GENERATED_OUTPUT_BOUNDARY')
+        require(proof['installedPath'] == 'usr/local/openresty/luajit/share/luajit-2.1/jit/vmdef.lua' and
+                proof['generatedFileSha256'] == 'f634b76cb7937c403126c6d4904e7b4969de478c936b5ad9dba91d0a5b074a53' and
+                proof['buildFlags'] == '-DLUAJIT_NUMMODE=2 -DLUAJIT_ENABLE_LUA52COMPAT', 'GENERATED_FILE_BINDING')
+        packages=json.loads(files['southbound.extended.syft.json'])['artifacts']
+        package=next(p for p in packages if p['name']=='luajit')
+        require(package['version']=='2.1.1787558776' and
+                any(l['path']=='/'+proof['installedPath'] for l in package['locations']), 'GENERATED_SBOM_BINDING')
+    if require_dossier:
+        dossier=inventory['isolatedDossier']
+        require(dossier['schema']=='ouf.semantic-v2-isolated-dossier.v1' and
+                dossier['sourceArtifactSha256']==ORIGINAL_SHA and dossier['containerOperations']==0,
+                'DOSSIER_IMAGE_BINDING')
+        for field in ('dockerInvoked','imageImportPerformed','targetIdentityAndConfigurationVerified',
+                      'privateReceiptsRefreshed','legacyGatewayBoundStagerUsed','publisherTrustAccepted',
+                      'dependencyCoverageAccepted','acceptanceGranted','startAuthorized'):
+            require(dossier[field] is False,'DOSSIER_BOUNDARY:'+field)
+        require(dossier['liveGatewayRetainsItsExistingImage'] is True and
+                dossier['existingCandidatesPreserved'] is True, 'DOSSIER_PRESERVATION')
+        require(len(dossier['roles'])==2 and {r['role'] for r in dossier['roles']}=={'adapter','southbound'},'DOSSIER_ROLES')
+        for role in dossier['roles']:
+            image=next(r for r in inventory['images'] if r['role']==role['role'])
+            require(role['localImageId']==image['imageId'] and role['configSha256']==image['imageId'][7:], 'DOSSIER_ROLE_IDENTITY')
+            require(role['hostPublishedPorts']==[] and role['pullOrTagFallbackAllowed'] is False and
+                    role['plannedState']=='CREATED_STOPPED' and role['startAuthorized'] is False,'DOSSIER_ROLE_BOUNDARY')
     return inventory
 
 def main():
@@ -73,6 +110,8 @@ def main():
     parser.add_argument('--source-merge-commit', required=True)
     parser.add_argument('--gh', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--require-generated-luajit', action='store_true')
+    parser.add_argument('--require-isolated-dossier', action='store_true')
     args = parser.parse_args()
     require(args.gh.is_absolute(), 'GH_ABSOLUTE_PATH_REQUIRED')
     require(re.fullmatch('[0-9a-f]{40}', args.source_merge_commit), 'SOURCE_COMMIT_FORMAT')
@@ -83,7 +122,7 @@ def main():
     with zipfile.ZipFile(args.original_bundle) as archive:
         require(archive.getinfo('receipt.json').file_size <= 1048576, 'ORIGINAL_RECEIPT_BOUNDARY')
         receipt = json.loads(archive.read('receipt.json'))
-    inventory = review(files, receipt)
+    inventory = review(files, receipt, args.require_generated_luajit, args.require_isolated_dossier)
     args.output.mkdir(mode=0o700)
     for filename, content in files.items():
         target = args.output / filename
