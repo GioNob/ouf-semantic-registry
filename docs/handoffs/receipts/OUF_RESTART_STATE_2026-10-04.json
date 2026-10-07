@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
+  "nextTask": "Complete the ChatGPT file-to-UDP path: diagnose current serving503 and ingestion read denial, complete existing Teatri mapping, link governed THS resume, execute one correlated run.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
+  "nextStep": "Complete the ChatGPT file-to-UDP path: diagnose current serving503 and ingestion read denial, complete existing Teatri mapping, link governed THS resume, execute one correlated run.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -234,8 +234,8 @@
   },
   "semanticHead": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
-  "checkpointType": "remediation-target-byte-qualification-pass-normative-baseline-required",
-  "checkpointAt": "2026-10-07T05:01:30Z",
+  "checkpointType": "PRODUCT_PATH_REFOCUS_WITH_LIVE_READ_PROBES",
+  "checkpointAt": "2026-10-07T05:16:58.727Z",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
     "section": 39,
@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "RECONCILED_EVIDENCE_TARGET_VERIFICATION_PENDING",
+  "nextStatus": "PRODUCT_FLOW_BLOCKERS_IDENTIFIED",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
+  "currentAction": "Complete the ChatGPT file-to-UDP path: diagnose current serving503 and ingestion read denial, complete existing Teatri mapping, link governed THS resume, execute one correlated run.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
+  "nextAction": "Complete the ChatGPT file-to-UDP path: diagnose current serving503 and ingestion read denial, complete existing Teatri mapping, link governed THS resume, execute one correlated run.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4678,5 +4678,48 @@
     "allScannerSeverityThresholdsMet": true,
     "acceptanceGranted": false,
     "startAuthorized": false
+  },
+  "previousEvidenceTransferNext": {
+    "nextTask": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
+    "nextAction": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
+    "nextStatus": "RECONCILED_EVIDENCE_TARGET_VERIFICATION_PENDING"
+  },
+  "productFlowCurrent": {
+    "roadmap": "docs/sprints/OUF_CHATGPT_FILE_TO_UDP_CURRENT.md",
+    "completeFlowDelivered": false,
+    "account": "ouf-admin",
+    "observedAt": "2026-10-07T05:16:58.727Z",
+    "cinemaExactSemanticRead": {
+      "success": true,
+      "statements": 17,
+      "partial": false
+    },
+    "theatreBoundedClassSearches": {
+      "Theatre": 0,
+      "Teatro": 0,
+      "notExhaustive": true
+    },
+    "cinemaUrbanSearch": {
+      "httpStatus": 503,
+      "cause": "UNPROVEN"
+    },
+    "cinemaIngestionStatus": {
+      "result": "authorization denied",
+      "runFailureInferred": false
+    },
+    "teatriPreview": {
+      "autoReviewRejected": true,
+      "executed": false,
+      "reason": "Explicit asset-specific user authorization required",
+      "assetId": "6609b245-86ed-4315-8ce0-73f2a8555bf3"
+    },
+    "evidenceTransfer": {
+      "suspendedAsImmediateNext": true,
+      "notTransferred": true
+    },
+    "targetMutations": 0,
+    "newUploads": 0,
+    "newProfiles": 0,
+    "newIngestionRuns": 0
   }
 }
