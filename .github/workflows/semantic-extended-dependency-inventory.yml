@@ -10,6 +10,8 @@ on:
       - 'tools/plan_semantic_v2_isolated_dossier.py'
       - 'tests/test_semantic_v2_isolated_dossier.py'
       - '.github/workflows/semantic-extended-dependency-inventory.yml'
+      - 'docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_DATABASE_PIN_2026-10-07.json'
+      - 'tests/prepare_native_vulnerability_scanners.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -45,7 +47,7 @@ jobs:
             --bundle "$RUNNER_TEMP/ouf-downloaded-v2-artifact/bundle.zip" \
             --inventory-directory generated/extended-v2
       - name: Prepare hash-pinned scanner and exact fresh database
-        run: sudo /usr/bin/python3 -B tests/prepare_native_vulnerability_scanners.py
+        run: sudo /usr/bin/python3 -B tests/prepare_native_vulnerability_scanners.py --database-pin docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_DATABASE_PIN_2026-10-07.json
       - name: Scan extended inventories offline without ignores or overrides
         run: |
           for role in adapter southbound; do
@@ -63,12 +65,15 @@ jobs:
               counts={k:0 for k in ('Critical','High','Medium','Low','Negligible','Unknown')}
               for match in report['matches']: counts[match['vulnerability']['severity']]+=1
               scans.append(dict(role=role,severityCounts=counts,scannerSeverityThresholdMet=not any(counts[k] for k in ('Critical','High','Unknown')) and not report.get('alertsByPackage'),reportSha256=hashlib.sha256((root/(role+'.extended.grype.json')).read_bytes()).hexdigest()))
-          inventory.update(scannerInvoked=True,networkIsolatedScanner=True,scans=scans,
+          database_pin=json.loads(pathlib.Path('docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_DATABASE_PIN_2026-10-07.json').read_bytes())
+          inventory.update(databasePin=database_pin,scannerInvoked=True,networkIsolatedScanner=True,scans=scans,
                            allScannerSeverityThresholdsMet=all(s['scannerSeverityThresholdMet'] for s in scans))
           (root/'inventory.json').write_text(json.dumps(inventory,indent=2,sort_keys=True)+'\n')
           sums=[hashlib.sha256(p.read_bytes()).hexdigest()+'  '+str(p) for p in sorted(root.iterdir()) if p.is_file()]
           (root/'checksums.sha256').write_text('\n'.join(sums)+'\n')
           print('SEMANTIC_EXTENDED_SCANNED_INVENTORY='+json.dumps(inventory,sort_keys=True))
+          if not inventory['allScannerSeverityThresholdsMet']:
+              raise SystemExit('SEMANTIC_EXTENDED_FRESH_SCAN=BLOCKED_CRITICAL_HIGH_UNKNOWN_OR_PACKAGE_ALERT')
           PY
       - name: Attest extended inventories and coverage report
         id: provenance

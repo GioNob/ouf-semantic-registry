@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "NATIONAL_DISCOVERY_SELECTED_FRESH_DATABASE_PIN_NEEDED",
+  "nextStatus": "NATIONAL_DISCOVERY_FRESH_V2_SCAN_CI_PENDING",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Operator read public Grype v6 latest.json with bounded HTTPS curl; validate active schema/built/path/checksum and fresh age. Pin new file without overwriting Oct5 evidence, run new offline scans on unchanged v2 inventories. In parallel prepare closed MCP discovery request/candidate binding and reconcile actual owner DTO/idempotency/Gateway contract; preserve THS adoption/publication. No startup from old expired scan or metadata alone.",
+  "currentAction": "Inspect new extended-inventory CI using Oct7 exact DB pin. Require archive checksum, real isolated scans and signatures, inspect failures/results; no admission from metadata. Then fresh signed sidecar target verification and provider dossier/runtime/readiness plus closed MCP discovery binding.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Operator read public Grype v6 latest.json with bounded HTTPS curl; validate active schema/built/path/checksum and fresh age. Pin new file without overwriting Oct5 evidence, run new offline scans on unchanged v2 inventories. In parallel prepare closed MCP discovery request/candidate binding and reconcile actual owner DTO/idempotency/Gateway contract; preserve THS adoption/publication. No startup from old expired scan or metadata alone.",
+  "nextAction": "Inspect new extended-inventory CI using Oct7 exact DB pin. Require archive checksum, real isolated scans and signatures, inspect failures/results; no admission from metadata. Then fresh signed sidecar target verification and provider dossier/runtime/readiness plus closed MCP discovery binding.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4818,7 +4818,19 @@
         "scannerPreparationParameterAdded": true,
         "scannerSyntaxOnlyPassed": true,
         "newScanPerformed": false,
-        "acceptanceGranted": false
+        "acceptanceGranted": false,
+        "freshDatabasePin": {
+          "status": "active",
+          "schemaVersion": "v6.1.10",
+          "built": "2026-10-07T06:31:48Z",
+          "path": "vulnerability-db_v6.1.10_2026-10-07T00:34:45Z_1791354708.tar.zst",
+          "checksum": "sha256:008449eb30e10988569b3bd54eb46158f33187211ba723f41ed9326ccfa1e174",
+          "operatorReportedAt": "2026-10-07T13:13:02+02:00",
+          "validUntil": "2026-10-09T06:31:48Z",
+          "archiveDownloadedAndVerified": false,
+          "pinPath": "docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_DATABASE_PIN_2026-10-07.json"
+        },
+        "freshScanStatus": "CI_PENDING"
       }
     },
     "searchDiagnosis": {
