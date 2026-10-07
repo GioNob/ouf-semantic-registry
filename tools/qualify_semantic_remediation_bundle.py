@@ -60,7 +60,17 @@ def native_evidence(bundle,names,receipt,row,pin,original_syft,image_path):
     return ['native/native-coverage.json','native/southbound.native.syft.json','native/southbound.native.grype.json',
         'native-runtime-sources.json','native-runtime-binaries.json','native-runtime-link-proof.txt','native-shdict-regression.txt','native-grpc-authority-regression.txt']
 
-def qualify(source,root,expected_hash,expected_commit):
+def review_database_pin(pin, historical_evidence=False):
+    require(type(historical_evidence) is bool)
+    if historical_evidence:
+        # Validate immutable historical evidence at its recorded DB build time.
+        # This is not a fresh vulnerability scan or current admission evidence.
+        import datetime
+        built = datetime.datetime.fromisoformat(pin['built'].replace('Z', '+00:00'))
+        return grype.database_pin(pin, now=built.timestamp())
+    return grype.database_pin(pin)
+
+def qualify(source,root,expected_hash,expected_commit,historical_evidence=False):
     require(re.fullmatch('[0-9a-f]{64}',expected_hash) and re.fullmatch('[0-9a-f]{40}',expected_commit))
     require(file_hash(source)[0]==expected_hash)
     with zipfile.ZipFile(source) as bundle:
@@ -83,7 +93,7 @@ def qualify(source,root,expected_hash,expected_commit):
         pin={'built':receipt['images'][0]['databaseBuilt'],'checksum':'sha256:'+receipt['images'][0]['databaseArchiveSha256'],
             'schemaVersion':receipt['images'][0]['databaseSchemaVersion'],'status':'active',
             'path':'vulnerability-db_v6.1.10_2026-10-05T00:36:45Z_1791182738.tar.zst'}
-        grype.database_pin(pin)
+        review_database_pin(pin,historical_evidence)
         proven=[];native_keep=[]
         require(receipt.get('includeOwnedNativeBinariesRequested') is True)
         for row in expected:
@@ -127,6 +137,7 @@ def qualify(source,root,expected_hash,expected_commit):
         'sourceArtifactSha256':expected_hash,'ciSourceCommit':expected_commit,'ciAttestationEvidenceRetained':True,
         'targetAttestationCryptoVerified':False,'publisherTrustAccepted':False,'dependencyCoverageAccepted':False,
         'nativeEvidenceByteVerified':True,'nativeEvidenceRetained':True,
+        'historicalEvidenceOnly':historical_evidence,'currentVulnerabilityScanProven':False,
         'scannerInvoked':False,'containerOperations':0,'imageImportPerformed':False,
         'acceptanceGranted':False,'runtimeRegistered':False,'startAuthorized':False}
     return result
@@ -135,7 +146,8 @@ def main():
         require(os.geteuid()==os.getegid()==0 and sys.flags.isolated and sys.dont_write_bytecode);os.umask(0o077)
         p=argparse.ArgumentParser()
         p.add_argument('--bundle',type=Path,required=True);p.add_argument('--root',type=Path,required=True)
-        p.add_argument('--sha256',required=True);p.add_argument('--ci-commit',required=True);a=p.parse_args()
+        p.add_argument('--sha256',required=True);p.add_argument('--ci-commit',required=True)
+        p.add_argument('--historical-evidence',action='store_true');a=p.parse_args()
         require(str(a.root) in ('/etc/ouf/deploy-snapshots/semantic-image-remediation-20261006-v2','/root/ouf-ci-remediation-qualification'))
         for parent in a.root.parents:
             s=parent.lstat();require(stat.S_ISDIR(s.st_mode) and s.st_uid==0 and not s.st_mode&0o022)
@@ -144,7 +156,7 @@ def main():
             before=os.fstat(incoming.fileno());require(stat.S_ISREG(before.st_mode) and before.st_nlink==1 and 0<before.st_size<=2147483648)
             # Hash before creating any target output; wrong input creates no snapshot.
             require(file_hash(incoming)[0]==a.sha256);a.root.mkdir(mode=0o700)
-            result=qualify(incoming,a.root,a.sha256,a.ci_commit)
+            result=qualify(incoming,a.root,a.sha256,a.ci_commit,a.historical_evidence)
             require(sbom.attributes(before)==sbom.attributes(os.fstat(incoming.fileno()))==sbom.attributes(a.bundle.lstat()))
             write(a.root,'receipt.json',grype.canonical(result))
         print('SEMANTIC_REMEDIATION_BYTE_QUALIFICATION='+json.dumps(result,sort_keys=True));return 0

@@ -40,12 +40,13 @@ def main():
     require(hashlib.sha256(q.read_bytes()).hexdigest()==pin['qualifierSha256'])
     run=subprocess.run(['sudo','/usr/bin/python3','-I','-B',str(q),'--bundle',str(full),
                         '--root','/root/ouf-ci-remediation-qualification','--sha256',pin['artifactSha256'],
-                        '--ci-commit',pin['sourceMergeCommit']],check=True,capture_output=True,text=True,timeout=480)
+                        '--ci-commit',pin['sourceMergeCommit'],'--historical-evidence'],check=True,capture_output=True,text=True,timeout=480)
     tag='SEMANTIC_REMEDIATION_BYTE_QUALIFICATION='
     lines=[s for s in run.stdout.splitlines() if s.startswith(tag)];require(len(lines)==1)
     receipt=json.loads(lines[0][len(tag):])
     require(receipt['sourceArtifactSha256']==pin['artifactSha256'] and receipt['nativeEvidenceByteVerified'] is True)
     require(all(r['bytesVerified'] is True for r in receipt['images']))
+    require(receipt['historicalEvidenceOnly'] is True and receipt['currentVulnerabilityScanProven'] is False)
     require(all(receipt[k] is False for k in ('scannerInvoked','imageImportPerformed','acceptanceGranted','runtimeRegistered','startAuthorized')))
     subprocess.run(['/usr/bin/python3','-B','-m','tools.review_semantic_static_module_coverage',
                     '--bundle',str(full),'--sha256',pin['artifactSha256'],

@@ -3,6 +3,17 @@ import io,tempfile,unittest,zipfile,hashlib
 from pathlib import Path
 from tools import qualify_semantic_remediation_bundle as q
 class Bundle(unittest.TestCase):
+    def test_historical_validation_does_not_make_expired_database_current(self):
+        pin={'status':'active','schemaVersion':'v6.1.10',
+             'built':'2020-01-01T00:00:00Z',
+             'path':'vulnerability-db_v6.1.10_2020-01-01T00:00:00Z_1.tar.zst',
+             'checksum':'sha256:'+'0'*64}
+        with self.assertRaises(ValueError):q.review_database_pin(pin)
+        self.assertEqual(q.review_database_pin(pin,True),pin)
+        invalid=dict(pin,status='inactive')
+        with self.assertRaises(ValueError):q.review_database_pin(invalid,True)
+        with self.assertRaises(ValueError):q.review_database_pin(pin,'yes')
+
     def test_duplicate_or_escaping_zip_names_are_rejected(self):
         for names in (('receipt.json','receipt.json'),('../receipt.json',),('/receipt.json',),('evil\\receipt.json',)):
             raw=io.BytesIO()
