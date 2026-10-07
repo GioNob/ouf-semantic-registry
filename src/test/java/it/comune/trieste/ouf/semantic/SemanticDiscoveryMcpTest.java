@@ -58,6 +58,38 @@ class SemanticDiscoveryMcpTest {
     }
     return req;
   }
+  @Test void actualGatewayLuaDiscoveryReceiptsAreAcceptedAtJavaOwner() throws Exception {
+    String gateway=System.getenv("OUF_DISCOVERY_GATEWAY_PAIRWISE_ROOT");
+    org.junit.jupiter.api.Assumptions.assumeTrue(gateway!=null&&!gateway.isBlank());
+    Path fixture=tmp.resolve("gateway-discovery.json");
+    var builder=new ProcessBuilder("python3",Path.of(gateway,"scripts/export_semantic_discovery_pairwise.py").toString(),"--output",fixture.toString());
+    builder.environment().put("PYTHONPATH",gateway);
+    var process=builder.redirectErrorStream(true).start();
+    assertThat(process.waitFor(10,java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+    assertThat(process.exitValue()).isZero();
+    Path file=tmp.resolve("gateway-key");Files.writeString(file,key);
+    var v=new SemanticDiscoveryDelegation(json,file.toString(),"https://auth.test/realms/ouf","gateway","workload");
+    var jobs=mock(DiscoveryJobService.class);var api=new SemanticDiscoveryMcpApi(v,jobs,json);
+    for(var f:json.readTree(Files.readString(fixture))) {
+      String op=f.required("operation").asText();
+      String cap="ouf.semantic.discovery"+(op.equals("request")?"":"."+op);
+      byte[] raw=f.required("body").asText().getBytes(StandardCharsets.UTF_8);
+      var req=request(raw,cap,op,Set.of(cap));
+      req.removeHeader("X-OUF-Semantic-Discovery-Receipt");
+      req.addHeader("X-OUF-Semantic-Discovery-Receipt",f.required("receipt").asText());
+      switch(op) {
+        case "request" -> api.create(raw,req);
+        case "status" -> api.status(raw,req);
+        case "candidates" -> api.candidates(raw,req);
+        default -> throw new IllegalArgumentException("unexpected operation");
+      }
+    }
+    var actor=org.mockito.ArgumentCaptor.forClass(String.class);
+    verify(jobs).request(eq("CLASS"),eq("teatro"),eq(List.of("it","en")),actor.capture(),eq("discovery-test-0001"));
+    UUID id=UUID.fromString("11111111-1111-4111-8111-111111111111");
+    verify(jobs).status(id,actor.getValue());
+    verify(jobs).candidates(id,actor.getValue());
+  }
   @Test void requestStatusAndCandidatesReuseOneTrustedCallerNamespace() throws Exception {
     var jobs=mock(DiscoveryJobService.class);var api=new SemanticDiscoveryMcpApi(verifier(),jobs,json);
     String cap="ouf.semantic.discovery";UUID id=UUID.randomUUID();
