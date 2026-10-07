@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "TEATRI_LOCAL_OR_NATIONAL_SEMANTIC_PATH_DECISION_NEEDED",
+  "nextStatus": "NATIONAL_DISCOVERY_SELECTED_FRESH_DATABASE_PIN_NEEDED",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "User choose reviewed local OUF Teatri model via Cinema's existing import/review/publication path, or complete national provider/MCP discovery first. No choice inferred from theatre row-granularity confirmation. Local proposal covers20fields but exact pins/access decisions and execution support (hall observation/geometry/provenance) still required.",
+  "currentAction": "Operator read public Grype v6 latest.json with bounded HTTPS curl; validate active schema/built/path/checksum and fresh age. Pin new file without overwriting Oct5 evidence, run new offline scans on unchanged v2 inventories. In parallel prepare closed MCP discovery request/candidate binding and reconcile actual owner DTO/idempotency/Gateway contract; preserve THS adoption/publication. No startup from old expired scan or metadata alone.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "User choose reviewed local OUF Teatri model via Cinema's existing import/review/publication path, or complete national provider/MCP discovery first. No choice inferred from theatre row-granularity confirmation. Local proposal covers20fields but exact pins/access decisions and execution support (hall observation/geometry/provenance) still required.",
+  "nextAction": "Operator read public Grype v6 latest.json with bounded HTTPS curl; validate active schema/built/path/checksum and fresh age. Pin new file without overwriting Oct5 evidence, run new offline scans on unchanged v2 inventories. In parallel prepare closed MCP discovery request/candidate binding and reconcile actual owner DTO/idempotency/Gateway contract; preserve THS adoption/publication. No startup from old expired scan or metadata alone.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4794,12 +4794,31 @@
       "localAlternative": {
         "document": "docs/sprints/TEATRI_LOCAL_MODEL_REVIEW.ttl",
         "mappingDocument": "docs/sprints/TEATRI_LOCAL_MAPPING_REVIEW.json",
-        "status": "REVIEW_PROPOSAL_NOT_SELECTED",
+        "status": "NOT_SELECTED_REVIEW_ONLY",
         "fields": 20,
         "imported": false,
         "published": false,
         "localRdfParser": "UNAVAILABLE_RDFlib_NOT_INSTALLED",
         "registryValidation": "NOT_EXECUTED"
+      },
+      "semanticPath": {
+        "selected": "NATIONAL_DISCOVERY",
+        "selectedBy": "USER",
+        "confirmedAt": "2026-10-07T13:03:07+02:00",
+        "defaultProvider": "schema.gov.it",
+        "localModelSelected": false,
+        "localModelImported": false
+      },
+      "discoveryNext": {
+        "requestCreated": false,
+        "providerStarted": false,
+        "freshScanNeeded": true,
+        "previousDatabaseFreshUntil": "2026-10-07T08:45:38+02:00",
+        "currentPublicDatabasePin": "OPERATOR_READ_NEEDED",
+        "scannerPreparationParameterAdded": true,
+        "scannerSyntaxOnlyPassed": true,
+        "newScanPerformed": false,
+        "acceptanceGranted": false
       }
     },
     "searchDiagnosis": {
