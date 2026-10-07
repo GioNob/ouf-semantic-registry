@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "SEARCH_UPSTREAM_UNRESOLVED_EXACT_REPAIR_PENDING",
+  "nextStatus": "CINEMA_CHATGPT_SERVING_8_OF_8_PROVEN_TEATRI_MAPPING_REVIEW_NEXT",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Execute --repair-upstream: require old ouf-udp-object-resolution name unresolved, qualify ouf-udp as current UDP private addresses from Gateway and unsigned owner403, snapshot full route, replace only upstream host, lease/readback/owned rollback. Then actual ChatGPT Cinema search immediately.",
+  "nextAction": "Obtain domain decision on Teatri row granularity (whole theatre vs single hall), retain prepared 20-field mapping. Resolve governed Teatri semantic revision/publication pins and exact source identity/access decisions before creating draft. Complete existing Onboarding/THS/execution path without replaying Cinema. Ingestion operational read authorization and generator/runtime-host reconciliation remain distinct open items.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4700,10 +4700,31 @@
       "notExhaustive": true
     },
     "cinemaUrbanSearch": {
-      "httpStatus": 503,
-      "cause": "LIVE_UPSTREAM_NAME_UNRESOLVED_CONFIRMED; EXCLUSIVE_503_CAUSE_NOT_YET_PROVEN",
-      "checkedAt": "2026-10-07T08:59:46+02:00",
-      "account": "ouf-admin"
+      "count": 8,
+      "pages": 4,
+      "pageSize": 2,
+      "duplicateCount": 0,
+      "partial": false,
+      "finalCursor": null,
+      "canonicalType": "https://api.ouf-lab.it/semantic/cinema#Cinema",
+      "account": "ouf-admin",
+      "statuses": [
+        "ACTIVE"
+      ],
+      "revisions": [
+        1
+      ],
+      "propertyIris": [
+        "https://api.ouf-lab.it/semantic/cinema#indirizzo",
+        "https://api.ouf-lab.it/semantic/cinema#nome"
+      ],
+      "result": "LIVE_AUTHORIZED_PAGINATION_PASS",
+      "replaces503": true,
+      "ontologyUriQueryWasEmpty": true,
+      "observedAfterOperatorRepairAt": "2026-10-07T10:58:30+02:00",
+      "responseValuesPersisted": false,
+      "fullReleaseAcceptance": false,
+      "negativeAuthorityAuditCasesComplete": false
     },
     "cinemaIngestionStatus": {
       "result": "authorization denied",
@@ -4741,7 +4762,8 @@
         "teatr",
         "Cultural"
       ],
-      "lookupScope": "BOUNDED_NOT_EXHAUSTIVE"
+      "lookupScope": "BOUNDED_NOT_EXHAUSTIVE",
+      "rowGranularityDecision": "HUMAN_REQUIRED_WHOLE_THEATRE_OR_SINGLE_HALL"
     },
     "searchDiagnosis": {
       "source": "scripts/diagnose_product_search.py",
@@ -4817,7 +4839,17 @@
         "repairScriptSha256": "e1598e0e576ecb0f496df60038a2be65018060190b79551ae6d1f0e109926335",
         "localTestsPassed": 13
       },
-      "generatorFollowup": "Gateway tools/materialize_object_search.py at c0b1f97 still hardcodes unresolved logical service hostname. Installation scripts/profile must reconcile runtime UDP host before future redeploy; service identity remains ouf-udp-object-resolution. Do not overwrite route repair with old generator."
+      "generatorFollowup": "Gateway tools/materialize_object_search.py at c0b1f97 still hardcodes unresolved logical service hostname. Installation scripts/profile must reconcile runtime UDP host before future redeploy; service identity remains ouf-udp-object-resolution. Do not overwrite route repair with old generator.",
+      "upstreamRepair": {
+        "reportedAt": "2026-10-07T10:58:30+02:00",
+        "status": "REPAIRED_AND_READBACK_VERIFIED",
+        "snapshotDirectory": "/etc/ouf/deploy-snapshots/search-upstream-tb4mcsuu",
+        "routeId": "execute-urban-object-search",
+        "onlyChangedSearchUpstreamHost": true,
+        "containerRestarted": false,
+        "configurationSnapshotModified": false,
+        "secretValuesPrinted": false
+      }
     }
   }
 }

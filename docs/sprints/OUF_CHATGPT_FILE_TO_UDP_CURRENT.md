@@ -1,40 +1,25 @@
-> **Output VPS 7 ottobre08:17:** UDP rifiuta la richiesta senza firma con403; Gateway ownerkey è presente ma inheritance Nginx non rilevata. [Lettura mirata della configurazione e del suo bind](../installation/OUF_GATEWAY_SEARCH_INHERITANCE_CURRENT.md) pronta per scegliere correzione/reload, preservando snapshot. Servingpositivo ancora non provato.
+# OUF: percorso file → UDP tramite ChatGPT — stato corrente
 
-> Aggiornamento 7 ottobre: profilo Teatri riletto/PASS dopo autorizzazione; proposta mapping completa dei 20 campi pronta. Diagnosi read-only UDP503 preparata e 4 test locali PASS, esecuzione VPS pendente. Nessuna DRAFT/ACTIVE/run o mutazione target.
+## Risultato verificato il 7 ottobre 2026
 
-# OUF: percorso da ChatGPT a UDP — stato operativo 7 ottobre 2026
+La ricerca Cinema funziona realmente tramite ChatGPT, account ouf-admin: **8 oggetti ACTIVE, revisione1, 4 pagine da2, zero duplicati, partial=false e cursore finale nullo**. Le sole proprietà restituite sono nome e indirizzo. Dati già materializzati, nessun nuovo upload o replay/run. La riparazione cambia soltanto il nome upstream della rotta di ricerca, da ouf-udp-object-resolution:8080 (non risolto) a ouf-udp:8080, qualificato verso UDPcorrente. Snapshot privato /etc/ouf/deploy-snapshots/search-upstream-tb4mcsuu; nessun restart o modifica ai file storici.
 
-## Risultato richiesto
-Da ChatGPT: selezionare un file → profilazione → mapping semantico assistito dal chatbot → DRAFT Onboarding → decisioni HUMAN previste → configurazione ACTIVE → Ingestion/RAW/handoff → risoluzione identità e materializzazione UDP → lettura autorizzata del risultato in ChatGPT. Controlli di autorizzazione, riferimenti semantici, classificazioni, compatibilità, duplicati, lineage e audit restano nel percorso.
+Il filtro corretto è la classe **https://api.ouf-lab.it/semantic/cinema#Cinema**. L'URI dell'ontologia https://api.ouf-lab.it/semantic/cinema restituisce validamente zero oggetti: non usare quell'URI come tipo canonico. Classe verificata con semantic.get sulla revisione51706bed-81e4-4306-aca1-70119821727d, publicationsetf92a2e17-30c9-456f-bb12-63afa84f41e6. [Ricevuta minimizzata](../handoffs/receipts/OUF_CINEMA_CHATGPT_SERVING_2026-10-07.json), senza nomi/indirizzi/valori dei risultati.
 
-La prova termina quando lo stesso asset è correlato a fonte/versione, run, handoff e oggetti UDP, con risultato leggibile tramite ChatGPT. Una build, una firma o un report non chiude questa prova. Il matching autoritativo UDP avviene dopo l'handoff; un preflight non lo sostituisce.
+## Obiettivo e prossimo lavoro
 
-## Prove riutilizzabili e verifiche di questa ripresa
+Da ChatGPT: selezione file, profilazione, mapping assistito, DRAFT Onboarding, review HUMAN/THS, compatibilità reale e ACTIVE, un run Ingestion/RAW/handoff, risoluzione identità/materializzazione UDP, lettura autorizzata in ChatGPT con lineage e audit pertinenti. Il giro interamente conversazionale di Teatri **non è ancora consegnato**. Il matching autoritativo UDP avviene dopo handoff; preflight non lo sostituisce.
 
-| Passaggio | Evidenza | Residuo |
+| Passaggio | Stato concreto | Prossimo passo |
 | --- | --- | --- |
-| Upload e profile | Teatri già caricato: asset 6609b245-86ed-4315-8ce0-73f2a8555bf3; profile 7984c39c-7396-4248-ab0a-f2efc390b49c; 13 righe, 20 colonne, output operatore storico | Nessun nuovo upload/profile richiesto. Rilettura autorizzata dall'utente ed eseguita/PASS il 7 ottobre; nessun nuovo upload/profile. |
-| Consultazione semantica interna | semantic.get Cinema eseguito ora via account ouf-admin: revisione 51706bed-81e4-4306-aca1-70119821727d, publication set f92a2e17-30c9-456f-bb12-63afa84f41e6, ACTIVE, RDF 17 statement, partial=false | Ricerca CLASS Theatre e Teatro entrambe []: non prova assenza globale. Nessuna classe Teatro scelta per analogia con Cinema. |
-| Mapping Teatri | Proposta storica PENDING_HUMAN_REVIEW | Classe/proprietà/vocabolari e pin, access label, chiave source, CRS, temporalità e provenienza da completare; nessuna DRAFT/ACTIVE Teatri provata. |
-| Review e attivazione | OnboardingService al commit 6340d5bf120e09b47c32177656e2c377a4c03640 implementa freeze, challenge, conferma HUMAN, compatibilità Ingestion e gate identità UDP prima di ACTIVE | Tool corrente source.onboarding.create produce solo DRAFT. Collegamento conversazionale a review THS e ripresa da stato owner non provato; non inventare tool approvazione MCP. |
-| Ingestion → UDP | Cinema storico: run 86809c17-3354-45ca-a7e6-57e903944b24 SUCCEEDED, 8 handoff ACKED, 8 oggetti materializzati | Lettura attuale ouf.ingestion.status per managed-cinema-8ec8ae90: authorization denied. Non significa run fallito. |
-| Serving in ChatGPT | urban.object.search eseguito ora per https://api.ouf-lab.it/semantic/cinema, pageSize 2 | HTTP503 senza codice/correlazione utile; componente responsabile non provato. Nessun replay necessario per diagnosticare la lettura. |
-| Semantica esterna | Software/provider e nuove immagini sviluppati e verificati nei propri scope | Target provider non avviato. Discovery/adoption richiede questo ramo quando il mapping non è soddisfatto dai riferimenti interni. Non bloccare con questo ramo diagnosi e completamento delle parti indipendenti. |
+| Upload/profile Teatri | Asset6609b245-86ed-4315-8ce0-73f2a8555bf3, profile7984c39c-7396-4248-ab0a-f2efc390b49c v1; 13righe/20campi. Rilettura già autorizzata/PASS | Riutilizzare, nessun nuovo upload/profile |
+| Mapping Teatri | [Proposta dei20campi](TEATRI_MAPPING_REVIEW_CURRENT.md), non approvata | Decisione teatro/sala, semantica pubblicata con pin esatti, identitàsource, classificazione e gestione dubbi |
+| Discovery/adoption | Ricerche bounded Theatre/Teatro/teatr/Cultural, poi PerformingArtsTheater e culturaONTOLOGY vuote; non prova assenza globale. Cultural-ON/Schema candidati web, non pin pubblicati | Risolvere riferimenti tramite percorso governato; nessuna adozione/publication automatica |
+| DRAFT e review | Tool crea DRAFTbase, non ACTIVE; validator richiede contratti e semanticReferenceBindings | Riutilizzare completamentoCinema, freeze/challenge/HUMANTHS e ripresa da stato owner; non simulare attestazioni |
+| Ingestion/UDP Cinema | Storico run86809c17-3354-45ca-a7e6-57e903944b24 SUCCEEDED, 8handoffACKED e 8materializzati | Preservare. ingestion.status resta authorizationdenied, non prova runfallito; risolvere osservabilità distintamente |
+| Serving Cinema | Lettura ChatGPT8/8 provata con paginazione | Evitare regressioni: generator Gateway ancora hardcoded su vecchio hostname, correggere binding installazione prima di redeploy. Prove negative/authority/audit complete restano aperte |
+| Esecuzione Teatri | Nessuna DRAFT/ACTIVE/run creati | Dopo mapping/review/compatibilità, un run governato e correlazione asset/source/version/run/handoff/UDP; mostrare esito in ChatGPT |
 
-Verifiche correnti eseguite 2026-10-07T05:16:58.727Z, account ouf-admin selezionato dalle indicazioni attuali del connector. Nessun cambio account dopo diniego.
+## Vincoli conservati
 
-## Ordine di lavoro e criterio di completamento
-
-1. **Rendere leggibili i risultati già prodotti.** Diagnosticare il 503 UDP e il diniego ingestion.operations.read usando route/owner/SDK e binding attuali. Preparare una sola diagnosi VPS mirata se serve una lettura effettiva del server. Nessun grant indiscriminato, cambio account, rigenerazione chiavi o restart ipotetico. Completamento: ChatGPT legge run Cinema e almeno due pagine UDP autorizzate senza duplicati, con minimizzazione e gestione cursor.
-2. **Preparare il mapping Teatri già caricato.** Profilo riletto con autorizzazione specifica; [proposta completa dei 20 campi](TEATRI_MAPPING_REVIEW_CURRENT.md) preparata, non approvata; consultare il Registry interno e leggere i riferimenti esatti. Se manca semantica adeguata, concretizzare la discovery/adoption governata; provider resta una dipendenza condizionale, senza false scorciatoie. Presentare proposta completa e dubbi al HUMAN. Completamento: mapping source-specific valido e revision/publication pin documentati, decisioni ancora non falsamente approvate.
-3. **Collegare DRAFT, THS e ripresa.** Riutilizzare API esistenti e test precedenti. Esaminare il collegamento mancante prima di implementare doppioni; preparare card/link fidato e lettura stato necessaria, mantenendo decisioni autoritative nel THS. Attestazione reale Ingestion e gate identità UDP sullo stesso hash congelato. Completamento: approvazione HUMAN e ACTIVE validi per la sola fonte selezionata.
-4. **Eseguire e mostrare il giro completo.** Una sola ingestion governata per Teatri, correlazione asset/source/version/run/handoff/UDP, dubbi duplicati o merge al THS quando previsti. Completamento: oggetti risultanti leggibili in ChatGPT, lineage/audit e controlli pertinenti documentati; nessun successo dichiarato dai soli conteggi CI.
-
-Nessuna durata promessa prima della diagnosi dei blocchi. Stato attuale: prova completa NON consegnata.
-
-## Limiti e attività conservate
-Il nuovo ZIP di evidenze è pendente e il percorso Windows precedente non esisteva. Il False stampato dopo Resolve-Path non è un mismatch SHA dimostrato. Trasferimento sospeso come azione immediata: non riproporlo automaticamente alla ripresa. Crypto PASS precedenti e nuovi risultati CI restano validi soltanto nei rispettivi scope; nessuna acceptance o start concessa.
-
-Preservare Cinema 8/8, asset/profile Teatri, snapshot, vecchi report, gateway live e candidati fermati. PR restano draft, nessun merge/deploy. R-INSTALL, portabilità, RAW replay, storage indipendente, seconda fonte sovrapposta, prove security/negative e release acceptance restano aperti nei documenti storici; non sono cancellati e non diventano tutti prerequisiti nuovi della prima prova senza motivazione normativa concreta.
-
-Il codice verificato ora non è automaticamente il codice deployed. Nessuna modifica a runtime, IAM, policy, DB o dati effettuata in questa ripresa. Questo documento sostituisce il NEXT centrato sul trasferimento del sidecar; lo storico rimane consultabile.
+Preservare Cinema8/8, Teatri, snapshot/report storici, Gatewaylive, candidati semanticifermati. PRdraft, nessun merge/deploy indiscriminato. Provideresterno è dipendenza condizionale quando serve al mapping, senza aggirare trust/compatibilità/start. Il nuovo ZIP evidenze resta sospeso come trasferimento immediato; non riproporlo automaticamente. Scansioni hanno validità nei propri scope/finestra, nessuna freshnessbypass. R-INSTALL, replayRAW, storageindipendente, seconda fonte sovrapposta e releaseacceptance restano aperti, senza trasformarli in nuovi prerequisiti indistinti per la prima prova. Nessuna nuova durata promessa.
