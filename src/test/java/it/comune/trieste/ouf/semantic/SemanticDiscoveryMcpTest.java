@@ -44,7 +44,19 @@ class SemanticDiscoveryMcpTest {
   MockHttpServletRequest request(byte[] raw,String cap,String op,Set<String> grants) throws Exception {
     var req=new MockHttpServletRequest("POST",prefix+op);
     req.addHeader("X-OUF-Semantic-Discovery-Receipt",sign(receipt(raw,cap,prefix+op),"ouf-semantic-discovery-owner-v1."));
-    TestAuthorization.bind(req,"reader","HUMAN",grants);return req;
+    TestAuthorization.bind(req,"reader","HUMAN",grants);
+    if(!grants.isEmpty()) {
+      var now=Instant.now();
+      var descriptor=new it.comune.trieste.ouf.authorization.AuthorizationPolicy.CapabilityDescriptor(
+        cap,op.equals("request")?"COMMAND":"READ","ouf.semantic.discovery",Set.of(it.comune.trieste.ouf.authorization.PrincipalContext.ActorType.HUMAN));
+      var grant=new it.comune.trieste.ouf.authorization.AuthorizationPolicy.Grant(
+        "discovery-fixture",cap,"tenant-a","reader",null,null,now.minusSeconds(60),now.plusSeconds(3600));
+      var runtime=new it.comune.trieste.ouf.authorization.LocalAuthorization(java.time.Clock.systemUTC(),java.time.Duration.ofHours(1));
+      TestAuthorization.install(runtime,new it.comune.trieste.ouf.authorization.AuthorizationPolicy.PolicyBundle(
+        "discovery-fixture",1,now,List.of(descriptor),List.of(grant)));
+      req.getServletContext().setAttribute(it.comune.trieste.ouf.authorization.ServletAuthorization.RUNTIME,runtime);
+    }
+    return req;
   }
   @Test void requestStatusAndCandidatesReuseOneTrustedCallerNamespace() throws Exception {
     var jobs=mock(DiscoveryJobService.class);var api=new SemanticDiscoveryMcpApi(verifier(),jobs,json);
