@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Reconcile the generated LuaJIT jit/vmdef.lua against the locked source/generator output; refresh the scanner database before new acceptance checks; prepare a separate digest-consistent isolated staging dossier. Preserve all VPS reports and existing test runtime.",
+  "nextTask": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Reconcile the generated LuaJIT jit/vmdef.lua against the locked source/generator output; refresh the scanner database before new acceptance checks; prepare a separate digest-consistent isolated staging dossier. Preserve all VPS reports and existing test runtime.",
+  "nextStep": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -235,7 +235,7 @@
   "semanticHead": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
   "currentHandoff": "docs/handoffs/OUF_HANDOFF_2026-10-04_PRIVATE_TRUST_POLICY_PASS_NEXT.md",
   "checkpointType": "remediation-target-byte-qualification-pass-normative-baseline-required",
-  "checkpointAt": "2026-10-07T06:46:39+02:00",
+  "checkpointAt": "2026-10-07T05:01:30Z",
   "acceptancePlan": "docs/installation/SEMANTIC_CANDIDATE_ACCEPTANCE_PLAN_2026-10-04.md",
   "acceptanceMetadataReadback": {
     "section": 39,
@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "REMEDIATION_TARGET_BYTES_PASS_PET_BASELINE_REQUIRED",
+  "nextStatus": "RECONCILED_EVIDENCE_TARGET_VERIFICATION_PENDING",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Reconcile the generated LuaJIT jit/vmdef.lua against the locked source/generator output; refresh the scanner database before new acceptance checks; prepare a separate digest-consistent isolated staging dossier. Preserve all VPS reports and existing test runtime.",
+  "currentAction": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Reconcile the generated LuaJIT jit/vmdef.lua against the locked source/generator output; refresh the scanner database before new acceptance checks; prepare a separate digest-consistent isolated staging dossier. Preserve all VPS reports and existing test runtime.",
+  "nextAction": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4665,6 +4665,18 @@
     "dependencyCoverageAccepted": false,
     "acceptanceGranted": false,
     "runtimeRegistered": false,
+    "startAuthorized": false
+  },
+  "semanticReconciledDependencyEvidence": {
+    "receipt": "docs/handoffs/receipts/SEMANTIC_RECONCILED_DEPENDENCY_EVIDENCE_2026-10-07_CI.json",
+    "producerRun": 37573769866,
+    "readbackRun": 37574177780,
+    "generatedLuaJitOutputReconciled": true,
+    "unresolvedGeneratedLuaFiles": 0,
+    "isolatedDossierPrepared": true,
+    "targetReconciledEvidenceCryptoVerified": false,
+    "allScannerSeverityThresholdsMet": true,
+    "acceptanceGranted": false,
     "startAuthorized": false
   }
 }

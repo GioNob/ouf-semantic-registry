@@ -376,7 +376,7 @@
   "runtimeRegistered": false,
   "startAuthorized": false,
   "databaseFreshnessEnds": "2026-10-07T08:45:38+02:00",
-  "nextAction": "Operator verifies the signed evidence sidecar against the retained original v2 ZIP using the pinned target guide. Reconcile generated LuaJIT vmdef.lua, review custom/publisher and Wasm feature decision, and prepare a separate digest-consistent isolated staging dossier. No import/start or repeated v2 qualification.",
+  "nextAction": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
   "targetEvidenceSnapshotCreated": true,
   "targetRuntimeModified": false,
   "targetCryptoVerification": {
@@ -399,5 +399,17 @@
     "targetSidecarCryptoVerified": false,
     "unresolvedGeneratedLuaFiles": 1,
     "dependencyCoverageAccepted": false
+  },
+  "semanticReconciledDependencyEvidence": {
+    "receipt": "docs/handoffs/receipts/SEMANTIC_RECONCILED_DEPENDENCY_EVIDENCE_2026-10-07_CI.json",
+    "producerRun": 37573769866,
+    "readbackRun": 37574177780,
+    "generatedLuaJitOutputReconciled": true,
+    "unresolvedGeneratedLuaFiles": 0,
+    "isolatedDossierPrepared": true,
+    "targetReconciledEvidenceCryptoVerified": false,
+    "allScannerSeverityThresholdsMet": true,
+    "acceptanceGranted": false,
+    "startAuthorized": false
   }
 }
