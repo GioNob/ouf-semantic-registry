@@ -1,0 +1,29 @@
+name: Discovery Gateway Java owner pairwise
+on: [push, pull_request]
+permissions: {contents: read}
+jobs:
+  discovery-owner-receipts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: GioNob/ouf-api-gateway
+          ref: 1d75e404b5a84f361ed2160c611f91aaa68d3fd8
+          path: .pairwise/discovery-gateway
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21', cache: maven}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.13'}
+      - run: pip install -r .pairwise/discovery-gateway/requirements-dev.txt
+      - run: bash scripts/install-authorization-sdk.sh
+      - name: Actual Lua discovery receipts at Java owner policy boundary
+        env:
+          OUF_DISCOVERY_GATEWAY_PAIRWISE_ROOT: ${{ github.workspace }}/.pairwise/discovery-gateway
+        run: mvn -B -ntp -Dtest=SemanticDiscoveryMcpTest test
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-discovery-owner-${{ github.run_id }}
+          path: target/surefire-reports/
