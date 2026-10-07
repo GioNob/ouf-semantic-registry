@@ -13,15 +13,21 @@ def require(value):
     if not value:raise ValueError('ISOLATED_V2_DOSSIER_UNPROVEN')
 
 def config_from_archive(incoming, image_id):
-    expected=image_id.removeprefix('sha256:');found=[]
+    expected=image_id.removeprefix('sha256:');found=[];manifests=[]
+    paths={expected+'.json','blobs/sha256/'+expected}
     with gzip.GzipFile(fileobj=incoming) as plain,tarfile.open(fileobj=plain,mode='r|') as archive:
         for member in archive:
-            if member.name.removeprefix('./') != expected+'.json':continue
+            path=member.name.removeprefix('./')
+            if path=='manifest.json':
+                require(member.isfile() and 0<member.size<=131072)
+                manifests.append(json.loads(archive.extractfile(member).read()))
+            if path not in paths:continue
             require(member.isfile() and 0<member.size<=131072)
             raw=archive.extractfile(member).read()
             require(hashlib.sha256(raw).hexdigest()==expected)
             found.append(json.loads(raw))
     require(len(found)==1)
+    require(len(manifests)==1 and len(manifests[0])==1 and manifests[0][0]['Config'].removeprefix('./') in paths)
     return found[0]
 
 def role_plan(role, image_id, config):

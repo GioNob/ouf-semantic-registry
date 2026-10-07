@@ -7,6 +7,13 @@ import unittest
 from tools.plan_semantic_v2_isolated_dossier import role_plan,config_from_archive
 
 class IsolatedDossierTests(unittest.TestCase):
+    def test_accepts_manifest_bound_oci_blob_config(self):
+        raw=b'{"os":"linux","architecture":"amd64","config":{}}';digest=hashlib.sha256(raw).hexdigest()
+        out=io.BytesIO();path='blobs/sha256/'+digest
+        with tarfile.open(fileobj=out,mode='w') as archive:
+            for name,content in [(path,raw),('manifest.json',json.dumps([{'Config':path}]).encode())]:
+                item=tarfile.TarInfo(name);item.size=len(content);archive.addfile(item,io.BytesIO(content))
+        self.assertEqual(config_from_archive(io.BytesIO(gzip.compress(out.getvalue())),'sha256:'+digest)['architecture'],'amd64')
     def test_environment_values_are_not_serialized_and_start_is_not_granted(self):
         config={'os':'linux','architecture':'amd64','config':{'Env':['SECRET=do-not-print'],
                 'Entrypoint':['/entrypoint'],'Cmd':[],'User':'10006','WorkingDir':'/app'}}
