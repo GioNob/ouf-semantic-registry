@@ -1,0 +1,64 @@
+# LOCAL REVIEW PROPOSAL ONLY: not imported, validated, approved or published.
+@prefix t: <https://api.ouf-lab.it/semantic/teatri#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+<https://api.ouf-lab.it/semantic/teatri> a owl:Ontology ;
+  rdfs:label "Proposta locale OUF per il profilo Teatri"@it ;
+  rdfs:comment "Modello locale per review. Non dichiara adozione, equivalenza o validazione di ontologie nazionali. Le proprietà mantengono dichiarazioni della fonte; nessuna identità canonica, geometria o precisione certificata implicita."@it ;
+  dct:source <profile://managed-files/6609b245-86ed-4315-8ce0-73f2a8555bf3/profiles/7984c39c-7396-4248-ab0a-f2efc390b49c> .
+
+t:Teatro a owl:Class ; rdfs:label "Teatro"@it ;
+  rdfs:comment "Una riga rappresenta un teatro: scelta confermata dall'utente il 7 ottobre 2026. Non rappresenta automaticamente una singola sala."@it .
+t:OsservazioneCapienzaSala a owl:Class ; rdfs:label "Osservazione della capienza di una sala"@it ;
+  rdfs:comment "Richiede identificazione o qualificazione della sala e provenienza; non diventa capienza dell'intero teatro."@it .
+t:osservazioneCapienzaSala a owl:ObjectProperty ; rdfs:domain t:Teatro ; rdfs:range t:OsservazioneCapienzaSala .
+t:capienza_posti a owl:DatatypeProperty ; rdfs:domain t:OsservazioneCapienzaSala ; rdfs:range xsd:integer ;
+  rdfs:comment "Valore dichiarato dalla fonte, utilizzabile solo con sala/ambito qualificati. Mapping multi-entità da validare; non appiattire sul teatro."@it .
+
+t:nome_teatro a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "nome teatro"@it .
+
+t:tipologia a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "tipologia"@it .
+
+t:toponimo a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "toponimo"@it .
+
+t:nome_indirizzo a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "nome indirizzo"@it .
+
+t:civico a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "civico"@it .
+
+t:cap a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "cap"@it .
+
+t:citta a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "citta"@it .
+
+t:provincia a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "provincia"@it .
+
+t:latitudine a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:decimal ; rdfs:label "latitudine"@it .
+
+t:longitudine a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:decimal ; rdfs:label "longitudine"@it .
+
+t:sistema_riferimento a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "sistema riferimento"@it .
+
+t:precisione_coordinate a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "precisione coordinate"@it .
+
+t:spettacoli_stagione a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:integer ; rdfs:label "spettacoli stagione"@it .
+
+t:stagione_riferimento a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "stagione riferimento"@it .
+
+t:note a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "note"@it .
+
+t:fonte_indirizzo a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "fonte indirizzo"@it .
+
+t:fonte_coordinate a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "fonte coordinate"@it .
+
+t:fonte_altri_dati a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:string ; rdfs:label "fonte altri dati"@it .
+
+t:data_verifica a owl:DatatypeProperty ; rdfs:domain t:Teatro ; rdfs:range xsd:date ; rdfs:label "data verifica"@it .
+
+t:cap rdfs:comment "Codice testuale: non una quantità; nessuna ricostruzione di zeri non osservati."@it .
+t:latitudine rdfs:comment "Coordinata dichiarata: non genera geometria senza CRS e gestione della coppia approvati."@it .
+t:longitudine rdfs:comment "Coordinata dichiarata: nessuna inversione implicita degli assi."@it .
+t:spettacoli_stagione rdfs:comment "Misura da leggere con stagione_riferimento; non totale senza periodo."@it .
+t:data_verifica rdfs:comment "Verifica della fonte, non validFrom o data di acquisizione."@it .
+t:note rdfs:comment "Classificazione di accesso da approvare prima dell'esposizione."@it .

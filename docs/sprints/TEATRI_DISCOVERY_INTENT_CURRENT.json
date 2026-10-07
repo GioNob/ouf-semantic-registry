@@ -13,8 +13,8 @@
     "scope": "GRANULARITY_ONLY_NOT_MAPPING_OR_PUBLICATION_APPROVAL"
   },
   "wireRequestBody": {
-    "requestedArtifactType": "ONTOLOGY",
-    "intent": "Ontologia per teatri e luoghi di spettacolo: distinguere teatro e singola sala; nome, indirizzo, coordinate con CRS, capienza qualificata per sala, misure riferite alla stagione e provenienza.",
+    "requestedArtifactType": "CLASS",
+    "intent": "teatro",
     "preferredLanguages": [
       "it",
       "en"
@@ -43,5 +43,21 @@
     "OpenAPI lists /discovery while actual DiscoveryApi maps /discovery-requests",
     "DiscoveryApi accepts only requestedArtifactType/intent/preferredLanguages, not full providerPolicy/expectedProperties contract",
     "Provider runtime admission remains unproven; do not start candidates or create a doomed/duplicate job"
-  ]
+  ],
+  "matchingExplanation": "Current SchemaGovProvider applies CONTAINS to the complete intent literal; a paragraph is not a useful label search. Use bounded theatre term, review/rank broader field needs locally; no external call made.",
+  "discoveryContext": "Theatre distinct from hall; name/address/coordinates/CRS, separately qualified hall capacity, seasonal measures and provenance.",
+  "currentRuntimeRead": {
+    "reportedAt": "2026-10-07T11:20:06+02:00",
+    "running": true,
+    "providerDeclared": "NOT_DECLARED_OR_INVALID",
+    "workerDeclared": "NOT_DECLARED_OR_INVALID",
+    "configurationOverridesPresent": false,
+    "reviewedSource": "e4df4c18f80b02bb4385dc605ec38cf62b4bb7cc",
+    "baselineDefaults": {
+      "providerEnabled": false,
+      "workerEnabled": true
+    },
+    "effectiveRuntimeSettingsProven": false,
+    "reason": "Source defaults reviewed, deployed packaged config/mounts/command overrides not independently proved"
+  }
 }

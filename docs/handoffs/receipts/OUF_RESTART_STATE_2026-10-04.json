@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "TEATRI_GRANULARITY_CONFIRMED_DISCOVERY_RUNTIME_READ_NEEDED",
+  "nextStatus": "TEATRI_LOCAL_OR_NATIONAL_SEMANTIC_PATH_DECISION_NEEDED",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Read current ouf-semantic declared provider/worker config and override presence on VPS. Wire bounded semantic.discovery.request through existing owner contract and Gateway delegation; do not create job before provider availability, do not treat empty-provider completed job as discovered evidence. Continue exact governed pins -> complete 20-field mapping -> draft/THS/compatibility/ACTIVE/run.",
+  "currentAction": "User choose reviewed local OUF Teatri model via Cinema's existing import/review/publication path, or complete national provider/MCP discovery first. No choice inferred from theatre row-granularity confirmation. Local proposal covers20fields but exact pins/access decisions and execution support (hall observation/geometry/provenance) still required.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Read current ouf-semantic declared provider/worker config and override presence on VPS. Wire bounded semantic.discovery.request through existing owner contract and Gateway delegation; do not create job before provider availability, do not treat empty-provider completed job as discovered evidence. Continue exact governed pins -> complete 20-field mapping -> draft/THS/compatibility/ACTIVE/run.",
+  "nextAction": "User choose reviewed local OUF Teatri model via Cinema's existing import/review/publication path, or complete national provider/MCP discovery first. No choice inferred from theatre row-granularity confirmation. Local proposal covers20fields but exact pins/access decisions and execution support (hall observation/geometry/provenance) still required.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4776,7 +4776,31 @@
         "OpenAPI lists /discovery while actual DiscoveryApi maps /discovery-requests",
         "DiscoveryApi accepts only requestedArtifactType/intent/preferredLanguages, not full providerPolicy/expectedProperties contract",
         "Provider runtime admission remains unproven; do not start candidates or create a doomed/duplicate job"
-      ]
+      ],
+      "discoveryRuntime": {
+        "reportedAt": "2026-10-07T11:20:06+02:00",
+        "running": true,
+        "providerDeclared": "NOT_DECLARED_OR_INVALID",
+        "workerDeclared": "NOT_DECLARED_OR_INVALID",
+        "configurationOverridesPresent": false,
+        "reviewedSource": "e4df4c18f80b02bb4385dc605ec38cf62b4bb7cc",
+        "baselineDefaults": {
+          "providerEnabled": false,
+          "workerEnabled": true
+        },
+        "effectiveRuntimeSettingsProven": false,
+        "reason": "Source defaults reviewed, deployed packaged config/mounts/command overrides not independently proved"
+      },
+      "localAlternative": {
+        "document": "docs/sprints/TEATRI_LOCAL_MODEL_REVIEW.ttl",
+        "mappingDocument": "docs/sprints/TEATRI_LOCAL_MAPPING_REVIEW.json",
+        "status": "REVIEW_PROPOSAL_NOT_SELECTED",
+        "fields": 20,
+        "imported": false,
+        "published": false,
+        "localRdfParser": "UNAVAILABLE_RDFlib_NOT_INSTALLED",
+        "registryValidation": "NOT_EXECUTED"
+      }
     },
     "searchDiagnosis": {
       "source": "scripts/diagnose_product_search.py",
