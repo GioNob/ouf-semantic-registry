@@ -1,3 +1,19 @@
+# Stato corrente: scansione fresca e readback indipendente PASS
+
+Discovery nazionale selezionata per Teatri; Cinema ha già restituito 8/8 oggetti in ChatGPT. Nessun nuovo job Discovery, upload, profilo o ingestion creato.
+
+Producer [37613612404](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37613612404) PASS: database del 7 ottobre scaricato/hash verificato, scansioni offline reali, cinque firme verificate. ZIP artifact11478662099:1158875 byte, SHA256 a23ee77e6f2e21fc9a7ca1beb144d11f22228cc801693cac5fad47ee30e863ea. Merge firmato00ba8b2ca6caf01902943b6d8d3dba60c00df6a9. Adapter0 Critical/High/Unknown e5Medium; southbound0 Critical/High/Unknown,142Medium,18Low,4Negligible. Immagini invariate.
+
+Readback [37614224542](https://github.com/GioNob/ouf-semantic-registry/actions/runs/37614224542) PASS:38test, download indipendente dell'originale e nuovo sidecar, pin/descriptor/freschezza del DB verificati, cinque firme PASS. Ricevuta CI scaricata e ispezionata. Freschezza scade9ottobre08:31:48Europe/Rome. Archivio storico qualificato esplicitamente come storico; NON diventa una scansione attuale.
+
+Unico prossimo intervento operatore: script pinned `scripts/verify-fresh-national-evidence-vps.sh`, SHA256 `4edf6f793c6fed7ef2231923ac391c673e88e513de955ab60838ea19d633a888`. Scarica il nuovo artifact via gh già installato, verifica hash e verifier/pin dal commit4c34215c3d93add59dae916dcd87f2ce4ea1c991, ripete i controlli sul VPS. Nessun trasferimento Windows, sudo, Docker, modifica servizi o avvio. Richiede gh già autenticato sugithub.com: se manca, termina con STAGE=GH_AUTH_REQUIRED, senza accedere a dati privati o creare cartelle evidenze. BashsyntaxPASS; target NON ESEGUITO.
+
+Dopo esito VPS: continuare readiness e configurazione effettiva del provider nazionale, raccordo capability MCP tipizzata Discovery/candidate-read, candidati e pubblicazione HUMAN/THS, mapping Onboarding e un solo run Teatri fino a UDP/ChatGPT. Publisher/customcoverage, complete creation/runtime/authority/start restano non accettati; non avviare candidati né firmare authority per deduzione dalla scelta nazionale. Conservare gateway/Cinema, candidati fermi e asset/profile Teatri. Nessun fallback locale selezionato.
+
+Receipt corrente: docs/handoffs/receipts/SEMANTIC_FRESH_DEPENDENCY_EVIDENCE_2026-10-07_CI.json. Dettagli: docs/installation/TEATRI_NATIONAL_FRESH_SCAN_CURRENT.md. Le sezioni successive sono checkpoint storici, non comandi da ripetere.
+
+---
+
 # CURRENT: fresh scan CI pending — 7 October13:13Europe/Rome
 
 Nationaldiscoveryselected. User returned activeGrypev6.1.10 builtOct7 06:31:48Z pathvulnerability-db_v6.1.10_2026-10-07T00:34:45Z_1791354708.tar.zst checksum008449eb30e10988569b3bd54eb46158f33187211ba723f41ed9326ccfa1e174. Newchecked-inpin selected by extendedinventoryworkflow; oldpin/evidence untouched. Syntax and pinfreshnessboundariesPASS, actualnewdownload/checksum/offlinescan/signatures CIpending. Workflow nowfails on blockingthreshold before attesting; signedinventory embeds newDBpin. FollowCIwithout stopping at milestone; diagnose failures. Need newarchive/producer/merge/hash and independentreadback before concreteoperatortransfer/verification. No imagechange/start/acceptance or nationaldiscoveryjobyet. Preserve realCinema8/8, Teatri13rows20fields/theatrerowhallcapacityseparate, allgovernance/authority/publisher controls. Localmodel remainsNOTSELECTED. See TEATRI_NATIONAL_FRESH_SCAN_CURRENT.md and restartJSON.

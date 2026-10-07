@@ -91,7 +91,7 @@
     "section47Status": "EXECUTED_PASS",
     "section48Status": "EXECUTED_PASS"
   },
-  "nextTask": "Execute corrected conditional route repair with exact observed Admin key owner UID1000/mode600 and loopback Admin API in pinned Gateway network namespace; do not chmod/chown key.",
+  "nextTask": "Operator runs pinned scripts/verify-fresh-national-evidence-vps.sh on VPS: download fresh exact artifact and verify image/report/database bindings plus five signatures. No Windows transfer, sudo, Docker or service changes. Existing gh authentication required; report GH_AUTH_REQUIRED if absent. Then continue national provider readiness and typed MCP discovery; no milestones approvals.",
   "open": [
     "target authority and acceptance mandate provisioning",
     "target image/volume acceptance",
@@ -115,7 +115,7 @@
     "canonicalWrapperSha256": "f7f3b96a1a0f6f32971a6d8c973ceb88339630eddff76f02df983bd36177739d",
     "doNotReplay": true
   },
-  "nextStep": "Execute corrected conditional route repair with exact observed Admin key owner UID1000/mode600 and loopback Admin API in pinned Gateway network namespace; do not chmod/chown key.",
+  "nextStep": "Operator runs pinned scripts/verify-fresh-national-evidence-vps.sh on VPS: download fresh exact artifact and verify image/report/database bindings plus five signatures. No Windows transfer, sudo, Docker or service changes. Existing gh authentication required; report GH_AUTH_REQUIRED if absent. Then continue national provider readiness and typed MCP discovery; no milestones approvals.",
   "latestDocumentationCi": {
     "schema": "ouf.semantic-creation-fields-ci-evidence.v1",
     "section": 47,
@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "NATIONAL_DISCOVERY_FRESH_V2_SCAN_CI_PENDING",
+  "nextStatus": "FRESH_SCAN_AND_INDEPENDENT_READBACK_PASS_VPS_VERIFICATION_PENDING",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -2821,7 +2821,7 @@
       }
     }
   },
-  "currentAction": "Inspect new extended-inventory CI using Oct7 exact DB pin. Require archive checksum, real isolated scans and signatures, inspect failures/results; no admission from metadata. Then fresh signed sidecar target verification and provider dossier/runtime/readiness plus closed MCP discovery binding.",
+  "currentAction": "Operator runs pinned scripts/verify-fresh-national-evidence-vps.sh on VPS: download fresh exact artifact and verify image/report/database bindings plus five signatures. No Windows transfer, sudo, Docker or service changes. Existing gh authentication required; report GH_AUTH_REQUIRED if absent. Then continue national provider readiness and typed MCP discovery; no milestones approvals.",
   "semanticNativeRuntimeRebuild": {
     "schema": "ouf.semantic-native-rebuild-review.v1",
     "baselineRun": 37427596293,
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Inspect new extended-inventory CI using Oct7 exact DB pin. Require archive checksum, real isolated scans and signatures, inspect failures/results; no admission from metadata. Then fresh signed sidecar target verification and provider dossier/runtime/readiness plus closed MCP discovery binding.",
+  "nextAction": "Operator runs pinned scripts/verify-fresh-national-evidence-vps.sh on VPS: download fresh exact artifact and verify image/report/database bindings plus five signatures. No Windows transfer, sudo, Docker or service changes. Existing gh authentication required; report GH_AUTH_REQUIRED if absent. Then continue national provider readiness and typed MCP discovery; no milestones approvals.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4918,6 +4918,80 @@
         "configurationSnapshotModified": false,
         "secretValuesPrinted": false
       }
+    }
+  },
+  "semanticFreshDependencyEvidence": {
+    "schema": "ouf.semantic-fresh-dependency-evidence-ci.v1",
+    "producer": {
+      "runId": 37613612404,
+      "jobId": 112766567743,
+      "sourceCodeCommit": "84e91e199892bfda1d116a49f53a9990f61724c7",
+      "sourceMergeCommit": "00ba8b2ca6caf01902943b6d8d3dba60c00df6a9",
+      "status": "PASS",
+      "artifactId": 11478662099,
+      "artifactBytes": 1158875,
+      "artifactSha256": "a23ee77e6f2e21fc9a7ca1beb144d11f22228cc801693cac5fad47ee30e863ea",
+      "fiveSignaturesVerified": true
+    },
+    "independentReadback": {
+      "runId": 37614224542,
+      "jobId": 112768571933,
+      "sourceCodeCommit": "4c34215c3d93add59dae916dcd87f2ce4ea1c991",
+      "status": "PASS",
+      "testsPassed": 38,
+      "actualDownloadedArtifactVerified": true,
+      "databaseFreshnessVerified": true,
+      "fiveSignaturesVerified": true,
+      "artifactId": 11479327379,
+      "artifactBytes": 45054,
+      "artifactSha256": "23db48299cef6f045cb350c5653caa6c6d54bb6f6464f980e94214dc50c1968b",
+      "downloadedReceiptInspected": true
+    },
+    "databasePin": {
+      "status": "active",
+      "schemaVersion": "v6.1.10",
+      "built": "2026-10-07T06:31:48Z",
+      "path": "vulnerability-db_v6.1.10_2026-10-07T00:34:45Z_1791354708.tar.zst",
+      "checksum": "sha256:008449eb30e10988569b3bd54eb46158f33187211ba723f41ed9326ccfa1e174"
+    },
+    "freshnessEnds": "2026-10-09T06:31:48Z",
+    "sourceArtifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+    "severityCounts": {
+      "adapter": {
+        "Critical": 0,
+        "High": 0,
+        "Medium": 5,
+        "Low": 0,
+        "Negligible": 0,
+        "Unknown": 0
+      },
+      "southbound": {
+        "Critical": 0,
+        "High": 0,
+        "Medium": 142,
+        "Low": 18,
+        "Negligible": 4,
+        "Unknown": 0
+      }
+    },
+    "imagesModified": false,
+    "targetVerificationPending": true,
+    "targetAttestationCryptoVerified": false,
+    "imageImportPerformed": false,
+    "containerOperations": 0,
+    "publisherTrustAccepted": false,
+    "dependencyCoverageAccepted": false,
+    "acceptanceGranted": false,
+    "runtimeRegistered": false,
+    "startAuthorized": false,
+    "discoveryRequestCreated": false,
+    "vpsWrapper": {
+      "path": "scripts/verify-fresh-national-evidence-vps.sh",
+      "sha256": "4edf6f793c6fed7ef2231923ac391c673e88e513de955ab60838ea19d633a888",
+      "verifierSourceCommit": "4c34215c3d93add59dae916dcd87f2ce4ea1c991",
+      "requiresExistingGithubCliAuthentication": true,
+      "shellSyntaxVerified": true,
+      "runtimeOperations": false
     }
   }
 }
