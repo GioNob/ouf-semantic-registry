@@ -1,5 +1,7 @@
 """Verify a signed evidence sidecar against the unchanged v2 ZIP; no runtime operations."""
 import argparse
+import datetime
+import time
 import hashlib
 import json
 import re
@@ -31,8 +33,22 @@ def read_sidecar(path, expected_sha):
         files = {e.filename: archive.read(e) for e in entries}
     return files
 
-def review(files, receipt, require_generated=False, require_dossier=False):
+def fresh_database_pin(pin, now=None):
+    require(type(pin) is dict and set(pin)=={'status','schemaVersion','built','path','checksum'}, 'DATABASE_PIN_SHAPE')
+    require(pin['status']=='active' and re.fullmatch(r'v6\.\d+\.\d+',pin['schemaVersion']) and
+            re.fullmatch(r'vulnerability-db_v6\.\d+\.\d+_[A-Za-z0-9:T._+-]+\.tar\.zst',pin['path']) and
+            re.fullmatch(r'sha256:[0-9a-f]{64}',pin['checksum']), 'DATABASE_PIN_FORMAT')
+    built=datetime.datetime.fromisoformat(pin['built'].replace('Z','+00:00'))
+    require(built.tzinfo is not None, 'DATABASE_TIMEZONE')
+    age=(time.time() if now is None else now)-built.timestamp()
+    require(0<=age<=172800, 'DATABASE_NOT_FRESH')
+    return pin
+
+def review(files, receipt, require_generated=False, require_dossier=False, database_pin=None):
     inventory = json.loads(files['inventory.json'])
+    if database_pin is not None:
+        fresh_database_pin(database_pin)
+        require(inventory.get('databasePin')==database_pin, 'INVENTORY_DATABASE_BINDING')
     require(inventory['schema'] == 'ouf.semantic-extended-dependency-inventory.v1', 'INVENTORY_SCHEMA')
     require(inventory['sourceArtifactSha256'] == ORIGINAL_SHA, 'ORIGINAL_ARTIFACT_BINDING')
     require(inventory['imagesModified'] is False and inventory['originalSyftDocumentsPreserved'] is True,
@@ -56,6 +72,11 @@ def review(files, receipt, require_generated=False, require_dossier=False):
         scan = next(r for r in inventory['scans'] if r['role'] == role)
         raw = files[role + '.extended.grype.json']; report = json.loads(raw)
         require(hashlib.sha256(raw).hexdigest() == scan['reportSha256'], 'SCAN_BINDING:' + role)
+        if database_pin is not None:
+            status=report['descriptor']['db']['status']
+            require(status.get('valid') is True and not status.get('error') and
+                    status['built']==database_pin['built'] and
+                    status['schemaVersion']==database_pin['schemaVersion'], 'SCAN_DATABASE_BINDING:'+role)
         counts = {k: 0 for k in ('Critical', 'High', 'Medium', 'Low', 'Negligible', 'Unknown')}
         for match in report['matches']: counts[match['vulnerability']['severity']] += 1
         require(counts == scan['severityCounts'] and not report.get('ignoredMatches'), 'SCAN_COUNTS:' + role)
@@ -110,6 +131,7 @@ def main():
     parser.add_argument('--source-merge-commit', required=True)
     parser.add_argument('--gh', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--database-pin', type=Path)
     parser.add_argument('--require-generated-luajit', action='store_true')
     parser.add_argument('--require-isolated-dossier', action='store_true')
     args = parser.parse_args()
@@ -122,7 +144,8 @@ def main():
     with zipfile.ZipFile(args.original_bundle) as archive:
         require(archive.getinfo('receipt.json').file_size <= 1048576, 'ORIGINAL_RECEIPT_BOUNDARY')
         receipt = json.loads(archive.read('receipt.json'))
-    inventory = review(files, receipt, args.require_generated_luajit, args.require_isolated_dossier)
+    database_pin=json.loads(args.database_pin.read_bytes()) if args.database_pin is not None else None
+    inventory = review(files, receipt, args.require_generated_luajit, args.require_isolated_dossier, database_pin)
     args.output.mkdir(mode=0o700)
     for filename, content in files.items():
         target = args.output / filename
@@ -142,6 +165,10 @@ def main():
         allScannerSeverityThresholdsMet=inventory['allScannerSeverityThresholdsMet'],
         imageImportPerformed=False, containerOperations=0, dependencyCoverageAccepted=False,
         publisherTrustAccepted=False, acceptanceGranted=False, runtimeRegistered=False, startAuthorized=False)
+    if database_pin is not None:
+        fresh_database_pin(database_pin)
+        result['databasePin']=database_pin
+        result['databaseFreshnessVerified']=True
     target = args.output / 'target-receipt.json'
     target.write_text(json.dumps(result, indent=2, sort_keys=True) + '\n'); target.chmod(0o600)
     print('OUF_EXTENDED_TARGET_CRYPTO=PASS', flush=True)

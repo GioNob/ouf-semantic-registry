@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Verify archive, image and report rejection tests
-        run: python3 -B -m unittest tests.test_semantic_extended_inventory tests.test_semantic_static_module_coverage tests.test_semantic_extended_evidence_verification tests.test_semantic_generated_luajit tests.test_semantic_v2_isolated_dossier -v
+        run: python3 -B -m unittest tests.test_semantic_remediation_bundle tests.test_semantic_extended_inventory tests.test_semantic_static_module_coverage tests.test_semantic_extended_evidence_verification tests.test_semantic_generated_luajit tests.test_semantic_v2_isolated_dossier -v
       - name: Reverify unchanged original v2 artifact
         env:
           GH_TOKEN: ${{ github.token }}
@@ -25,7 +25,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api /repos/GioNob/ouf-semantic-registry/actions/artifacts/11460989205/zip > "$RUNNER_TEMP/extended-v2.zip"
+          gh api /repos/GioNob/ouf-semantic-registry/actions/artifacts/11478662099/zip > "$RUNNER_TEMP/extended-v2.zip"
           mkdir -m 700 "$RUNNER_TEMP/extended-gh"
           curl --fail --location --silent --show-error https://github.com/cli/cli/releases/download/v2.102.0/gh_2.102.0_linux_amd64.tar.gz > "$RUNNER_TEMP/extended-gh/gh.tar.gz"
           echo 'bb766f710eef8ede859c18578c72c327597cd4c8a85b06001b1f3843c6019386  '"$RUNNER_TEMP/extended-gh/gh.tar.gz" | sha256sum -c -
@@ -36,10 +36,11 @@ jobs:
         run: |
           python3 -I -B tools/verify_semantic_extended_evidence.py \
             --sidecar "$RUNNER_TEMP/extended-v2.zip" \
-            --sidecar-sha256 479b761111fd20e192f8f195349107ee620b9b4f8c53453fc4557fe5a4d44797 \
+            --sidecar-sha256 a23ee77e6f2e21fc9a7ca1beb144d11f22228cc801693cac5fad47ee30e863ea \
             --original-bundle "$RUNNER_TEMP/ouf-downloaded-v2-artifact/bundle.zip" \
-            --source-merge-commit 27965d0a5c1997490b1e9542eb1e3d662523ee15 \
+            --source-merge-commit 00ba8b2ca6caf01902943b6d8d3dba60c00df6a9 \
             --require-generated-luajit --require-isolated-dossier \
+            --database-pin docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_DATABASE_PIN_2026-10-07.json \
             --gh "$RUNNER_TEMP/extended-gh/gh_2.102.0_linux_amd64/bin/gh" \
             --output generated/extended-evidence-readback
       - uses: actions/upload-artifact@v4
