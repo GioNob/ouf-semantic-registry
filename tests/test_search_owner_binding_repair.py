@@ -40,6 +40,27 @@ class MemoryAdmin:
 
 
 class BindingRepairTest(unittest.TestCase):
+    def test_upstream_repair_preserves_full_route_and_weight(self):
+        old=fixture()
+        new=repair.proposed_upstream(old)
+        self.assertEqual(new['upstream']['nodes'],{'ouf-udp:8080':1})
+        new['upstream']['nodes']=copy.deepcopy(old['upstream']['nodes'])
+        self.assertEqual(new,old)
+        self.assertIsNone(repair.proposed_upstream(repair.proposed_upstream(old)))
+        old['upstream']['nodes']={'foreign:8080':1}
+        with self.assertRaises(ValueError): repair.proposed_upstream(old)
+
+    def test_upstream_repair_requires_missing_old_name_and_verified_owner(self):
+        old={'result':'NAME_NOT_RESOLVED'}
+        new={'udpRunning':True,'resolvedAddressesMatchUdp':True,'unsignedOwnerProbe':{'httpStatus':403}}
+        repair.qualify_upstream_repair(old,new)
+        for bad_old,bad_new in [({},new),(old,{**new,'resolvedAddressesMatchUdp':False}),(old,{**new,'unsignedOwnerProbe':{'httpStatus':200}}),(old,{**new,'udpRunning':False})]:
+            with self.assertRaises(ValueError): repair.qualify_upstream_repair(bad_old,bad_new)
+        route=fixture();candidate=repair.proposed_upstream(route)
+        admin=MemoryAdmin(route,fail_after_put=True)
+        self.assertEqual(repair.transaction(admin,route,candidate),'BLOCKED_ORIGINAL_RESTORED')
+        self.assertEqual(admin.current,repair.canonical(route))
+
     def test_upstream_alias_and_foreign_targets(self):
         gateway={'NetworkSettings':{'Networks':{'shared':{}}}}
         udp={'Name':'/ouf-udp','State':{'Running':True},'NetworkSettings':{'Networks':{'shared':{'IPAddress':'172.20.0.4','Aliases':['ouf-udp']}}}}

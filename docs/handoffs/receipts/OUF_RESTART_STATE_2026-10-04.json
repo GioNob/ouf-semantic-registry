@@ -383,7 +383,7 @@
     "inlineTlsPrivateKeyFileRead": true,
     "doNotReplay": true
   },
-  "nextStatus": "SEARCH_KEY_BINDINGS_PASS_UPSTREAM_DIAGNOSIS_PENDING",
+  "nextStatus": "SEARCH_UPSTREAM_UNRESOLVED_EXACT_REPAIR_PENDING",
   "imageLineageReadback": {
     "section": 41,
     "status": "EXECUTED_PASS",
@@ -3620,7 +3620,7 @@
     "currentIdentityReceipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
     "targetByteQualificationEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json"
   },
-  "nextAction": "Run --diagnose-upstream on current Gateway/UDP: inspect exact live route host, current shared networks/aliases, resolve inside Gateway with getent, probe only matched current private UDP address from Gateway network namespace without any receipt; no body read or changes.",
+  "nextAction": "Execute --repair-upstream: require old ouf-udp-object-resolution name unresolved, qualify ouf-udp as current UDP private addresses from Gateway and unsigned owner403, snapshot full route, replace only upstream host, lease/readback/owned rollback. Then actual ChatGPT Cinema search immediately.",
   "semanticImageRemediationCurrentState": {
     "sourceRun": 37448782226,
     "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
@@ -4701,7 +4701,7 @@
     },
     "cinemaUrbanSearch": {
       "httpStatus": 503,
-      "cause": "UNPROVEN",
+      "cause": "LIVE_UPSTREAM_NAME_UNRESOLVED_CONFIRMED; EXCLUSIVE_503_CAUSE_NOT_YET_PROVEN",
       "checkedAt": "2026-10-07T08:59:46+02:00",
       "account": "ouf-admin"
     },
@@ -4804,12 +4804,20 @@
         "positiveSearchProven": false
       },
       "upstreamDiagnosis": {
-        "status": "TARGET_PENDING",
-        "source": "scripts/repair_search_owner_binding.py",
-        "mode": "--diagnose-upstream",
-        "sha256": "4235c145b0d08ed1529760a9aa6f7ebdfc3a07fa4a03c6367894d671adbcea23",
-        "localTestsPassed": 11
-      }
+        "schema": "ouf.search-upstream-operator.v1",
+        "operatorReportedAt": "2026-10-07T09:12:19+02:00",
+        "sharedNetworkCount": 1,
+        "udpRunning": true,
+        "routeChanged": false,
+        "positiveSearchProven": false,
+        "upstreamMatchesUdpAliasOrAddress": false,
+        "upstreamHost": "ouf-udp-object-resolution",
+        "result": "NAME_NOT_RESOLVED",
+        "repairPending": true,
+        "repairScriptSha256": "e1598e0e576ecb0f496df60038a2be65018060190b79551ae6d1f0e109926335",
+        "localTestsPassed": 13
+      },
+      "generatorFollowup": "Gateway tools/materialize_object_search.py at c0b1f97 still hardcodes unresolved logical service hostname. Installation scripts/profile must reconcile runtime UDP host before future redeploy; service identity remains ouf-udp-object-resolution. Do not overwrite route repair with old generator."
     }
   }
 }

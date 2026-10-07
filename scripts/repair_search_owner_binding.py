@@ -158,6 +158,32 @@ def proposed(route):
     return new
 
 
+def proposed_upstream(route):
+    if route.get('id') != ROUTE or route.get('uri') != URI or route.get('methods') != ['POST']:
+        raise ValueError('SEARCH_ROUTE_IDENTITY_MISMATCH')
+    up=route.get('upstream') or {}
+    nodes=up.get('nodes')
+    if up.get('scheme','http')!='http' or not isinstance(nodes,dict) or len(nodes)!=1:
+        raise ValueError('EXACT_SINGLE_HTTP_UPSTREAM_REQUIRED')
+    if set(nodes)=={'ouf-udp:8080'}:
+        return None
+    if set(nodes)!={'ouf-udp-object-resolution:8080'}:
+        raise ValueError('EXISTING_UPSTREAM_REQUIRES_REVIEW')
+    new=copy.deepcopy(route)
+    new['upstream']['nodes']={'ouf-udp:8080':nodes['ouf-udp-object-resolution:8080']}
+    check=copy.deepcopy(new)
+    check['upstream']['nodes']=copy.deepcopy(nodes)
+    if check!=route: raise ValueError('UNRELATED_ROUTE_CHANGE_DENIED')
+    return new
+
+
+def qualify_upstream_repair(old_report,new_report):
+    if old_report.get('result')!='NAME_NOT_RESOLVED':
+        raise ValueError('OLD_UPSTREAM_NAME_NOT_RESOLVED_REQUIRED')
+    if new_report.get('udpRunning') is not True or new_report.get('resolvedAddressesMatchUdp') is not True or new_report.get('unsignedOwnerProbe',{}).get('httpStatus')!=403:
+        raise ValueError('CURRENT_UDP_NAME_AND_UNSIGNED_DENIAL_REQUIRED')
+
+
 ADMIN_WORKER = r"""
 import json,sys,urllib.request,urllib.error
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -244,6 +270,7 @@ def main():
     mode.add_argument('--apply', action='store_true')
     mode.add_argument('--diagnose', action='store_true')
     mode.add_argument('--diagnose-upstream', action='store_true')
+    mode.add_argument('--repair-upstream', action='store_true')
     parser.add_argument('--udp', default='ouf-udp')
     parser.add_argument('--docker', required=True)
     parser.add_argument('--gateway', required=True)
@@ -289,14 +316,26 @@ def main():
             print('SEARCH_KEY_BINDINGS=' + json.dumps(diagnose_bindings(old, env, generated)))
             admin.close()
             return
-        new = proposed(old)
+        if args.repair_upstream:
+            if args.udp!='ouf-udp': raise ValueError('EXACT_CURRENT_UDP_CONTAINER_REQUIRED')
+            bindings=diagnose_bindings(old,env,generated)
+            if not all(b['containerValueHex64'] and b['generatedEnvDirectivePresent'] for b in bindings['bindings'].values()):
+                raise ValueError('EXISTING_SIGNING_BINDINGS_REQUIRED')
+            new=proposed_upstream(old)
+            if new is None:
+                print('SEARCH_UPSTREAM_REPAIR=ALREADY_CORRECT NO_ROUTE_CHANGED=true')
+                return
+            stage='OLD_AND_NEW_UPSTREAM_QUALIFICATION'
+            qualify_upstream_repair(diagnose_upstream(old,gateway,admin,args),diagnose_upstream(new,gateway,admin,args))
+        else:
+            new = proposed(old)
         if new is None:
             print('SEARCH_OWNER_BINDING=' + json.dumps({'status': 'ALREADY_DECLARED', 'generatedSearchEnvDirectivePresent': inherited, 'routeChanged': False, 'positiveSearchProven': False}))
             return
         if not inherited:
             print('SEARCH_OWNER_BINDING=MISSING_DECLARATION GENERATED_SEARCH_ENV_DIRECTIVE_ABSENT=true NO_ROUTE_CHANGED=true')
             return
-        if not args.apply:
+        if not args.apply and not args.repair_upstream:
             print('SEARCH_OWNER_BINDING=MISSING_DECLARATION_EXACT_REPAIR_READY NO_ROUTE_CHANGED=true')
             return
         stage = 'PRIVATE_SNAPSHOT'
@@ -304,7 +343,7 @@ def main():
         if not stat.S_ISDIR(root.st_mode) or root.st_uid != 0 or stat.S_IMODE(root.st_mode) & 0o022:
             raise ValueError('ROOT_BACKUP_DIRECTORY_NOT_WRITABLE_BY_OTHERS_REQUIRED')
         os.umask(0o077)
-        folder = Path(tempfile.mkdtemp(prefix='search-owner-binding-', dir=args.backup_root))
+        folder = Path(tempfile.mkdtemp(prefix='search-upstream-' if args.repair_upstream else 'search-owner-binding-', dir=args.backup_root))
         previous = folder / 'previous-route.json'
         with previous.open('x') as output:
             json.dump(old, output)
@@ -313,10 +352,11 @@ def main():
         stage = 'EXACT_ROUTE_REPAIR_AND_READBACK'
         status = transaction(admin, old, new)
         report = {'status': status, 'snapshotDirectory': str(folder), 'routeId': ROUTE,
-                  'onlyAddedOwnerKeyDeclaration': True, 'secretValuesPrinted': False,
+                  'onlyAddedOwnerKeyDeclaration': not args.repair_upstream, 'secretValuesPrinted': False,
+                  'onlyChangedSearchUpstreamHost': args.repair_upstream,
                   'configurationSnapshotModified': False, 'containerRestarted': False,
                   'positiveSearchProven': False}
-        print('SEARCH_OWNER_BINDING=' + json.dumps(report, sort_keys=True))
+        print(('SEARCH_UPSTREAM_REPAIR=' if args.repair_upstream else 'SEARCH_OWNER_BINDING=') + json.dumps(report, sort_keys=True))
         if status != 'REPAIRED_AND_READBACK_VERIFIED':
             raise SystemExit(1)
     except Exception as error:
