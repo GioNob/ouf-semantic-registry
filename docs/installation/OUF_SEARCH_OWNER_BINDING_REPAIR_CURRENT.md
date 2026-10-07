@@ -1,31 +1,27 @@
-# Ricerca UDP503: verifica e correzione condizionale della sola route
+# Ricerca UDP503: correzione condizionale owner binding, procedura corrente
 
-Test/reload APISIX eseguiti dall'operatore7ottobre08:23:30Europe/Rome; chiamata ChatGPT successiva ancoraHTTP503. Non ripetere reload o alterare il file snapshot consultation-human-read-20261002-1153/prepared/apisix-config.yaml.
+Questa versione sostituisce i comandi ef414117, bloccati prima di qualsiasi GET/PUT perché richiedevano erroneamente ownerroot sulla chiave. Output operatore7ottobre08:32:36Europe/Rome: fileAdminregular,600,UID1000/GID1000. Non modificare proprietà/permessi o rigenerare la chiave.
 
-Sorgente ef414117af30a65d36807b36c8eb1dcef9d7178d; SHA256 3e16a8e9242fa2a1d231acddbf9a08a186d3f616189368010eac0ade117872a1. Cinque test localiPASS per deltaunico, bindingesistente/estraneonegato, routeestranea, readback/ripristinosuscritturaambigua, driftconcorrentenegato. Nessuna prova target/CI positiva concessa.
+Pin immutabile 7edde1826366a942e8f3e30bdca9c75826714534; SHA256 8df3b26571e98103663981fd9095cc515cfece109dccd05fa7fafdde1a4c2944. Otto testlocaliPASS; nuova esecuzione targetpendente. Nessuna nuova CI o servingpositivo dichiarato.
 
-## Operazione concreta
+Il programma accetta il proprietario osservato solo con --admin-key-owner-uid1000 e accesso privato, rifiuta symlink/fileestraneo/permessi aperti. La chiaveAdmin è letta privatamente per la sola route execute-urban-object-search. L'Admin API viene raggiunta su127.0.0.1:9180 nel namespace rete del Gatewaycorrente: FDnamespacebloccato al processoosservato, nsenter, Pythonhost-I-B. Nessun container temporaneo/riavvio. Chiave e route sono trasferite al worker via stdin, mai argv/environment o output pubblico; il responsobackend è catturato in memoria.
 
-Lo script legge privatamente la chiave Admin già esistente /opt/ouf/secrets/apisix-admin-key e la usa soltanto per GET/PUT dell'ID execute-urban-object-search sull'IPprivato gatewaycontrol del containercorrente. Nessun valore di chiave viene stampato, copiato negli argomenti Docker o rigenerato.
+Se la dichiarazioneOWNER_KEY_ENV esiste, non cambia nulla. Se manca, può aggiungere soltanto local OWNER_KEY_ENV = "OUF_UDP_SEARCH_OWNER_KEY" alla funzione, dopo aver verificato route/metodo/header/delega/receipt e direttiva env generata. Il confronto completo della route con rimozione della sola riga deve coincidere con l'originale; OIDC/scopes/schema/policy/upstream invariati. In caso di envgeneratoancoraassente non scrive.
 
-Legge inspect e nginx.conf in memoria. Procede solo se GatewayèRUNNING, chiaveSEARCHgiàpresente/64hex e direttivagenerata envSEARCHrilevata. Verifica URI/metodoPOST, headerfunzione, declarationdelegation e contrattoreceipt. Se OWNER_KEY_ENV è già dichiarata non modifica nulla; bindingdiverso/formatoignoto blocca. Se manca soltanto la declaration attesa, aggiunge local OWNER_KEY_ENV = "OUF_UDP_SEARCH_OWNER_KEY" subito dentro la funzione. Il confronto integrale dopo rimozione della sola riga deve coincidere con la route originale; nessun OIDC/scope/schema/policy/upstream viene cambiato.
+Prima della PUT conserva previous-route.json in nuova root700/file600 sotto /etc/ouf/deploy-snapshots. Non aprire o pubblicare questo snapshotprivato. Verifica currentrouteprima/dopo. Ripristina su errore solo se vede ancora il proprio esattostatonuovo; driftconcorrente/ignoto richiede review, senza force. Nessun fileconfigAPISIXstorico modificato, nessuna fonte/run/UDPmutation/grant/providerstart.
 
-Prima della PUT salva previous-route.json in una nuova directory root700/file600 sotto /etc/ouf/deploy-snapshots. Lo snapshot route può incorporare configurazioneprivata: non aprirlo/stamparlo/caricarlo su GitHub. Rilegge currentrouteprima e dopo PUT. In errore ripristina soltanto se currentroute è ancora il nostro esatto nuovostato; non sovrascrive stati concorrenti/ignoti. Questi casi riportano REVIEW_REQUIRED, conservano snapshot e richiedono diagnosi, senza nuovoapply/restart.
-
-Nessun container/provider/sourcejob/oggettoUDP viene creato o avviato, nessun fileconfigAPISIXstorico viene modificato. Questa correzione non aggiunge grant né conferisce provider acceptance/start. Il successo del readback non è servingpositivo: la chiamata ChatGPT successiva lo verifica.
-
-## Tre righe nella shell VPS
+Nella shell VPSoufadmin, tre righe separate:
 
 ```bash
-umask 077; oufRepairDir=$(mktemp -d /tmp/ouf-search-repair.XXXXXX)
+umask 077; oufRepairDir2=$(mktemp -d /tmp/ouf-search-repair-v2.XXXXXX)
 ```
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/GioNob/ouf-semantic-registry/ef414117af30a65d36807b36c8eb1dcef9d7178d/scripts/repair_search_owner_binding.py" -o "$oufRepairDir/repair.py"
+curl -fsSL "https://raw.githubusercontent.com/GioNob/ouf-semantic-registry/7edde1826366a942e8f3e30bdca9c75826714534/scripts/repair_search_owner_binding.py" -o "$oufRepairDir2/repair.py"
 ```
 
 ```bash
-printf '%s  %s\n' 3e16a8e9242fa2a1d231acddbf9a08a186d3f616189368010eac0ade117872a1 "$oufRepairDir/repair.py" | sha256sum -c - && sudo /usr/bin/python3 -I -B "$oufRepairDir/repair.py" --apply --docker /usr/bin/docker --gateway ouf-apisix --network ouf-gateway-control --admin-key-file /opt/ouf/secrets/apisix-admin-key --backup-root /etc/ouf/deploy-snapshots
+printf '%s  %s\n' 8df3b26571e98103663981fd9095cc515cfece109dccd05fa7fafdde1a4c2944 "$oufRepairDir2/repair.py" | sha256sum -c - && sudo /usr/bin/python3 -I -B "$oufRepairDir2/repair.py" --apply --docker /usr/bin/docker --gateway ouf-apisix --network ouf-gateway-control --admin-key-file /opt/ouf/secrets/apisix-admin-key --admin-key-owner-uid 1000 --nsenter /usr/bin/nsenter --backup-root /etc/ouf/deploy-snapshots
 ```
 
-Restituire solo marker SEARCH_OWNER_BINDING oppure erroredownload/checksum. Se ALREADY_DECLARED o GENERATED_SEARCH_ENV_DIRECTIVE_ABSENT non c'è stata alcuna scrittura e la causa503restaaperta. Se REPAIRED_AND_READBACK_VERIFIED, l'assistente ricerca subito Cinema via stesso account ouf-admin e prosegue con paginazione/mappingTeatri.
+Restituire il markerSEARCH_OWNER_BINDING. Una causa nota è esposta soltanto come codice sicuro REASON, mai rawerror/secret. REPAIRED_AND_READBACK_VERIFIED è verifica della correzione route, non servingpositivo; l'assistente richiama subito la ricercaCinema da ChatGPT con accountouf-admin. ALREADY_DECLARED/envabsent non conferiscono alcuna correzione. Conservare snapshot e vecchio tentativo.
