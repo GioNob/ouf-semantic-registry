@@ -20,7 +20,7 @@ def inputs(values):
         seen.add(item['target'])
         require(all(type(item[k]) is int and 0<=item[k]<2**32 for k in ('uid','gid'))
             and type(item['mode']) is int and 0<item['mode']<=0o777 and not item['mode']&0o022
-            and type(item['maxBytes']) is int and 1<=item['maxBytes']<=131072
+            and type(item['maxBytes']) is int and 1<=item['maxBytes']<=1048576
             and type(item['sha256']) is str and re.fullmatch('[0-9a-f]{64}',item['sha256']),
             'EXACT_SOURCE_FRAME_INPUTS_REQUIRED')
 

@@ -7,6 +7,26 @@ from tools import observe_semantic_mount_view as mounts
 from test_semantic_oci_policy import fixture
 
 class Frame(unittest.TestCase):
+    def test_large_source_streamed_and_one_mib_ceiling_enforced(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            path=Path(dirname)/'source';path.write_bytes(b'C'*262144);path.chmod(0o600)
+            item=self.source(path);item['maxBytes']=1048576;m.inputs([item])
+            fd=os.open(path,os.O_PATH|os.O_NOFOLLOW)
+            try:
+                self.assertEqual(m.source_hash(item,fd,mounts.attributes(os.fstat(fd)),mounts.Budget()),262144)
+                item['sha256']='0'*64
+                with self.assertRaisesRegex(Denied,'SOURCE_FRAME_BYTE_HASH_DRIFT'):
+                    m.source_hash(item,fd,mounts.attributes(os.fstat(fd)),mounts.Budget())
+            finally:os.close(fd)
+            item['maxBytes']=1048577
+            with self.assertRaisesRegex(Denied,'EXACT_SOURCE_FRAME_INPUTS_REQUIRED'):m.inputs([item])
+            path.write_bytes(b'C'*1048577);item=self.source(path);item['maxBytes']=1048576
+            fd=os.open(path,os.O_PATH|os.O_NOFOLLOW)
+            try:
+                with self.assertRaisesRegex(Denied,'SOURCE_FRAME_CUSTODY_DRIFT'):
+                    m.source_hash(item,fd,mounts.attributes(os.fstat(fd)),mounts.Budget())
+            finally:os.close(fd)
+
     def source(self,filename):
         info=filename.lstat()
         return {'source':str(filename),'target':'/proof','readOnly':True,'uid':info.st_uid,'gid':info.st_gid,
@@ -42,7 +62,7 @@ class Frame(unittest.TestCase):
         base={'source':'/CI_PRIVATE_SOURCE','target':'/proof','readOnly':True,'uid':10006,'gid':10006,
             'mode':0o600,'sha256':'a'*64,'maxBytes':131072}
         for key,value in [('uid',True),('gid',-1),('mode',0o666),('sha256','CI_PRIVATE_HASH'),
-            ('maxBytes',131073),('target','/../proof'),('readOnly',False)]:
+            ('maxBytes',1048577),('target','/../proof'),('readOnly',False)]:
             item=dict(base);item[key]=value
             with self.subTest(key=key),self.assertRaises(Denied):m.source_mount_frame(0,{}, {},[item])
         with self.assertRaises(Denied):m.source_mount_frame(0,{}, {},[base,base])
