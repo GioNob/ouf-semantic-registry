@@ -1,0 +1,26 @@
+name: Diagnose retained signed discovery scan blockers
+on:
+  push:
+    branches: ['codex/discovery-existing-sbom-refresh-20261009']
+    paths:
+      - '.github/workflows/discovery-signed-scan-blockers.yml'
+      - 'tools/read_signed_discovery_scan_blockers.py'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read verified reports without repeating scans
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I -B tools/read_signed_discovery_scan_blockers.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: discovery-scan-blockers-${{ github.run_id }}
+          path: generated/discovery-scan-blockers/
+          retention-days: 30
