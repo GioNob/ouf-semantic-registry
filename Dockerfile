@@ -10,6 +10,9 @@ COPY contracts ./contracts
 RUN timeout --signal=TERM --kill-after=30s 15m mvn -B -ntp -DskipTests package
 
 FROM eclipse-temurin:21-jre
+# The Java entrypoint does not use the inherited Pebble service manager.
+# Remove its vulnerable Go runtime from the final filesystem, without a waiver.
+RUN rm -f /usr/bin/pebble
 RUN useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin ouf
 WORKDIR /app
 COPY --from=build /build/target/semantic-registry-*.jar /app/application.jar
