@@ -1,0 +1,21 @@
+# CI prototype: replace the vulnerable library with truthful custom APK metadata.
+ARG INPUT_IMAGE
+FROM ${INPUT_IMAGE} AS build
+USER 0:0
+RUN apk add --no-cache abuild build-base
+COPY generated/alpine-ubuntu-source-fixed/source-zlib/ /source-zlib/
+COPY tests/zlib-source-fixed.APKBUILD /work/APKBUILD
+WORKDIR /work
+ENV SUDO_APK=/sbin/apk
+RUN abuild-keygen -a -n && cp /root/.abuild/*.rsa.pub /etc/apk/keys/ && abuild -F -r && mkdir /out && \
+    cp /root/.abuild/*.rsa.pub /out/ && \
+    find /root/packages -name 'zlib-*.apk' -exec cp '{}' /out/ ';'
+FROM ${INPUT_IMAGE}
+USER 0:0
+COPY --from=build /out/ /tmp/ouf-zlib/
+RUN cp /tmp/ouf-zlib/*.rsa.pub /etc/apk/keys/ && \
+    apk add --no-network /tmp/ouf-zlib/zlib-*.apk && rm -rf /tmp/ouf-zlib && \
+    python3 -c 'import zlib,gzip,ssl; assert zlib.ZLIB_RUNTIME_VERSION == "1.3.2.1-motley"; b=b"OUF runtime compression proof"*4096; assert zlib.decompress(zlib.compress(b))==b; assert gzip.decompress(gzip.compress(b))==b; print(zlib.ZLIB_RUNTIME_VERSION,ssl.OPENSSL_VERSION)'
+LABEL ouf.zlib.source.commit=df84af25dc1942490e1d1c899a07619152a46148 \
+      ouf.zlib.release.status=unreleased-upstream-ci-prototype
+USER 10006:10006

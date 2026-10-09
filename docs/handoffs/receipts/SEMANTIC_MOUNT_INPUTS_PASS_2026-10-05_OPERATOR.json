@@ -1,0 +1,144 @@
+{
+  "schema": "ouf.semantic-static-mount-input-operator-receipt.v1",
+  "section": 44,
+  "status": "PASS",
+  "receivedAt": "2026-10-05T13:03:54+02:00",
+  "evidenceSource": "Operator pasted output; no independent VPS/SSH inspection",
+  "sourceCommit": "7b084e207f882168b11137f27d9647fa0d35525e",
+  "wrapperSha256": "d3aa10849587f3c46c6724764b86d2810eae0e01dbb22a245a8947d0b3e98b83",
+  "checksumPassed": true,
+  "doNotReplay": true,
+  "output": {
+    "schema": "ouf.semantic-static-mount-input-review.v1",
+    "acceptanceGranted": false,
+    "atomicSnapshotProven": false,
+    "caPrivateKeyRead": false,
+    "certificateRevocationChecked": false,
+    "cryptographicKeyValidation": true,
+    "currentTargetInspected": false,
+    "deploymentSigningKeysRead": false,
+    "environmentRead": false,
+    "fullOciAcceptanceProven": false,
+    "generationObserved": false,
+    "imagePublisherProvenanceVerified": false,
+    "independentCompilerReplay": true,
+    "inlineTlsPrivateKeyFileRead": true,
+    "inputHashes": {
+      "adapter.json": "4ac4d43b78d833b8d950ebc1bdfa5046bdace987674b50b836a4dbcd165dfcec",
+      "apisix.yaml": "dcb6c3d899a45483112edc1b005dd8214775096fa488d0544e62e22d039c160c",
+      "binding": "a486c01d486023f960945c71737d151eacfe91b341ffdb5b7aa0cc03c316b7d3",
+      "config.yaml": "3d7ba12497896163c22800706aab3a9552a0c7f4c37aa1cbe0ced9112478f399",
+      "launch": "715ad05237a26f9f63324f2bee87296659420d081ae3598414f798dc74f319cc",
+      "manifest": "052b46a56ea666971f135c75af48b3342dbeb68e2f17f1f16263a99351df88bd",
+      "plan": "121a78f38fb46aa256be8db87db7042def302da3c8bb5f06c80b326b062df461",
+      "stage": "768f37067b94b851f3e83ee224955c434dcd083c96717f4618f5675f0b7ae503",
+      "tls": "e17f7fe7db3e179cbdd619f7da79134e7c0d82b467d3513b6f62d0c8d27b3200",
+      "trust": "8a108a3c4b47f86ef58589c7322572db88991672f4c328a200711a9fd5576776"
+    },
+    "manifestMountCount": 8,
+    "manifestMountMappingConsistent": true,
+    "opensslBinarySha256": "f4aa15f2822f670af7b5c1043d7aa6ebbbc64229fd2fae382edfc6a4524749c1",
+    "privateMaterialSpooled": false,
+    "providerCalls": 0,
+    "publicCaTemporaryFilesUsed": true,
+    "publicTrustFilesRead": 4,
+    "purposeMacFilesRead": 2,
+    "purposeMacPairConsistent": true,
+    "reviewedCompilerCommit": "516133e59be869012d3003758e545a5b5aa0060a",
+    "runtimeRegistered": false,
+    "separateTlsPrivateKeyFilesRead": 2,
+    "serverPurposeAndHostnameValidated": true,
+    "signaturesIssued": 0,
+    "startAuthorized": false,
+    "targetFilesWritten": 0,
+    "wrongHostnameDenied": true,
+    "trustArtifactHashes": {
+      "adapter/provider-receipt.key": "a691fa3c5064fc83733add1bf6462196d289e2da34fbbd55262612a576bdd6c1",
+      "adapter/server.crt": "faecd20541caf2077d5fd2893d705f36b3269ac35a61b0cd3b81a22ad986f893",
+      "adapter/server.key": "7d804eaf2b0dc753c09a790c7d9bc1127ad34444d93a5c69e3143f9e2c4177ac",
+      "ca.crt": "dd9ec358d4071933c2e6cbf1f4806e0f0ae593cee3de4b0acbf56e840e926ac3",
+      "southbound/provider-receipt.key": "a691fa3c5064fc83733add1bf6462196d289e2da34fbbd55262612a576bdd6c1",
+      "southbound/server.crt": "43b7561a48b7c1b9cda7178d5be5e986581d9b4942197ac675fdf46fa9fe65e3",
+      "southbound/server.key": "32f0980aa4e10f0d0a6bc3db0b4d127a28c3900b67e27952bee38848bbe712a8",
+      "trust-bundle.pem": "48dbefcc2354c207313ba8543523076f0113ac404bd4787fe43aba14e8c42733"
+    },
+    "manifestMountInputs": [
+      {
+        "role": "southbound",
+        "slot": "config.yaml",
+        "sourceBindingHash": "9cac3cab101200838938f85b6cd8101dcc3b152b93dece4e5c0f1d5d547c0f72",
+        "destinationBindingHash": "7e77d7bb95c026d3ad810c9503e2696266adf2267b520a4b3b1baa182f9e3c4a",
+        "readOnly": true,
+        "contentHash": "3d7ba12497896163c22800706aab3a9552a0c7f4c37aa1cbe0ced9112478f399"
+      },
+      {
+        "role": "southbound",
+        "slot": "apisix.yaml",
+        "sourceBindingHash": "8b105de8db244cdd254695552c48cf87aeb4295fdee0e719e94557d6b6d49b79",
+        "destinationBindingHash": "ced9bcb66836bd908bacb1a17802ab69dce6de4cf04e81cb6b0cd32779da385f",
+        "readOnly": true,
+        "contentHash": "dcb6c3d899a45483112edc1b005dd8214775096fa488d0544e62e22d039c160c"
+      },
+      {
+        "role": "southbound",
+        "slot": "trust-bundle.pem",
+        "sourceBindingHash": "0a57d6c135cf9351271c627cb9b34c88feb059081879a184ab28ed5412730195",
+        "destinationBindingHash": "aded0868b19a81f109f453864f6340d65e601b3e4a5c6e52f4579a52a5810e4e",
+        "readOnly": true,
+        "contentHash": "48dbefcc2354c207313ba8543523076f0113ac404bd4787fe43aba14e8c42733"
+      },
+      {
+        "role": "adapter",
+        "slot": "adapter.json",
+        "sourceBindingHash": "206d490d5c217af35563aff3b2282f5b0bce96a097df89ceffb377e45cb5c96c",
+        "destinationBindingHash": "7ccf41a2f266c8d7bf0c7a9945fe2151ffa1f60c50ec07da434bfff3220258e1",
+        "readOnly": true,
+        "contentHash": "4ac4d43b78d833b8d950ebc1bdfa5046bdace987674b50b836a4dbcd165dfcec"
+      },
+      {
+        "role": "adapter",
+        "slot": "adapter/server.crt",
+        "sourceBindingHash": "5b2e3aa19c8158051427f7cd6c49c32ee0265bd4bee2d7a40ce0ee995bbba0e5",
+        "destinationBindingHash": "02b949e128cfa063f53bf4f4ad0a015956aa19064b4236527bac2f125c94e17f",
+        "readOnly": true,
+        "contentHash": "faecd20541caf2077d5fd2893d705f36b3269ac35a61b0cd3b81a22ad986f893"
+      },
+      {
+        "role": "adapter",
+        "slot": "adapter/server.key",
+        "sourceBindingHash": "545ad7729562c248184abd16a97586f20eedd23e0ce16482250c276842a8d28b",
+        "destinationBindingHash": "51ef7a278d9c4ac09e288a3ceb4125434390784f83ef4527e2a64b1f673429ca",
+        "readOnly": true,
+        "contentHash": "7d804eaf2b0dc753c09a790c7d9bc1127ad34444d93a5c69e3143f9e2c4177ac"
+      },
+      {
+        "role": "adapter",
+        "slot": "adapter/provider-receipt.key",
+        "sourceBindingHash": "8fb144ec2a590771f642f11eeabb8fc7b19b76881ee3f8f8a9eaf39bce52cc5f",
+        "destinationBindingHash": "de999a0d7d35e4f49174cd46db677785717182e20ac085e5903c652477e67a0b",
+        "readOnly": true,
+        "contentHash": "a691fa3c5064fc83733add1bf6462196d289e2da34fbbd55262612a576bdd6c1"
+      },
+      {
+        "role": "adapter",
+        "slot": "trust-bundle.pem",
+        "sourceBindingHash": "0a57d6c135cf9351271c627cb9b34c88feb059081879a184ab28ed5412730195",
+        "destinationBindingHash": "aded0868b19a81f109f453864f6340d65e601b3e4a5c6e52f4579a52a5810e4e",
+        "readOnly": true,
+        "contentHash": "48dbefcc2354c207313ba8543523076f0113ac404bd4787fe43aba14e8c42733"
+      }
+    ],
+    "reviewedCompilerHashes": {
+      "tools/lua/admit_semantic_provider.lua": "ab3d286a1ac7c59e5e34ce4617fc3ba9c79070f60df859e5e8a60d88ed92ca3d",
+      "tools/materialize_semantic_provider.py": "d9ed454412988dddf1737a6b425830a99047ad5764f0574f7fb74bc4b52f8a78",
+      "tools/materialize_semantic_provider_runtime.py": "3a44570e5b2e4e9bfafb11be8f053d2a1d608d959bed64fe4b826c9943b7b056",
+      "tools/materialize_semantic_provider_tls.py": "5b2ad608307455efb8f39802d2264325e1debe76ba774ff78e264551028d0963",
+      "tools/semantic_provider_adapter.py": "718f031cd4116d233c3075ee74da2f28170b5ed4efcac1a77deef154f7fd320c",
+      "tools/semantic_provider_admission.py": "dca670d1f0ced678db6af9810199da07419901a21523385e0ebea623b608bbfc",
+      "tools/semantic_provider_boundary.py": "cae2b1d5970349ce1ebc95fb44ca4dd1bd67d93e43900ad4cbeabb3d5fbd6e69",
+      "tools/semantic_provider_relay.py": "04b33da9b3d599872c19ea20d3775141ef99c5989c7fb7175be6926b74cc7f6f",
+      "tools/southbound_security.py": "5953e6143fb7141b62a2d5cc26d8cf85ee74147d9eefaa923460f8e1706eb0ec"
+    }
+  },
+  "finalLine": "SEMANTIC_MOUNT_INPUTS=PASS ACCEPTANCE_GRANTED=false START_AUTHORIZED=false"
+}

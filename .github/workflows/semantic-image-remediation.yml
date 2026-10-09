@@ -1,0 +1,152 @@
+name: Semantic image remediation experiment
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile.semantic-provider-source-fixed'
+      - 'Dockerfile.semantic-southbound-source-fixed'
+      - 'tests/zlib-source-fixed.APKBUILD'
+      - 'tests/build_semantic_native_runtime.py'
+      - 'tests/prepare_semantic_openresty_source.py'
+      - 'tests/semantic-native-api7-1.31.6.patch'
+      - 'tests/semantic-native-api7-shdict.patch'
+      - 'tests/semantic-native-runtime-sources.json'
+      - 'tools/prepare_semantic_image_sbom.py'
+      - 'tools/supplement_semantic_rebuilt_native_sbom.py'
+      - 'tests/scan_semantic_native_coverage.py'
+      - 'tests/openssl-3.4.1-sess_set_get_cb_yield.patch'
+      - 'tests/openssl-3.4.8-sess_set_get_cb_yield.patch'
+      - 'Dockerfile.semantic-provider-security-update'
+      - 'Dockerfile.semantic-southbound-security-update'
+      - 'tests/run_semantic_image_remediation.py'
+      - 'tests/scan_semantic_image_remediation.py'
+      - 'tests/qualify_semantic_remediation_ci.py'
+      - 'tests/test_semantic_remediation_bundle.py'
+      - 'tests/test_semantic_luajit_runtime_identity.py'
+      - 'tools/*semantic_remediation_bundle*.py'
+      - '.github/workflows/semantic-image-remediation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+jobs:
+  compatible-image-scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        candidate: [alpine-ubuntu-source-fixed]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: GioNob/ouf-api-gateway
+          ref: c0b1f97bdb1fbcd6a88117dea6520ea9c322f265
+          path: .pairwise/gateway
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install -r .pairwise/gateway/requirements-dev.txt
+      - name: Verify byte-qualification rejection checks and source closure
+        run: |
+          python3 -B -m unittest tests.test_semantic_remediation_bundle tests.test_semantic_luajit_runtime_identity
+          python3 -B tools/build_semantic_remediation_bundle_qualifier.py
+          git diff --exit-code -- tools/semantic_remediation_bundle_qualifier.py
+      - name: Prepare hash-pinned Syft, Grype and exact fresh DB
+        run: sudo /usr/bin/python3 -B tests/prepare_native_vulnerability_scanners.py
+      - name: Real compatibility, verified archive, offline SBOM and vulnerability review
+        run: python3 -B tests/run_semantic_image_remediation.py --candidate ${{ matrix.candidate }} --gateway .pairwise/gateway
+      - name: Bind every rebuilt native ELF and scan the supplemented inventory offline
+        run: |
+          sudo /usr/bin/python3 -B -m tools.supplement_semantic_rebuilt_native_sbom \
+            --archive /root/ouf-ci-image-remediation/sbom/southbound.tar \
+            --sbom /root/ouf-ci-image-remediation/sbom/southbound.syft.json \
+            --sources generated/${{ matrix.candidate }}/native-runtime-sources.json \
+            --binaries generated/${{ matrix.candidate }}/native-runtime-binaries.json \
+            --lock tests/semantic-native-runtime-sources.json \
+            --output /root/ouf-ci-rebuilt-native
+          mkdir generated/${{ matrix.candidate }}/native
+          for name in southbound.native.syft.json native-coverage.json; do
+            sudo cat "/root/ouf-ci-rebuilt-native/$name" > "generated/${{ matrix.candidate }}/native/$name"
+          done
+          sudo /usr/bin/python3 -B tests/scan_semantic_native_coverage.py \
+            --sbom /root/ouf-ci-rebuilt-native/southbound.native.syft.json \
+            > generated/${{ matrix.candidate }}/native/southbound.native.grype.json
+          python3 - <<'PY_NATIVE'
+          import collections,hashlib,json,pathlib
+          out=pathlib.Path('generated/${{ matrix.candidate }}')
+          report=json.loads((out/'native/southbound.native.grype.json').read_text())
+          counts={k:0 for k in ('Critical','High','Medium','Low','Negligible','Unknown')}
+          for match in report['matches']:counts[match['vulnerability']['severity']]+=1
+          facts=json.loads((out/'native/native-coverage.json').read_text())
+          threshold=not any(counts[k] for k in ('Critical','High','Unknown')) and not report.get('alertsByPackage')
+          facts.update(scannerInvoked=True,networkIsolatedScanner=True,severityCounts=counts,
+              scannerSeverityThresholdMet=threshold,nativeVulnerabilityReviewComplete=False)
+          (out/'native/native-coverage.json').write_text(json.dumps(facts,indent=2,sort_keys=True)+'\n')
+          receipt=json.loads((out/'receipt.json').read_text())
+          receipt['nativeScan']=facts
+          receipt['allScannerSeverityThresholdsMet']=receipt['allScannerSeverityThresholdsMet'] and threshold
+          (out/'receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n')
+          sums=[]
+          for file in sorted(out.rglob('*')):
+              if not file.is_file() or 'source-zlib' in file.parts or file.name=='checksums.sha256':continue
+              sums.append(hashlib.sha256(file.read_bytes()).hexdigest()+'  '+str(file))
+          (out/'checksums.sha256').write_text('\n'.join(sums)+'\n')
+          print('SEMANTIC_REBUILT_NATIVE_SCAN='+json.dumps(facts,sort_keys=True))
+          PY_NATIVE
+      - name: Attest exact public CI images and evidence
+        id: provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-checksums: generated/${{ matrix.candidate }}/checksums.sha256
+          create-storage-record: false
+      - name: Attest adapter SBOM for the image archive
+        id: adapter_sbom
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-path: generated/${{ matrix.candidate }}/adapter.image.tar.gz
+          sbom-path: generated/${{ matrix.candidate }}/sbom/adapter.spdx.json
+          create-storage-record: false
+      - name: Attest southbound SBOM for the image archive
+        id: southbound_sbom
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-path: generated/${{ matrix.candidate }}/southbound.image.tar.gz
+          sbom-path: generated/${{ matrix.candidate }}/sbom/southbound.spdx.json
+          create-storage-record: false
+      - name: Preserve and verify CI signatures
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVENANCE_BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+          ADAPTER_SBOM_BUNDLE: ${{ steps.adapter_sbom.outputs.bundle-path }}
+          SOUTHBOUND_SBOM_BUNDLE: ${{ steps.southbound_sbom.outputs.bundle-path }}
+        run: |
+          mkdir generated/${{ matrix.candidate }}/attestations
+          cp "$PROVENANCE_BUNDLE" generated/${{ matrix.candidate }}/attestations/provenance.json
+          cp "$ADAPTER_SBOM_BUNDLE" generated/${{ matrix.candidate }}/attestations/adapter-sbom.json
+          cp "$SOUTHBOUND_SBOM_BUNDLE" generated/${{ matrix.candidate }}/attestations/southbound-sbom.json
+          gh attestation verify generated/${{ matrix.candidate }}/adapter.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$PROVENANCE_BUNDLE" --format json > generated/${{ matrix.candidate }}/attestations/adapter-verification.json
+          gh attestation verify generated/${{ matrix.candidate }}/southbound.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$PROVENANCE_BUNDLE" --format json > generated/${{ matrix.candidate }}/attestations/southbound-verification.json
+          gh attestation verify generated/${{ matrix.candidate }}/adapter.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$ADAPTER_SBOM_BUNDLE" --predicate-type https://spdx.dev/Document/v2.3 --format json > generated/${{ matrix.candidate }}/attestations/adapter-sbom-verification.json
+          gh attestation verify generated/${{ matrix.candidate }}/southbound.image.tar.gz --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$SOUTHBOUND_SBOM_BUNDLE" --predicate-type https://spdx.dev/Document/v2.3 --format json > generated/${{ matrix.candidate }}/attestations/southbound-sbom-verification.json
+      - name: Qualify the actual signed archives with the target command
+        run: python3 -B tests/qualify_semantic_remediation_ci.py
+      - name: Preserve separately downloadable evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: image-remediation-evidence-${{ matrix.candidate }}-${{ github.run_id }}
+          path: |
+            generated/${{ matrix.candidate }}/
+            !generated/${{ matrix.candidate }}/*.image.tar.gz
+          if-no-files-found: warn
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: image-remediation-${{ matrix.candidate }}-${{ github.run_id }}
+          path: generated/${{ matrix.candidate }}/
+          if-no-files-found: warn
+          retention-days: 30
+

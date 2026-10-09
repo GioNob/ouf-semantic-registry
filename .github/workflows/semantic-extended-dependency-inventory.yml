@@ -1,0 +1,105 @@
+name: Semantic extended dependency inventory
+on:
+  pull_request:
+    paths:
+      - 'tools/extend_semantic_dependency_inventory.py'
+      - 'tests/test_semantic_extended_inventory.py'
+      - 'tests/scan_semantic_extended_inventory.py'
+      - 'tests/reconcile_semantic_generated_luajit.py'
+      - 'tests/test_semantic_generated_luajit.py'
+      - 'tools/plan_semantic_v2_isolated_dossier.py'
+      - 'tests/test_semantic_v2_isolated_dossier.py'
+      - '.github/workflows/semantic-extended-dependency-inventory.yml'
+      - 'docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_DATABASE_PIN_2026-10-07.json'
+      - 'tests/prepare_native_vulnerability_scanners.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  attestations: write
+  id-token: write
+jobs:
+  exact-existing-v2-inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject unsafe manifests and verify inventory boundary checks
+        run: python3 -B -m unittest tests.test_semantic_extended_inventory tests.test_semantic_static_module_coverage tests.test_semantic_generated_luajit tests.test_semantic_v2_isolated_dossier -v
+      - name: Independently download, verify and qualify the original v2 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -B tests/qualify_semantic_downloaded_remediation_artifact.py --lock tests/semantic-downloaded-remediation-artifact.json
+      - name: Extend inventory from actual installed bytes and source hashes
+        run: |
+          python3 -B -m tools.extend_semantic_dependency_inventory \
+            --bundle "$RUNNER_TEMP/ouf-downloaded-v2-artifact/bundle.zip" \
+            --sha256 2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0 \
+            --output generated/extended-v2
+      - name: Reproduce generated LuaJIT output from exactly matched source bytes
+        run: |
+          python3 -B -m tests.reconcile_semantic_generated_luajit \
+            --bundle "$RUNNER_TEMP/ouf-downloaded-v2-artifact/bundle.zip" \
+            --inventory-directory generated/extended-v2
+      - name: Prepare role-specific image dossier without invoking Docker
+        run: |
+          python3 -B -m tools.plan_semantic_v2_isolated_dossier \
+            --bundle "$RUNNER_TEMP/ouf-downloaded-v2-artifact/bundle.zip" \
+            --inventory-directory generated/extended-v2
+      - name: Prepare hash-pinned scanner and exact fresh database
+        run: sudo /usr/bin/python3 -B tests/prepare_native_vulnerability_scanners.py --database-pin docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_DATABASE_PIN_2026-10-07.json
+      - name: Scan extended inventories offline without ignores or overrides
+        run: |
+          for role in adapter southbound; do
+            sudo /usr/bin/python3 -B tests/scan_semantic_extended_inventory.py \
+              --sbom "generated/extended-v2/$role.extended.syft.json" \
+              > "generated/extended-v2/$role.extended.grype.json"
+          done
+          python3 - <<'PY'
+          import hashlib,json,pathlib
+          root=pathlib.Path('generated/extended-v2')
+          inventory=json.loads((root/'inventory.json').read_bytes())
+          scans=[]
+          for role in ('adapter','southbound'):
+              report=json.loads((root/(role+'.extended.grype.json')).read_bytes())
+              counts={k:0 for k in ('Critical','High','Medium','Low','Negligible','Unknown')}
+              for match in report['matches']: counts[match['vulnerability']['severity']]+=1
+              scans.append(dict(role=role,severityCounts=counts,scannerSeverityThresholdMet=not any(counts[k] for k in ('Critical','High','Unknown')) and not report.get('alertsByPackage'),reportSha256=hashlib.sha256((root/(role+'.extended.grype.json')).read_bytes()).hexdigest()))
+          database_pin=json.loads(pathlib.Path('docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_DATABASE_PIN_2026-10-07.json').read_bytes())
+          inventory.update(databasePin=database_pin,scannerInvoked=True,networkIsolatedScanner=True,scans=scans,
+                           allScannerSeverityThresholdsMet=all(s['scannerSeverityThresholdMet'] for s in scans))
+          (root/'inventory.json').write_text(json.dumps(inventory,indent=2,sort_keys=True)+'\n')
+          sums=[hashlib.sha256(p.read_bytes()).hexdigest()+'  '+str(p) for p in sorted(root.iterdir()) if p.is_file()]
+          (root/'checksums.sha256').write_text('\n'.join(sums)+'\n')
+          print('SEMANTIC_EXTENDED_SCANNED_INVENTORY='+json.dumps(inventory,sort_keys=True))
+          if not inventory['allScannerSeverityThresholdsMet']:
+              raise SystemExit('SEMANTIC_EXTENDED_FRESH_SCAN=BLOCKED_CRITICAL_HIGH_UNKNOWN_OR_PACKAGE_ALERT')
+          PY
+      - name: Attest extended inventories and coverage report
+        id: provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-checksums: generated/extended-v2/checksums.sha256
+          create-storage-record: false
+      - name: Verify and retain the new evidence signatures
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVENANCE_BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+        run: |
+          cp "$PROVENANCE_BUNDLE" generated/extended-v2/provenance.json
+          for file in inventory.json adapter.extended.syft.json southbound.extended.syft.json adapter.extended.grype.json southbound.extended.grype.json; do
+            gh attestation verify "generated/extended-v2/$file" \
+              --repo GioNob/ouf-semantic-registry \
+              --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/semantic-extended-dependency-inventory.yml \
+              --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" \
+              --deny-self-hosted-runners --bundle "$PROVENANCE_BUNDLE" \
+              --format json > "generated/extended-v2/$file.verification.json"
+          done
+          printf '%s\n' 'SEMANTIC_EXTENDED_EVIDENCE_CRYPTO=PASS'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: extended-v2-dependency-evidence-${{ github.run_id }}
+          path: generated/extended-v2/
+          if-no-files-found: warn
+          retention-days: 30

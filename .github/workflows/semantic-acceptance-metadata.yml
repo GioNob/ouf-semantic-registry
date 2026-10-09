@@ -1,0 +1,197 @@
+name: Semantic acceptance metadata readback
+on:
+  pull_request:
+  push:
+    branches: [codex/r4a-smoke-semantic-inventory]
+permissions:
+  contents: read
+jobs:
+  sealed-readback:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test redaction, fixed IO, byte pins and filesystem denials
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_acceptance_metadata.py
+      - name: Verify wrapper embeds the tested reader and parses
+        run: |
+          bash -n docs/handoffs/commands/OUF_READ_ACCEPTANCE_METADATA_2026-10-04.sh
+          python3 -B - <<'PY'
+          from pathlib import Path
+          wrapper = Path('docs/handoffs/commands/OUF_READ_ACCEPTANCE_METADATA_2026-10-04.sh').read_text()
+          embedded = wrapper.split("<<'OUF_PYTHON'\n", 1)[1].rsplit('\nOUF_PYTHON', 1)[0]
+          assert embedded == Path('tools/read_semantic_acceptance_metadata.py').read_text().rstrip('\n')
+          PY
+      - name: Test private configuration provenance and redaction
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_configuration_provenance.py
+      - name: Verify private configuration wrapper embeds tested verifier
+        run: |
+          bash -n docs/handoffs/commands/OUF_VERIFY_CONFIGURATION_PROVENANCE_2026-10-04.sh
+          python3 -B - <<'PY'
+          from pathlib import Path
+          wrapper = Path('docs/handoffs/commands/OUF_VERIFY_CONFIGURATION_PROVENANCE_2026-10-04.sh').read_text()
+          embedded = wrapper.split("<<'OUF_PYTHON'\n", 1)[1].rsplit('\nOUF_PYTHON', 1)[0]
+          assert embedded == Path('tools/verify_semantic_configuration_provenance.py').read_text().rstrip('\n')
+          PY
+      - name: Test historical image lineage, source substitution and redaction
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_image_lineage.py
+      - name: Verify image lineage wrapper embeds tested closure
+        run: |
+          bash -n docs/handoffs/commands/OUF_VERIFY_IMAGE_LINEAGE_2026-10-04.sh
+          python3 -B - <<'PY'
+          from pathlib import Path
+          helper = Path('tools/verify_semantic_configuration_provenance.py').read_text()
+          helper = helper.split("if __name__=='__main__':")[0].rstrip()
+          source = Path('tools/verify_semantic_image_lineage.py').read_text()
+          source = source.replace('from tools.verify_semantic_configuration_provenance import read, decode, require, sha', helper)
+          wrapper = Path('docs/handoffs/commands/OUF_VERIFY_IMAGE_LINEAGE_2026-10-04.sh').read_text()
+          embedded = wrapper.split("<<'OUF_PYTHON'\n", 1)[1].rsplit('\nOUF_PYTHON', 1)[0]
+          assert embedded == source.rstrip('\n')
+          PY
+      - name: Test bounded image archive verification and CLI redaction
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_image_archive.py
+      - name: Verify image byte wrapper embeds tested reader
+        run: |
+          bash -n docs/handoffs/commands/OUF_VERIFY_IMAGE_INDEX_BYTES_2026-10-05.sh
+          python3 -B - <<'PY'
+          from pathlib import Path
+          wrapper = Path('docs/handoffs/commands/OUF_VERIFY_IMAGE_INDEX_BYTES_2026-10-05.sh').read_text()
+          embedded = wrapper.split("<<'OUF_PYTHON'\n", 1)[1].rsplit('\nOUF_PYTHON', 1)[0]
+          assert embedded == Path('tools/verify_semantic_image_archive.py').read_text().rstrip('\n')
+          PY
+      - name: Test native private mount inputs, OpenSSL and frozen compiler
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_mount_inputs.py
+      - name: Require native target UID ownership without mocks
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_mount_inputs_native_ownership.py
+      - name: Verify mount wrapper embeds exactly the tested closure
+        run: |
+          bash -n docs/handoffs/commands/OUF_VERIFY_MOUNT_INPUTS_2026-10-05.sh
+          python3 -B - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0,'tests')
+          from test_semantic_mount_inputs import build_embedded
+          wrapper=Path('docs/handoffs/commands/OUF_VERIFY_MOUNT_INPUTS_2026-10-05.sh').read_text()
+          embedded=wrapper.split("<<'OUF_PYTHON'\n",1)[1].rsplit('\nOUF_PYTHON',1)[0]
+          assert embedded == build_embedded().rstrip('\n')
+          PY
+      - name: Test complete candidate configuration, environment and drift redaction
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_configuration.py
+      - name: Verify creation configuration wrapper embeds exactly the tested reader
+        run: |
+          bash -n docs/handoffs/commands/OUF_READ_CREATION_CONFIGURATION_2026-10-05.sh
+          python3 -B - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0,'tests')
+          from test_semantic_creation_configuration_docker import embedded
+          source=Path('docs/handoffs/commands/OUF_READ_CREATION_CONFIGURATION_2026-10-05.sh').read_text()
+          assert source.split("<<'OUF_PYTHON'\n",1)[1].rsplit('\nOUF_PYTHON',1)[0] == embedded().rstrip('\n')
+          PY
+      - name: Test exact sealed Env OIDC MAC pairing, purpose and drift
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_environment_binding.py
+      - name: Test exhaustive creation-field rules and typed denials
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_fields.py
+      - name: Test bounded kernel mountinfo parsing and redacted generation inputs
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_mount_view.py
+      - name: Test contemporaneous source byte frame and exact policy bindings
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_frame.py
+      - name: Require exact generated isolated observer and CLI redaction
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_frame_observer.py
+      - name: Test complete OCI schema, prepared-policy drift and hardening denials
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_oci_policy.py
+      - name: Test exhaustive field-to-sealed-input binding
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_fields_binding.py
+      - name: Verify complete field wrapper embeds tested closure
+        run: |
+          bash -n docs/handoffs/commands/OUF_REVIEW_CREATION_FIELDS_2026-10-05.sh
+          python3 -B - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0,'tests')
+          from test_semantic_creation_fields_binding import embedded
+          source=Path('docs/handoffs/commands/OUF_REVIEW_CREATION_FIELDS_2026-10-05.sh').read_text()
+          assert source.split("<<'OUF_PYTHON'\n",1)[1].rsplit('\nOUF_PYTHON',1)[0] == embedded().rstrip('\n')
+          PY
+      - name: Verify sealed environment wrapper embeds tested closure
+        run: |
+          bash -n docs/handoffs/commands/OUF_VERIFY_ENVIRONMENT_BINDING_2026-10-05.sh
+          python3 -B - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0,'tests')
+          from test_semantic_environment_binding import embedded
+          source=Path('docs/handoffs/commands/OUF_VERIFY_ENVIRONMENT_BINDING_2026-10-05.sh').read_text()
+          assert source.split("<<'OUF_PYTHON'\n",1)[1].rsplit('\nOUF_PYTHON',1)[0] == embedded().rstrip('\n')
+          PY
+      - name: SBOM identity and deterministic closure unit checks
+        run: sudo /usr/bin/python3 -B tests/test_semantic_image_sbom.py
+
+  image-archive-docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify real Docker save format and owned image payload bytes
+        run: sudo env OUF_REQUIRE_IMAGE_ARCHIVE_DOCKER=1 OUF_IMAGE_ARCHIVE_TEST_PARENT=/root /usr/bin/python3 -B tests/test_semantic_image_archive_docker.py
+      - name: Require full private inspect on two owned never-started candidates
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_creation_configuration_docker.py
+
+  image-archive-containerd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install CI-only OCI observer that refuses application execution
+        run: |
+          sudo install -d -o root -g root -m 0700 /root/ouf-ci-runtime/observed-oci
+          sudo install -o root -g root -m 0755 tests/fixtures/oci_capture_runtime.py /root/ouf-ci-runtime/oci-observe
+      - name: Set up target Docker version and containerd image store
+        id: docker
+        uses: docker/setup-docker-action@v4
+        with:
+          version: v29.8.1
+          daemon-config: |
+            {"features":{"containerd-snapshotter":true},"runtimes":{"ouf-ci-oci-observe":{"path":"/root/ouf-ci-runtime/oci-observe"}}}
+      - name: Place CI CLI under a root-owned fixed path
+        run: |
+          sudo install -d -o root -g root -m 0700 /root/ouf-ci-runtime
+          sudo install -o root -g root -m 0755 "$(command -v docker)" /root/ouf-ci-runtime/docker
+      - name: Require real containerd image identity and owned archive byte proof
+        run: sudo env OUF_REQUIRE_IMAGE_ARCHIVE_DOCKER=1 OUF_REQUIRE_CONTAINERD_IMAGE_ID=1 OUF_IMAGE_ARCHIVE_TEST_PARENT=/root OUF_IMAGE_ARCHIVE_DOCKER_PATH=/root/ouf-ci-runtime/docker OUF_IMAGE_ARCHIVE_DOCKER_HOST=${{ steps.docker.outputs.sock }} /usr/bin/python3 -B tests/test_semantic_image_archive_docker.py
+
+      - name: Require complete field review on target Docker version
+        run: sudo env OUF_TEST_ROOT=/root OUF_CREATION_DOCKER_PATH=/root/ouf-ci-runtime/docker OUF_CREATION_DOCKER_HOST=${{ steps.docker.outputs.sock }} /usr/bin/python3 -B tests/test_semantic_creation_configuration_docker.py
+
+      - name: Require real generated target OCI and deny application execution
+        run: sudo env OUF_TEST_ROOT=/root OUF_CREATION_DOCKER_PATH=/root/ouf-ci-runtime/docker OUF_CREATION_DOCKER_HOST=${{ steps.docker.outputs.sock }} /usr/bin/python3 -B tests/test_semantic_oci_docker.py
+
+  mount-view-runc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native CI runtime and static owned application fixture
+        run: sudo apt-get update && sudo apt-get install -y runc busybox-static
+      - name: Require real created PID generation, bind inode and kernel readonly evidence
+        run: sudo env OUF_TEST_ROOT=/root /usr/bin/python3 -B tests/test_semantic_mount_view_native.py
+
+  image-sbom-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare exact public scanner in a private CI directory
+        run: |
+          sudo /usr/bin/python3 -B - <<'PY'
+          import hashlib,os,urllib.request
+          from pathlib import Path
+          from tools.prepare_semantic_image_sbom import scanner_from_archive,SCANNER_ARCHIVE_SHA256
+          os.umask(0o077)
+          root=Path('/root/ouf-ci-sbom-scanner');root.mkdir(mode=0o700)
+          url='https://github.com/anchore/syft/releases/download/v1.54.0/syft_1.54.0_linux_amd64.tar.gz'
+          with urllib.request.urlopen(url,timeout=60) as source:raw=source.read(67108865)
+          assert len(raw)<=67108864 and hashlib.sha256(raw).hexdigest()==SCANNER_ARCHIVE_SHA256
+          scanner_from_archive(raw,root/'syft')
+          PY
+      - name: Native offline image SBOM and no-replay proof
+        run: sudo env OUF_SBOM_SCANNER=/root/ouf-ci-sbom-scanner/syft /usr/bin/python3 -B tests/test_semantic_image_sbom_native.py

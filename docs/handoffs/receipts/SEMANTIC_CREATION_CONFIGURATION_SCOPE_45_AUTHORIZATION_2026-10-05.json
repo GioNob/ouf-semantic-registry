@@ -1,0 +1,31 @@
+{
+  "schema": "ouf.semantic-creation-configuration-scope-authorization.v1",
+  "section": 45,
+  "authorized": true,
+  "authorizedAt": "2026-10-05T16:56:28+02:00",
+  "authorizationSource": "Explicit user Autorizzo in this conversation; repeated confirmations same scope",
+  "sourceCommit": "118b145ed4e83e077e058282d1fde7eee614f344",
+  "wrapper": "docs/handoffs/commands/OUF_READ_CREATION_CONFIGURATION_2026-10-05.sh",
+  "wrapperSha256": "927c0197a0059eef71662a4220e7b5d85038b454d95ac55bd12acebf0b3a5cad",
+  "fixedPrivateFiles": 2,
+  "containerCount": 2,
+  "imageCount": 2,
+  "inspectCalls": 8,
+  "fullPrivateDockerMetadataAndEnvironmentRead": true,
+  "scope": "Full Docker inspect of fixed never-started candidate and image IDs, complete Config/HostConfig/Env in memory, redacted hashes/counters/results only; empty temporary CLI config directory",
+  "excluded": [
+    "host Env files",
+    "mount contents",
+    "TLS/MAC/deployment/CA key files",
+    "registry credentials",
+    "other daemon objects",
+    "Docker mutation/pull/build/create/start",
+    "provider/network application calls",
+    "signatures",
+    "consumer link",
+    "runtime registration"
+  ],
+  "executionObserved": false,
+  "acceptanceGranted": false,
+  "startAuthorized": false
+}

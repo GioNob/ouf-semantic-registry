@@ -1,0 +1,219 @@
+{
+  "schema": "ouf.semantic-reconciled-v2-dependency-evidence-ci.v1",
+  "producer": {
+    "codeCommit": "621e9b6ba6d0bcc479893de080c932f3767701d0",
+    "sourceMergeCommit": "27965d0a5c1997490b1e9542eb1e3d662523ee15",
+    "runId": 37573769866,
+    "jobId": 112637989939,
+    "conclusion": "success",
+    "testsPassed": 27
+  },
+  "sourceArtifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+  "artifact": {
+    "id": 11460989205,
+    "bytes": 1158051,
+    "sha256": "479b761111fd20e192f8f195349107ee620b9b4f8c53453fc4557fe5a4d44797",
+    "downloadedHashVerifiedAndRead": true,
+    "signedSubjects": 5
+  },
+  "independentReadback": {
+    "codeCommit": "15c421baaac9b1fc6c4de903254aac4cb09e1fc9",
+    "runId": 37574177780,
+    "jobId": 112639254351,
+    "conclusion": "success",
+    "testsPassed": 32,
+    "portableGhVersion": "2.102.0",
+    "actualOriginalZipAndSidecarVerified": true,
+    "fiveSignaturesVerified": true,
+    "generatedProofRequiredAndVerified": true,
+    "isolatedDossierRequiredAndVerified": true,
+    "artifact": {
+      "id": 11461569929,
+      "bytes": 44817,
+      "sha256": "58c9fba1a2baec3c1f0852efa99d4cb5b04e73dcfc32ec32f3b1a784f576cc67",
+      "downloadedHashVerifiedAndRead": true
+    }
+  },
+  "generatedLuaJitProof": {
+    "buildFlags": "-DLUAJIT_NUMMODE=2 -DLUAJIT_ENABLE_LUA52COMPAT",
+    "containerOperations": 0,
+    "generatedFileSha256": "f634b76cb7937c403126c6d4904e7b4969de478c936b5ad9dba91d0a5b074a53",
+    "generatorBinarySha256": "f853dd0d90b8c90ced9ac982f3dcb7cbb1d0cd55831da3ba6c75886237b19d3a",
+    "imageId": "sha256:d4c47bbeca75d94e2231e17ca14552885b7b339a5f33dbace411e275c79ded04",
+    "imagePayloadExecuted": false,
+    "imagesModified": false,
+    "installedPath": "usr/local/openresty/luajit/share/luajit-2.1/jit/vmdef.lua",
+    "reconstructedOutputMatchesInstalledBytes": true,
+    "schema": "ouf.semantic-generated-luajit-output.v1",
+    "sourceArchiveSha256": "d73577495b63373079fe65e89613aee383db4369c22cf5b88a20a57be3d9f33a",
+    "sourceArtifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+    "sourceManifestSha256": "b632f89236799dec18bf6a7a62ae278283b81a928b8f5714de04b59175b89872",
+    "verifiedSourceFileCount": 246
+  },
+  "isolatedDossier": {
+    "acceptanceGranted": false,
+    "containerOperations": 0,
+    "dependencyCoverageAccepted": false,
+    "dockerInvoked": false,
+    "existingCandidatesPreserved": true,
+    "imageImportPerformed": false,
+    "legacyGatewayBoundStagerUsed": false,
+    "liveGatewayRetainsItsExistingImage": true,
+    "privateReceiptsRefreshed": false,
+    "publisherTrustAccepted": false,
+    "requiredTargetChecks": [
+      "Explicit runtime UID/GID and packaged startup compatibility",
+      "Fresh private TLS/trust/launch bindings for the new role-specific image IDs",
+      "Fresh private source/config hashes and authority/environment bindings",
+      "Distinct owned empty networks, current deny-guard and IPAM reservations",
+      "Explicit new TLS container identities without reusing existing candidate names",
+      "Complete creation manifest and independent stopped-container readback",
+      "Fresh vulnerability database and custom/publisher/Wasm review before acceptance"
+    ],
+    "roles": [
+      {
+        "architecture": "amd64",
+        "capDrop": [
+          "ALL"
+        ],
+        "configSha256": "62e066bd021f386291f5de21ce0e1f9e67904a74b4146326070c7784493ad320",
+        "hostPublishedPorts": [],
+        "localImageId": "sha256:62e066bd021f386291f5de21ce0e1f9e67904a74b4146326070c7784493ad320",
+        "needsExplicitRuntimeUidGid": true,
+        "needsFreshPrivateMountAndNetworkReceipts": true,
+        "operatingSystem": "linux",
+        "packagedEnvironmentNames": [
+          "GPG_KEY",
+          "PATH",
+          "PYTHONDONTWRITEBYTECODE",
+          "PYTHONUNBUFFERED",
+          "PYTHON_SHA256",
+          "PYTHON_VERSION"
+        ],
+        "packagedExposedPorts": [],
+        "packagedStartup": {
+          "Cmd": null,
+          "Entrypoint": [
+            "python3",
+            "-B",
+            "-m",
+            "tools.semantic_provider_adapter"
+          ],
+          "User": "10006:10006",
+          "WorkingDir": "/app"
+        },
+        "plannedState": "CREATED_STOPPED",
+        "privileged": false,
+        "pullOrTagFallbackAllowed": false,
+        "restartPolicy": "no",
+        "role": "adapter",
+        "startAuthorized": false,
+        "startupFingerprint": "5f7c4c16bb2f2ddb6a3a1aac85275faacbee3e186ee37f49cbd9b0c4841fcd46"
+      },
+      {
+        "architecture": "amd64",
+        "capDrop": [
+          "ALL"
+        ],
+        "configSha256": "d4c47bbeca75d94e2231e17ca14552885b7b339a5f33dbace411e275c79ded04",
+        "hostPublishedPorts": [],
+        "localImageId": "sha256:d4c47bbeca75d94e2231e17ca14552885b7b339a5f33dbace411e275c79ded04",
+        "needsExplicitRuntimeUidGid": true,
+        "needsFreshPrivateMountAndNetworkReceipts": true,
+        "operatingSystem": "linux",
+        "packagedEnvironmentNames": [
+          "PATH"
+        ],
+        "packagedExposedPorts": [
+          "9080/tcp",
+          "9443/tcp"
+        ],
+        "packagedStartup": {
+          "Cmd": [
+            "docker-start"
+          ],
+          "Entrypoint": [
+            "/docker-entrypoint.sh"
+          ],
+          "User": "apisix",
+          "WorkingDir": "/usr/local/apisix"
+        },
+        "plannedState": "CREATED_STOPPED",
+        "privileged": false,
+        "pullOrTagFallbackAllowed": false,
+        "restartPolicy": "no",
+        "role": "southbound",
+        "startAuthorized": false,
+        "startupFingerprint": "84e8fd27bbf0156ff425d0c3cafe8482b940e4047094a1ff5e7616a6d1fae0de"
+      }
+    ],
+    "schema": "ouf.semantic-v2-isolated-dossier.v1",
+    "sourceArtifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+    "startAuthorized": false,
+    "targetIdentityAndConfigurationVerified": false
+  },
+  "scans": [
+    {
+      "reportSha256": "72b58ead12c741a4eca644c4fdb13ddfc4d7f3a60c33cede5bd90deccd1fa90d",
+      "role": "adapter",
+      "scannerSeverityThresholdMet": true,
+      "severityCounts": {
+        "Critical": 0,
+        "High": 0,
+        "Low": 0,
+        "Medium": 5,
+        "Negligible": 0,
+        "Unknown": 0
+      }
+    },
+    {
+      "reportSha256": "0758e4be17f1efbd69b6ef7349cdb7c82fa65cb6bcae8c9eadfe106b46ed32c6",
+      "role": "southbound",
+      "scannerSeverityThresholdMet": true,
+      "severityCounts": {
+        "Critical": 0,
+        "High": 0,
+        "Low": 18,
+        "Medium": 141,
+        "Negligible": 4,
+        "Unknown": 0
+      }
+    }
+  ],
+  "images": [
+    {
+      "role": "adapter",
+      "imageId": "sha256:62e066bd021f386291f5de21ce0e1f9e67904a74b4146326070c7784493ad320",
+      "packageCount": 38,
+      "elfFileCount": 111,
+      "unresolvedElfFiles": 0,
+      "unresolvedLua": []
+    },
+    {
+      "role": "southbound",
+      "imageId": "sha256:d4c47bbeca75d94e2231e17ca14552885b7b339a5f33dbace411e275c79ded04",
+      "packageCount": 238,
+      "elfFileCount": 810,
+      "unresolvedElfFiles": 0,
+      "unresolvedLua": []
+    }
+  ],
+  "allScannerSeverityThresholdsMet": true,
+  "imagesModified": false,
+  "imagePayloadExecutedForReconciliation": false,
+  "noScannerSuppressionOrThresholdOverride": true,
+  "targetReconciledEvidenceCryptoVerified": false,
+  "previousTargetExtendedEvidenceCryptoVerified": true,
+  "previousTargetReportDirectory": "/home/oufadmin/ouf-extended-v2.tXIpQD/reports",
+  "publisherTrustAccepted": false,
+  "dependencyCoverageAccepted": false,
+  "acceptanceGranted": false,
+  "runtimeRegistered": false,
+  "startAuthorized": false,
+  "containerOperations": 0,
+  "targetRuntimeModified": false,
+  "databaseFreshnessEnds": "2026-10-07T08:45:38+02:00",
+  "targetGuide": "docs/installation/SEMANTIC_RECONCILED_EVIDENCE_V2_TARGET_2026-10-07.md",
+  "customReview": "docs/installation/SEMANTIC_V2_CUSTOM_COMPONENT_REVIEW_2026-10-07.md",
+  "nextAction": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry."
+}

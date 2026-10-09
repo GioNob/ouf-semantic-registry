@@ -1,0 +1,21 @@
+{
+  "schema": "ouf.semantic-creation-configuration-ci-readback.v1",
+  "verifiedCommit": "758c2815249c80e8e8e4d78699c551e003b972d1",
+  "run": 37302568764,
+  "rootTests": 65,
+  "rootSkipped": 0,
+  "rootJob": 111738527886,
+  "creationTests": 6,
+  "dockerTests": 3,
+  "dockerSkipped": 0,
+  "dockerJobs": [
+    111738528338,
+    111738528152
+  ],
+  "wrapperParityCount": 6,
+  "logsRead": true,
+  "scope45Granted": false,
+  "vpsExecutionObserved": false,
+  "notWholeCiGreen": true,
+  "liveProviderPreflightBlocked503": true
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "ouf.search-owner-binding-repair.blocked.operator.v1",
+  "reportedAt": "2026-10-07T08:30:07+02:00",
+  "scriptCommit": "ef414117af30a65d36807b36c8eb1dcef9d7178d",
+  "scriptSha256": "3e16a8e9242fa2a1d231acddbf9a08a186d3f616189368010eac0ade117872a1",
+  "checksumPassed": true,
+  "status": "BLOCKED",
+  "stage": "EXISTING_ADMIN_KEY_READ",
+  "routeGetReached": false,
+  "routeWrites": 0,
+  "containerRestarts": 0,
+  "reason": "UNPROVEN: strict file ownership/mode/link check, file read/format or endpoint validation at this stage",
+  "sourceReview": {
+    "existingGatewayAdminHelper": "ops/apisix/deploy_internal_m2m_routes.py",
+    "gatewayCommit": "c0b1f97bdb1fbcd6a88117dea6520ea9c322f265",
+    "legacyHelperRequiresRootOwnedKeyFile": false
+  },
+  "next": "Read only Admin key file type/mode/UID/GID including link target metadata; never print key content; do not rerun apply blindly."
+}

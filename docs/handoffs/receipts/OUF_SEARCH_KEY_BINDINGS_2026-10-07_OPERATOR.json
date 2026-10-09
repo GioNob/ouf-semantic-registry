@@ -1,0 +1,20 @@
+{
+  "schema": "ouf.search-key-bindings-operator.v1",
+  "operatorReportedAt": "2026-10-07T09:06:10+02:00",
+  "status": "READ_ONLY_BINDING_DIAGNOSIS",
+  "delegation": {
+    "environmentName": "OUF_GATEWAY_DELEGATION_KEY",
+    "present": true,
+    "hex64": true,
+    "generatedDirectivePresent": true
+  },
+  "owner": {
+    "environmentName": "OUF_UDP_SEARCH_OWNER_KEY",
+    "present": true,
+    "hex64": true,
+    "generatedDirectivePresent": true
+  },
+  "routeChanged": false,
+  "positiveSearchProven": false,
+  "next": "Run --diagnose-upstream on current Gateway/UDP: inspect exact live route host, current shared networks/aliases, resolve inside Gateway with getent, probe only matched current private UDP address from Gateway network namespace without any receipt; no body read or changes."
+}

@@ -1,0 +1,166 @@
+{
+  "schema": "ouf.teatri-local-model-review.v1",
+  "status": "PROPOSED_NOT_SELECTED_NOT_IMPORTED",
+  "ontologyDocument": "docs/sprints/TEATRI_LOCAL_MODEL_REVIEW.ttl",
+  "namespace": "https://api.ouf-lab.it/semantic/teatri#",
+  "classIri": "https://api.ouf-lab.it/semantic/teatri#Teatro",
+  "noPublishedPins": true,
+  "noClaimedExternalAdoption": true,
+  "providerNotStarted": true,
+  "confirmedChoice": "ROW_REPRESENTS_THEATRE_HALL_CAPACITY_SEPARATE",
+  "mapping": [
+    {
+      "fieldName": "nome_teatro",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#nome_teatro",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "tipologia",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#tipologia",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "toponimo",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#toponimo",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "nome_indirizzo",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#nome_indirizzo",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "civico",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#civico",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "cap",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#cap",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "citta",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#citta",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "provincia",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#provincia",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "latitudine",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#latitudine",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "longitudine",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#longitudine",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#decimal",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "sistema_riferimento",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#sistema_riferimento",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "precisione_coordinate",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#precisione_coordinate",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "spettacoli_stagione",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#spettacoli_stagione",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#integer",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "stagione_riferimento",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#stagione_riferimento",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "note",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#note",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "fonte_indirizzo",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#fonte_indirizzo",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "fonte_coordinate",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#fonte_coordinate",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "fonte_altri_dati",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#fonte_altri_dati",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#string",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "data_verifica",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#data_verifica",
+      "proposedDatatype": "http://www.w3.org/2001/XMLSchema#date",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    },
+    {
+      "fieldName": "capienza_posti",
+      "handling": "SEPARATE_QUALIFIED_HALL_OBSERVATION",
+      "proposedPropertyIri": "https://api.ouf-lab.it/semantic/teatri#capienza_posti",
+      "proposedDomain": "https://api.ouf-lab.it/semantic/teatri#OsservazioneCapienzaSala",
+      "executionSupport": "UNPROVEN_NOT_READY_FOR_SOURCE_ONBOARDING_CREATE",
+      "extractionDecision": "PENDING_REVIEW",
+      "dataAccessLabel": "PENDING_REVIEW"
+    }
+  ],
+  "sourceIdentity": {
+    "proposal": "ASSET_AND_ROW_ORDINAL",
+    "approved": false,
+    "canonicalUdpIdentity": false
+  },
+  "notes": [
+    "Local draft import/validation/review/publication would reuse Cinema's existing governed path",
+    "Whole mapping remains unapproved; class selection is not publication or activation",
+    "A local draft does not implement or prove national provider discovery",
+    "Hall observation, geometry, metadata/provenance and exact execution contract must be validated before ACTIVE"
+  ]
+}

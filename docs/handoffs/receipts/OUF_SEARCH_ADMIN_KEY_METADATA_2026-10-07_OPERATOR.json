@@ -1,0 +1,14 @@
+{
+  "schema": "ouf.search-admin-key-metadata.operator.v1",
+  "reportedAt": "2026-10-07T08:32:36+02:00",
+  "type": "regular file",
+  "mode": "600",
+  "uid": 1000,
+  "gid": 1000,
+  "targetMetadataIdentical": true,
+  "keyContentPrinted": false,
+  "routeModified": false,
+  "incorrectPreviousRootOwnershipRequirementRemoved": true,
+  "expectedOwnerUidNowExplicit": 1000,
+  "localTestsPassed": 8
+}

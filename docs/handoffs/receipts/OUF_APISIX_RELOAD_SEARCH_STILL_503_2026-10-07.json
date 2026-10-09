@@ -1,0 +1,19 @@
+{
+  "schema": "ouf.apisix-reload.operator.v1",
+  "reportedAt": "2026-10-07T08:23:30+02:00",
+  "configurationTestSucceeded": true,
+  "reloadSignalStarted": true,
+  "reloadNoticeAt": "2026/10/07 06:23:23",
+  "openFileDescriptorWarning": 1024,
+  "configSourceModified": false,
+  "containerRecreated": false,
+  "postReloadChatGPTSearch": {
+    "account": "ouf-admin",
+    "type": "https://api.ouf-lab.it/semantic/cinema",
+    "pageSize": 2,
+    "status": 503,
+    "isError": true
+  },
+  "exclusive503CauseProven": false,
+  "next": "Conditional single-line OWNER_KEY_ENV binding repair on exact current search route; no blind reload repetition"
+}

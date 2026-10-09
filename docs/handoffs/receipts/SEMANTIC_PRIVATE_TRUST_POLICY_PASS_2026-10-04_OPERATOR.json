@@ -1,0 +1,61 @@
+{
+  "schema": "ouf.semantic-private-trust-policy-operator-evidence.v1",
+  "evidenceType": "operator-supplied-command-output",
+  "independentVpsInspection": false,
+  "section": 38,
+  "root": "/etc/ouf/deploy-snapshots/semantic-trust-policy-preparation-20261004-172336",
+  "modes": {
+    "plan": {
+      "result": "PASS",
+      "policyHash": "21122630e52cb63c3744fee89f5c81ed926dad55231190243ca11be6d481bd42",
+      "policyActiveInArtifact": false,
+      "evidencePublished": false
+    },
+    "apply": {
+      "result": "PASS",
+      "policyHash": "21122630e52cb63c3744fee89f5c81ed926dad55231190243ca11be6d481bd42",
+      "policyActiveInArtifact": true,
+      "evidencePublished": true,
+      "receiptHash": "42d27903c65e6a1334fff5647a817e393a661e27f5c4fbf69c8d7910a6abb7ab"
+    },
+    "verify": {
+      "result": "PASS",
+      "policyHash": "21122630e52cb63c3744fee89f5c81ed926dad55231190243ca11be6d481bd42",
+      "policyActiveInArtifact": true,
+      "evidencePublished": false,
+      "receiptHash": "42d27903c65e6a1334fff5647a817e393a661e27f5c4fbf69c8d7910a6abb7ab"
+    }
+  },
+  "executedWrapperCommit": "dad24714ca572ab45667313b8cc7ec748c851ce3",
+  "executedWrapperSha256": "1b3927170ba06722402050a25eb12d50bf3d5886ea443b5a1e5866770a573857",
+  "sourceCommit": "3bdedad3108112ee4c36e7cb8387aaf60912e97c",
+  "keyCount": 2,
+  "roleCount": 3,
+  "custodyReceiptVerified": true,
+  "publicKeyBindingsVerified": true,
+  "originalValidityPreserved": true,
+  "realPolicyParserValidated": true,
+  "policyGrantState": "ACTIVE",
+  "noSecretsPrinted": true,
+  "notReleaseAcceptance": true,
+  "keysGenerated": 0,
+  "privateKeysRead": 0,
+  "selfTestSignaturesIssued": 0,
+  "deploymentSignaturesIssued": 0,
+  "mandatesIssued": 0,
+  "providerCalls": 0,
+  "dnsCalls": 0,
+  "iamCalls": 0,
+  "policyConsumerLinked": false,
+  "policyActiveInConsumer": false,
+  "trustPolicyInstalled": false,
+  "roleSigningAuthorized": false,
+  "startAuthorized": false,
+  "runtimeRegistered": false,
+  "deploymentAuthorityProven": false,
+  "atomicSnapshotProven": false,
+  "currentPrivateKeyBindingsReverified": false,
+  "rulesChanged": false,
+  "unitsChanged": false,
+  "containersChanged": false
+}

@@ -1,0 +1,415 @@
+{
+  "schema": "ouf.semantic-luajit-runtime-identity-ci-evidence.v1",
+  "codeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
+  "runId": 37448782226,
+  "jobId": 112219938809,
+  "workflowConclusion": "success",
+  "problem": "Source release tag was incorrectly used as the compiled program version in the native supplement.",
+  "sourceTag": "v2.1-20260824",
+  "sourceCommit": "fbfc558aacd57a54623df0ced4c31a28f81f8ff2",
+  "runtimeVersion": "2.1.1787558776",
+  "identityEvidence": {
+    "actualImageRuntimeVersionRun": 37448503005,
+    "actualImageRuntimeVersionJob": 112219026038,
+    "actualImageVersion": "LuaJIT 2.1.1787558776",
+    "bothElfVersionMarkersAndInstalledNamesVerified": true,
+    "compiledRelverSha256": "8e262f5bd245c4bb78fa4b1fcd50bcd420385d857e88044dc5a436ba5a880510",
+    "luajitBinaryHashUnchangedFromSixRegressionImage": true,
+    "sourceManifestHashUnchangedFromSixRegressionImage": true
+  },
+  "tests": {
+    "localIdentityArchiveAndQualifierTestsPassed": 13,
+    "ciIdentityAndQualifierTestsPassed": 10,
+    "tlsOidcCompatibilityProven": true,
+    "sharedDictionaryGuardProven": true,
+    "grpcAuthorityProven": true,
+    "opensslSelectedSuitesPassed": 4,
+    "opensslSelectedTestsPassed": 7,
+    "priorExactLuaJitRegressionsPassed": 6,
+    "priorLuaJitRegressionRun": 37447434158
+  },
+  "nativeFacts": {
+    "acceptanceGranted": false,
+    "dependencyCoverageAccepted": false,
+    "imageArchiveSha256": "df65fa4a0a86faf717158b96b3d29f3db7dc6c3e99b27b1775edf4bbb6625a03",
+    "imageId": "sha256:d4c47bbeca75d94e2231e17ca14552885b7b339a5f33dbace411e275c79ded04",
+    "nativeBinaryManifestSha256": "466aefe716e2b715bff68a41e31b322a90c3637ce74c7ece34103c1278df8080",
+    "nativeComponents": [
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/openssl3/bin/openssl": "a037c746990e7b95b25deb8dbd8d50f8f6176c6c1b56f7c9448db78c9717be67",
+          "/usr/local/openresty/openssl3/lib/engines-3/afalg.so": "29787d2b53befc1560006ac75df63fbdf96e963ae09008598a25129afc0e9e4d",
+          "/usr/local/openresty/openssl3/lib/engines-3/capi.so": "8a48bd5686c36e656a236b78b23459de08b618defaeb44569058604969bd452b",
+          "/usr/local/openresty/openssl3/lib/engines-3/loader_attic.so": "40ba74bcfb94c468729f74cc6911a8690fb53bb1a44a5414a9f2bda95cce15ed",
+          "/usr/local/openresty/openssl3/lib/engines-3/padlock.so": "6d15e05e646605ad335250fb3fb55c93f01c730ee99d931a224f7942bd14576e",
+          "/usr/local/openresty/openssl3/lib/libcrypto.so.3": "c0b08731b20e660175cc5d84e5471f17ec2893a01818c1f5a7e3b8e4051cba16",
+          "/usr/local/openresty/openssl3/lib/libssl.so.3": "2def0004883d6da74aa520c051cc73983365ae51bb3f252b19e0b1e8cdef2bf9",
+          "/usr/local/openresty/openssl3/lib/ossl-modules/legacy.so": "55e6e9285d385b5e94c27bd97a6f9b89fa31ac5c05f0b846a6218157717f1bc3"
+        },
+        "component": "openssl",
+        "sourceDirectory": null,
+        "version": "3.4.8"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/zlib/lib/libz.so.1.3.2.1-motley": "bb40f2404ed5c18ae53314e4036f65f875dd56f7af1db0c3d0a3a541caa70f55"
+        },
+        "component": "zlib",
+        "sourceDirectory": null,
+        "version": "1.3.2.1-motley"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/pcre/lib/libpcre.so.1.2.13": "3917e1f46fdf33145183188f4ccfde50e578dd1593518b65bafa66f0dc14e8bc",
+          "/usr/local/openresty/pcre/lib/libpcreposix.so.0.0.7": "cd691028fa3e811931d817c7d63fb449e1a5d4ca53bd7ae388d9bfaa963982fa"
+        },
+        "component": "pcre",
+        "sourceDirectory": null,
+        "version": "8.45"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/luajit/bin/luajit-2.1.1787558776": "9eeb150ad8a90d3c71034aa592305c038ade805a6d7ae3f9b2b52a8e8ac726a1",
+          "/usr/local/openresty/luajit/lib/libluajit-5.1.so.2.1.1787558776": "87a56ac8ccc203b95de113abd0c7b38db31c18e6ab6c0010c0f8897b66dbc562"
+        },
+        "component": "luajit",
+        "sourceDirectory": "LuaJIT-2.1-20260824",
+        "sourceReleaseTag": "v2.1-20260824",
+        "version": "2.1.1787558776",
+        "versionEvidence": "Both ELF embedded LuaJIT versions, installed names and compiled .relver hash agree"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/lualib/cjson.so": "33a5603d0f58e1cead89aea6b1193e7f55208e38362ad02453d82bb5a992fbaf"
+        },
+        "component": "lua-cjson",
+        "sourceDirectory": "lua-cjson-2.1.0.19",
+        "version": "2.1.0.19"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/lualib/librestysignal.so": "3d4e5e94f2fbbaa59fdbf8fe9c1a591f0c71a24b2fa835d20a5704c02f27b966"
+        },
+        "component": "lua-resty-signal",
+        "sourceDirectory": "lua-resty-signal-0.05",
+        "version": "0.05"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/lualib/redis/parser.so": "0ce7a8a960be4b27cd347d97f08e254a14af67e9d973782cfbb54e4c3703b602"
+        },
+        "component": "lua-redis-parser",
+        "sourceDirectory": "lua-redis-parser-0.13",
+        "version": "0.13"
+      },
+      {
+        "binaryHashes": {
+          "/usr/local/openresty/nginx/sbin/nginx": "f2a8f32687265e83c35c7f1ea7681c7ac525d28cd371f31edd0d95577d1c2fdc"
+        },
+        "component": "openresty",
+        "sourceDirectory": "nginx-1.31.6",
+        "version": "1.31.6.1"
+      }
+    ],
+    "nativeElfFilesIdentified": 17,
+    "nativeIdentityScope": "/usr/local/openresty/",
+    "nativeSourceManifestSha256": "b632f89236799dec18bf6a7a62ae278283b81a928b8f5714de04b59175b89872",
+    "nativeVulnerabilityReviewComplete": false,
+    "networkIsolatedScanner": true,
+    "originalPackagesPreserved": true,
+    "originalSyftSha256": "6ac8120e0226435c126bb45659c20fbc836daf4d9ffc43daf7bf98ad3d36211f",
+    "publisherTrustAccepted": false,
+    "scannerInvoked": true,
+    "scannerSeverityThresholdMet": true,
+    "schema": "ouf.semantic-rebuilt-native-identity.v1",
+    "severityCounts": {
+      "Critical": 0,
+      "High": 0,
+      "Low": 18,
+      "Medium": 141,
+      "Negligible": 4,
+      "Unknown": 0
+    },
+    "sourceClosureRecorded": true,
+    "startAuthorized": false,
+    "supplementedSyftSha256": "7fd0a2be04438a76be50105f8966033f3a414ddcefdd2fa854ac1450dbbc43b3",
+    "unresolvedNativeElfFiles": [],
+    "wasmCompiled": false
+  },
+  "images": [
+    {
+      "acceptanceGranted": false,
+      "completeCreationAccepted": false,
+      "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+      "databaseBuilt": "2026-10-05T06:45:38Z",
+      "databaseSchemaVersion": "v6.1.10",
+      "dependencyCoverageAccepted": false,
+      "dependencySbomAccepted": false,
+      "highCriticalPublicAdvisoryIds": [],
+      "highCriticalPublicAdvisoryIdsTruncated": false,
+      "imageId": "sha256:62e066bd021f386291f5de21ce0e1f9e67904a74b4146326070c7784493ad320",
+      "imagePublisherProvenanceVerified": false,
+      "packageAlertCount": 0,
+      "reportSha256": "e145c6857192a742fc7dbf76f8201b225f4b8a3d8ac13c2362695fafc7c849c8",
+      "role": "adapter",
+      "scannerSeverityThresholdMet": true,
+      "schema": "ouf.semantic-image-vulnerability-facts.v1",
+      "severityCounts": {
+        "Critical": 0,
+        "High": 0,
+        "Low": 0,
+        "Medium": 5,
+        "Negligible": 0,
+        "Unknown": 0
+      },
+      "startAuthorized": false,
+      "syftJsonSha256": "ce5f44bc7110e51eed73c751920696dc6eb9f15da0808b5e010e6a87b027d326"
+    },
+    {
+      "acceptanceGranted": false,
+      "completeCreationAccepted": false,
+      "databaseArchiveSha256": "97459838f3b53ba97e4562fb3d5d2fd92422cd44c179f59268f0c0d404c00e7a",
+      "databaseBuilt": "2026-10-05T06:45:38Z",
+      "databaseSchemaVersion": "v6.1.10",
+      "dependencyCoverageAccepted": false,
+      "dependencySbomAccepted": false,
+      "highCriticalPublicAdvisoryIds": [],
+      "highCriticalPublicAdvisoryIdsTruncated": false,
+      "imageId": "sha256:d4c47bbeca75d94e2231e17ca14552885b7b339a5f33dbace411e275c79ded04",
+      "imagePublisherProvenanceVerified": false,
+      "packageAlertCount": 0,
+      "reportSha256": "c5ba76c5003bf244ef3ef3720afd55b51bffae97a579e4adef88c4bdd0de8cdd",
+      "role": "southbound",
+      "scannerSeverityThresholdMet": true,
+      "schema": "ouf.semantic-image-vulnerability-facts.v1",
+      "severityCounts": {
+        "Critical": 0,
+        "High": 0,
+        "Low": 18,
+        "Medium": 141,
+        "Negligible": 4,
+        "Unknown": 0
+      },
+      "startAuthorized": false,
+      "syftJsonSha256": "6ac8120e0226435c126bb45659c20fbc836daf4d9ffc43daf7bf98ad3d36211f"
+    }
+  ],
+  "archives": [
+    {
+      "bytes": 20579550,
+      "file": "adapter.image.tar.gz",
+      "imageId": "sha256:62e066bd021f386291f5de21ce0e1f9e67904a74b4146326070c7784493ad320",
+      "kind": "docker-save-tar-gzip",
+      "role": "adapter",
+      "sha256": "8301649b854a01d0306fabb14a5f93dd08eb4b1df98c2af356c0c84773821207",
+      "uncompressedBytes": 54939136,
+      "uncompressedSha256": "dd86691a93d464eddb294cf1dd2aa96e1119b77aca8d74173440a3d4587dde72"
+    },
+    {
+      "bytes": 204085492,
+      "file": "southbound.image.tar.gz",
+      "imageId": "sha256:d4c47bbeca75d94e2231e17ca14552885b7b339a5f33dbace411e275c79ded04",
+      "kind": "docker-save-tar-gzip",
+      "role": "southbound",
+      "sha256": "1588c2391f9da45f300d16dd191cfe483dff83f81ed9424baec40201e64d7641",
+      "uncompressedBytes": 572065280,
+      "uncompressedSha256": "df65fa4a0a86faf717158b96b3d29f3db7dc6c3e99b27b1775edf4bbb6625a03"
+    }
+  ],
+  "allScannerSeverityThresholdsMet": true,
+  "noSuppressionOrSeverityOverride": true,
+  "originalSyftPackagesPreserved": true,
+  "publishedArtifact": {
+    "schema": "ouf.semantic-immutable-remediation-artifact.v1",
+    "artifactId": 11406755583,
+    "artifactBytes": 230675888,
+    "artifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+    "sourceRun": 37448782226,
+    "sourceCodeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
+    "sourceMergeCommit": "0a1b4460c52c74cefe806286f043f71cbf5a5647",
+    "qualifierSourceCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
+    "qualifierSha256": "f9634d518f6812a33953cf64f25a6217a9438d813379823cb69ffb39d697bc58"
+  },
+  "producerByteQualification": {
+    "acceptanceGranted": false,
+    "ciAttestationEvidenceRetained": true,
+    "ciSourceCommit": "0a1b4460c52c74cefe806286f043f71cbf5a5647",
+    "containerOperations": 0,
+    "dependencyCoverageAccepted": false,
+    "imageImportPerformed": false,
+    "images": [
+      {
+        "archiveSha256": "8301649b854a01d0306fabb14a5f93dd08eb4b1df98c2af356c0c84773821207",
+        "bytesVerified": true,
+        "imageId": "sha256:62e066bd021f386291f5de21ce0e1f9e67904a74b4146326070c7784493ad320",
+        "role": "adapter",
+        "severityCounts": {
+          "Critical": 0,
+          "High": 0,
+          "Low": 0,
+          "Medium": 5,
+          "Negligible": 0,
+          "Unknown": 0
+        }
+      },
+      {
+        "archiveSha256": "1588c2391f9da45f300d16dd191cfe483dff83f81ed9424baec40201e64d7641",
+        "bytesVerified": true,
+        "imageId": "sha256:d4c47bbeca75d94e2231e17ca14552885b7b339a5f33dbace411e275c79ded04",
+        "role": "southbound",
+        "severityCounts": {
+          "Critical": 0,
+          "High": 0,
+          "Low": 18,
+          "Medium": 141,
+          "Negligible": 4,
+          "Unknown": 0
+        }
+      }
+    ],
+    "nativeEvidenceByteVerified": true,
+    "nativeEvidenceRetained": true,
+    "publisherTrustAccepted": false,
+    "runtimeRegistered": false,
+    "scannerInvoked": false,
+    "schema": "ouf.semantic-remediation-bundle-byte-qualification.v2",
+    "sourceArtifactSha256": "c6340cac47c5e49ab15a400fa95800e9987a0f755b6a9eb70ace82d931b15e6c",
+    "startAuthorized": false,
+    "targetAttestationCryptoVerified": false
+  },
+  "independentDownloadedArtifactQualification": {
+    "codeCommit": "01fc744853bd067d7a916a3bdf486220b195f3af",
+    "runId": 37450055158,
+    "jobId": 112224177174,
+    "conclusion": "success",
+    "result": {
+      "acceptanceGranted": false,
+      "actualDownloadedZipByteQualified": true,
+      "archiveAttestationsIndependentlyCryptoVerified": true,
+      "byteQualification": {
+        "acceptanceGranted": false,
+        "ciAttestationEvidenceRetained": true,
+        "ciSourceCommit": "0a1b4460c52c74cefe806286f043f71cbf5a5647",
+        "containerOperations": 0,
+        "dependencyCoverageAccepted": false,
+        "imageImportPerformed": false,
+        "images": [
+          {
+            "archiveSha256": "8301649b854a01d0306fabb14a5f93dd08eb4b1df98c2af356c0c84773821207",
+            "bytesVerified": true,
+            "imageId": "sha256:62e066bd021f386291f5de21ce0e1f9e67904a74b4146326070c7784493ad320",
+            "role": "adapter",
+            "severityCounts": {
+              "Critical": 0,
+              "High": 0,
+              "Low": 0,
+              "Medium": 5,
+              "Negligible": 0,
+              "Unknown": 0
+            }
+          },
+          {
+            "archiveSha256": "1588c2391f9da45f300d16dd191cfe483dff83f81ed9424baec40201e64d7641",
+            "bytesVerified": true,
+            "imageId": "sha256:d4c47bbeca75d94e2231e17ca14552885b7b339a5f33dbace411e275c79ded04",
+            "role": "southbound",
+            "severityCounts": {
+              "Critical": 0,
+              "High": 0,
+              "Low": 18,
+              "Medium": 141,
+              "Negligible": 4,
+              "Unknown": 0
+            }
+          }
+        ],
+        "nativeEvidenceByteVerified": true,
+        "nativeEvidenceRetained": true,
+        "publisherTrustAccepted": false,
+        "runtimeRegistered": false,
+        "scannerInvoked": false,
+        "schema": "ouf.semantic-remediation-bundle-byte-qualification.v2",
+        "sourceArtifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+        "startAuthorized": false,
+        "targetAttestationCryptoVerified": false
+      },
+      "nativeAttestationsIndependentlyCryptoVerified": true,
+      "producer": {
+        "artifactBytes": 230675888,
+        "artifactId": 11406755583,
+        "artifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+        "qualifierSha256": "f9634d518f6812a33953cf64f25a6217a9438d813379823cb69ffb39d697bc58",
+        "qualifierSourceCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
+        "schema": "ouf.semantic-immutable-remediation-artifact.v1",
+        "sourceCodeCommit": "1ef1d7abdbc6b2b879e57f3c09eaa5fe18f18ef6",
+        "sourceMergeCommit": "0a1b4460c52c74cefe806286f043f71cbf5a5647",
+        "sourceRun": 37448782226
+      },
+      "schema": "ouf.semantic-downloaded-remediation-artifact-qualification.v1",
+      "startAuthorized": false,
+      "targetModified": false,
+      "targetOperations": 0,
+      "wholeArchiveHashVerified": true
+    },
+    "evidenceArtifact": {
+      "id": 11405437042,
+      "bytes": 1141,
+      "sha256": "6dd8d38cfce2a1962482d4234a8391e2e053d549651132b545958272739ecfdd",
+      "downloadedHashVerifiedAndRead": true,
+      "matchesAuthenticatedCIlog": true
+    }
+  },
+  "targetByteQualification": {
+    "ready": true,
+    "wrapperCommit": "9db48efa8eb65f3d25aa6a0b58203cf7f644ca34",
+    "wrapperSha256": "8e58a37aa91d24c27299fe19a8351535501a3c9c8c93aa7a353fe58fe3c033d2",
+    "snapshot": "/etc/ouf/deploy-snapshots/semantic-image-remediation-20261006-v2",
+    "performedOnTarget": true,
+    "oldSnapshotPreserved": true,
+    "evidenceSource": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_OPERATOR_2026-10-06.json",
+    "status": "TARGET_BYTE_QUALIFICATION_PASS_OPERATOR_REPORTED"
+  },
+  "targetModified": false,
+  "publisherTrustAccepted": false,
+  "dependencyCoverageAccepted": false,
+  "acceptanceGranted": false,
+  "runtimeRegistered": false,
+  "startAuthorized": false,
+  "databaseFreshnessEnds": "2026-10-07T08:45:38+02:00",
+  "nextAction": "Operator verifies the updated signed evidence ZIP using the pinned guide; then prepare fresh private target image/config/TLS/trust/launch/network bindings for a separate isolated stopped-candidate path. Retain all historic reports and live/test services. Custom/publisher/Wasm review and authority/complete-creation/consumer gates remain open; refresh DB before any acceptance beyond expiry.",
+  "targetEvidenceSnapshotCreated": true,
+  "targetRuntimeModified": false,
+  "targetCryptoVerification": {
+    "verified": true,
+    "evidenceSource": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_TARGET_CRYPTO_2026-10-06_OPERATOR.json",
+    "reportDirectory": "/home/oufadmin/ouf-crypto-v2.zjJNdo",
+    "githubCliVersion": "2.102.0"
+  },
+  "staticModuleCoverageReview": {
+    "receipt": "docs/handoffs/receipts/SEMANTIC_STATIC_MODULE_COVERAGE_2026-10-06_CI.json",
+    "runId": 37505168458,
+    "unrepresentedConfiguredBundledModules": 16,
+    "dependencyCoverageAccepted": false
+  },
+  "semanticExtendedDependencyEvidence": {
+    "receipt": "docs/handoffs/receipts/SEMANTIC_EXTENDED_DEPENDENCY_EVIDENCE_2026-10-06_CI.json",
+    "producerRun": 37508392335,
+    "readbackRun": 37509074379,
+    "allScannerSeverityThresholdsMet": true,
+    "targetSidecarCryptoVerified": false,
+    "unresolvedGeneratedLuaFiles": 1,
+    "dependencyCoverageAccepted": false
+  },
+  "semanticReconciledDependencyEvidence": {
+    "receipt": "docs/handoffs/receipts/SEMANTIC_RECONCILED_DEPENDENCY_EVIDENCE_2026-10-07_CI.json",
+    "producerRun": 37573769866,
+    "readbackRun": 37574177780,
+    "generatedLuaJitOutputReconciled": true,
+    "unresolvedGeneratedLuaFiles": 0,
+    "isolatedDossierPrepared": true,
+    "targetReconciledEvidenceCryptoVerified": false,
+    "allScannerSeverityThresholdsMet": true,
+    "acceptanceGranted": false,
+    "startAuthorized": false
+  }
+}

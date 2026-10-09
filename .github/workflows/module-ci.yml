@@ -50,6 +50,10 @@ jobs:
         run: sha256sum -c evidence/source-checksums.txt
       - name: Validate cross-module evidence register
         run: python3 scripts/validate-pet-register.py
+      - name: Verify R4a read-only runtime inventory
+        run: python3 -m unittest discover -s tests -p 'test_r4a_handoff_snapshot.py'
+      - name: Verify managed identity release inventory
+        run: sudo python3 -B -m unittest discover -s tests -p 'test_r4a_*managed_identity*.py'
       - name: Compile, test and package with bounded Maven execution
         run: |
           bash scripts/install-authorization-sdk.sh
@@ -98,3 +102,12 @@ jobs:
         run: docker build --tag ouf-semantic-registry:${{ github.sha }} .
       - name: Inspect image as non-root
         run: test "$(docker image inspect ouf-semantic-registry:${{ github.sha }} --format '{{.Config.User}}')" = "10001:10001"
+
+  recovery-cycle-scripts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify versioned recovery cycles and transport bindings
+        working-directory: scripts
+        run: sudo python3 -B -m unittest test_r4a_recover_ingestion_run test_r4a_recovery_cycles test_r4a_udp_materialization_diagnostic test_r4a_udp_token_transport_inventory test_r4a_udp_reference_transport_probe test_r4a_udp_java_reference_probe test_r4a_prepare_udp_recovery_image test_r4a_stage_udp_recovery test_r4a_release_udp_recovery test_r4a_scoped_human_policy test_r4a_recovery_binding_inventory test_r4a_materialization_recovery_routes test_r4a_review_publish_scoped_human_policy test_r4a_read_human_materialization_review test_r4a_retry_human_materialization

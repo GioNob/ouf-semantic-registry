@@ -1,0 +1,10 @@
+{
+  "sourceCodeCommit": "fe5d7a304cfe3ad10f0b49d492342ce278175ac2",
+  "runId": 37618407742,
+  "jobId": 112782267828,
+  "status": "PASS",
+  "newReaderTestsPassed": 5,
+  "allWorkflowStepsPassed": true,
+  "logsRead": true,
+  "targetExecuted": false
+}

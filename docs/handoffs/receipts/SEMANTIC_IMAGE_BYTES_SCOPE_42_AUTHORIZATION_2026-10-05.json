@@ -1,0 +1,21 @@
+{
+  "schema": "ouf.semantic-image-byte-read-scope-authorization.v1",
+  "receivedAt": "2026-10-05T06:20:36+02:00",
+  "source": "explicit user authorization in this conversation",
+  "userMessage": "autorizzo",
+  "section": 42,
+  "scopeGranted": true,
+  "scope": "Private in-memory Docker save config/layer byte read of two exact pinned images; hash and adapter payload verification; embedded image secrets may be read without disclosure",
+  "wrapperCommit": "ffe6a9bceeee08bae95c93425f646bd354780d7c",
+  "wrapperSha256": "c8602ba1279481df8a7cbc66864bd5a978be0234678d6cc5515da6b2f7e45b57",
+  "executionObserved": false,
+  "acceptanceGranted": false,
+  "signingAuthorized": false,
+  "startAuthorized": false,
+  "runtimeMigrationAuthorized": false,
+  "consumerActivationAuthorized": false,
+  "separateHostKeyEnvCredentialReadAuthorized": false,
+  "registryCredentialReadAuthorized": false,
+  "archiveExtractionAuthorized": false,
+  "providerCallsAuthorized": false
+}

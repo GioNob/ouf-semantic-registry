@@ -1,0 +1,1557 @@
+{
+  "schema": "ouf.oci-runtime-shape-schema.v1",
+  "sourceRepository": "opencontainers/runtime-spec",
+  "sourceVersion": "v1.3.0",
+  "sourceCommit": "92249139eea7161e13745abd4cb6d0ea02a3227a",
+  "sourcePath": "specs-go/config.go",
+  "sourceLicense": "Apache-2.0",
+  "dockerVendorMatch": {
+    "repository": "moby/moby",
+    "tag": "docker-v29.8.1",
+    "configTypesByteIdentical": true
+  },
+  "purpose": "Typed field coverage only; no runtime, kernel, image or acceptance authority inferred.",
+  "structs": {
+    "Spec": {
+      "fields": {
+        "ociVersion": {
+          "type": "string",
+          "optional": false
+        },
+        "process": {
+          "type": "*Process",
+          "optional": true
+        },
+        "root": {
+          "type": "*Root",
+          "optional": true
+        },
+        "hostname": {
+          "type": "string",
+          "optional": true
+        },
+        "domainname": {
+          "type": "string",
+          "optional": true
+        },
+        "mounts": {
+          "type": "[]Mount",
+          "optional": true
+        },
+        "hooks": {
+          "type": "*Hooks",
+          "optional": true
+        },
+        "annotations": {
+          "type": "map[string]string",
+          "optional": true
+        },
+        "linux": {
+          "type": "*Linux",
+          "optional": true
+        },
+        "solaris": {
+          "type": "*Solaris",
+          "optional": true
+        },
+        "windows": {
+          "type": "*Windows",
+          "optional": true
+        },
+        "vm": {
+          "type": "*VM",
+          "optional": true
+        },
+        "zos": {
+          "type": "*ZOS",
+          "optional": true
+        },
+        "freebsd": {
+          "type": "*FreeBSD",
+          "optional": true
+        }
+      }
+    },
+    "Scheduler": {
+      "fields": {
+        "policy": {
+          "type": "LinuxSchedulerPolicy",
+          "optional": false
+        },
+        "nice": {
+          "type": "int32",
+          "optional": true
+        },
+        "priority": {
+          "type": "int32",
+          "optional": true
+        },
+        "flags": {
+          "type": "[]LinuxSchedulerFlag",
+          "optional": true
+        },
+        "runtime": {
+          "type": "uint64",
+          "optional": true
+        },
+        "deadline": {
+          "type": "uint64",
+          "optional": true
+        },
+        "period": {
+          "type": "uint64",
+          "optional": true
+        }
+      }
+    },
+    "Process": {
+      "fields": {
+        "terminal": {
+          "type": "bool",
+          "optional": true
+        },
+        "consoleSize": {
+          "type": "*Box",
+          "optional": true
+        },
+        "user": {
+          "type": "User",
+          "optional": false
+        },
+        "args": {
+          "type": "[]string",
+          "optional": true
+        },
+        "commandLine": {
+          "type": "string",
+          "optional": true
+        },
+        "env": {
+          "type": "[]string",
+          "optional": true
+        },
+        "cwd": {
+          "type": "string",
+          "optional": false
+        },
+        "capabilities": {
+          "type": "*LinuxCapabilities",
+          "optional": true
+        },
+        "rlimits": {
+          "type": "[]POSIXRlimit",
+          "optional": true
+        },
+        "noNewPrivileges": {
+          "type": "bool",
+          "optional": true
+        },
+        "apparmorProfile": {
+          "type": "string",
+          "optional": true
+        },
+        "oomScoreAdj": {
+          "type": "*int",
+          "optional": true
+        },
+        "scheduler": {
+          "type": "*Scheduler",
+          "optional": true
+        },
+        "selinuxLabel": {
+          "type": "string",
+          "optional": true
+        },
+        "ioPriority": {
+          "type": "*LinuxIOPriority",
+          "optional": true
+        },
+        "execCPUAffinity": {
+          "type": "*CPUAffinity",
+          "optional": true
+        }
+      }
+    },
+    "LinuxCapabilities": {
+      "fields": {
+        "bounding": {
+          "type": "[]string",
+          "optional": true
+        },
+        "effective": {
+          "type": "[]string",
+          "optional": true
+        },
+        "inheritable": {
+          "type": "[]string",
+          "optional": true
+        },
+        "permitted": {
+          "type": "[]string",
+          "optional": true
+        },
+        "ambient": {
+          "type": "[]string",
+          "optional": true
+        }
+      }
+    },
+    "LinuxIOPriority": {
+      "fields": {
+        "class": {
+          "type": "IOPriorityClass",
+          "optional": false
+        },
+        "priority": {
+          "type": "int",
+          "optional": false
+        }
+      }
+    },
+    "CPUAffinity": {
+      "fields": {
+        "initial": {
+          "type": "string",
+          "optional": true
+        },
+        "final": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "Box": {
+      "fields": {
+        "height": {
+          "type": "uint",
+          "optional": false
+        },
+        "width": {
+          "type": "uint",
+          "optional": false
+        }
+      }
+    },
+    "User": {
+      "fields": {
+        "uid": {
+          "type": "uint32",
+          "optional": false
+        },
+        "gid": {
+          "type": "uint32",
+          "optional": false
+        },
+        "umask": {
+          "type": "*uint32",
+          "optional": true
+        },
+        "additionalGids": {
+          "type": "[]uint32",
+          "optional": true
+        },
+        "username": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "Root": {
+      "fields": {
+        "path": {
+          "type": "string",
+          "optional": false
+        },
+        "readonly": {
+          "type": "bool",
+          "optional": true
+        }
+      }
+    },
+    "Mount": {
+      "fields": {
+        "destination": {
+          "type": "string",
+          "optional": false
+        },
+        "type": {
+          "type": "string",
+          "optional": true
+        },
+        "source": {
+          "type": "string",
+          "optional": true
+        },
+        "options": {
+          "type": "[]string",
+          "optional": true
+        },
+        "uidMappings": {
+          "type": "[]LinuxIDMapping",
+          "optional": true
+        },
+        "gidMappings": {
+          "type": "[]LinuxIDMapping",
+          "optional": true
+        }
+      }
+    },
+    "Hook": {
+      "fields": {
+        "path": {
+          "type": "string",
+          "optional": false
+        },
+        "args": {
+          "type": "[]string",
+          "optional": true
+        },
+        "env": {
+          "type": "[]string",
+          "optional": true
+        },
+        "timeout": {
+          "type": "*int",
+          "optional": true
+        }
+      }
+    },
+    "Hooks": {
+      "fields": {
+        "prestart": {
+          "type": "[]Hook",
+          "optional": true
+        },
+        "createRuntime": {
+          "type": "[]Hook",
+          "optional": true
+        },
+        "createContainer": {
+          "type": "[]Hook",
+          "optional": true
+        },
+        "startContainer": {
+          "type": "[]Hook",
+          "optional": true
+        },
+        "poststart": {
+          "type": "[]Hook",
+          "optional": true
+        },
+        "poststop": {
+          "type": "[]Hook",
+          "optional": true
+        }
+      }
+    },
+    "Linux": {
+      "fields": {
+        "uidMappings": {
+          "type": "[]LinuxIDMapping",
+          "optional": true
+        },
+        "gidMappings": {
+          "type": "[]LinuxIDMapping",
+          "optional": true
+        },
+        "sysctl": {
+          "type": "map[string]string",
+          "optional": true
+        },
+        "resources": {
+          "type": "*LinuxResources",
+          "optional": true
+        },
+        "cgroupsPath": {
+          "type": "string",
+          "optional": true
+        },
+        "namespaces": {
+          "type": "[]LinuxNamespace",
+          "optional": true
+        },
+        "devices": {
+          "type": "[]LinuxDevice",
+          "optional": true
+        },
+        "netDevices": {
+          "type": "map[string]LinuxNetDevice",
+          "optional": true
+        },
+        "seccomp": {
+          "type": "*LinuxSeccomp",
+          "optional": true
+        },
+        "rootfsPropagation": {
+          "type": "string",
+          "optional": true
+        },
+        "maskedPaths": {
+          "type": "[]string",
+          "optional": true
+        },
+        "readonlyPaths": {
+          "type": "[]string",
+          "optional": true
+        },
+        "mountLabel": {
+          "type": "string",
+          "optional": true
+        },
+        "intelRdt": {
+          "type": "*LinuxIntelRdt",
+          "optional": true
+        },
+        "memoryPolicy": {
+          "type": "*LinuxMemoryPolicy",
+          "optional": true
+        },
+        "personality": {
+          "type": "*LinuxPersonality",
+          "optional": true
+        },
+        "timeOffsets": {
+          "type": "map[string]LinuxTimeOffset",
+          "optional": true
+        }
+      }
+    },
+    "LinuxNamespace": {
+      "fields": {
+        "type": {
+          "type": "LinuxNamespaceType",
+          "optional": false
+        },
+        "path": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "LinuxIDMapping": {
+      "fields": {
+        "containerID": {
+          "type": "uint32",
+          "optional": false
+        },
+        "hostID": {
+          "type": "uint32",
+          "optional": false
+        },
+        "size": {
+          "type": "uint32",
+          "optional": false
+        }
+      }
+    },
+    "LinuxTimeOffset": {
+      "fields": {
+        "secs": {
+          "type": "int64",
+          "optional": true
+        },
+        "nanosecs": {
+          "type": "uint32",
+          "optional": true
+        }
+      }
+    },
+    "POSIXRlimit": {
+      "fields": {
+        "type": {
+          "type": "string",
+          "optional": false
+        },
+        "hard": {
+          "type": "uint64",
+          "optional": false
+        },
+        "soft": {
+          "type": "uint64",
+          "optional": false
+        }
+      }
+    },
+    "LinuxHugepageLimit": {
+      "fields": {
+        "pageSize": {
+          "type": "string",
+          "optional": false
+        },
+        "limit": {
+          "type": "uint64",
+          "optional": false
+        }
+      }
+    },
+    "LinuxInterfacePriority": {
+      "fields": {
+        "name": {
+          "type": "string",
+          "optional": false
+        },
+        "priority": {
+          "type": "uint32",
+          "optional": false
+        }
+      }
+    },
+    "LinuxBlockIODevice": {
+      "fields": {
+        "major": {
+          "type": "int64",
+          "optional": false
+        },
+        "minor": {
+          "type": "int64",
+          "optional": false
+        }
+      }
+    },
+    "LinuxWeightDevice": {
+      "fields": {
+        "weight": {
+          "type": "*uint16",
+          "optional": true
+        },
+        "leafWeight": {
+          "type": "*uint16",
+          "optional": true
+        },
+        "major": {
+          "type": "int64",
+          "optional": false
+        },
+        "minor": {
+          "type": "int64",
+          "optional": false
+        }
+      }
+    },
+    "LinuxThrottleDevice": {
+      "fields": {
+        "rate": {
+          "type": "uint64",
+          "optional": false
+        },
+        "major": {
+          "type": "int64",
+          "optional": false
+        },
+        "minor": {
+          "type": "int64",
+          "optional": false
+        }
+      }
+    },
+    "LinuxBlockIO": {
+      "fields": {
+        "weight": {
+          "type": "*uint16",
+          "optional": true
+        },
+        "leafWeight": {
+          "type": "*uint16",
+          "optional": true
+        },
+        "weightDevice": {
+          "type": "[]LinuxWeightDevice",
+          "optional": true
+        },
+        "throttleReadBpsDevice": {
+          "type": "[]LinuxThrottleDevice",
+          "optional": true
+        },
+        "throttleWriteBpsDevice": {
+          "type": "[]LinuxThrottleDevice",
+          "optional": true
+        },
+        "throttleReadIOPSDevice": {
+          "type": "[]LinuxThrottleDevice",
+          "optional": true
+        },
+        "throttleWriteIOPSDevice": {
+          "type": "[]LinuxThrottleDevice",
+          "optional": true
+        }
+      }
+    },
+    "LinuxMemory": {
+      "fields": {
+        "limit": {
+          "type": "*int64",
+          "optional": true
+        },
+        "reservation": {
+          "type": "*int64",
+          "optional": true
+        },
+        "swap": {
+          "type": "*int64",
+          "optional": true
+        },
+        "kernel": {
+          "type": "*int64",
+          "optional": true
+        },
+        "kernelTCP": {
+          "type": "*int64",
+          "optional": true
+        },
+        "swappiness": {
+          "type": "*uint64",
+          "optional": true
+        },
+        "disableOOMKiller": {
+          "type": "*bool",
+          "optional": true
+        },
+        "useHierarchy": {
+          "type": "*bool",
+          "optional": true
+        },
+        "checkBeforeUpdate": {
+          "type": "*bool",
+          "optional": true
+        }
+      }
+    },
+    "LinuxCPU": {
+      "fields": {
+        "shares": {
+          "type": "*uint64",
+          "optional": true
+        },
+        "quota": {
+          "type": "*int64",
+          "optional": true
+        },
+        "burst": {
+          "type": "*uint64",
+          "optional": true
+        },
+        "period": {
+          "type": "*uint64",
+          "optional": true
+        },
+        "realtimeRuntime": {
+          "type": "*int64",
+          "optional": true
+        },
+        "realtimePeriod": {
+          "type": "*uint64",
+          "optional": true
+        },
+        "cpus": {
+          "type": "string",
+          "optional": true
+        },
+        "mems": {
+          "type": "string",
+          "optional": true
+        },
+        "idle": {
+          "type": "*int64",
+          "optional": true
+        }
+      }
+    },
+    "LinuxPids": {
+      "fields": {
+        "limit": {
+          "type": "*int64",
+          "optional": true
+        }
+      }
+    },
+    "LinuxNetwork": {
+      "fields": {
+        "classID": {
+          "type": "*uint32",
+          "optional": true
+        },
+        "priorities": {
+          "type": "[]LinuxInterfacePriority",
+          "optional": true
+        }
+      }
+    },
+    "LinuxRdma": {
+      "fields": {
+        "hcaHandles": {
+          "type": "*uint32",
+          "optional": true
+        },
+        "hcaObjects": {
+          "type": "*uint32",
+          "optional": true
+        }
+      }
+    },
+    "LinuxResources": {
+      "fields": {
+        "devices": {
+          "type": "[]LinuxDeviceCgroup",
+          "optional": true
+        },
+        "memory": {
+          "type": "*LinuxMemory",
+          "optional": true
+        },
+        "cpu": {
+          "type": "*LinuxCPU",
+          "optional": true
+        },
+        "pids": {
+          "type": "*LinuxPids",
+          "optional": true
+        },
+        "blockIO": {
+          "type": "*LinuxBlockIO",
+          "optional": true
+        },
+        "hugepageLimits": {
+          "type": "[]LinuxHugepageLimit",
+          "optional": true
+        },
+        "network": {
+          "type": "*LinuxNetwork",
+          "optional": true
+        },
+        "rdma": {
+          "type": "map[string]LinuxRdma",
+          "optional": true
+        },
+        "unified": {
+          "type": "map[string]string",
+          "optional": true
+        }
+      }
+    },
+    "LinuxDevice": {
+      "fields": {
+        "path": {
+          "type": "string",
+          "optional": false
+        },
+        "type": {
+          "type": "string",
+          "optional": false
+        },
+        "major": {
+          "type": "int64",
+          "optional": false
+        },
+        "minor": {
+          "type": "int64",
+          "optional": false
+        },
+        "fileMode": {
+          "type": "*os.FileMode",
+          "optional": true
+        },
+        "uid": {
+          "type": "*uint32",
+          "optional": true
+        },
+        "gid": {
+          "type": "*uint32",
+          "optional": true
+        }
+      }
+    },
+    "LinuxNetDevice": {
+      "fields": {
+        "name": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "LinuxDeviceCgroup": {
+      "fields": {
+        "allow": {
+          "type": "bool",
+          "optional": false
+        },
+        "type": {
+          "type": "string",
+          "optional": true
+        },
+        "major": {
+          "type": "*int64",
+          "optional": true
+        },
+        "minor": {
+          "type": "*int64",
+          "optional": true
+        },
+        "access": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "LinuxPersonality": {
+      "fields": {
+        "domain": {
+          "type": "LinuxPersonalityDomain",
+          "optional": false
+        },
+        "flags": {
+          "type": "[]LinuxPersonalityFlag",
+          "optional": true
+        }
+      }
+    },
+    "Solaris": {
+      "fields": {
+        "milestone": {
+          "type": "string",
+          "optional": true
+        },
+        "limitpriv": {
+          "type": "string",
+          "optional": true
+        },
+        "maxShmMemory": {
+          "type": "string",
+          "optional": true
+        },
+        "anet": {
+          "type": "[]SolarisAnet",
+          "optional": true
+        },
+        "cappedCPU": {
+          "type": "*SolarisCappedCPU",
+          "optional": true
+        },
+        "cappedMemory": {
+          "type": "*SolarisCappedMemory",
+          "optional": true
+        }
+      }
+    },
+    "SolarisCappedCPU": {
+      "fields": {
+        "ncpus": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "SolarisCappedMemory": {
+      "fields": {
+        "physical": {
+          "type": "string",
+          "optional": true
+        },
+        "swap": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "SolarisAnet": {
+      "fields": {
+        "linkname": {
+          "type": "string",
+          "optional": true
+        },
+        "lowerLink": {
+          "type": "string",
+          "optional": true
+        },
+        "allowedAddress": {
+          "type": "string",
+          "optional": true
+        },
+        "configureAllowedAddress": {
+          "type": "string",
+          "optional": true
+        },
+        "defrouter": {
+          "type": "string",
+          "optional": true
+        },
+        "linkProtection": {
+          "type": "string",
+          "optional": true
+        },
+        "macAddress": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "Windows": {
+      "fields": {
+        "layerFolders": {
+          "type": "[]string",
+          "optional": false
+        },
+        "devices": {
+          "type": "[]WindowsDevice",
+          "optional": true
+        },
+        "resources": {
+          "type": "*WindowsResources",
+          "optional": true
+        },
+        "credentialSpec": {
+          "type": "interface{}",
+          "optional": true
+        },
+        "servicing": {
+          "type": "bool",
+          "optional": true
+        },
+        "ignoreFlushesDuringBoot": {
+          "type": "bool",
+          "optional": true
+        },
+        "hyperv": {
+          "type": "*WindowsHyperV",
+          "optional": true
+        },
+        "network": {
+          "type": "*WindowsNetwork",
+          "optional": true
+        }
+      }
+    },
+    "WindowsDevice": {
+      "fields": {
+        "id": {
+          "type": "string",
+          "optional": false
+        },
+        "idType": {
+          "type": "string",
+          "optional": false
+        }
+      }
+    },
+    "WindowsResources": {
+      "fields": {
+        "memory": {
+          "type": "*WindowsMemoryResources",
+          "optional": true
+        },
+        "cpu": {
+          "type": "*WindowsCPUResources",
+          "optional": true
+        },
+        "storage": {
+          "type": "*WindowsStorageResources",
+          "optional": true
+        }
+      }
+    },
+    "WindowsMemoryResources": {
+      "fields": {
+        "limit": {
+          "type": "*uint64",
+          "optional": true
+        }
+      }
+    },
+    "WindowsCPUResources": {
+      "fields": {
+        "count": {
+          "type": "*uint64",
+          "optional": true
+        },
+        "shares": {
+          "type": "*uint16",
+          "optional": true
+        },
+        "maximum": {
+          "type": "*uint16",
+          "optional": true
+        },
+        "affinity": {
+          "type": "[]WindowsCPUGroupAffinity",
+          "optional": true
+        }
+      }
+    },
+    "WindowsCPUGroupAffinity": {
+      "fields": {
+        "mask": {
+          "type": "uint64",
+          "optional": true
+        },
+        "group": {
+          "type": "uint32",
+          "optional": true
+        }
+      }
+    },
+    "WindowsStorageResources": {
+      "fields": {
+        "iops": {
+          "type": "*uint64",
+          "optional": true
+        },
+        "bps": {
+          "type": "*uint64",
+          "optional": true
+        },
+        "sandboxSize": {
+          "type": "*uint64",
+          "optional": true
+        }
+      }
+    },
+    "WindowsNetwork": {
+      "fields": {
+        "endpointList": {
+          "type": "[]string",
+          "optional": true
+        },
+        "allowUnqualifiedDNSQuery": {
+          "type": "bool",
+          "optional": true
+        },
+        "DNSSearchList": {
+          "type": "[]string",
+          "optional": true
+        },
+        "networkSharedContainerName": {
+          "type": "string",
+          "optional": true
+        },
+        "networkNamespace": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "WindowsHyperV": {
+      "fields": {
+        "utilityVMPath": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "IOMems": {
+      "fields": {
+        "firstGFN": {
+          "type": "*uint64",
+          "optional": true
+        },
+        "firstMFN": {
+          "type": "*uint64",
+          "optional": false
+        },
+        "nrMFNs": {
+          "type": "*uint64",
+          "optional": false
+        }
+      }
+    },
+    "HWConfig": {
+      "fields": {
+        "deviceTree": {
+          "type": "string",
+          "optional": true
+        },
+        "vcpus": {
+          "type": "*uint32",
+          "optional": true
+        },
+        "memory": {
+          "type": "*uint64",
+          "optional": true
+        },
+        "dtdevs": {
+          "type": "[]string",
+          "optional": true
+        },
+        "iomems": {
+          "type": "[]IOMems",
+          "optional": true
+        },
+        "irqs": {
+          "type": "[]uint32",
+          "optional": true
+        }
+      }
+    },
+    "VM": {
+      "fields": {
+        "hypervisor": {
+          "type": "VMHypervisor",
+          "optional": true
+        },
+        "kernel": {
+          "type": "VMKernel",
+          "optional": false
+        },
+        "image": {
+          "type": "VMImage",
+          "optional": true
+        },
+        "hwconfig": {
+          "type": "*HWConfig",
+          "optional": true
+        }
+      }
+    },
+    "VMHypervisor": {
+      "fields": {
+        "path": {
+          "type": "string",
+          "optional": false
+        },
+        "parameters": {
+          "type": "[]string",
+          "optional": true
+        }
+      }
+    },
+    "VMKernel": {
+      "fields": {
+        "path": {
+          "type": "string",
+          "optional": false
+        },
+        "parameters": {
+          "type": "[]string",
+          "optional": true
+        },
+        "initrd": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "VMImage": {
+      "fields": {
+        "path": {
+          "type": "string",
+          "optional": false
+        },
+        "format": {
+          "type": "string",
+          "optional": false
+        }
+      }
+    },
+    "LinuxSeccomp": {
+      "fields": {
+        "defaultAction": {
+          "type": "LinuxSeccompAction",
+          "optional": false
+        },
+        "defaultErrnoRet": {
+          "type": "*uint",
+          "optional": true
+        },
+        "architectures": {
+          "type": "[]Arch",
+          "optional": true
+        },
+        "flags": {
+          "type": "[]LinuxSeccompFlag",
+          "optional": true
+        },
+        "listenerPath": {
+          "type": "string",
+          "optional": true
+        },
+        "listenerMetadata": {
+          "type": "string",
+          "optional": true
+        },
+        "syscalls": {
+          "type": "[]LinuxSyscall",
+          "optional": true
+        }
+      }
+    },
+    "LinuxSeccompArg": {
+      "fields": {
+        "index": {
+          "type": "uint",
+          "optional": false
+        },
+        "value": {
+          "type": "uint64",
+          "optional": false
+        },
+        "valueTwo": {
+          "type": "uint64",
+          "optional": true
+        },
+        "op": {
+          "type": "LinuxSeccompOperator",
+          "optional": false
+        }
+      }
+    },
+    "LinuxSyscall": {
+      "fields": {
+        "names": {
+          "type": "[]string",
+          "optional": false
+        },
+        "action": {
+          "type": "LinuxSeccompAction",
+          "optional": false
+        },
+        "errnoRet": {
+          "type": "*uint",
+          "optional": true
+        },
+        "args": {
+          "type": "[]LinuxSeccompArg",
+          "optional": true
+        }
+      }
+    },
+    "LinuxIntelRdt": {
+      "fields": {
+        "closID": {
+          "type": "string",
+          "optional": true
+        },
+        "schemata": {
+          "type": "[]string",
+          "optional": true
+        },
+        "l3CacheSchema": {
+          "type": "string",
+          "optional": true
+        },
+        "memBwSchema": {
+          "type": "string",
+          "optional": true
+        },
+        "enableMonitoring": {
+          "type": "bool",
+          "optional": true
+        }
+      }
+    },
+    "LinuxMemoryPolicy": {
+      "fields": {
+        "mode": {
+          "type": "MemoryPolicyModeType",
+          "optional": false
+        },
+        "nodes": {
+          "type": "string",
+          "optional": false
+        },
+        "flags": {
+          "type": "[]MemoryPolicyFlagType",
+          "optional": true
+        }
+      }
+    },
+    "ZOS": {
+      "fields": {
+        "namespaces": {
+          "type": "[]ZOSNamespace",
+          "optional": true
+        }
+      }
+    },
+    "ZOSNamespace": {
+      "fields": {
+        "type": {
+          "type": "ZOSNamespaceType",
+          "optional": false
+        },
+        "path": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    },
+    "FreeBSD": {
+      "fields": {
+        "devices": {
+          "type": "[]FreeBSDDevice",
+          "optional": true
+        },
+        "jail": {
+          "type": "*FreeBSDJail",
+          "optional": true
+        }
+      }
+    },
+    "FreeBSDDevice": {
+      "fields": {
+        "path": {
+          "type": "string",
+          "optional": false
+        },
+        "mode": {
+          "type": "*os.FileMode",
+          "optional": true
+        }
+      }
+    },
+    "FreeBSDJail": {
+      "fields": {
+        "parent": {
+          "type": "string",
+          "optional": true
+        },
+        "host": {
+          "type": "FreeBSDSharing",
+          "optional": true
+        },
+        "ip4": {
+          "type": "FreeBSDSharing",
+          "optional": true
+        },
+        "ip4Addr": {
+          "type": "[]string",
+          "optional": true
+        },
+        "ip6": {
+          "type": "FreeBSDSharing",
+          "optional": true
+        },
+        "ip6Addr": {
+          "type": "[]string",
+          "optional": true
+        },
+        "vnet": {
+          "type": "FreeBSDSharing",
+          "optional": true
+        },
+        "interface": {
+          "type": "string",
+          "optional": true
+        },
+        "vnetInterfaces": {
+          "type": "[]string",
+          "optional": true
+        },
+        "sysvmsg": {
+          "type": "FreeBSDSharing",
+          "optional": true
+        },
+        "sysvsem": {
+          "type": "FreeBSDSharing",
+          "optional": true
+        },
+        "sysvshm": {
+          "type": "FreeBSDSharing",
+          "optional": true
+        },
+        "enforceStatfs": {
+          "type": "*int",
+          "optional": true
+        },
+        "allow": {
+          "type": "*FreeBSDJailAllow",
+          "optional": true
+        }
+      }
+    },
+    "FreeBSDJailAllow": {
+      "fields": {
+        "setHostname": {
+          "type": "bool",
+          "optional": true
+        },
+        "rawSockets": {
+          "type": "bool",
+          "optional": true
+        },
+        "chflags": {
+          "type": "bool",
+          "optional": true
+        },
+        "mount": {
+          "type": "[]string",
+          "optional": true
+        },
+        "quotas": {
+          "type": "bool",
+          "optional": true
+        },
+        "socketAf": {
+          "type": "bool",
+          "optional": true
+        },
+        "mlock": {
+          "type": "bool",
+          "optional": true
+        },
+        "reservedPorts": {
+          "type": "bool",
+          "optional": true
+        },
+        "suser": {
+          "type": "bool",
+          "optional": true
+        }
+      }
+    }
+  },
+  "aliases": {
+    "IOPriorityClass": {
+      "type": "string",
+      "values": [
+        "IOPRIO_CLASS_RT",
+        "IOPRIO_CLASS_BE",
+        "IOPRIO_CLASS_IDLE"
+      ]
+    },
+    "LinuxNamespaceType": {
+      "type": "string",
+      "values": [
+        "pid",
+        "network",
+        "mount",
+        "ipc",
+        "uts",
+        "user",
+        "cgroup",
+        "time"
+      ]
+    },
+    "LinuxPersonalityDomain": {
+      "type": "string",
+      "values": [
+        "LINUX",
+        "LINUX32"
+      ]
+    },
+    "LinuxPersonalityFlag": {
+      "type": "string",
+      "values": []
+    },
+    "Arch": {
+      "type": "string",
+      "values": [
+        "SCMP_ARCH_X86",
+        "SCMP_ARCH_X86_64",
+        "SCMP_ARCH_X32",
+        "SCMP_ARCH_ARM",
+        "SCMP_ARCH_AARCH64",
+        "SCMP_ARCH_MIPS",
+        "SCMP_ARCH_MIPS64",
+        "SCMP_ARCH_MIPS64N32",
+        "SCMP_ARCH_MIPSEL",
+        "SCMP_ARCH_MIPSEL64",
+        "SCMP_ARCH_MIPSEL64N32",
+        "SCMP_ARCH_PPC",
+        "SCMP_ARCH_PPC64",
+        "SCMP_ARCH_PPC64LE",
+        "SCMP_ARCH_S390",
+        "SCMP_ARCH_S390X",
+        "SCMP_ARCH_PARISC",
+        "SCMP_ARCH_PARISC64",
+        "SCMP_ARCH_RISCV64",
+        "SCMP_ARCH_LOONGARCH64",
+        "SCMP_ARCH_M68K",
+        "SCMP_ARCH_SH",
+        "SCMP_ARCH_SHEB"
+      ]
+    },
+    "LinuxSeccompFlag": {
+      "type": "string",
+      "values": [
+        "SECCOMP_FILTER_FLAG_LOG",
+        "SECCOMP_FILTER_FLAG_SPEC_ALLOW",
+        "SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV"
+      ]
+    },
+    "LinuxSeccompAction": {
+      "type": "string",
+      "values": [
+        "SCMP_ACT_KILL",
+        "SCMP_ACT_KILL_PROCESS",
+        "SCMP_ACT_KILL_THREAD",
+        "SCMP_ACT_TRAP",
+        "SCMP_ACT_ERRNO",
+        "SCMP_ACT_TRACE",
+        "SCMP_ACT_ALLOW",
+        "SCMP_ACT_LOG",
+        "SCMP_ACT_NOTIFY"
+      ]
+    },
+    "LinuxSeccompOperator": {
+      "type": "string",
+      "values": [
+        "SCMP_CMP_NE",
+        "SCMP_CMP_LT",
+        "SCMP_CMP_LE",
+        "SCMP_CMP_EQ",
+        "SCMP_CMP_GE",
+        "SCMP_CMP_GT",
+        "SCMP_CMP_MASKED_EQ"
+      ]
+    },
+    "ZOSNamespaceType": {
+      "type": "string",
+      "values": [
+        "pid",
+        "mount",
+        "ipc",
+        "uts"
+      ]
+    },
+    "MemoryPolicyModeType": {
+      "type": "string",
+      "values": [
+        "MPOL_DEFAULT",
+        "MPOL_BIND",
+        "MPOL_INTERLEAVE",
+        "MPOL_WEIGHTED_INTERLEAVE",
+        "MPOL_PREFERRED",
+        "MPOL_PREFERRED_MANY",
+        "MPOL_LOCAL"
+      ]
+    },
+    "MemoryPolicyFlagType": {
+      "type": "string",
+      "values": [
+        "MPOL_F_NUMA_BALANCING",
+        "MPOL_F_RELATIVE_NODES",
+        "MPOL_F_STATIC_NODES"
+      ]
+    },
+    "LinuxSchedulerPolicy": {
+      "type": "string",
+      "values": [
+        "SCHED_OTHER",
+        "SCHED_FIFO",
+        "SCHED_RR",
+        "SCHED_BATCH",
+        "SCHED_ISO",
+        "SCHED_IDLE",
+        "SCHED_DEADLINE"
+      ]
+    },
+    "LinuxSchedulerFlag": {
+      "type": "string",
+      "values": [
+        "SCHED_FLAG_RESET_ON_FORK",
+        "SCHED_FLAG_RECLAIM",
+        "SCHED_FLAG_DL_OVERRUN",
+        "SCHED_FLAG_KEEP_POLICY",
+        "SCHED_FLAG_KEEP_PARAMS",
+        "SCHED_FLAG_UTIL_CLAMP_MIN",
+        "SCHED_FLAG_UTIL_CLAMP_MAX"
+      ]
+    },
+    "FreeBSDSharing": {
+      "type": "string",
+      "values": [
+        "disable",
+        "new",
+        "inherit"
+      ]
+    }
+  }
+}

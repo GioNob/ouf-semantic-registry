@@ -1,0 +1,52 @@
+name: Provider unchanged SBOM fresh signed evidence
+on:
+  push:
+    paths:
+      - 'tools/refresh_existing_provider_sbom.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  attestations: write
+  id-token: write
+jobs:
+  fixed-fresh-db-signed-sidecar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: GioNob/ouf-semantic-registry
+          ref: 84e91e199892bfda1d116a49f53a9990f61724c7
+          path: .fresh/semantic
+      - name: Reverify existing SBOM signatures and scan with exactly fixed fresh DB
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: sudo --preserve-env=GH_TOKEN /usr/bin/python3 -I -B tools/refresh_existing_provider_sbom.py .fresh/semantic
+      - name: Preserve readable public evidence
+        if: always()
+        run: if [ -d generated ]; then sudo chown -R "$(id -u):$(id -g)" generated; sudo chmod -R a+rX generated; fi
+      - name: Sign actual fresh evidence in original public producer repository
+        id: provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-checksums: generated/provider-v2-fresh-existing-sbom/checksums.sha256
+          create-storage-record: false
+      - name: Cryptographically verify six actual new subjects
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVENANCE_BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+        run: |
+          cp "$PROVENANCE_BUNDLE" generated/provider-v2-fresh-existing-sbom/provenance.json
+          for file in inventory.json database-pin.json adapter.extended.syft.json southbound.extended.syft.json adapter.extended.grype.json southbound.extended.grype.json; do
+            gh attestation verify "generated/provider-v2-fresh-existing-sbom/$file" --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/provider-unchanged-sbom-refresh.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$PROVENANCE_BUNDLE" --format json > "generated/provider-v2-fresh-existing-sbom/$file.verification.json"
+          done
+          printf '%s\n' 'OUF_REFRESH_SIX_ACTUAL_SIGNATURES=PASS'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-v2-fresh-existing-sbom-${{ github.run_id }}
+          path: generated/provider-v2-fresh-existing-sbom/
+          if-no-files-found: warn
+          retention-days: 30

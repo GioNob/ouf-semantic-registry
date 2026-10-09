@@ -1,0 +1,24 @@
+{
+  "schema": "ouf.semantic-image-byte-diagnostic-operator-receipt.v1",
+  "reportedAt": "2026-10-05T06:34:44+02:00",
+  "executedCommit": "41a03e492d2dd76c6c0f7749d7c9cd9987475790",
+  "wrapperSha256": "c6c64cbfe881261495be28b323c0c400612b62590e6156fc4a7b63bb68fc30bb",
+  "downloadChecksumPassed": true,
+  "status": "BLOCKED",
+  "diagnostic": {
+    "dockerExitCode": 0,
+    "errorClass": "Blocked",
+    "imageRole": "ADAPTER",
+    "parserBytes": 223532435,
+    "parserEntries": 5798,
+    "stage": "ARCHIVE_VERIFICATION",
+    "verifierLine": 167
+  },
+  "sourceLineMeans": "embedded Python config image-id hash and dict-type conjunction",
+  "targetCauseConfirmed": false,
+  "softwareAssumptionTooNarrow": true,
+  "imageBytesVerified": false,
+  "acceptanceGranted": false,
+  "startAuthorized": false,
+  "ociFollowupExecuted": false
+}

@@ -1,0 +1,70 @@
+{
+  "schema": "ouf.semantic-remediation-v2-operator-report.v1",
+  "evidenceSource": "User-pasted VPS command output in this conversation; no direct SSH readback by assistant.",
+  "reportedAt": "2026-10-06T13:43:48+02:00",
+  "reportPreservationConfirmedAt": "2026-10-06T13:45:00+02:00",
+  "wrapperCommit": "9db48efa8eb65f3d25aa6a0b58203cf7f644ca34",
+  "wrapperSha256": "8e58a37aa91d24c27299fe19a8351535501a3c9c8c93aa7a353fe58fe3c033d2",
+  "snapshot": "/etc/ouf/deploy-snapshots/semantic-image-remediation-20261006-v2",
+  "reportOriginal": "/tmp/ouf-remediation-qualification-v2.uR2XU0",
+  "reportSaved": "/home/oufadmin/ouf-reports/qualification-v2-20261006.txt",
+  "wrapperAndQualifierChecksumsReportedOK": true,
+  "qualification": {
+    "acceptanceGranted": false,
+    "ciAttestationEvidenceRetained": true,
+    "ciSourceCommit": "0a1b4460c52c74cefe806286f043f71cbf5a5647",
+    "containerOperations": 0,
+    "dependencyCoverageAccepted": false,
+    "imageImportPerformed": false,
+    "images": [
+      {
+        "archiveSha256": "8301649b854a01d0306fabb14a5f93dd08eb4b1df98c2af356c0c84773821207",
+        "bytesVerified": true,
+        "imageId": "sha256:62e066bd021f386291f5de21ce0e1f9e67904a74b4146326070c7784493ad320",
+        "role": "adapter",
+        "severityCounts": {
+          "Critical": 0,
+          "High": 0,
+          "Low": 0,
+          "Medium": 5,
+          "Negligible": 0,
+          "Unknown": 0
+        }
+      },
+      {
+        "archiveSha256": "1588c2391f9da45f300d16dd191cfe483dff83f81ed9424baec40201e64d7641",
+        "bytesVerified": true,
+        "imageId": "sha256:d4c47bbeca75d94e2231e17ca14552885b7b339a5f33dbace411e275c79ded04",
+        "role": "southbound",
+        "severityCounts": {
+          "Critical": 0,
+          "High": 0,
+          "Low": 18,
+          "Medium": 141,
+          "Negligible": 4,
+          "Unknown": 0
+        }
+      }
+    ],
+    "nativeEvidenceByteVerified": true,
+    "nativeEvidenceRetained": true,
+    "publisherTrustAccepted": false,
+    "runtimeRegistered": false,
+    "scannerInvoked": false,
+    "schema": "ouf.semantic-remediation-bundle-byte-qualification.v2",
+    "sourceArtifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+    "startAuthorized": false,
+    "targetAttestationCryptoVerified": false
+  },
+  "status": "TARGET_BYTE_QUALIFICATION_PASS_OPERATOR_REPORTED",
+  "targetEvidenceSnapshotCreated": true,
+  "targetRuntimeModified": false,
+  "targetCryptoVerified": true,
+  "publisherTrustAccepted": false,
+  "dependencyCoverageAccepted": false,
+  "acceptanceGranted": false,
+  "runtimeRegistered": false,
+  "startAuthorized": false,
+  "nextAction": "Complete runtime dependency/source coverage comparison and digest-consistent staging design before image import; no existing gateway/candidate replacement.",
+  "targetCryptoEvidence": "docs/handoffs/receipts/SEMANTIC_REMEDIATION_V2_TARGET_CRYPTO_2026-10-06_OPERATOR.json"
+}

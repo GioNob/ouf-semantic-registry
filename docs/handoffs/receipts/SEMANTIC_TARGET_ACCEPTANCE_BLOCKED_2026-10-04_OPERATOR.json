@@ -1,0 +1,16 @@
+{
+  "schema": "ouf.semantic-target-inventory-blocked-operator.v1",
+  "evidenceType": "operator-supplied-terminal-photo",
+  "attachmentName": "1000093617(1).jpg",
+  "attachmentSha256": "7f9442a079e9424af18fcb488895d3fd013c45ea6ef74d28bc65358dd6d8cd03",
+  "observedStatus": "BLOCKED",
+  "observedMarker": "SEMANTIC_TARGET_ACCEPTANCE_INVENTORY=BLOCKED START_AUTHORIZED=false NO_SECRETS_PRINTED=true",
+  "exactSnapshotRootConfirmed": false,
+  "snapshotRoot": null,
+  "reasonAvailable": false,
+  "independentVpsInspection": false,
+  "completeReceiptObserved": false,
+  "partialEvidencePresenceKnown": false,
+  "diagnosticExecuted": false,
+  "doNotReplayInventory": true
+}

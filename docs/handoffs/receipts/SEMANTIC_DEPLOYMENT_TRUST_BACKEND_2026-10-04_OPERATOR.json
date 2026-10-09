@@ -1,0 +1,41 @@
+{
+  "schema": "ouf.semantic-deployment-trust-backend.operator-attestation.v1",
+  "evidenceSource": "Operator-pasted VPS output in this conversation",
+  "executionDateUTC": "2026-10-04",
+  "sourceRoot": "/etc/ouf/deploy-snapshots/semantic-deployment-trust-backend-inventory-20261004-080455",
+  "result": "PASS",
+  "receipt": {
+    "alteredMessageRejected": true,
+    "alteredSignatureRejected": true,
+    "atomicSnapshotProven": false,
+    "deploymentAuthorityProven": false,
+    "dnsCalls": 0,
+    "ed25519VerificationProven": true,
+    "iamCalls": 0,
+    "keyGenerationAuthorized": false,
+    "keysGenerated": 0,
+    "noSecretsPrinted": true,
+    "notReleaseAcceptance": true,
+    "opensslAvailable": true,
+    "opensslHash": "f4aa15f2822f670af7b5c1043d7aa6ebbbc64229fd2fae382edfc6a4524749c1",
+    "opensslPath": "/usr/bin/openssl",
+    "opensslVersion": "3.5.7",
+    "privateKeysRead": 0,
+    "providerCalls": 0,
+    "publicTestVector": "RFC8032-7.1-TEST2",
+    "readOnly": true,
+    "runtimeRegistrationAuthorized": false,
+    "schema": "ouf.semantic-deployment-trust-backend-inventory.v1",
+    "signaturesIssued": 0,
+    "sourceCommit": "cc161b94c1af014403dabd113200d3180f02089d",
+    "sourceCount": 18,
+    "sourceCustodyVerified": true,
+    "sourcePackageReceiptHash": "1b5a340a11fa3a157fe83be7bddc2a4af5dd755eb78a003b7a3640e117647d0a",
+    "stableAcrossReads": true,
+    "startAuthorized": false
+  },
+  "limitations": [
+    "Operator evidence only; no independent VPS access.",
+    "Verification backend availability does not establish deployment authority, key provisioning, atomicity, runtime registration or startup readiness."
+  ]
+}

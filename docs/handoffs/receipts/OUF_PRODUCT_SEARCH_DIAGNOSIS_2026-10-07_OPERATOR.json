@@ -1,0 +1,49 @@
+{
+  "schema": "ouf.product-search-diagnosis.operator.v1",
+  "reportedAt": "2026-10-07T08:17:03+02:00",
+  "source": "Operator supplied stdout; no assistant SSH",
+  "scriptCommit": "f63ba286058276f1a3e6a7393c015a5b89ed476d",
+  "scriptSha256": "ec80aba8e835781a2fa3b909c1799cc21d95c03ced2cf801dd3b37634682c114",
+  "operatorTemporaryScript": "/tmp/ouf-product-search.JWPoFL/diagnose.py",
+  "checksumPassed": true,
+  "report": {
+    "anonymousOwnerProbe": {
+      "httpStatus": 403,
+      "noReceiptSent": true,
+      "objectResponseRead": false,
+      "performed": true,
+      "result": "OWNER_REJECTS_UNSIGNED_REQUEST_AS_EXPECTED"
+    },
+    "containerLifecycleOperations": 0,
+    "environmentValuesPrinted": false,
+    "gatewayOwnerKeyHex64": true,
+    "gatewayOwnerKeyInheritedByNginx": false,
+    "gatewayOwnerKeyPresent": true,
+    "gatewayRunning": true,
+    "keyFilesRead": false,
+    "scope": "CURRENT_SEARCH_DIAGNOSIS_ONLY",
+    "targetConfigurationWrites": 0,
+    "udpOwnerKeyMountCount": 1,
+    "udpOwnerKeyMountReadOnly": true,
+    "udpRunning": true,
+    "udpSearchBindingsPresent": {
+      "OUF_UDP_SEARCH_AUDIENCE": true,
+      "OUF_UDP_SEARCH_ISSUER": true,
+      "OUF_UDP_SEARCH_OWNER_KEY_FILE": true,
+      "OUF_UDP_SEARCH_TENANT_ID": true,
+      "OUF_UDP_SEARCH_WORKLOAD": true
+    }
+  },
+  "interpretation": {
+    "ownerUnsignedDenialObserved": true,
+    "gatewayEnvInheritanceAnomalyObserved": true,
+    "positiveServingProven": false,
+    "final503CauseProven": false,
+    "configurationSourceAndDeclaredEnvLinePending": true
+  },
+  "commands": [
+    "sudo docker exec ouf-apisix sh -c 'test -r /usr/local/apisix/conf/config.yaml || exit 1; if grep -Eq \"^[[:space:]]*-[[:space:]]*OUF_UDP_SEARCH_OWNER_KEY[[:space:]]*(#.*)?$\" /usr/local/apisix/conf/config.yaml; then echo SEARCH_ENV_CONFIG_LINE=present; else echo SEARCH_ENV_CONFIG_LINE=absent; fi'",
+    "sudo docker inspect --format '{{range .Mounts}}{{if eq .Destination \"/usr/local/apisix/conf/config.yaml\"}}CONFIG_SOURCE={{.Source}}{{end}}{{end}}' ouf-apisix"
+  ],
+  "targetMutations": 0
+}

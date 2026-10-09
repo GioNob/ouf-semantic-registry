@@ -1,0 +1,15 @@
+{
+  "schema": "ouf.semantic-image-byte-blocked-operator-receipt.v1",
+  "reportedAt": "2026-10-05T06:28:51+02:00",
+  "operatorOutput": "/tmp/tmp.XNT4xIBHKs/verify.sh: OK\n[sudo] password for oufadmin:\nSEMANTIC_IMAGE_BYTES=BLOCKED REASON=IMAGE_ARCHIVE_UNPROVEN NO_SECRETS_PRINTED=true",
+  "executedCommit": "ffe6a9bceeee08bae95c93425f646bd354780d7c",
+  "wrapperSha256": "c8602ba1279481df8a7cbc66864bd5a978be0234678d6cc5515da6b2f7e45b57",
+  "scopeGranted": true,
+  "status": "BLOCKED",
+  "causeKnown": false,
+  "imageReadCompletionKnown": false,
+  "imageBytesVerified": false,
+  "acceptanceGranted": false,
+  "startAuthorized": false,
+  "diagnosticFollowupExecuted": false
+}

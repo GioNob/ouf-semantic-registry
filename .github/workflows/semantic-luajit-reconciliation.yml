@@ -1,0 +1,39 @@
+name: Semantic LuaJIT fixed-source reconciliation
+on:
+  pull_request:
+    paths:
+      - 'tools/reconcile_semantic_luajit_findings.py'
+      - 'tests/test_semantic_luajit_reconciliation.py'
+      - 'tests/semantic-luajit-*.json'
+      - '.github/workflows/semantic-luajit-reconciliation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  attestations: read
+jobs:
+  fixed-source-and-actual-image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify rejection tests
+        run: python3 -B -m unittest tests.test_semantic_luajit_reconciliation
+      - name: Verify immutable native evidence first
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -B tests/read_semantic_rebuilt_native_attestation.py
+      - name: Reconcile source fixes and run upstream regressions in exact signed image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          python3 -B tools/reconcile_semantic_luajit_findings.py
+          --evidence-root "$RUNNER_TEMP/ouf-rebuilt-native-evidence-readback"
+          --output generated/semantic-luajit-reconciliation.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semantic-luajit-reconciliation-${{ github.run_id }}
+          path: generated/semantic-luajit-reconciliation.json
+          if-no-files-found: warn
+          retention-days: 30

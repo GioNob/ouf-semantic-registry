@@ -1,0 +1,179 @@
+{
+  "schema": "ouf.semantic-luajit-reconciliation-ci-evidence.v1",
+  "codeCommit": "b0a2f825297085dd391efd9bdb001bdafe5fff66",
+  "runId": 37447434158,
+  "jobId": 112215537016,
+  "workflowConclusion": "success",
+  "negativeTestsPassed": 8,
+  "evidenceArtifact": {
+    "id": 11404136916,
+    "bytes": 1990,
+    "sha256": "b46979e6fb7a4790dd96f0fe5b2077a589dda3e3685a56cb9ce80cbdd3946cb4",
+    "downloadedHashVerifiedAndRead": true,
+    "reportMatchesAuthenticatedCIlog": true
+  },
+  "result": {
+    "acceptanceGranted": false,
+    "actualImageRegressions": [
+      {
+        "executedProgramSha256": "cb972c696b432b45879dbf3829690d26effb968343a5126fd237f4e892e06ae3",
+        "exitCode": 0,
+        "expectedOutcome": "normal_exit",
+        "fixtureSha256": "cb972c696b432b45879dbf3829690d26effb968343a5126fd237f4e892e06ae3",
+        "id": "CVE-2024-25176",
+        "mode": "jit-on",
+        "stdoutSha256": "272c7fbe2a57243867a9366ab972bd60e1c2b68f78bf322b70f2b85989ca890e"
+      },
+      {
+        "executedProgramSha256": "cb972c696b432b45879dbf3829690d26effb968343a5126fd237f4e892e06ae3",
+        "exitCode": 0,
+        "expectedOutcome": "normal_exit",
+        "fixtureSha256": "cb972c696b432b45879dbf3829690d26effb968343a5126fd237f4e892e06ae3",
+        "id": "CVE-2024-25176",
+        "mode": "jit-off",
+        "stdoutSha256": "272c7fbe2a57243867a9366ab972bd60e1c2b68f78bf322b70f2b85989ca890e"
+      },
+      {
+        "executedProgramSha256": "760960e6a093c842a4111f0472e216731afe01c0a877d04077a2d06cbdbed650",
+        "exitCode": 0,
+        "expectedOutcome": "controlled_Lua_sorting_error",
+        "fixtureSha256": "dcabf70ce4882674c9b2b643db23cfabe283625232306f82ebbdec146a7bbcea",
+        "id": "CVE-2024-25177",
+        "mode": "jit-on",
+        "stdoutSha256": "990ffe43cb5b1bd4520a625e8e86efb8fd236a663e90242636953336ab806efb"
+      },
+      {
+        "executedProgramSha256": "760960e6a093c842a4111f0472e216731afe01c0a877d04077a2d06cbdbed650",
+        "exitCode": 0,
+        "expectedOutcome": "controlled_Lua_sorting_error",
+        "fixtureSha256": "dcabf70ce4882674c9b2b643db23cfabe283625232306f82ebbdec146a7bbcea",
+        "id": "CVE-2024-25177",
+        "mode": "jit-off",
+        "stdoutSha256": "990ffe43cb5b1bd4520a625e8e86efb8fd236a663e90242636953336ab806efb"
+      },
+      {
+        "executedProgramSha256": "39f9e823bb0039e8da4af7cf34d10c3f86bd44b52745576de73acf9363fe6a83",
+        "exitCode": 0,
+        "expectedOutcome": "normal_exit",
+        "fixtureSha256": "39f9e823bb0039e8da4af7cf34d10c3f86bd44b52745576de73acf9363fe6a83",
+        "id": "CVE-2024-25178",
+        "mode": "jit-on",
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "executedProgramSha256": "39f9e823bb0039e8da4af7cf34d10c3f86bd44b52745576de73acf9363fe6a83",
+        "exitCode": 0,
+        "expectedOutcome": "normal_exit",
+        "fixtureSha256": "39f9e823bb0039e8da4af7cf34d10c3f86bd44b52745576de73acf9363fe6a83",
+        "id": "CVE-2024-25178",
+        "mode": "jit-off",
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "actualRuntimeBinarySha256": "9eeb150ad8a90d3c71034aa592305c038ade805a6d7ae3f9b2b52a8e8ac726a1",
+    "ciImageImportPerformed": true,
+    "compiledSourceHashes": {
+      "src/lj_debug.c": "cd9ba782f8f05d71dced7a3d3f8a964047b0e0bccb77a140c41b5f34334b9cb9",
+      "src/lj_err.c": "fcff806d2e05ebf825060f39c20c5be1c095942d5da393d665bdfc417db0c83c",
+      "src/lj_err.h": "dbcc3d1ecbf68b10a81a2e5b09207d05c7aa57c1d2b8822128db539f9ba1476d",
+      "src/lj_snap.c": "38572ec25e073b41c94bb750f80e7393f70aff8fddf3616d869d1c48d78b6166",
+      "src/lj_state.c": "7f7070b4a25fa14003c6ea3984c7df8963eb5822f4cf34576b1d38033f3ee9ea",
+      "src/lj_strfmt_num.c": "254f6098ee4ce4cbe223b59ea84734962740a1ce895220d54ab913e56fd27ac3"
+    },
+    "dependencyCoverageAccepted": false,
+    "findings": [
+      {
+        "disposition": "upstream_fix_present_in_exact_compiled_source",
+        "fixCommit": "343ce0edaf3906a62022936175b2f5410024cbfc",
+        "id": "CVE-2024-25176",
+        "rawFindingRetained": true,
+        "severity": "Critical"
+      },
+      {
+        "disposition": "upstream_fix_present_in_exact_compiled_source",
+        "fixCommit": "85b4fed0b0353dd78c8c875c2f562d522a2b310f",
+        "id": "CVE-2024-25177",
+        "rawFindingRetained": true,
+        "severity": "High"
+      },
+      {
+        "disposition": "upstream_fix_present_in_exact_compiled_source",
+        "fixCommit": "defe61a56751a0db5f00ff3ab7b8f45436ba74c8",
+        "id": "CVE-2024-25178",
+        "rawFindingRetained": true,
+        "severity": "Critical"
+      }
+    ],
+    "fullArtifactSha256Verified": "0614b43d8843b8ebe24b4a6a4d564dfb1d36271b8660e8d0379d147a1db231c0",
+    "imageId": "sha256:516f49278f48c808427d346ad8d1520f60433d071949435774395e6c0ebc29b3",
+    "imageImportPerformedOnTarget": false,
+    "imageProvenanceCryptoVerified": true,
+    "publisherTrustAccepted": false,
+    "rawSeverityCounts": {
+      "Critical": 2,
+      "High": 1,
+      "Low": 18,
+      "Medium": 141,
+      "Negligible": 4,
+      "Unknown": 0
+    },
+    "runtimeTestsAreSanitizerInstrumented": false,
+    "sbomModified": false,
+    "scannerInvoked": false,
+    "scannerReportModified": false,
+    "scannerSeverityThresholdMet": false,
+    "schema": "ouf.semantic-luajit-source-reconciliation.v1",
+    "sourceCommit": "fbfc558aacd57a54623df0ced4c31a28f81f8ff2",
+    "sourceVersion": "2.1-20260824",
+    "startAuthorized": false,
+    "suppressionApplied": false,
+    "targetOperations": 0,
+    "upstreamFixAncestry": [
+      {
+        "cnaRecordBlob": "dd9cabeb3bf315ebb1578fa0133969f35acabb5f",
+        "cnaRecordSha256": "8369e556c1db3a6232a6d52287cfffaf5433d50466b9887b81bf6a8f87b60721",
+        "fixCommit": "343ce0edaf3906a62022936175b2f5410024cbfc",
+        "fixIsAncestor": true,
+        "id": "CVE-2024-25176",
+        "sourceCommit": "fbfc558aacd57a54623df0ced4c31a28f81f8ff2"
+      },
+      {
+        "cnaRecordBlob": "54dd3765c00de7365803c1965dc0cca6823f5f3d",
+        "cnaRecordSha256": "096fc4b027d766b311a9b75588b7cc34608cd0848dd02031aa5f175f4ddbcd59",
+        "fixCommit": "85b4fed0b0353dd78c8c875c2f562d522a2b310f",
+        "fixIsAncestor": true,
+        "id": "CVE-2024-25177",
+        "sourceCommit": "fbfc558aacd57a54623df0ced4c31a28f81f8ff2"
+      },
+      {
+        "cnaRecordBlob": "a0ccdef41339d0ece390d23340be5ca4d28aaaae",
+        "cnaRecordSha256": "78994ab7cb7cafb7c793e0586f8cd5b934b6dcea76ce78e30b2399902cf649f7",
+        "fixCommit": "defe61a56751a0db5f00ff3ab7b8f45436ba74c8",
+        "fixIsAncestor": true,
+        "id": "CVE-2024-25178",
+        "sourceCommit": "fbfc558aacd57a54623df0ced4c31a28f81f8ff2"
+      }
+    ]
+  },
+  "scope": "Exact previously signed image and compiled-source manifest; original scanner reports and gate unchanged.",
+  "sourceReferences": [
+    "https://github.com/anchore/grype/issues/2890#issuecomment-3293513871",
+    "https://github.com/LuaJIT/LuaJIT/issues/1149",
+    "https://github.com/LuaJIT/LuaJIT/issues/1147",
+    "https://github.com/LuaJIT/LuaJIT/issues/1152#issuecomment-1922461739"
+  ],
+  "targetModified": false,
+  "publisherTrustAccepted": false,
+  "dependencyCoverageAccepted": false,
+  "acceptanceGranted": false,
+  "startAuthorized": false,
+  "nextAction": "Operator transfers exact new ZIP to a new v2 directory and runs pinned byte-only qualification once. Then review full coverage/publisher trust and coherent digest dossier before import, runtime registration or start.",
+  "historicalEvidencePreserved": true,
+  "currentRuntimeIdentityCorrection": {
+    "receipt": "docs/handoffs/receipts/SEMANTIC_LUAJIT_RUNTIME_IDENTITY_2026-10-06_CI.json",
+    "version": "2.1.1787558776",
+    "run": 37448782226,
+    "allScannerSeverityThresholdsMet": true,
+    "exactLuaJitBinaryUnchanged": true
+  }
+}

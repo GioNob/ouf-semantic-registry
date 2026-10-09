@@ -1,0 +1,48 @@
+{
+  "schema": "ouf.semantic-remediation-v2-target-crypto-operator-report.v1",
+  "evidenceSource": "User-pasted command output in this conversation; no direct SSH readback by assistant.",
+  "reportedAt": "2026-10-06T13:49:47+02:00",
+  "status": "TARGET_CRYPTO_PASS_OPERATOR_REPORTED",
+  "githubCli": {
+    "version": "2.102.0",
+    "linuxArchitecture": "amd64",
+    "archiveSha256": "bb766f710eef8ede859c18578c72c327597cd4c8a85b06001b1f3843c6019386",
+    "archiveHashReportedOK": true,
+    "path": "/home/oufadmin/ouf-gh-2.102.0.PNoFbF/gh_2.102.0_linux_amd64/bin/gh"
+  },
+  "reportDirectory": "/home/oufadmin/ouf-crypto-v2.zjJNdo",
+  "policy": {
+    "repository": "GioNob/ouf-semantic-registry",
+    "signerWorkflow": "GioNob/ouf-semantic-registry/.github/workflows/semantic-image-remediation.yml",
+    "sourceDigest": "0a1b4460c52c74cefe806286f043f71cbf5a5647",
+    "sourceRef": "refs/pull/26/merge",
+    "denySelfHostedRunners": true
+  },
+  "archiveHashesReportedOK": [
+    "adapter",
+    "southbound"
+  ],
+  "provenanceSignaturesReportedPASS": [
+    "adapter.image.tar.gz",
+    "southbound.image.tar.gz",
+    "native/native-coverage.json",
+    "native/southbound.native.syft.json",
+    "native/southbound.native.grype.json"
+  ],
+  "sbomSignaturesReportedPASS": [
+    "adapter",
+    "southbound"
+  ],
+  "targetAttestationCryptoVerified": true,
+  "originalSnapshotModified": false,
+  "originalByteReceiptModified": false,
+  "privateReviewCopiesCreated": true,
+  "containerOperations": 0,
+  "imageImportPerformed": false,
+  "runtimeRegistered": false,
+  "publisherTrustAccepted": false,
+  "dependencyCoverageAccepted": false,
+  "acceptanceGranted": false,
+  "startAuthorized": false,
+  "nextAction": "Complete runtime dependency/source coverage comparison and digest-consistent staging design before image import; no existing gateway/candidate replacement."
+}

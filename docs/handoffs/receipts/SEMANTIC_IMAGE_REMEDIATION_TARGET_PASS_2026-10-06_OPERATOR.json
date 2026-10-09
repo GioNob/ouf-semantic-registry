@@ -1,0 +1,60 @@
+{
+  "schema": "ouf.semantic-remediation-target-operator-evidence.v1",
+  "receivedAt": "2026-10-06T08:21:50+02:00",
+  "evidenceOrigin": "operator-pasted stdout; not an independent target read",
+  "status": "BYTE_QUALIFICATION_PASS",
+  "wrapperCommit": "120eee43c2ff02a204c58363538d60b57b3d6a79",
+  "wrapperSha256": "5c47d7c14e260d7ebb1d245dd83476646df61cbb9e378dd00fddb45eb5fa0697",
+  "sourceSha256": "db95b97cce62a4c3e164d0dad20a8674052dced80ff7e683e84ac21cef925112",
+  "targetRoot": "/etc/ouf/deploy-snapshots/semantic-image-remediation-20261006-v1",
+  "operatorZipPath": "/home/oufadmin/ouf-remediation-transfer-20261006/ouf-remediation-20261006.zip",
+  "redactedReportPath": "/tmp/ouf-remediation-qualification.lT6Bz9",
+  "doNotReplay": true,
+  "result": {
+    "acceptanceGranted": false,
+    "ciAttestationEvidenceRetained": true,
+    "ciSourceCommit": "226b1d3cb0562ed1cd840c758873f92ab3401991",
+    "containerOperations": 0,
+    "dependencyCoverageAccepted": false,
+    "imageImportPerformed": false,
+    "images": [
+      {
+        "archiveSha256": "186a74a5d33b4b02dd13ea769211ddfe16453714e1ecf82dd354c59ed23bbc41",
+        "bytesVerified": true,
+        "imageId": "sha256:2cd0de3f03bc289f1ab4668940df94181059d00b2525a851d1c81211c3d5cf38",
+        "role": "adapter",
+        "severityCounts": {
+          "Critical": 0,
+          "High": 0,
+          "Low": 0,
+          "Medium": 5,
+          "Negligible": 0,
+          "Unknown": 0
+        }
+      },
+      {
+        "archiveSha256": "4de4e82802082ed8eb045d0d6eec01ec3190301a8842243d78da18af9f904784",
+        "bytesVerified": true,
+        "imageId": "sha256:213ff3377465784bc1f5dd82863d65d6585a3c22062eb4e7d78c7c0239af0334",
+        "role": "southbound",
+        "severityCounts": {
+          "Critical": 0,
+          "High": 0,
+          "Low": 17,
+          "Medium": 141,
+          "Negligible": 4,
+          "Unknown": 0
+        }
+      }
+    ],
+    "publisherTrustAccepted": false,
+    "runtimeRegistered": false,
+    "scannerInvoked": false,
+    "schema": "ouf.semantic-remediation-bundle-byte-qualification.v1",
+    "sourceArtifactSha256": "bf369a5e445a7e84c51d0252b6714912b0d92897097f3afeb2a21c85db38fa2a",
+    "startAuthorized": false,
+    "targetAttestationCryptoVerified": false
+  },
+  "baselineAvailableInCurrentWorkspace": false,
+  "nextAction": "Reattach OUF Reality Baseline Package v1.7 for normative custom-image and coverage review; then prepare coherent dossier and bounded target attestation verification. No additional VPS command ready."
+}

@@ -1,0 +1,65 @@
+{
+  "schema": "ouf.semantic-image-sbom-gate-ci.v1",
+  "status": "PASS_SCOPE_NOT_GRANTED_TARGET_NOT_EXECUTED",
+  "codeAndWrapperCommit": "0047e62fd12bb5cf7ed3fa8951bf34d4e88969ef",
+  "sourceCommit": "4662257947d1c81550daf87cf7d5ea7283a24e06",
+  "sourceSha256": "e08a3cc012c7984c11f4e13f4c22f2dcebf3702251a2123131d1ac98b5160c5e",
+  "wrapperSha256": "8b23574892b9b929b28879c2ff17ee3e8ccdda0dffd4f67faf0858317baa8e2d",
+  "scannerVersion": "1.54.0",
+  "scannerArchiveSha256": "54a87372498168b2d033e876fd41fa4e8035b872699e525a57046e1f2f09c860",
+  "workflowRun": 37360645687,
+  "jobs": [
+    {
+      "name": "image-archive-containerd",
+      "id": 111934098865,
+      "conclusion": "success",
+      "tests": 3,
+      "skips": 0
+    },
+    {
+      "name": "sealed-readback",
+      "id": 111934099042,
+      "conclusion": "success",
+      "tests": 113,
+      "skips": 0
+    },
+    {
+      "name": "image-sbom-offline",
+      "id": 111934099062,
+      "conclusion": "success",
+      "tests": 1,
+      "skips": 0
+    },
+    {
+      "name": "image-archive-docker",
+      "id": 111934099198,
+      "conclusion": "success",
+      "tests": 2,
+      "skips": 0
+    },
+    {
+      "name": "mount-view-runc",
+      "id": 111934099243,
+      "conclusion": "success",
+      "tests": 4,
+      "skips": 0
+    }
+  ],
+  "totalTests": 123,
+  "skips": 0,
+  "logsRead": true,
+  "realScannerProvenInCi": true,
+  "realIsolatedNetworkNamespaceInCi": true,
+  "realImageArchivesInCi": true,
+  "wrapperParityAndBashN": true,
+  "syntheticCiPackages": true,
+  "operatorAuthorizationGranted": false,
+  "targetExecuted": false,
+  "targetFilesWritten": 0,
+  "targetSignaturesIssued": 0,
+  "acceptanceGranted": false,
+  "fullOciAcceptanceProven": false,
+  "runtimeRegistered": false,
+  "startAuthorized": false,
+  "lastOperatorPassedSection": 47
+}

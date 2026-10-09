@@ -1,0 +1,14 @@
+{
+  "reportedAt": "2026-10-07T11:20:06+02:00",
+  "running": true,
+  "providerDeclared": "NOT_DECLARED_OR_INVALID",
+  "workerDeclared": "NOT_DECLARED_OR_INVALID",
+  "configurationOverridesPresent": false,
+  "reviewedSource": "e4df4c18f80b02bb4385dc605ec38cf62b4bb7cc",
+  "baselineDefaults": {
+    "providerEnabled": false,
+    "workerEnabled": true
+  },
+  "effectiveRuntimeSettingsProven": false,
+  "reason": "Source defaults reviewed, deployed packaged config/mounts/command overrides not independently proved"
+}

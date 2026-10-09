@@ -1,0 +1,27 @@
+{
+  "schema": "ouf.semantic-extended-evidence-target-crypto-operator.v1",
+  "reportedAt": "2026-10-07T06:46:39+02:00",
+  "evidenceSource": "Operator terminal output supplied in this conversation; no assistant SSH access",
+  "verifierSha256": "e109b4d4ac1e47fa33fba021ca47d3a2feb85b90d5a039b1442a02d1ac595db7",
+  "verifierHashCheckPassed": true,
+  "signedSubjectsVerified": [
+    "inventory.json",
+    "adapter.extended.syft.json",
+    "southbound.extended.syft.json",
+    "adapter.extended.grype.json",
+    "southbound.extended.grype.json"
+  ],
+  "targetAttestationCryptoVerified": true,
+  "reportDirectory": "/home/oufadmin/ouf-extended-v2.tXIpQD/reports",
+  "sourceArtifactSha256": "2cdd7a73c1fc2a710f1e6604eb6cab2988492e4c45b5252defffa9832b91d9d0",
+  "sidecarSha256": "d74b1e6406d013272806465b722903a082d63e171948a37e666ae59c45c32d87",
+  "evidenceSourceMergeCommit": "e56a20aae8f8869bc760fd3b048c152680c1b854",
+  "containerOperations": 0,
+  "imageImportPerformed": false,
+  "targetRuntimeModified": false,
+  "publisherTrustAccepted": false,
+  "dependencyCoverageAccepted": false,
+  "acceptanceGranted": false,
+  "runtimeRegistered": false,
+  "startAuthorized": false
+}
