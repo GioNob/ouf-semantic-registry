@@ -2,7 +2,7 @@ name: Signed semantic discovery candidate
 on:
   workflow_dispatch:
   push:
-    branches: [codex/semantic-discovery-oss-runtime]
+    branches: [codex/discovery-java-runtime-security-20261009]
     paths: [.github/workflows/signed-discovery-candidate.yml]
 permissions:
   contents: read
@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: GioNob/ouf-semantic-registry
-          ref: 67cb426995d7b0723e34bfe54e52ea89ae02b81d
+          ref: 403531a9df1cbc877078f8126fd1fc4ff18acea9
           path: semantic-source
           persist-credentials: false
       - uses: actions/checkout@v4
@@ -35,14 +35,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git -C semantic-source rev-parse HEAD)" = 67cb426995d7b0723e34bfe54e52ea89ae02b81d
-          docker build --label org.opencontainers.image.revision=67cb426995d7b0723e34bfe54e52ea89ae02b81d -t ouf-semantic:oss-ae30d65 semantic-source
+          test "$(git -C semantic-source rev-parse HEAD)" = 403531a9df1cbc877078f8126fd1fc4ff18acea9
+          docker build --label org.opencontainers.image.revision=403531a9df1cbc877078f8126fd1fc4ff18acea9 -t ouf-semantic:oss-ae30d65 semantic-source
           test "$(docker image inspect ouf-semantic:oss-ae30d65 --format '{{.Config.User}}')" = 10001:10001
+          docker run --rm --entrypoint /bin/sh ouf-semantic:oss-ae30d65 -c 'test ! -e /usr/bin/pebble && java -version'
           mkdir package
           docker save ouf-semantic:oss-ae30d65 > package/semantic.image.tar
           docker image inspect ouf-semantic:oss-ae30d65 > package/build-image.json
+      - name: Bind the exact fresh database from the remediation source
+        run: cp docs/discovery-remediation-database-pin-20261009.json verification-source/docs/discovery-remediation-database-pin-20261009.json
       - name: Prepare existing pinned offline scanners
-        run: sudo /usr/bin/python3 -B verification-source/tests/prepare_native_vulnerability_scanners.py --database-pin verification-source/docs/handoffs/receipts/SEMANTIC_IMAGE_VULNERABILITY_DATABASE_PIN_2026-10-07.json
+        run: sudo /usr/bin/python3 -B verification-source/tests/prepare_native_vulnerability_scanners.py --database-pin verification-source/docs/discovery-remediation-database-pin-20261009.json
       - name: Verify exact image identity and fresh vulnerability threshold
         shell: bash
         run: |
@@ -129,7 +132,7 @@ jobs:
           for match in report["matches"]:
               counts[match["vulnerability"]["severity"]] += 1
           accepted = not any(counts[k] for k in ("Critical","High","Unknown")) and not report.get("alertsByPackage")
-          result = {"schema":"ouf.semantic.oss-candidate.v1","sourceCommit":"67cb426995d7b0723e34bfe54e52ea89ae02b81d","imageId":image["Id"],"archiveByteVerified":True,"runtimeUser":image["Config"]["User"],"severityCounts":counts,"thresholdMet":accepted,"releaseApplied":False,"acceptanceGranted":False,"publisherTrustAccepted":False}
+          result = {"schema":"ouf.semantic.oss-candidate.v1","sourceCommit":"403531a9df1cbc877078f8126fd1fc4ff18acea9","imageId":image["Id"],"archiveByteVerified":True,"runtimeUser":image["Config"]["User"],"severityCounts":counts,"thresholdMet":accepted,"releaseApplied":False,"acceptanceGranted":False,"publisherTrustAccepted":False}
           (output / "inventory.json").write_text(json.dumps(result,indent=2)+chr(10))
           print("OUF_OSS_SEMANTIC_CANDIDATE="+json.dumps(result,sort_keys=True))
           if not accepted:
