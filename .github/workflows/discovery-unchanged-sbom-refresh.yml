@@ -1,0 +1,68 @@
+name: Discovery unchanged signed images fresh dependency evidence
+on:
+  push:
+    paths:
+      - 'tools/refresh_discovery_sbom.py'
+      - '.github/workflows/discovery-unchanged-sbom-refresh.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  attestations: write
+  id-token: write
+concurrency:
+  group: discovery-unchanged-sbom-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: GioNob/ouf-semantic-registry
+          ref: 84e91e199892bfda1d116a49f53a9990f61724c7
+          path: verification-source
+          persist-credentials: false
+      - name: Verify original subjects and scan unchanged SBOMs offline against one fresh DB
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: sudo --preserve-env=GH_TOKEN,GITHUB_ACTIONS,RUNNER_ENVIRONMENT /usr/bin/python3 -I -B tools/refresh_discovery_sbom.py verification-source
+      - name: Preserve readable public scan evidence
+        if: always()
+        run: if [ -d generated ]; then sudo chmod -R a+rX generated; fi
+      - name: Sign exact fresh evidence bytes
+        id: provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-checksums: generated/discovery-existing-sbom-refresh/checksums.sha256
+          create-storage-record: false
+      - name: Retain and verify actual new signatures
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVENANCE_BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+        run: |
+          set -euo pipefail
+          cp "$PROVENANCE_BUNDLE" generated/discovery-existing-sbom-refresh/provenance.json
+          for file in inventory.json database-pin.json semantic.syft.json mcp.syft.json semantic.grype.json mcp.grype.json; do
+            gh attestation verify "generated/discovery-existing-sbom-refresh/$file" --repo GioNob/ouf-semantic-registry --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/discovery-unchanged-sbom-refresh.yml --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" --deny-self-hosted-runners --bundle "$PROVENANCE_BUNDLE" --format json > "generated/discovery-existing-sbom-refresh/$file.verification.json"
+          done
+      - name: Enforce fresh vulnerability threshold
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          inventory=json.loads(Path('generated/discovery-existing-sbom-refresh/inventory.json').read_bytes())
+          if not inventory['allSeverityThresholdsMet']:
+              raise SystemExit('FRESH_DEPENDENCY_THRESHOLD_BLOCKED; review retained signed reports')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: discovery-existing-sbom-refresh-${{ github.run_id }}
+          path: generated/discovery-existing-sbom-refresh/
+          if-no-files-found: warn
+          retention-days: 30
