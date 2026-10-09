@@ -3,7 +3,6 @@ on:
   push:
     paths:
       - 'tools/refresh_existing_provider_sbom.py'
-      - '.github/workflows/provider-unchanged-sbom-refresh.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -27,7 +26,7 @@ jobs:
         run: sudo --preserve-env=GH_TOKEN /usr/bin/python3 -I -B tools/refresh_existing_provider_sbom.py .fresh/semantic
       - name: Preserve readable public evidence
         if: always()
-        run: if [ -d generated ]; then sudo chmod -R a+rX generated; fi
+        run: if [ -d generated ]; then sudo chown -R "$(id -u):$(id -g)" generated; sudo chmod -R a+rX generated; fi
       - name: Sign actual fresh evidence in original public producer repository
         id: provenance
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
