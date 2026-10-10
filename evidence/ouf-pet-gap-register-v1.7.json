@@ -4803,13 +4803,28 @@
         "sourceCommit": "f25e205b5fe812780cd421a9a742e592268d32b9",
         "launcherCommit": "6b6d3dfa34dd2a2347ab2de879ab5c41fbbd0eeb",
         "launcher": "releases/application-java-trust-preparation-20261010.sh",
-        "targetJavaTrustPrepared": false,
-        "requiresOperatorSudo": true,
+        "targetJavaTrustPrepared": true,
+        "requiresOperatorSudo": false,
         "toolContainerNetwork": "none",
         "newImageImports": 0,
         "applicationContainerLifecycleOperations": 0,
-        "fullPetAcceptance": false
+        "fullPetAcceptance": false,
+        "status": "CANDIDATE_PUBLIC_JAVA_TRUST_PREPARED_NOT_MOUNTED",
+        "targetEvidence": "evidence/application-java-trust-prepared-target-20261010.json",
+        "evidenceCommit": "77a2f9a9b314a54c6d0abd8beb0e4b306d86a8e5",
+        "baselineCertificateCount": 118,
+        "mergedCertificateCount": 119,
+        "truststoreHash": "dcfb221cf3382ab02b752bce3274f64a63c0d822227a5359d1329dee38008079",
+        "claimConsumed": true,
+        "doNotRerunApply": true,
+        "mounted": false
       }
+    },
+    "replacementConfigurationComposition": {
+      "sourceCommit": "41c9517b8fdc17a55207786d626b2429d9b88adc",
+      "status": "QUALIFICATION_AND_TARGET_COMPOSITION_PENDING",
+      "productionApplyReady": false,
+      "fullPetAcceptance": false
     }
   }
 }
