@@ -150,3 +150,10 @@ L'operatore restituisce TWO_FLOW_LEASE_ACTIVE_AND_RENEWED, exit0, refreshCount2 
 R10 è consumato: non rilanciare il comando, non resettare R10/R9 e non reinterpretare la finestra temporale come permesso di replay. Due flussi finiti ammessi alla lettura di attivazione; nessuna liveness continuativa dedotta. Il receipt espone applicationHealthProven=false e notReleaseAcceptance=true, zero lifecycle container/restart daemon/private keys/signatures/provider calls del worker; automaticRestart e bootEnablement false.
 
 Il precedente checkpoint di attivazione pendente è superato da questa ricevuta. Resta da chiudere il cutover applicativo governato con OCI/peer/transport/migrazione/readiness appropriati, preservando il cohort/lease R10 e gli input già verificati. Cinema8/8 e Teatri upload/profile non vanno ripetuti. F10/F11 e installer su host pulito aperti; file prima delle API native PULLv2.3.
+
+
+## Continuazione: dichiarazione del pacchetto Semantic qualificato
+
+La dichiarazione protetta precedente riguarda Semantic b1a795…; il pacchetto publisher-verificato sul target riguarda e826bd…, sorgente622614b0040cf11be2f6c7e3568733a488ca4ca8. Il [compilatore e comando immutabile](https://github.com/GioNob/ouf-deploy/blob/599b79de5cee821928c680ae5d8dd95009ae6be8/releases/SEMANTIC_QUALIFIED_PACKAGE_DECLARATION_20261010.md) conservano il completo HostConfig/frame/reti/mount e gli environment applicativi approvati, selezionando i default della nuova immagine. [CI38084905986](https://github.com/GioNob/ouf-deploy/actions/runs/38084905986) PASS:13 test e lettura dello ZIP reale vincolata a hash ZIP/ImageId. Nessuna importazione o operazione applicativa.
+
+Compilazione protetta sul VPS ancora pendente; OCI/peer/trasporto, coordinamento con R10, fence/backup/recovery e readiness applicativa rimangono aperti. Le precedenti attestazioni runtime non sono promosse alla nuova immagine. R10 consumata e Cinema8/8/Teatri acquisiti restano preservati; non ripetere attivazioni o claim. F10/F11 e installazione riusabile non sono chiusi.
