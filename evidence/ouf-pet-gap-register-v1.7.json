@@ -4658,7 +4658,7 @@
   "operationalCheckpoint20261010": {
     "status": "RECONCILED_NOT_FULL_PET_ACCEPTANCE",
     "evidenceRepository": "GioNob/ouf-deploy",
-    "evidenceCommit": "fd1ece9a2c5df8b4690ad2ef05bf2c3bed33b532",
+    "evidenceCommit": "6b6d3dfa34dd2a2347ab2de879ab5c41fbbd0eeb",
     "report": "releases/PET_ROADMAP_RECONCILIATION_20261010.md",
     "structuredEvidence": "evidence/pet-roadmap-reconciliation-20261010.json",
     "originalGapStatesPreserved": true,
@@ -4722,13 +4722,13 @@
     },
     "runtimeInputCustodyFollowup": {
       "evidenceRepository": "GioNob/ouf-deploy",
-      "evidenceCommit": "fd1ece9a2c5df8b4690ad2ef05bf2c3bed33b532",
+      "evidenceCommit": "284241c667bb00e1860cc1ba1a7d73e3b3aea250",
       "configurationEvidence": "evidence/semantic-replacement-configuration-target-20261010.json",
       "credentialEvidence": "evidence/semantic-workload-custody-stage-target-20261010.json",
       "custodyQualificationRunId": 38042159965,
       "nativeRootCustodyTests": 4,
       "launcher": "releases/application-runtime-input-preparation-20261010.sh",
-      "status": "EXISTING_WORKLOAD_CREDENTIAL_PRIVATELY_STAGED_ROOT_PREPARATION_PENDING",
+      "status": "ROOT_RUNTIME_INPUTS_PREPARED_NOT_MOUNTED",
       "clientSecretRotated": false,
       "iamConfigurationWrites": 0,
       "gatewayUid": 636,
@@ -4738,13 +4738,13 @@
       "operatorSudoRequiredForNewProtectedInputs": true,
       "fullPetAcceptance": false,
       "lastRootAttempt": {
-        "status": "INPUT_PREPARATION_BLOCKED_BEFORE_CLAIM",
-        "reason": "EXACT_READ_ONLY_SOUTHBOUND_CONFIGURATION_REQUIRED",
-        "observedAt": "2026-10-10T13:22:25+02:00",
-        "evidence": "evidence/application-runtime-input-preparation-oci-blocked-target-20261010.json",
-        "iamAdministrativeLoginAttempts": 3,
-        "configurationWrites": 0,
-        "r9Touched": false
+        "status": "ROOT_RUNTIME_INPUTS_PREPARED_NOT_MOUNTED",
+        "observedAt": "2026-10-10T14:03:29+02:00",
+        "claimConsumed": true,
+        "doNotRerunApply": true,
+        "privateManifestHash": "732a633e46cb06bb720352aa6a90946281ba6489e94aa35dc04820eae56b4a70",
+        "mountsInstalled": false,
+        "applicationCutoverPerformed": false
       },
       "mountCorrection": {
         "sourceCommit": "f75a0a101bf675b1e009e7a6eef0f961575ff851",
@@ -4766,6 +4766,15 @@
           "iamAdministrativeLoginAttempts": 3,
           "configurationWrites": 0,
           "r9Touched": false
+        },
+        {
+          "status": "INPUT_PREPARATION_BLOCKED_BEFORE_CLAIM",
+          "reason": "EXACT_READ_ONLY_SOUTHBOUND_CONFIGURATION_REQUIRED",
+          "observedAt": "2026-10-10T13:22:25+02:00",
+          "evidence": "evidence/application-runtime-input-preparation-oci-blocked-target-20261010.json",
+          "iamAdministrativeLoginAttempts": 3,
+          "configurationWrites": 0,
+          "r9Touched": false
         }
       ],
       "recursiveReadOnlyCorrection": {
@@ -4782,6 +4791,24 @@
         "writableDenied": true,
         "targetRootPreparationExecuted": false,
         "claimConsumed": false
+      },
+      "rootRuntimeInputsPreparedOnTarget": true,
+      "targetEvidence": "evidence/application-runtime-inputs-prepared-target-20261010.json",
+      "javaTrustNext": {
+        "candidatePublicRootsCapturedFromExactSignedArchive": true,
+        "publicRootHash": "98d34a90fca2688ef5674862d2a484e09e5ca25d2f07c5d654aa28f1581f3419",
+        "candidateRootCaptureRunId": 38050941322,
+        "nativeJavaQualificationRunId": 38051028883,
+        "offlineToolQualificationRunId": 38051368312,
+        "sourceCommit": "f25e205b5fe812780cd421a9a742e592268d32b9",
+        "launcherCommit": "6b6d3dfa34dd2a2347ab2de879ab5c41fbbd0eeb",
+        "launcher": "releases/application-java-trust-preparation-20261010.sh",
+        "targetJavaTrustPrepared": false,
+        "requiresOperatorSudo": true,
+        "toolContainerNetwork": "none",
+        "newImageImports": 0,
+        "applicationContainerLifecycleOperations": 0,
+        "fullPetAcceptance": false
       }
     }
   }
