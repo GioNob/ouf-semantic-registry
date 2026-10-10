@@ -1,0 +1,90 @@
+{
+  "schema": "ouf.file-loop.execution-checkpoint.v1",
+  "date": "2026-10-10",
+  "scope": "CURRENT_SOURCE_QUALIFICATION_NOT_TARGET_ACCEPTANCE",
+  "ownerSequence": [
+    "CONSOLIDATE_FILE_LOOP",
+    "CLEAN_HOST_REPEATABLE_INSTALLATION",
+    "VERTICAL_NATIVE_API_PULL_V2_3"
+  ],
+  "ingestion": {
+    "sourceCommit": "3a33c6c248ec3a1151f5a4cb888a2b9598b16418",
+    "workflowRuns": [
+      {
+        "id": 38064673608,
+        "name": "Shared Authorization SDK pairwise",
+        "conclusion": "success"
+      },
+      {
+        "id": 38064673544,
+        "name": "R2a Onboarding automatic activation",
+        "conclusion": "success"
+      },
+      {
+        "id": 38064673622,
+        "name": "Ingestion Runtime module CI",
+        "conclusion": "success"
+      },
+      {
+        "id": 38064673559,
+        "name": "R2b source to authorized serving",
+        "conclusion": "success"
+      },
+      {
+        "id": 38064673585,
+        "name": "R2e GeoPackage features and governed camera-cabinet relations",
+        "conclusion": "success"
+      },
+      {
+        "id": 38064673509,
+        "name": "R2c governed publication to historical serving",
+        "conclusion": "success"
+      }
+    ],
+    "mainIntegrated": true,
+    "fixtureRepairCommit": "ff342057e6646a9013dc369e12d900579d8205b4"
+  },
+  "udp": {
+    "sourceCommit": "c7a158a9d8b9f514fd2d9dd6e80a659a407e1b96",
+    "workflowRuns": [
+      {
+        "id": 38065524321,
+        "name": "UDP Object Resolution module CI",
+        "conclusion": "success"
+      },
+      {
+        "id": 38065524250,
+        "name": "R2d governed CRS and grid execution",
+        "conclusion": "success"
+      },
+      {
+        "id": 38065524252,
+        "name": "Shared Authorization SDK pairwise",
+        "conclusion": "success"
+      }
+    ],
+    "mainIntegrated": true,
+    "javaTests": {
+      "run": 127,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "newIdentityRegressionCases": 14,
+    "scope": "Automatic candidate lookup, source-binding reuse, materializing replay, HUMAN approval and merge; not all governance or weighted strategies"
+  },
+  "deploymentDeclaration": {
+    "sourceCommit": "c80b7584a1b7f403c3ecf113c2c4debad1de405e",
+    "deliveryCommit": "4dbe94da861e11a883602ce0b29fdafbcbf64609",
+    "workflowRun": 38065415701,
+    "conclusion": "success",
+    "tests": 8,
+    "targetExecuted": false,
+    "completeReplacementOciProven": false,
+    "applicationCutoverAuthorized": false,
+    "productionApplyReady": false
+  },
+  "latestTargetStatus": "APPLICATION_INPUT_CONTRACT_PREPARED_NOT_APPLY_READY",
+  "releaseAcceptance": false,
+  "petGapStatesAutomaticallyClosed": false
+}

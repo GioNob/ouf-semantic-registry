@@ -48,3 +48,16 @@ L’analisi di fabbisogno richiede dati e modelli ulteriori: offerta, accessibil
 - [Comune Bologna SI GIRA](https://www.comune.bologna.it/novita/comunicati-stampa/torna-si-gira-il-grande-schermo-arriva-nei-quartieri-di-bologna)
 - [ISTAT Statistiche culturali 2024](https://www.istat.it/tavole-di-dati/statistiche-culturali-anno-2024/)
 - [Schema.org MovieTheater](https://schema.org/MovieTheater), [PostalAddress](https://schema.org/PostalAddress), [address](https://schema.org/address), [containedInPlace](https://schema.org/containedInPlace)
+
+
+## Aggiornamento esecutivo — file prima delle API, 10 ottobre
+
+Questo seguito distingue la fotografia documentale precedente dalle correzioni eseguite oggi. [Checkpoint strutturato](../evidence/file-loop-execution-checkpoint-20261010.json); [sequenza e decisione tecnologica](https://github.com/GioNob/ouf-deploy/blob/4dbe94da861e11a883602ce0b29fdafbcbf64609/releases/FILE_FIRST_EXECUTION_CHECKPOINT_20261010.md).
+
+Ingestion 3a33c6c… è integrato in main e qualificato nei sei workflow correnti: module CI, SDK e R2a/b/c/e sono PASS. Il worker di test è isolato dalle altre run; MinIO è confezionato dal binario dello stesso rilascio con checksum. La scansione delle nuove immagini ha richiesto un aggiornamento OSS delle dipendenze, qualificato senza abbassare i gate. F6 supera dunque il blocco CI citato nella fotografia iniziale; rimane una prova di componente, non l'accettazione file-to-search sul target.
+
+UDP c7a158a… è integrato in main con module CI, CRS/grid e SDK PASS. Il module registra 127 test, zero errori/failure e un test fuori dal contesto ordinario; i 14 nuovi casi di identità non sono saltati. Il riuso di binding, i replay materializzanti e le approvazioni HUMAN verificano tenant, natura e stato del target. Una riclassificazione va a review; il merge viene rivalidato all'esecuzione. La decisione immutabile conserva lo scope della proposta. F0/F4/F7 avanzano su questi rami, ma scoring ponderato, equivalenze approvate, tutte le superfici di governance e combinazioni multi-file restano da qualificare.
+
+La dichiarazione runtime e la consegna fissata superano otto test nella CI deploy 38065415701. Conservano l'intero frame host storico e dichiarano soltanto i tre bind read-only approvati nel contratto; non realizzano OCI, mount o peer e non rinnovano autorità. Serve esecuzione sudo sul VPS per verificare la composizione dei due snapshot privati. F1 resta PREPARATION_NOT_CUTOVER e F10/F11 non sono completati.
+
+L'owner conferma l'ordine: giro file completo e consolidato, quindi API native dei verticali tramite pull secondo v2.3. Il verticale non conosce ontologie/UrbanObjectId/capability OUF; estrazione/proiezione sono governate prima del trasferimento. Nessuna prova CI attiva automaticamente capability, lease, route o grant. La ricevuta target più recente resta quella sopra riportata; nessuna nuova salute live viene inferita.

@@ -142,3 +142,8 @@ Snapshot main letti il10 ottobre2026:
 - UDP latest module36334165297 failure; Onboarding module36388267487/browser36388267535 success; MCP5615fdc… module36410481211/conformance36410481075 success. Queste CI sono state rilette, non rieseguite per scrivere il piano.
 - [Deploy](https://github.com/GioNob/ouf-deploy/tree/735c3c9fa3066df21811ca8b4f6e2a6df1754145):735c3c9f…; receipt application-input-contract-prepared-target-20261010 e INSTALLATION_INDUSTRIALIZATION_PLAN.
 - Vocabolario esterno consultato come esempio, non adozione: https://schema.org/MovieTheater, https://schema.org/PostalAddress, https://schema.org/address, https://schema.org/containedInPlace. L'installazione deve usare la versione effettivamente adottata e pubblicata.
+
+
+## Ordine confermato dall'owner e seguito esecutivo
+
+Dopo il completamento e consolidamento del giro con i file, si affronta il giro tramite PULL sulle API native dei verticali secondo le Linee di indirizzo v2.3. Le interfacce verticali non incorporano semantica o identità UDP; il profilo di estrazione approvato guida proiezione, normalizzazione e handoff durevole. [Progressi eseguiti e prove correnti](FILE_TO_SEARCH_STATUS_20261010.md#aggiornamento-esecutivo--file-prima-delle-api-10-ottobre). Le CI bloccanti di Ingestion/UDP sono state corrette; F1, F10 e F11 rimangono aperti finché non esistono le rispettive prove target e su host pulito.
