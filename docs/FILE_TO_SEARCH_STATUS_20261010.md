@@ -141,3 +141,12 @@ La prova isolata sul VPS ha già confermato JSON nft in secondi; il checkpoint p
 [Comando operatore e perimetro fissati](https://github.com/GioNob/ouf-deploy/blob/685c998a81a2c52dd892ac80cae78ce1b36302d2/releases/FINITE_R10_DELIVERY_AND_CONTINUATION_20261010.md). Il codice conserva la decisione R10 registrata alle20:47 e ammette il primo avvio strettamente prima delle22:47 Europe/Rome del10ottobre; nessuna estensione è stata emessa. Claim R10 nuovo e non ripetibile, R9 e le sue prove restano consumati e intatti. L'attivazione R10 sul target resta pendente: nessun output VPS in questa continuazione, nessun import/recreate/cutover/grant, nessuna salute applicativa o release acceptance inferita dalla CI.
 
 Cinema delivery/materialization/Search8/8 e Teatri upload/profile restano acquisiti. F1 richiede ancora cutover applicativo, F10 il collaudo completo e F11 l'installazione riutilizzabile su host pulito; prima file consolidati, poi API native PULLv2.3. La nuova autorizzazione dell'owner a leggere/scrivere su GioNob permette di mantenere la documentazione; non cambia autonomamente il perimetro privilegiato del VPS.
+
+
+## R10 attivato sul target — 10 ottobre 2026, ricevuta alle22:35:54 Europe/Rome
+
+L'operatore restituisce TWO_FLOW_LEASE_ACTIVE_AND_RENEWED, exit0, refreshCount2 e flowAddressCounts[1,1]. Unità esatta ouf-semantic-provider-lease-finite-r10.service; evidenceDirectory /etc/ouf/deploy-snapshots/semantic-finite-lease-recovery-r10-nw9ue4d5. [Ricevuta preservata](https://github.com/GioNob/ouf-deploy/blob/8fc817a0c1141dcc589cf896506ea8a8a9ffd023/evidence/finite-r10-active-renewed-target-20261010.json). Evidenza incollata dall'operatore, non acquisita indipendentemente dal VPS in questa sessione.
+
+R10 è consumato: non rilanciare il comando, non resettare R10/R9 e non reinterpretare la finestra temporale come permesso di replay. Due flussi finiti ammessi alla lettura di attivazione; nessuna liveness continuativa dedotta. Il receipt espone applicationHealthProven=false e notReleaseAcceptance=true, zero lifecycle container/restart daemon/private keys/signatures/provider calls del worker; automaticRestart e bootEnablement false.
+
+Il precedente checkpoint di attivazione pendente è superato da questa ricevuta. Resta da chiudere il cutover applicativo governato con OCI/peer/transport/migrazione/readiness appropriati, preservando il cohort/lease R10 e gli input già verificati. Cinema8/8 e Teatri upload/profile non vanno ripetuti. F10/F11 e installer su host pulito aperti; file prima delle API native PULLv2.3.
