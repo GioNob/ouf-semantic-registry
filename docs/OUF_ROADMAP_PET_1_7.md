@@ -1,5 +1,7 @@
 # Roadmap OUF rispetto ai PET della baseline v1.7
 
+Checkpoint 10 ottobre 2026: [riconciliazione dei sette PET e dello stato operativo](https://github.com/GioNob/ouf-deploy/blob/31f1357c56125791afa479cd26b711754b694f55/releases/PET_ROADMAP_RECONCILIATION_20261010.md). R0/R1a e le verticali R2 consegnate restano acquisite nel loro perimetro; THS review/permessi esistono, ma R3/R4/R5/R6 non sono complessivamente chiusi. La verticale corrente prepara discovery nazionale Semantic→Gateway→MCP e il cutover N/N+1. Latest CI Ingestion e fixture MinIO Ingestion/UDP hanno blocker registrati; una precedente CI verde non li annulla. Il documento seguente conserva cronologia e criteri originali; il checkpoint distingue main, candidati firmati, fixture e VPS.
+
 Data di verifica: 16 settembre 2026. Stato: proposta esecutiva basata sui repository, non attestazione di conformità finale.
 
 La priorità è completare la catena eseguibile e autorizzata tra i moduli. I repository contengono una parte consistente del dominio e dei test, ma rimangono codice di integrazione, capability, superfici umane e criteri di accettazione da realizzare. Non è corretto descrivere il lavoro residuo come sola configurazione IAM o collaudo di produzione.

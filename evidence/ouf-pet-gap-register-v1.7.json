@@ -4654,5 +4654,20 @@
       "Does not claim full PET closure or representative SLO/load/DR acceptance",
       "Does not close remaining THS/browser and all-module IAM consumer acceptance"
     ]
+  },
+  "operationalCheckpoint20261010": {
+    "status": "RECONCILED_NOT_FULL_PET_ACCEPTANCE",
+    "evidenceRepository": "GioNob/ouf-deploy",
+    "evidenceCommit": "31f1357c56125791afa479cd26b711754b694f55",
+    "report": "releases/PET_ROADMAP_RECONCILIATION_20261010.md",
+    "structuredEvidence": "evidence/pet-roadmap-reconciliation-20261010.json",
+    "originalGapStatesPreserved": true,
+    "currentActivity": "National Semantic discovery and migration-aware governed application cutover preparation",
+    "productionApplicatorReady": false,
+    "latestReleaseBlockers": [
+      "Ingestion RunExecutionWorkerRuntimeTest 3 failures/1 error on latest module run36423996284",
+      "MinIO fixture image unauthorized in latest Ingestion R2b/c/e and UDP module/DR runs"
+    ],
+    "fullPetAcceptance": false
   }
 }
