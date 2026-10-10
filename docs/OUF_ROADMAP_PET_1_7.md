@@ -292,3 +292,8 @@ Quattro prove native root PASS verificano proprietà/permesse dei file e claim e
 ### Correzione custodia TLS, 10 ottobre 13:15 CEST
 
 Il primo tentativo di preparazione root si è fermato prima di directory/claim: il controllo richiedeva erroneamente un mount server.crt separato. Il southbound approvato incorpora TLS nella configurazione APISIX montata read-only. Il programma corretto lega CA/certificato pubblici al mount OCI, al source hash della policy e alle ricevute startup/trust originali, senza aprire la configurazione contenente la chiave TLS. Il runner ha confermato il mount live esatto; otto prove native di custodia e tre di consegna sono PASS. [Evidenza e nuovo launcher](https://github.com/GioNob/ouf-deploy/blob/3bec64387a0e2d5d21e39b370e9bed9ddb0dff1d/evidence/application-runtime-input-custody-mount-correction-20261010.json). Sono ancora pendenti l'esecuzione root e il cutover completo; nessun claim R9, grant, servizio, database o gap PET è stato modificato.
+
+
+### Correzione OCI, 10 ottobre 13:22 CEST
+
+Il secondo tentativo è stato rifiutato prima di file/claim. Il controllo accettava solo ro mentre il compilatore OCI approvato accetta anche rro (read-only ricorsivo). Il nuovo programma applica lo stesso predicato, rifiuta rw e verifica la custodia delle sorgenti nel creation frame originale hash-bound, distinto dalla policy di rete. Nove prove native e tre di consegna PASS, mount live read-only confermato dal runner. [Evidenza](https://github.com/GioNob/ouf-deploy/blob/4b937ba22ecb49bbfcb8006f596f09aefaaa3ef3/evidence/application-runtime-input-recursive-readonly-qualification-20261010.json). Root preparation e cutover ancora pendenti; nessuna nuova accettazione PET o modifica a R9/database/servizi/grant.

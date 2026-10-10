@@ -4739,9 +4739,9 @@
       "fullPetAcceptance": false,
       "lastRootAttempt": {
         "status": "INPUT_PREPARATION_BLOCKED_BEFORE_CLAIM",
-        "reason": "EXACT_READ_ONLY_SOUTHBOUND_CERTIFICATE_REQUIRED",
-        "evidence": "evidence/application-runtime-input-preparation-blocked-target-20261010.json",
-        "observedAt": "2026-10-10T13:15:45+02:00",
+        "reason": "EXACT_READ_ONLY_SOUTHBOUND_CONFIGURATION_REQUIRED",
+        "observedAt": "2026-10-10T13:22:25+02:00",
+        "evidence": "evidence/application-runtime-input-preparation-oci-blocked-target-20261010.json",
         "iamAdministrativeLoginAttempts": 3,
         "configurationWrites": 0,
         "r9Touched": false
@@ -4755,6 +4755,32 @@
         "exactLiveReadOnlyConfigurationMountConfirmed": true,
         "configurationFilesOpened": 0,
         "rootPreparationExecuted": false,
+        "claimConsumed": false
+      },
+      "priorRootAttempts": [
+        {
+          "status": "INPUT_PREPARATION_BLOCKED_BEFORE_CLAIM",
+          "reason": "EXACT_READ_ONLY_SOUTHBOUND_CERTIFICATE_REQUIRED",
+          "evidence": "evidence/application-runtime-input-preparation-blocked-target-20261010.json",
+          "observedAt": "2026-10-10T13:15:45+02:00",
+          "iamAdministrativeLoginAttempts": 3,
+          "configurationWrites": 0,
+          "r9Touched": false
+        }
+      ],
+      "recursiveReadOnlyCorrection": {
+        "sourceCommit": "b71638367b3cb2b48ce3e65933078b51feb2f85c",
+        "launcherCommit": "4b937ba22ecb49bbfcb8006f596f09aefaaa3ef3",
+        "runId": 38048309188,
+        "nativeCustodyTests": 9,
+        "deliveryTests": 3,
+        "creationFrameHash": "f49155fa412bb76d529713cb4ac2c253105884e9e72f7d2d74dfc5ccf9c5c822",
+        "readOnlyOptions": [
+          "ro",
+          "rro"
+        ],
+        "writableDenied": true,
+        "targetRootPreparationExecuted": false,
         "claimConsumed": false
       }
     }
