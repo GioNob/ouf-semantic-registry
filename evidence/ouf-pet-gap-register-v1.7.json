@@ -4847,6 +4847,32 @@
       "productionApplyReady": false,
       "fullPetAcceptance": false,
       "nextWork": "Freeze application provider/env and role mount contract from exact protected intake; then complete OCI and signed peer/migration/applicator closure"
+    },
+    "applicationInputContract": {
+      "status": "APPLICATION_INPUT_CONTRACT_PREPARED_NOT_APPLY_READY",
+      "observedAt": "2026-10-10T15:29:59+02:00",
+      "evidenceRepository": "GioNob/ouf-deploy",
+      "evidenceCommit": "735c3c9fa3066df21811ca8b4f6e2a6df1754145",
+      "evidence": "evidence/application-input-contract-prepared-target-20261010.json",
+      "privateContractHash": "3883a3d2e2a6a4be044b91254092ff77a9b077e0aa0e94f6c1109fb29629b89c",
+      "providerContractVerifiedAgainstFrozenBinding": true,
+      "roleFileMetadataVerified": true,
+      "roleOwnedReadOnlyMountCount": 3,
+      "secretBytesFreshlyVerified": false,
+      "applicationCutoverPerformed": false,
+      "productionApplyReady": false,
+      "fullPetAcceptance": false
+    },
+    "industrializationGoal": {
+      "ownerDecisionAt": "2026-10-10T15:29:59+02:00",
+      "goal": "Repeatable easy installation, upgrade and recovery without routine manual VPS edits",
+      "planRepository": "GioNob/ouf-deploy",
+      "plan": "releases/INSTALLATION_INDUSTRIALIZATION_PLAN.md",
+      "planCommit": "735c3c9fa3066df21811ca8b4f6e2a6df1754145",
+      "singleInstallerDelivered": false,
+      "independentCleanHostAcceptancePassed": false,
+      "initialBootstrapAndPetProtectedHumanDecisionsRemainExplicit": true,
+      "originalGapStatesChanged": false
     }
   }
 }
