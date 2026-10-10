@@ -4668,6 +4668,17 @@
       "Ingestion RunExecutionWorkerRuntimeTest 3 failures/1 error on latest module run36423996284",
       "MinIO fixture image unauthorized in latest Ingestion R2b/c/e and UDP module/DR runs"
     ],
-    "fullPetAcceptance": false
+    "fullPetAcceptance": false,
+    "fullSpringStartupFollowup": {
+      "evidenceCommit": "00d705790c9f5ef2a8e057629991ecbb59d66f83",
+      "evidence": "evidence/discovery-full-spring-startup-qualification-20261010.json",
+      "runId": 38032196847,
+      "status": "FULL_CANDIDATE_AND_INSTALLED_SPRING_STARTUP_PASS_ISOLATED_DATABASES",
+      "iamEnabled": true,
+      "providerAndWorkerDisabled": true,
+      "targetApplyPerformed": false,
+      "fullPetAcceptance": false,
+      "nextWork": "Target applicator with fresh private backup, writer fencing/custody, new authenticated peer/profile/transport closure and explicit R9 worker coordination"
+    }
   }
 }
