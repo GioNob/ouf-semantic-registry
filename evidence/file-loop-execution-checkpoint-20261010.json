@@ -86,5 +86,38 @@
   },
   "latestTargetStatus": "APPLICATION_INPUT_CONTRACT_PREPARED_NOT_APPLY_READY",
   "releaseAcceptance": false,
-  "petGapStatesAutomaticallyClosed": false
+  "petGapStatesAutomaticallyClosed": false,
+  "semanticSecurityRefresh": {
+    "sourceCommit": "622614b0040cf11be2f6c7e3568733a488ca4ca8",
+    "branch": "codex/discovery-security-refresh-20261010",
+    "mainIntegrated": false,
+    "workflowRuns": [
+      38065957754,
+      38065957664,
+      38065957691,
+      38065957683
+    ],
+    "conclusion": "success",
+    "javaTests": {
+      "run": 90,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 2
+    },
+    "imageScan": {
+      "artifactId": 11674238309,
+      "severities": [
+        "HIGH",
+        "CRITICAL",
+        "UNKNOWN"
+      ],
+      "ignoreUnfixed": false,
+      "exceptions": 0,
+      "findings": 0,
+      "imageId": "sha256:a19ee71a3f976087f3f4f3b0ea3609a28bcf12a41464519fcbf6b8bc00ea5aa8"
+    },
+    "freshSignedTargetPackagePrepared": false,
+    "targetImported": false,
+    "oldTargetReceiptsInherited": false
+  }
 }

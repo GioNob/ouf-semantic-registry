@@ -61,3 +61,15 @@ UDP c7a158a… è integrato in main con module CI, CRS/grid e SDK PASS. Il modul
 La dichiarazione runtime e la consegna fissata superano otto test nella CI deploy 38065415701. Conservano l'intero frame host storico e dichiarano soltanto i tre bind read-only approvati nel contratto; non realizzano OCI, mount o peer e non rinnovano autorità. Serve esecuzione sudo sul VPS per verificare la composizione dei due snapshot privati. F1 resta PREPARATION_NOT_CUTOVER e F10/F11 non sono completati.
 
 L'owner conferma l'ordine: giro file completo e consolidato, quindi API native dei verticali tramite pull secondo v2.3. Il verticale non conosce ontologie/UrbanObjectId/capability OUF; estrazione/proiezione sono governate prima del trasferimento. Nessuna prova CI attiva automaticamente capability, lease, route o grant. La ricevuta target più recente resta quella sopra riportata; nessuna nuova salute live viene inferita.
+
+## Security refresh qualification — 2026-10-10
+
+The retained Semantic candidate source `403531a9df1cbc877078f8126fd1fc4ff18acea9` remains a separate historical signed artifact. Branch `codex/discovery-security-refresh-20261010`, qualified source `622614b0040cf11be2f6c7e3568733a488ca4ca8`, updates Tomcat to 11.0.26 and adds a fresh image scan with HIGH, CRITICAL and UNKNOWN failures, including unfixed findings, without exceptions. No Java, SQL, API contracts or retained Dockerfile bytes changed.
+
+Module run [38065957754](https://github.com/GioNob/ouf-semantic-registry/actions/runs/38065957754) passed functional PostgreSQL tests (90 tests, zero failures/errors, two existing skips), recovery scripts, non-root container smoke and image scanning. Authorization, SDK and Discovery Gateway pairwise runs 38065957664, 38065957691 and 38065957683 also passed. Artifact `semantic-current-image-scan-38065957754` (ID 11674238309) reports no vulnerabilities at the selected severities; scanned CI image ID is `sha256:a19ee71a3f976087f3f4f3b0ea3609a28bcf12a41464519fcbf6b8bc00ea5aa8`. This is a bounded scan result, not a universal absence-of-vulnerabilities claim.
+
+First run 38065793902 failed because the historical checksum register did not describe the already retained Dockerfile. The follow-up corrects that metadata to the unchanged recipe hash `da4d4fb4b5b677dea4e3d15427412cf87ddb80e84b9c42e2346d416adea5216b`; failed evidence is retained.
+
+The refresh is source/CI qualification only. It does not inherit the old signed archive, target image, Java trust preparation, installation authority or transport closure. A fresh reproducible package and complete attestation/extended inventory remain required before target staging or cutover. The runtime declaration launcher still composes only the historical candidate bindings; it does not deploy this refresh.
+
+Ingestion and UDP main documentation heads 98a845b453362ec35a55fbebf9156204cc804e10 and c786dbae32ce77a6c4a858e3f85181e45020c480 have now also passed every triggered workflow. Full target file-to-search acceptance, industrialized clean-host installation and the vertical API phase remain open.
