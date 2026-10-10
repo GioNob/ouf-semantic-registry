@@ -1,5 +1,7 @@
 # Roadmap: dal file alla ricerca, con identità tipizzata e relazioni governate
 
+Checkpoint documentale per il documento PA: [stato F0–F11 e limiti delle evidenze al 10 ottobre](FILE_TO_SEARCH_STATUS_20261010.md). Nessuna nuova prova live del VPS e nessuna chiusura automatica dei gap PET.
+
 Data: 10 ottobre 2026. Obiettivo dell'owner: usare il percorso completo file → onboarding → semantica → ingestion → UDP → search, poi installarlo e aggiornarlo senza interventi manuali ordinari sul VPS. Questa roadmap dettaglia una verticale della roadmap PET v1.7; non sostituisce R0–R6 e non chiude gap sulla sola base del piano.
 
 ## 1. Risultato osservabile richiesto

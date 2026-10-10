@@ -1,0 +1,89 @@
+{
+  "schema": "ouf.file-to-search-documentary-status.v1",
+  "date": "2026-10-10",
+  "scope": "Repository source and workflow metadata plus operator receipts already supplied; no new VPS observation or test execution.",
+  "notReleaseAcceptance": true,
+  "productionApplyAuthorizedByThisRecord": false,
+  "petGapStatusesChanged": false,
+  "liveVpsReadPerformed": false,
+  "newTestsExecuted": false,
+  "applicationCutoverPerformed": false,
+  "reusableInstallerDelivered": false,
+  "heads": {
+    "ouf-deploy": "115db442ea64bcae17c0c9902df336f3565502f6",
+    "ouf-semantic-registry": "f4bb8080f2bab83648f9c41418caa768c135a32f",
+    "ouf-source-onboarding": "21de5f21e903e6e99f4ef4d6617a446d60a54792",
+    "ouf-ingestion-runtime": "a8ba969a5a0e20e9c53977d2875094ce82802f9d",
+    "ouf-udp-object-resolution": "6285b733c49b89cb6d3382abe8dc469f8a0e8b1b",
+    "ouf-mcp-server": "5615fdcad8cbcad9ff41ec3d0ad2ccbf9423c042"
+  },
+  "assessment": [
+    {
+      "step": "F0",
+      "status": "DEFINED_PARTIALLY_ENFORCED",
+      "reason": "Same-nature identity invariant adopted and acceptance cases defined; all resolver branches still need qualification."
+    },
+    {
+      "step": "F1",
+      "status": "PREPARATION_NOT_CUTOVER",
+      "reason": "Runtime inputs, candidate public trust and application contract prepared; no completed application cutover or target health proof."
+    },
+    {
+      "step": "F2",
+      "status": "PARTIAL_SCOPED_PROOFS",
+      "reason": "Onboarding module/browser CI green; current whole file path and accepted format profiles still need acceptance."
+    },
+    {
+      "step": "F3",
+      "status": "PARTIAL",
+      "reason": "Registry definitions/publication and green CI; current provider discovery/application adoption on target not accepted end to end."
+    },
+    {
+      "step": "F4",
+      "status": "PARTIAL",
+      "reason": "Relationship mapping and main typed candidate filter exist; source-binding reuse, reclassification, compatible classes and executable strategies need audit."
+    },
+    {
+      "step": "F5",
+      "status": "PARTIAL_SCOPED_PROOFS",
+      "reason": "Versioned bundles and automatic R2a proof; current target human/grant/publication closure pending."
+    },
+    {
+      "step": "F6",
+      "status": "PARTIAL_BLOCKING_CI",
+      "reason": "Ingestion foundation exists; module and R2b/R2c/R2e CI red."
+    },
+    {
+      "step": "F7",
+      "status": "PARTIAL",
+      "reason": "Typed candidate lookup and source contributions exist; all identity branches and authority behavior not fully qualified."
+    },
+    {
+      "step": "F8",
+      "status": "PARTIAL",
+      "reason": "Pinned-profile late relationship reconciliation and focused tests exist; inverse semantics/cardinality/load not generally certified."
+    },
+    {
+      "step": "F9",
+      "status": "PARTIAL",
+      "reason": "Bounded authorized inbound/outbound related search exists; complete target channels still need acceptance."
+    },
+    {
+      "step": "F10",
+      "status": "NOT_COMPLETED",
+      "reason": "Full current multi-file acceptance has not been demonstrated."
+    },
+    {
+      "step": "F11",
+      "status": "PLANNED_WITH_COMPONENTS",
+      "reason": "Industrialization plan and preparation components; no reusable installer or independent clean-host acceptance."
+    }
+  ],
+  "priority": [
+    "Close blocking CI and qualify coordinated application cutover.",
+    "Accept one real file through governed search.",
+    "Accept typed multi-source identity and late relations in both arrival orders.",
+    "Reproduce on clean host including upgrade and recovery."
+  ],
+  "planningExtension": "Cultural service-demand scenarios require additional validated data, explicit human objectives and analytic models; they are not an accepted existing runtime capability."
+}
