@@ -260,3 +260,14 @@ La CI fra quattro owner, PostGIS e MinIO contiene **25 verifiche PASS**. Fixture
 Restano 2D simple features e limiti di parser espliciti; altri formati/casi sono R4b. Nessun grigliato IGM reale o collaudo territoriale è attestato. La UI cartografica resta R4a; prossimo incremento **R3 — Operational Awareness**.
 
 Ogni sprint deve consultare tutti i sette PET e L0: [regola obbligatoria e manifest delle fonti](OUF_SPRINT_PET_ALIGNMENT.md).
+
+
+## Seguito operativo 10 ottobre — discovery e cutover governato
+
+Il [riallineamento PET e roadmap](https://github.com/GioNob/ouf-deploy/blob/a6b51d99b308dd9c45493782685df052c507efe6/releases/PET_ROADMAP_RECONCILIATION_20261010.md) conserva i gap originali: le qualificazioni isolate non attestano l'accettazione completa dei sette PET. L'attività corrente resta il percorso nazionale discovery R2c/R4a con gate R5, coordinato al worker R9 già consumato.
+
+Dopo l'avvio completo dei JAR precedente/candidato con IAM attivo, sono PASS sei prove native di fencing database e quattro di backup su PostgreSQL 17 isolato: [run38035267718](https://github.com/GioNob/ouf-deploy/actions/runs/38035267718). Sono verificati dump/restore reale su clone nuovo, conservazione di righe/sequenza, guasti e divieto di sovrascrivere scritture successive. La sola chiusura delle nuove connessioni non autorizza un backup prima della terminazione degli scrittori residui. Il database target non è stato chiuso, migrato o ripristinato.
+
+Sul VPS il vecchio `ouf-semantic-r4a-smoke`, che manteneva dieci connessioni allo stesso database, è stato fermato e conservato. Il Semantic principale conserva la stessa generazione; ora le dieci sessioni osservate appartengono tutte al principale. Lo smoke non va riavviato prima della revisione di compatibilità dello schema.
+
+La lettura fresca root di R9 e della custodia dell'ingress è pronta (quattro prove scope e tre delivery PASS), ma il runner risponde `OPERATOR_SUDO_REQUIRED`. È richiesto il solo comando read-only nel terminale VPS con password sudo locale; non una nuova autorizzazione di apply. [Launcher fissato](https://github.com/GioNob/ouf-deploy/blob/a6b51d99b308dd9c45493782685df052c507efe6/releases/current-r9-transition-read-20261010.sh), [evidenza di accesso](https://github.com/GioNob/ouf-deploy/blob/a6b51d99b308dd9c45493782685df052c507efe6/evidence/current-r9-transition-read-access-20261010.json). Nessun lock lease, DNS, firma, chiave privata o replay è eseguito. Prima del cutover restano applicatore completo, nuova custodia OCI/peer/trasporto e readiness; i grant HUMAN e l'accettazione del flusso nazionale restano nel percorso owner governato.

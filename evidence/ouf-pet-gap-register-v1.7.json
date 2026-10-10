@@ -4679,6 +4679,31 @@
       "targetApplyPerformed": false,
       "fullPetAcceptance": false,
       "nextWork": "Target applicator with fresh private backup, writer fencing/custody, new authenticated peer/profile/transport closure and explicit R9 worker coordination"
+    },
+    "databaseFenceBackupFollowup": {
+      "evidenceRepository": "GioNob/ouf-deploy",
+      "evidenceCommit": "a6b51d99b308dd9c45493782685df052c507efe6",
+      "evidence": "evidence/discovery-database-fence-backup-qualification-20261010.json",
+      "runId": 38035267718,
+      "status": "SIX_NATIVE_GATE_AND_FOUR_NATIVE_FENCED_BACKUP_TESTS_PASS",
+      "scope": "Disposable PostgreSQL 17; no production gate/backup/migration/restore",
+      "smokeRetainedStopped": true,
+      "primaryGenerationUnchanged": true,
+      "productionApplicatorReady": false,
+      "fullPetAcceptance": false
+    },
+    "currentR9Read": {
+      "sourceCommit": "f44dae25b77d7e7ff1df59550cc5d3e5fd37d8fe",
+      "runId": 38035986086,
+      "status": "OPERATOR_SUDO_REQUIRED",
+      "rootPrivateReadExecuted": false,
+      "launcherCommit": "a6b51d99b308dd9c45493782685df052c507efe6",
+      "launcher": "releases/current-r9-transition-read-20261010.sh",
+      "deliveryTests": 3,
+      "deliveryRunId": 38036129064,
+      "deliveryStatus": "PASS",
+      "R9ClaimReplayAllowed": false,
+      "nextWork": "Operator runs the pinned read-only launcher with local sudo password, returns current R9/peer custody; then complete governed application transition composition"
     }
   }
 }
