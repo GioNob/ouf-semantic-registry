@@ -4695,15 +4695,22 @@
     "currentR9Read": {
       "sourceCommit": "f44dae25b77d7e7ff1df59550cc5d3e5fd37d8fe",
       "runId": 38035986086,
-      "status": "OPERATOR_SUDO_REQUIRED",
-      "rootPrivateReadExecuted": false,
+      "status": "ROOT_READ_BLOCKED_LEASE_ADDRESS_OR_TTL_UNPROVEN",
+      "rootPrivateReadExecuted": true,
       "launcherCommit": "a6b51d99b308dd9c45493782685df052c507efe6",
       "launcher": "releases/current-r9-transition-read-20261010.sh",
       "deliveryTests": 3,
       "deliveryRunId": 38036129064,
       "deliveryStatus": "PASS",
       "R9ClaimReplayAllowed": false,
-      "nextWork": "Operator runs the pinned read-only launcher with local sudo password, returns current R9/peer custody; then complete governed application transition composition"
+      "nextWork": "Operator runs immutable diagnostic root read; worker/service diagnosis survives original strict lease rejection without relaxing TTL/address conditions",
+      "targetEvidence": "evidence/current-r9-transition-read-blocked-target-20261010.json",
+      "targetReadObservedAt": "2026-10-10T10:32:10+02:00",
+      "r9CurrentLivenessProven": false,
+      "r9WorkerFailureProven": false,
+      "diagnosticReadSourceCommit": "b70b1638e1e50776ad68d95198c95adcee75a5ed",
+      "diagnosticLauncherCommit": "7265f513a99bc9f52d2cbf1bedfacc4636536488",
+      "diagnosticLauncher": "releases/current-r9-lease-diagnostics-20261010.sh"
     }
   }
 }
