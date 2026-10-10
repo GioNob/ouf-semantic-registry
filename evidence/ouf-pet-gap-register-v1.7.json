@@ -4736,7 +4736,27 @@
       "mountsInstalled": false,
       "applicationCutoverPerformed": false,
       "operatorSudoRequiredForNewProtectedInputs": true,
-      "fullPetAcceptance": false
+      "fullPetAcceptance": false,
+      "lastRootAttempt": {
+        "status": "INPUT_PREPARATION_BLOCKED_BEFORE_CLAIM",
+        "reason": "EXACT_READ_ONLY_SOUTHBOUND_CERTIFICATE_REQUIRED",
+        "evidence": "evidence/application-runtime-input-preparation-blocked-target-20261010.json",
+        "observedAt": "2026-10-10T13:15:45+02:00",
+        "iamAdministrativeLoginAttempts": 3,
+        "configurationWrites": 0,
+        "r9Touched": false
+      },
+      "mountCorrection": {
+        "sourceCommit": "f75a0a101bf675b1e009e7a6eef0f961575ff851",
+        "launcherCommit": "3bec64387a0e2d5d21e39b370e9bed9ddb0dff1d",
+        "runId": 38047995064,
+        "nativeCustodyTests": 8,
+        "deliveryTests": 3,
+        "exactLiveReadOnlyConfigurationMountConfirmed": true,
+        "configurationFilesOpened": 0,
+        "rootPreparationExecuted": false,
+        "claimConsumed": false
+      }
     }
   }
 }
