@@ -79,12 +79,14 @@
     "workflowRun": 38065415701,
     "conclusion": "success",
     "tests": 8,
-    "targetExecuted": false,
+    "targetExecuted": true,
     "completeReplacementOciProven": false,
     "applicationCutoverAuthorized": false,
-    "productionApplyReady": false
+    "productionApplyReady": false,
+    "targetReceiptRepository": "GioNob/ouf-deploy",
+    "targetReceipt": "evidence/replacement-runtime-declaration-target-20261010.json"
   },
-  "latestTargetStatus": "APPLICATION_INPUT_CONTRACT_PREPARED_NOT_APPLY_READY",
+  "latestTargetStatus": "REPLACEMENT_RUNTIME_DECLARED_NOT_REALIZED",
   "releaseAcceptance": false,
   "petGapStatesAutomaticallyClosed": false,
   "semanticSecurityRefresh": {
@@ -119,5 +121,15 @@
     "freshSignedTargetPackagePrepared": false,
     "targetImported": false,
     "oldTargetReceiptsInherited": false
+  },
+  "retainedVpsBaseline": {
+    "cinemaDeliveryMaterialization": "8_OF_8_PASS_HISTORICAL_NOT_TO_REPLAY",
+    "cinemaSearch": "NOT_VERIFIED_IN_RETAINED_HANDOFF",
+    "teatriUploadProfile": "PASS_HISTORICAL_REUSE_EXISTING_ASSET",
+    "udpSource": "83249a897eb4add4289b5181b3299f48ea4c0f99",
+    "udpFlyway": 34,
+    "mainIsNotLiveReplacement": true,
+    "coordinationSource": "e7bc5190f9e6afbbc4cf3c90d5d4970afbfad14b",
+    "continuityReportCommit": "beef7e37c7579a0daf743276f6d63d5174fab175"
   }
 }

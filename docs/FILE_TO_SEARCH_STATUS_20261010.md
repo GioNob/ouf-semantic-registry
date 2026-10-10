@@ -73,3 +73,14 @@ First run 38065793902 failed because the historical checksum register did not de
 The refresh is source/CI qualification only. It does not inherit the old signed archive, target image, Java trust preparation, installation authority or transport closure. A fresh reproducible package and complete attestation/extended inventory remain required before target staging or cutover. The runtime declaration launcher still composes only the historical candidate bindings; it does not deploy this refresh.
 
 Ingestion and UDP main documentation heads 98a845b453362ec35a55fbebf9156204cc804e10 and c786dbae32ce77a6c4a858e3f85181e45020c480 have now also passed every triggered workflow. Full target file-to-search acceptance, industrialized clean-host installation and the vertical API phase remain open.
+
+
+## Rettifica di continuità VPS — 10 ottobre 2026
+
+Il giro Cinema già consegnato non va rifatto: l'handoff storico conserva source/run SUCCEEDED, 8 ACKED e 8 materializzazioni riuscite dopo recovery HUMAN. Teatri upload/profile tramite MCP sono già riusciti. [Ricognizione completa, pin e controllo eseguibile](https://github.com/GioNob/ouf-deploy/blob/beef7e37c7579a0daf743276f6d63d5174fab175/releases/FILE_LOOP_VPS_CONTINUITY_20261010.md).
+
+La frase precedente «resta da completare il giro sul VPS» non distingueva queste prove dai collegamenti ancora aperti. Search Cinema via Gateway/MCP restava esplicitamente non verificato nell'handoff; non dedurre né piena acceptance né necessità di riacquisizione. Nessun replay/riattivazione/recovery dei gate superati.
+
+UDP live ereditato 83249a897eb4add4289b5181b3299f48ea4c0f99 contiene schema V34, motore class-neutral governato, review e recovery; main c786dbae32ce77a6c4a858e3f85181e45020c480 manca V22–V34 e componenti rilevanti. Le nuove correzioni main non sono una release sostituibile direttamente: vanno riconciliate sul ramo avanzato, mantenendo la regola subset/coverage e i contratti live. Ingestion presenta analoga divergenza R4a/main. F0 include dunque riconciliazione esplicita dei branch, non solo ricognizione main. Nessuna regressione a weighted legacy o richiesta di nomi/indirizzi come chiavi canoniche.
+
+Il nuovo output operatore REPLACEMENT_RUNTIME_DECLARED_NOT_REALIZED/exit0 completa la preparazione della dichiarazione runtime nel perimetro storico. Snapshot nfggulwg, hash privato b9ee536c6cb4fefa4e6357716599cfdb34a38b7e11789013cf69096e5932709c; nessun mount/lifecycle/cutover/R9. Questo supersede il precedente ultimo checkpoint applicativo, senza certificare OCI realizzato o salute.

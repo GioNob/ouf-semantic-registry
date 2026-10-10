@@ -147,3 +147,14 @@ Snapshot main letti il10 ottobre2026:
 ## Ordine confermato dall'owner e seguito esecutivo
 
 Dopo il completamento e consolidamento del giro con i file, si affronta il giro tramite PULL sulle API native dei verticali secondo le Linee di indirizzo v2.3. Le interfacce verticali non incorporano semantica o identità UDP; il profilo di estrazione approvato guida proiezione, normalizzazione e handoff durevole. [Progressi eseguiti e prove correnti](FILE_TO_SEARCH_STATUS_20261010.md#aggiornamento-esecutivo--file-prima-delle-api-10-ottobre). Le CI bloccanti di Ingestion/UDP sono state corrette; F1, F10 e F11 rimangono aperti finché non esistono le rispettive prove target e su host pulito.
+
+
+## Rettifica di continuità VPS — 10 ottobre 2026
+
+Il giro Cinema già consegnato non va rifatto: l'handoff storico conserva source/run SUCCEEDED, 8 ACKED e 8 materializzazioni riuscite dopo recovery HUMAN. Teatri upload/profile tramite MCP sono già riusciti. [Ricognizione completa, pin e controllo eseguibile](https://github.com/GioNob/ouf-deploy/blob/beef7e37c7579a0daf743276f6d63d5174fab175/releases/FILE_LOOP_VPS_CONTINUITY_20261010.md).
+
+La frase precedente «resta da completare il giro sul VPS» non distingueva queste prove dai collegamenti ancora aperti. Search Cinema via Gateway/MCP restava esplicitamente non verificato nell'handoff; non dedurre né piena acceptance né necessità di riacquisizione. Nessun replay/riattivazione/recovery dei gate superati.
+
+UDP live ereditato 83249a897eb4add4289b5181b3299f48ea4c0f99 contiene schema V34, motore class-neutral governato, review e recovery; main c786dbae32ce77a6c4a858e3f85181e45020c480 manca V22–V34 e componenti rilevanti. Le nuove correzioni main non sono una release sostituibile direttamente: vanno riconciliate sul ramo avanzato, mantenendo la regola subset/coverage e i contratti live. Ingestion presenta analoga divergenza R4a/main. F0 include dunque riconciliazione esplicita dei branch, non solo ricognizione main. Nessuna regressione a weighted legacy o richiesta di nomi/indirizzi come chiavi canoniche.
+
+Il nuovo output operatore REPLACEMENT_RUNTIME_DECLARED_NOT_REALIZED/exit0 completa la preparazione della dichiarazione runtime nel perimetro storico. Snapshot nfggulwg, hash privato b9ee536c6cb4fefa4e6357716599cfdb34a38b7e11789013cf69096e5932709c; nessun mount/lifecycle/cutover/R9. Questo supersede il precedente ultimo checkpoint applicativo, senza certificare OCI realizzato o salute.
