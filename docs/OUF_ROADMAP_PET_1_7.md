@@ -311,3 +311,10 @@ Sono state acquisite dal TAR firmato le CA pubbliche esatte del candidato senza 
 La preparazione root ha conservato tutte le118 CA del candidato e aggiunto quella del provider: PKCS12 pubblico con119 certificati, UID10001 mode0400, hashdcfb221c…. Il container keytool offline è stato rimosso. [Evidenza target](https://github.com/GioNob/ouf-deploy/blob/77a2f9a9b314a54c6d0abd8beb0e4b306d86a8e5/evidence/application-java-trust-prepared-target-20261010.json). Entrambi i claim runtime-input/Java-trust sono consumati: nessun replay/reset. Nessun mount applicativo, lifecycle applicativo, import, database, firewall, grant o R9 è stato modificato.
 
 Prosegue la composizione privata della configurazione usando i default JVM del candidato e le identità esistenti osservate. La bozza richiede ancora binding originale del provider e manifesto protetto; non dimostra OCI completo, autorità transport/peer, applicatore coordinato, readiness o accettazione nazionale. Stati dei23 gap PET originali invariati; Cinema e Teatri preservati.
+
+
+### Composizione target della configurazione completata
+
+[Run38052586603](https://github.com/GioNob/ouf-deploy/actions/runs/38052586603): quattro prove e composizione privata sul VPS PASS. Identità chiamante osservata ouf-mcp-server, client OIDC MCP corrispondente, rete condivisa ouf-backend, due mount consultazione conservati e tre mount discovery/trust proposti. Nessun mount, import, lifecycle, database, firewall, grant o R9 modificato. Non è OCI completo né prova di grant/readiness.
+
+[Launcher protetto successivo](https://github.com/GioNob/ouf-deploy/blob/e42721c2b9f3e15fd1c32c2165cde206eaa31248/releases/replacement-protected-bindings-read-20261010.sh), qualificazione38052756166 PASS: richiede solo sudo locale per leggere manifesto root, binding provider originale, ricevuta Java trust e bozza privata, senza aprire credential/MAC/TLS key files. Riletture stabili, nuovo snapshot root, nessun lock o apply. Claim consumati e stati PET originali invariati.
