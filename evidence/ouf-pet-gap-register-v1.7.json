@@ -4873,6 +4873,22 @@
       "independentCleanHostAcceptancePassed": false,
       "initialBootstrapAndPetProtectedHumanDecisionsRemainExplicit": true,
       "originalGapStatesChanged": false
+    },
+    "fileToSearchRoadmap": {
+      "ownerRequestAt": "2026-10-10T15:42:57+02:00",
+      "document": "docs/FILE_TO_SEARCH_ROADMAP_20261010.md",
+      "status": "PLANNED_WITH_SOURCE_AND_CI_RECONNAISSANCE",
+      "ownerIdentityInvariant": "Identity matching only within compatible semantic nature; shared fields across incompatible natures never imply identity",
+      "sameNatureAloneSufficientForIdentity": false,
+      "relationsDistinctFromIdentity": true,
+      "lateTargetReconciliationRequired": true,
+      "ontologyExistenceAloneSufficientForInstanceEdge": false,
+      "firstUsableScope": "Known class file -> governed active bundle -> ingestion -> typed UDP identity -> authorized search",
+      "fullRequestedScope": "Multi-source identity, authority, relationships in both arrival orders, human review and historical updates",
+      "industrializationRequired": true,
+      "fullPetAcceptance": false,
+      "currentTargetCutoverReady": false,
+      "sourceEvidence": "evidence/file-to-search-roadmap-context-20261010.json"
     }
   }
 }

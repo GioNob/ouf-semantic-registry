@@ -1,0 +1,108 @@
+{
+  "schema": "ouf.file-to-search-roadmap-context.v1",
+  "date": "2026-10-10",
+  "sourceHeads": {
+    "ouf-udp-object-resolution": "6285b733c49b89cb6d3382abe8dc469f8a0e8b1b",
+    "ouf-source-onboarding": "21de5f21e903e6e99f4ef4d6617a446d60a54792",
+    "ouf-semantic-registry": "416e9c484ea3737ec773471f4505069061080558",
+    "ouf-ingestion-runtime": "a8ba969a5a0e20e9c53977d2875094ce82802f9d",
+    "ouf-mcp-server": "5615fdcad8cbcad9ff41ec3d0ad2ccbf9423c042",
+    "ouf-deploy": "735c3c9fa3066df21811ca8b4f6e2a6df1754145"
+  },
+  "latestRunsRead": {
+    "ouf-ingestion-runtime": [
+      {
+        "name": "R2a Onboarding automatic activation",
+        "id": 36423996093,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Ingestion Runtime module CI",
+        "id": 36423996284,
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "name": "R2e GeoPackage features and governed camera-cabinet relations",
+        "id": 36423996231,
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "name": "R2b source to authorized serving",
+        "id": 36423996047,
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "name": "Shared Authorization SDK pairwise",
+        "id": 36423996128,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "R2c governed publication to historical serving",
+        "id": 36423996317,
+        "status": "completed",
+        "conclusion": "failure"
+      }
+    ],
+    "ouf-udp-object-resolution": [
+      {
+        "name": "R2d governed CRS and grid execution",
+        "id": 36334165364,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Shared Authorization SDK pairwise",
+        "id": 36334165308,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "UDP Object Resolution module CI",
+        "id": 36334165297,
+        "status": "completed",
+        "conclusion": "failure"
+      }
+    ],
+    "ouf-source-onboarding": [
+      {
+        "name": "R2f trusted review browser",
+        "id": 36388267535,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Source Onboarding module CI",
+        "id": 36388267487,
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "ouf-mcp-server": [
+      {
+        "name": "Authorization Java Go conformance",
+        "id": 36410481075,
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "MCP evidence and late recovery",
+        "id": 36410481211,
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "verificationScope": "Attached baseline sections, selected source paths and current workflow metadata; no target mutation or test rerun",
+  "identityTypeFilterPresentInPrimaryCandidateQuery": true,
+  "sourceBindingReclassificationNeedsAudit": true,
+  "lateRelationshipReconciliationAndTestsPresent": true,
+  "generalWeightedResolutionNotProvenInInspectedRuntime": true,
+  "relationshipInverseGeneralSupportNotProven": true,
+  "targetEndToEndAcceptance": false,
+  "originalPetGapStatesUnchanged": true
+}
