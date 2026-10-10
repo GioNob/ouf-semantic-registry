@@ -4658,7 +4658,7 @@
   "operationalCheckpoint20261010": {
     "status": "RECONCILED_NOT_FULL_PET_ACCEPTANCE",
     "evidenceRepository": "GioNob/ouf-deploy",
-    "evidenceCommit": "31f1357c56125791afa479cd26b711754b694f55",
+    "evidenceCommit": "fd1ece9a2c5df8b4690ad2ef05bf2c3bed33b532",
     "report": "releases/PET_ROADMAP_RECONCILIATION_20261010.md",
     "structuredEvidence": "evidence/pet-roadmap-reconciliation-20261010.json",
     "originalGapStatesPreserved": true,
@@ -4695,7 +4695,7 @@
     "currentR9Read": {
       "sourceCommit": "f44dae25b77d7e7ff1df59550cc5d3e5fd37d8fe",
       "runId": 38035986086,
-      "status": "ROOT_READ_BLOCKED_LEASE_ADDRESS_OR_TTL_UNPROVEN",
+      "status": "CURRENT_R9_TRANSITION_BINDINGS_CAPTURED",
       "rootPrivateReadExecuted": true,
       "launcherCommit": "a6b51d99b308dd9c45493782685df052c507efe6",
       "launcher": "releases/current-r9-transition-read-20261010.sh",
@@ -4703,14 +4703,40 @@
       "deliveryRunId": 38036129064,
       "deliveryStatus": "PASS",
       "R9ClaimReplayAllowed": false,
-      "nextWork": "Operator runs immutable diagnostic root read; worker/service diagnosis survives original strict lease rejection without relaxing TTL/address conditions",
-      "targetEvidence": "evidence/current-r9-transition-read-blocked-target-20261010.json",
-      "targetReadObservedAt": "2026-10-10T10:32:10+02:00",
-      "r9CurrentLivenessProven": false,
+      "nextWork": "Prepare new root role-owned runtime inputs using immutable source; no R9 replay or lock",
+      "targetEvidence": "evidence/current-r9-transition-active-target-20261010.json",
+      "targetReadObservedAt": "2026-10-10T10:50:56+02:00",
+      "r9CurrentLivenessProven": true,
       "r9WorkerFailureProven": false,
       "diagnosticReadSourceCommit": "b70b1638e1e50776ad68d95198c95adcee75a5ed",
       "diagnosticLauncherCommit": "7265f513a99bc9f52d2cbf1bedfacc4636536488",
-      "diagnosticLauncher": "releases/current-r9-lease-diagnostics-20261010.sh"
+      "diagnosticLauncher": "releases/current-r9-lease-diagnostics-20261010.sh",
+      "previousStrictRead": {
+        "status": "ROOT_READ_BLOCKED_LEASE_ADDRESS_OR_TTL_UNPROVEN",
+        "targetEvidence": "evidence/current-r9-transition-read-blocked-target-20261010.json",
+        "targetReadObservedAt": "2026-10-10T10:32:10+02:00"
+      },
+      "r9ContinuousLivenessProven": false,
+      "refreshCount": 643,
+      "minRemainingTtlSeconds": 0.015
+    },
+    "runtimeInputCustodyFollowup": {
+      "evidenceRepository": "GioNob/ouf-deploy",
+      "evidenceCommit": "fd1ece9a2c5df8b4690ad2ef05bf2c3bed33b532",
+      "configurationEvidence": "evidence/semantic-replacement-configuration-target-20261010.json",
+      "credentialEvidence": "evidence/semantic-workload-custody-stage-target-20261010.json",
+      "custodyQualificationRunId": 38042159965,
+      "nativeRootCustodyTests": 4,
+      "launcher": "releases/application-runtime-input-preparation-20261010.sh",
+      "status": "EXISTING_WORKLOAD_CREDENTIAL_PRIVATELY_STAGED_ROOT_PREPARATION_PENDING",
+      "clientSecretRotated": false,
+      "iamConfigurationWrites": 0,
+      "gatewayUid": 636,
+      "semanticUid": 10001,
+      "mountsInstalled": false,
+      "applicationCutoverPerformed": false,
+      "operatorSudoRequiredForNewProtectedInputs": true,
+      "fullPetAcceptance": false
     }
   }
 }
