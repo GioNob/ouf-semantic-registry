@@ -4833,6 +4833,20 @@
       "protectedMetadataReadQualificationRunId": 38052756166,
       "protectedMetadataReadLauncherCommit": "e42721c2b9f3e15fd1c32c2165cde206eaa31248",
       "operatorSudoRequiredForProtectedMetadataRead": true
+    },
+    "protectedReplacementBindingIntake": {
+      "observedAt": "2026-10-10T15:17:47+02:00",
+      "evidenceRepository": "GioNob/ouf-deploy",
+      "evidenceCommit": "a6955b65e87df52ac019da04b6a279b9c6810105",
+      "evidence": "evidence/replacement-protected-bindings-captured-target-20261010.json",
+      "status": "PROTECTED_REPLACEMENT_BINDINGS_CAPTURED_NOT_APPLY_READY",
+      "privateIntakeHash": "6521033c3c9c1c5dd0963d630e3748003b20e9d6a8a0f71fcc23e92471e5b358",
+      "credentialFilesOpened": 0,
+      "privateKeyFilesOpened": 0,
+      "r9Touched": false,
+      "productionApplyReady": false,
+      "fullPetAcceptance": false,
+      "nextWork": "Freeze application provider/env and role mount contract from exact protected intake; then complete OCI and signed peer/migration/applicator closure"
     }
   }
 }

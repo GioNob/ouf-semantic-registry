@@ -318,3 +318,10 @@ Prosegue la composizione privata della configurazione usando i default JVM del c
 [Run38052586603](https://github.com/GioNob/ouf-deploy/actions/runs/38052586603): quattro prove e composizione privata sul VPS PASS. Identità chiamante osservata ouf-mcp-server, client OIDC MCP corrispondente, rete condivisa ouf-backend, due mount consultazione conservati e tre mount discovery/trust proposti. Nessun mount, import, lifecycle, database, firewall, grant o R9 modificato. Non è OCI completo né prova di grant/readiness.
 
 [Launcher protetto successivo](https://github.com/GioNob/ouf-deploy/blob/e42721c2b9f3e15fd1c32c2165cde206eaa31248/releases/replacement-protected-bindings-read-20261010.sh), qualificazione38052756166 PASS: richiede solo sudo locale per leggere manifesto root, binding provider originale, ricevuta Java trust e bozza privata, senza aprire credential/MAC/TLS key files. Riletture stabili, nuovo snapshot root, nessun lock o apply. Claim consumati e stati PET originali invariati.
+
+
+### Binding protetti acquisiti, 10 ottobre 15:17 CEST
+
+La lettura operatore è PASS: [evidenza](https://github.com/GioNob/ouf-deploy/blob/a6955b65e87df52ac019da04b6a279b9c6810105/evidence/replacement-protected-bindings-captured-target-20261010.json). Manifesto input, binding provider originale, ricevuta Java trust e bozza configurazione sono raccolti nello snapshot root hash6521033c…. Nessuna credenziale/chiave aperta, lock lease, lifecycle, import, database/firewall/IAM/firma o modifica R9. La precedente consegna si era fermata sul checksum del launcher prima di sudo; il digest è stato corretto contro il blob Git pubblicato, senza eliminare la verifica.
+
+Prosegue il contratto applicativo che confronta path e issuer/audience/workload/scope con la closure originale e lega i tre mount read-only alle identità/hashes del manifesto. Non prova ancora OCI completo, generazione target corrente, bytes dei segreti al momento dell'apply, autorità peer/transport, applicatore e migrazione/readiness. Gap PET originali, Cinema e Teatri preservati; nessuna accettazione globale.
