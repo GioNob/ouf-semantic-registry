@@ -224,3 +224,14 @@ Adozione completa ancora aperta: retry automatici del worker, budget iniziali/so
 Integrate MCP PR51, Ingestion PR35 e Gateway PR59: priorità prima dei limiti, recuperi vecchi visibili nel catch-up supportato, conteggi Gateway dell'intera finestra e troncamento esplicito. Prove: MCP full38105960598/race38105960600 e gate sicurezza con0 vulnerabilità raggiungibili dopo aggiornamento Go/dipendenze; Ingestion native21/module137 test; Gateway229 test + APISIX reale. [Evidenza](https://github.com/GioNob/ouf-deploy/blob/main/evidence/operational-priority-qualified-20261011.json).
 
 Restano OPEN cursor/checkpoint operatore, grouping multirun per dipendenza/contatori impatto, detector/quote/capacità, outbox alert e integrazione target multi-owner/autorizzazioni. Reference/fixture e summary di finestra non provano conformità globale o salute corrente. Nessun deploy VPS o email; R9/R10 consumati e precedente preflight sospeso. Le accettazioni precedenti restano preservate.
+
+
+## 11 ottobre 2026 — seconda tranche Operational Awareness qualificata
+
+Integrate [MCP PR52](https://github.com/GioNob/ouf-mcp-server/pull/52) e [Ingestion PR36](https://github.com/GioNob/ouf-ingestion-runtime/pull/36). MCP rivaluta l'autorizzazione owner prima della lettura aggregata, applica proiezione self fissa, valida query/budget e conserva partial/unavailable. Ingestion V16 aggiunge observation time persistente per metadata, riaperture e nuove osservazioni di problemi iniziati in passato, senza inventare lo storico precedente.
+
+Prove sui candidati finali: MCP20 race operational e tutti6 gate SUCCESS; Ingestion28 focused/144 full e tutti18 gate SUCCESS, incluse migrazioni e backfill popolato, tenant/authorization/HUMAN, container/supply-chain/DR. [Evidenza strutturata](https://github.com/GioNob/ouf-deploy/blob/main/evidence/operational-read-catchup-qualified-20261011.json) e [registro aggiornato](https://github.com/GioNob/ouf-deploy/blob/main/docs/OUF_RESILIENCE_ADOPTION.md) riportano SHA/run e fallimenti intermedi corretti senza rilassare gate.
+
+[Design cursor e ricevute di consultazione](https://github.com/GioNob/ouf-deploy/blob/main/docs/OUF_OPERATIONAL_CURSOR_DESIGN.md) pubblicato; implementazione OPEN. Observation time non è un revision ledger commit-ordered e non certifica catch-up completo con transazioni concorrenti. Restano OPEN cursor/checkpoint/coverage, salute corrente vs finestra storica, dedup dipendenze/impatti, capacità/quote/retention, retry owner completi e alert attivi.
+
+Questa è una qualifica repository, non target acceptance o release acceptance. Nessun deploy/migrazione/restart VPS, provider call o email; claim R9/R10 consumati e preflight root sospeso. Cinema/Teatri, accettazioni precedenti e gap PET/F0–F11 non modificati.
