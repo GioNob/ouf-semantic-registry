@@ -1,0 +1,7 @@
+# Semantic discovery resilience implementation — 11 October 2026
+
+[Platform policy v3](https://github.com/GioNob/ouf-deploy/blob/main/docs/OUF_RESILIENCE_POLICY.md) and the module PET apply. Work branches from the exact previously qualified candidate622614b0040cf11be2f6c7e3568733a488ca4ca8; main has diverged and is not used as an implicit runtime replacement.
+
+The bounded HTTP adapter now distinguishes explicit transient connect/DNS/timeouts and HTTP408/429/502/503/504 from TLS, denied authority, integrity, interruption and unknown errors. Retry-After delay-seconds and RFC1123 dates are retained without shortening delays to fit a budget. Interrupted threads retain their flag. Public failure codes are an allowlist rather than exception messages. The actual HTTP adapter has a dependency-free native fixture covering server status, slow body deadline and cancellation.
+
+This is the classification foundation, not complete resilience. Durable provider incident/circuit budgets, finite retry sessions, candidate fencing and atomic publication, bounded backlog scheduling and governed HUMAN budget renewal remain open. The existing in-memory provider retry/circuit and first-failure FAILED job are not policy compliant. No target activation, app cutover, new semantics/adoption or release acceptance is authorized by this source change. The previous image/creation intent must not be reused for this changed source.

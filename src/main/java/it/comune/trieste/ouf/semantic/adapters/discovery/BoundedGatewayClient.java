@@ -23,11 +23,11 @@ public class BoundedGatewayClient {
     try{
       var res=BoundedResponseBody.send(http,req,maxBytes);
       if(res.statusCode()/100==3)throw new ProviderFailure("PROVIDER_REDIRECT_FORBIDDEN");
-      if(res.statusCode()!=200)throw new ProviderFailure("PROVIDER_HTTP_"+res.statusCode());
+      if(res.statusCode()!=200)throw new ProviderFailure(ProviderFailurePolicy.http(res.statusCode(),res.headers().firstValue("retry-after").orElse(null),java.time.Clock.systemUTC()));
       var type=res.headers().firstValue("content-type").orElse("").split(";",2)[0].trim().toLowerCase(java.util.Locale.ROOT);
       if(!mediaTypes.contains(type))throw new ProviderFailure("PROVIDER_MEDIA_TYPE_REJECTED");
       return new Response(res.body(),type);
-    }catch(ProviderFailure e){throw e;}catch(Exception e){if(e.getCause() instanceof ProviderFailure failure)throw failure;throw new ProviderFailure("PROVIDER_UNAVAILABLE");}
+    }catch(ProviderFailure e){throw e;}catch(Exception e){var decision=ProviderFailurePolicy.exception(e);if(decision.kind()==ProviderFailurePolicy.Kind.CANCELLED)Thread.currentThread().interrupt();throw new ProviderFailure(decision,e);}
   }
   private HttpRequest.Builder request(URI base,URI target){
     requireSameOrigin(base,target); // Never obtain or disclose a token to another origin.
@@ -39,5 +39,13 @@ public class BoundedGatewayClient {
   private static boolean isLoopback(URI u){return "http".equalsIgnoreCase(u.getScheme())&&Set.of("127.0.0.1","localhost","::1").contains(u.getHost());}
   private static int effectivePort(URI u){return u.getPort()>=0?u.getPort():("https".equalsIgnoreCase(u.getScheme())?443:80);}
   public record Response(byte[] body,String mediaType){}
-  public static class ProviderFailure extends RuntimeException{public ProviderFailure(String m){super(m);}public ProviderFailure(String m,Throwable t){super(m,t);}}
+  public static class ProviderFailure extends RuntimeException{
+    private final ProviderFailurePolicy.Decision decision;
+    public ProviderFailure(String code){this(ProviderFailurePolicy.code(code),null);}
+    public ProviderFailure(String code,Throwable cause){this(ProviderFailurePolicy.code(code),cause);}
+    public ProviderFailure(ProviderFailurePolicy.Decision decision){this(decision,null);}
+    public ProviderFailure(ProviderFailurePolicy.Decision decision,Throwable cause){super(decision.code(),cause);this.decision=decision;}
+    public ProviderFailurePolicy.Decision decision(){return decision;}
+  }
 }
+
