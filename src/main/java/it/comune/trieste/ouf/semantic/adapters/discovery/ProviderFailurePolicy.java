@@ -28,7 +28,7 @@ public final class ProviderFailurePolicy {
 
   public static Decision http(int status, String retryAfter, Clock clock) {
     if(status<100 || status>599)return blocked("PROVIDER_UNKNOWN");
-    boolean transientStatus=status==408 || status==429 || status==502 || status==503 || status==504;
+    boolean transientStatus=status==408 || status==429 || status==500 || status==502 || status==503 || status==504;
     Duration delay=Duration.ZERO;
     if(transientStatus && retryAfter!=null) {
       try {
@@ -45,6 +45,12 @@ public final class ProviderFailurePolicy {
   }
 
   public static Decision exception(Throwable error) {
+    // Security/cancellation cannot become retryable merely because a transport wrapper hides it.
+    Throwable nested=error;
+    for(int depth=0;depth<8 && nested!=null;depth++,nested=nested.getCause()) {
+      if(nested instanceof SSLException)return blocked("PROVIDER_TLS_UNPROVEN");
+      if(nested instanceof InterruptedException)return new Decision(Kind.CANCELLED,"PROVIDER_INTERRUPTED",Duration.ZERO);
+    }
     Throwable cause=error;
     for(int depth=0;depth<8 && cause instanceof ExecutionException && cause.getCause()!=null;depth++)
       cause=cause.getCause();

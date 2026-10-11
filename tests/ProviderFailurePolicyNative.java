@@ -20,8 +20,8 @@ public class ProviderFailurePolicyNative {
     var transientKind=ProviderFailurePolicy.Kind.TRANSIENT;
     var blocked=ProviderFailurePolicy.Kind.BLOCKED;
     var clock=Clock.fixed(Instant.parse("2026-10-11T12:00:00Z"),ZoneOffset.UTC);
-    for(int status:new int[]{408,429,502,503,504})check(ProviderFailurePolicy.http(status,null,clock).kind()==transientKind);
-    for(int status:new int[]{400,401,403,404,409,500,501,505})check(ProviderFailurePolicy.http(status,null,clock).kind()==blocked);
+    for(int status:new int[]{408,429,500,502,503,504})check(ProviderFailurePolicy.http(status,null,clock).kind()==transientKind);
+    for(int status:new int[]{400,401,403,404,409,501,505})check(ProviderFailurePolicy.http(status,null,clock).kind()==blocked);
     check(ProviderFailurePolicy.http(503,"3600",clock).retryAfter().equals(Duration.ofHours(1)));
     check(ProviderFailurePolicy.http(429,"Sun, 11 Oct 2026 13:00:00 GMT",clock).retryAfter().equals(Duration.ofHours(1)));
     check(ProviderFailurePolicy.http(503,"172800",clock).retryAfter().equals(Duration.ofDays(2)));
@@ -32,6 +32,8 @@ public class ProviderFailurePolicyNative {
     kind(new UnknownHostException("sensitive endpoint"),transientKind,"PROVIDER_UNAVAILABLE");
     kind(new ExecutionException(new HttpTimeoutException("sensitive")),transientKind,"PROVIDER_TIMEOUT");
     kind(new SSLHandshakeException("private certificate detail"),blocked,"PROVIDER_TLS_UNPROVEN");
+    var wrappedTls=new ConnectException("transport wrapper");wrappedTls.initCause(new SSLHandshakeException("private"));
+    kind(wrappedTls,blocked,"PROVIDER_TLS_UNPROVEN");
     kind(new IOException("opaque error with private data"),blocked,"PROVIDER_UNKNOWN");
     kind(new IllegalStateException("secret=do-not-publish"),blocked,"PROVIDER_UNKNOWN");
     kind(new InterruptedException("cancel"),ProviderFailurePolicy.Kind.CANCELLED,"PROVIDER_INTERRUPTED");
@@ -53,8 +55,8 @@ public class ProviderFailurePolicyNative {
       for(int status:new int[]{401,429,500,503}){
         try{client.get(base,base.resolve("/"+status),Duration.ofSeconds(2),100,Set.of("application/json"));throw new AssertionError("HTTP failure accepted");}
         catch(BoundedGatewayClient.ProviderFailure e){check(e.decision().code().equals("PROVIDER_HTTP_"+status));
-          check(e.decision().kind()==(status==429||status==503?transientKind:blocked));
-          if(status==429||status==503)check(e.decision().retryAfter().equals(Duration.ofHours(1)));
+          check(e.decision().kind()==(status==429||status==500||status==503?transientKind:blocked));
+          if(status==429||status==500||status==503)check(e.decision().retryAfter().equals(Duration.ofHours(1)));
         }
       }
       long started=System.nanoTime();
