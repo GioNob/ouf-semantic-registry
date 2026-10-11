@@ -177,3 +177,7 @@ La nuova preparazione source-bound verifica insieme native lease in secondi, pee
 ## 11 ottobre 2026 — preparazione protetta bloccata
 
 Ricevuta operatore alle02:59 CEST: exit1, CURRENT_R10_PRIVATE_WORKER_UNPROVEN nella verifica R10/frame applicativo; nessuna modifica a servizi/container/database/firewall/configurazione esistente. Nuova dichiarazione file-secret non preparata, cutover non eseguito. Stato corrente del worker da diagnosticare, senza inferire causa né rilanciare R10 consumato. [Receipt e osservatore limitato](https://github.com/GioNob/ouf-deploy/commit/283154a94db1888301b9dda55ba046f65ab073ae). Comando precedente sospeso; prossima azione è sola lettura protetta worker-status/worker-denial e proprietà systemd. Le prove CI e osservazioni precedenti restano storiche, non autorizzano apply.
+
+## 11 ottobre 2026, 03:06 CEST — R10 fallito, cutover sospeso
+
+La diagnosi operatore conferma R10 LEASE_WORKER_FAILED dopo250 rinnovi, NFT_SET_TTL_UNPROVEN; systemd failed, MainPID0, Restartno e NRestarts0. L'osservazione precedente active/running è storica. Stato nft/revoca attuale e causa precisa del controllo TTL ancora da provare: il codice copre TTL/type/bound/duplicate. Nessun replay/restart/reset di R10 consumato. [Receipt completa e diagnostica estesa qualificata](https://github.com/GioNob/ouf-deploy/commit/2915b516830d162de6bcc1e9f834394baf137673): quattro test locali, proiezione nftReadback limitata e reader R10 installato hash-bound per sola networkLease corrente, senza lock o modifiche. Preparazione file-secret e cutover restano sospesi.
