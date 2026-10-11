@@ -28,9 +28,12 @@ class SchemaGovProviderIntegrationTest {
     var result=provider.search(new Query("CLASS","città",List.of("it")));
     assertThat(result).hasSize(1);assertThat(fetches).hasValue(1);assertThat(result.get(0).reasons()).containsExactly("label: Città [it]");
   }
-  @Test void retriesTransientFailureButNotPermanentMediaFailure() {
+  @Test void transportDoesNotMultiplyOwnerRetries() {
     AtomicInteger calls=new AtomicInteger();gateway.createContext("/sparql",x->{int n=calls.incrementAndGet();if(n==1){x.sendResponseHeaders(503,-1);x.close();return;}byte[] b="{\"results\":{\"bindings\":[]}}".getBytes();x.getResponseHeaders().add("Content-Type","application/sparql-results+json");x.sendResponseHeaders(200,b.length);x.getResponseBody().write(b);x.close();});
-    assertThat(new SchemaGovProvider(config(2,2),new ObjectMapper()).search(new Query("CLASS","x",List.of()))).isEmpty();assertThat(calls).hasValue(2);
+    var provider=new SchemaGovProvider(config(2,2),new ObjectMapper());
+    assertThatThrownBy(()->provider.search(new Query("CLASS","x",List.of()))).isInstanceOf(BoundedGatewayClient.ProviderFailure.class);
+    assertThat(calls).hasValue(1);
+    assertThat(provider.search(new Query("CLASS","x",List.of()))).isEmpty();assertThat(calls).hasValue(2);
   }
   private SchemaGovProperties config(int attempts,int threshold){return new SchemaGovProperties(true,base,"/sparql","/fetch",Duration.ofSeconds(1),Duration.ofSeconds(2),1024*1024,1,attempts,Duration.ofMillis(1),threshold,Duration.ofSeconds(30));}
 }

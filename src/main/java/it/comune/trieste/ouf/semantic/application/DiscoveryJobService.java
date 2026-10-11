@@ -50,15 +50,23 @@ public class DiscoveryJobService {
     return status((UUID)row.get("request_id"),actor);
   }
   public Map<String,Object> status(UUID id,String actor){
-    var rows=db.sql("select r.request_id,r.state,r.attempt_count,r.created_at,r.completed_at,r.last_error_code,(select count(*) from ouf_sem.discovery_candidate c where c.request_id=r.request_id and c.expires_at>transaction_timestamp()) as candidate_count from ouf_sem.discovery_request r where r.request_id=:id and r.created_by_subject=:actor")
+    var rows=db.sql("select r.request_id,r.state,r.attempt_count,r.recovery_state,r.next_attempt_at,r.budget_deadline,r.created_at,r.completed_at,r.last_error_code,(select count(*) from ouf_sem.discovery_candidate c where c.request_id=r.request_id and c.expires_at>transaction_timestamp()) as candidate_count from ouf_sem.discovery_request r where r.request_id=:id and r.created_by_subject=:actor")
       .param("id",id).param("actor",actor).query().listOfRows();
     if(rows.isEmpty())throw new NoSuchElementException("SEM_DISCOVERY_REQUEST_NOT_FOUND");
     var row=rows.getFirst();var out=new LinkedHashMap<String,Object>();
     out.put("requestId",row.get("request_id"));out.put("state",row.get("state"));out.put("attemptCount",row.get("attempt_count"));
+    out.put("recoveryState",row.get("recovery_state"));out.put("nextAttemptAt",row.get("next_attempt_at"));out.put("budgetDeadline",row.get("budget_deadline"));
     out.put("createdAt",row.get("created_at"));out.put("completedAt",row.get("completed_at"));out.put("candidateCount",row.get("candidate_count"));
     // Provider exception text may contain endpoint/credential details; never expose it.
     if(row.get("last_error_code")!=null)out.put("errorCode","SEM_DISCOVERY_NO_ENABLED_PROVIDER".equals(row.get("last_error_code"))?"SEM_DISCOVERY_NO_ENABLED_PROVIDER":"SEM_DISCOVERY_PROVIDER_FAILED");
     return out;
+  }
+  public Map<String,Object> providerStatus(String provider,boolean enabled,String actor){
+    var rows=db.sql("select state,attempts,cumulative_attempts,next_attempt_at,budget_deadline,incident_id from ouf_sem.discovery_dependency where scope_subject=:a and provider_id=:p")
+      .param("a",actor).param("p",provider).query().listOfRows();
+    var out=new LinkedHashMap<String,Object>();out.put("providerId",provider);out.put("enabled",enabled);
+    out.put("recoveryState",rows.isEmpty()?"NOT_OBSERVED":rows.getFirst().get("state"));
+    if(!rows.isEmpty())out.putAll(rows.getFirst());return out;
   }
   public List<Map<String,Object>> candidates(UUID id,String actor){status(id,actor);return discovery.candidates(id);}
   private String write(Object value){try{return json.writeValueAsString(value);}catch(Exception e){throw new IllegalArgumentException("SEM_DISCOVERY_REQUEST_INVALID");}}

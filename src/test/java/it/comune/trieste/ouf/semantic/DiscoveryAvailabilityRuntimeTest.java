@@ -63,12 +63,12 @@ class DiscoveryAvailabilityRuntimeTest {
     assertThat(row(id)).containsEntry("state","SUCCEEDED").containsEntry("last_error_code",null);
     assertThat(calls).hasValue(1);
   }
-  @Test void oneSuccessfulProviderCanCompleteDespiteAnotherDisabledOrFailedProvider(){
+  @Test void failedProviderDoesNotPublishAnIncompleteCandidateSet(){
     var disabled=new AtomicInteger();var failed=new AtomicInteger();var successful=new AtomicInteger();
     UUID id=oldPendingRequest();
     service(provider(false,disabled,false),provider(true,failed,true),provider(true,successful,false)).executeOne();
-    assertThat(row(id)).containsEntry("state","SUCCEEDED").containsEntry("last_error_code","AVAILABILITY_TEST:TEST_PROVIDER_FAILED");
-    assertThat(disabled).hasValue(0);assertThat(failed).hasValue(1);assertThat(successful).hasValue(1);
+    assertThat(row(id)).containsEntry("state","FAILED").containsEntry("last_error_code","SEM_DISCOVERY_PROVIDER_IDENTITY_INVALID");
+    assertThat(disabled).hasValue(0);assertThat(failed).hasValue(0);assertThat(successful).hasValue(0);
   }
   @Test void authorizedNativeRequestReturns503ForDisabledProvider() throws Exception {
     http.perform(post("/api/semantic/v1/discovery-requests").contentType("application/json")
