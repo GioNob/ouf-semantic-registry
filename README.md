@@ -1,5 +1,8 @@
 > **Policy di piattaforma vigente:** [Resilienza, quarantena, incidenti e alert — v3](https://github.com/GioNob/ouf-deploy/blob/main/docs/OUF_RESILIENCE_POLICY.md). Obbligatoria per sviluppo e revisione; [adozione e prove](https://github.com/GioNob/ouf-deploy/blob/main/docs/OUF_RESILIENCE_ADOPTION.md).
 
+
+**Resilience v3 — prima tranche integrata:** priorità incidenti e catch-up qualificati per i perimetri MCP/Ingestion/Gateway; [prove e limiti](https://github.com/GioNob/ouf-deploy/blob/main/docs/OUF_RESILIENCE_ADOPTION.md), [piano operativo](https://github.com/GioNob/ouf-deploy/blob/main/docs/OUF_OPERATIONAL_RESILIENCE_PLAN.md). Cursor/memoria operatore, correlazione dipendenze e alert restano aperti.
+
 # OUF Semantic Model Registry
 
 Implementation of the OUF Semantic Model / Registry v1.4 contract. Java 21,
