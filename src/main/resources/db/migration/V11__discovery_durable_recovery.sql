@@ -136,6 +136,8 @@ BEGIN
    INSERT INTO ouf_sem.discovery_candidate(candidate_id,request_id,provider_id,canonical_uri,source_location,artifact_type,provider_trust,score,match_reasons,gaps,normalized_payload,content_hash,media_type,content_bytes,expires_at)
    VALUES(gen_random_uuid(),p_request,c->>'provider',c->>'uri',c->>'source',c->>'type',c->>'trust',(c->>'score')::numeric,c->'reasons',c->'gaps','{}',c->>'hash',c->>'mediaType',decode(c->>'bytes','base64'),clock_timestamp()+interval '24 hours');
   END LOOP;
+  -- Parsing/inserts/lock acquisition consume lease time too. Failure rolls back the whole set.
+  IF r.lease_until<=clock_timestamp() OR r.budget_deadline<=clock_timestamp() THEN RAISE EXCEPTION 'DISCOVERY_PUBLICATION_LEASE_EXPIRED'; END IF;
   UPDATE ouf_sem.discovery_request SET state='SUCCEEDED',completed_at=clock_timestamp(),lease_until=NULL,last_error_code=NULL WHERE request_id=p_request;
  ELSE
   next_time=coalesce(p_next,clock_timestamp()+interval '5 seconds');

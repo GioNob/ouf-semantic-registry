@@ -112,5 +112,33 @@ class DiscoveryDurableRecoveryRuntimeTest {
     // New service instance models losing all Java process state.
     new DiscoveryService(db,List.of(provider),parser,json).executeOne();assertThat(service.candidates(id)).hasSize(1);assertThat(calls).hasValue(2);
   }
+  @Test void actualLateWorkerCannotPublishAfterAnotherProcessRecovers() throws Exception {
+    var entered=new CountDownLatch(1);var release=new CountDownLatch(1);var calls=new AtomicInteger();UUID id=request(false);
+    SemanticDiscoveryProvider provider=new SemanticDiscoveryProvider(){
+      public String providerId(){return "LATE_TEST";}
+      public List<Candidate> search(Query q){
+        if(calls.incrementAndGet()==1){entered.countDown();try{if(!release.await(5,TimeUnit.SECONDS))throw new AssertionError("late fixture timeout");}catch(InterruptedException e){Thread.currentThread().interrupt();throw new AssertionError(e);}}
+        return List.of(new Candidate("urn:theatre","urn:fixture","CLASS","HIGH",1,List.of(),List.of(),"<urn:theatre> a <http://www.w3.org/2002/07/owl#Class> .".getBytes(java.nio.charset.StandardCharsets.UTF_8),"text/turtle"));
+      }
+    };
+    var service=new DiscoveryService(db,List.of(provider),parser,json);
+    try(var pool=Executors.newFixedThreadPool(1)){
+      var late=pool.submit(service::executeOne);assertThat(entered.await(3,TimeUnit.SECONDS)).isTrue();
+      // Native database time controls both leases; no Java singleton coordinates recovery.
+      db.sql("update ouf_sem.discovery_request set lease_until=clock_timestamp()-interval '1 second' where request_id=:r").param("r",id).update();
+      db.sql("update ouf_sem.discovery_dependency set busy_until=clock_timestamp()-interval '1 second' where scope_subject=:a and provider_id='LATE_TEST'").param("a",actor).update();
+      new DiscoveryService(db,List.of(provider),parser,json).executeOne();
+      release.countDown();assertThat(late.get(3,TimeUnit.SECONDS)).isEqualTo(1);
+      assertThat(service.candidates(id)).hasSize(1);assertThat(calls).hasValue(2);
+      assertThat(db.sql("select count(*) from ouf_sem.discovery_attempt where scope_subject=:a and outcome='SUCCESS'").param("a",actor).query(Long.class).single()).isEqualTo(1);
+    }finally{release.countDown();}
+  }
+  @Test void jobBudgetSurvivesClaimExpiryAndOldCompletionIsFenced(){
+    UUID id=request(false);
+    db.sql("update ouf_sem.discovery_request set attempt_count=128 where request_id=:r").param("r",id).update();
+    db.sql("select count(*) from ouf_sem.claim_discovery_job('budget-test',120)").query(Long.class).single();
+    assertThat(db.sql("select recovery_state from ouf_sem.discovery_request where request_id=:r").param("r",id).query(String.class).single()).isEqualTo("PAUSED_EXHAUSTED");
+    assertThat(finish(id,1,"SUCCESS",candidate())).isFalse();
+  }
   @Test void unversionedCompletionIsDenied(){UUID id=request(true);assertThatThrownBy(()->db.sql("select ouf_sem.complete_discovery_job(:r,true,null)").param("r",id).query().singleRow()).isInstanceOf(org.springframework.dao.DataAccessException.class);}
 }
