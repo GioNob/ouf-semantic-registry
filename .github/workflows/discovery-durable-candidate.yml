@@ -1,0 +1,120 @@
+name: Durable discovery source-bound offline candidate
+on:
+  push:
+    branches: [codex/discovery-durable-resilience-20261011]
+    paths:
+      - .github/workflows/discovery-durable-candidate.yml
+      - scripts/package-discovery-candidate.py
+  workflow_dispatch:
+permissions:
+  contents: read
+  attestations: write
+  id-token: write
+concurrency:
+  group: ouf-discovery-durable-offline-candidate
+  cancel-in-progress: false
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          path: publisher
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: GioNob/ouf-semantic-registry
+          ref: 8a2e84b32d4ce2bdc3bc529b56afb5663ab133e3
+          persist-credentials: false
+          path: source
+      - name: Build qualified exact source with recorded digest-resolved bases
+        run: |
+          python3 publisher/scripts/package-discovery-candidate.py build --source source \
+            --commit 8a2e84b32d4ce2bdc3bc529b56afb5663ab133e3 --module semantic --output package
+      - name: Scan exact candidate against current vulnerability databases
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          version: v0.70.0
+          image-ref: ouf-cohort-semantic:8a2e84b32d4ce2bdc3bc529b56afb5663ab133e3
+          scan-type: image
+          scanners: vuln
+          format: json
+          output: package/trivy-image.json
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '0'
+          cache: false
+          timeout: 10m
+      - name: Enforce image-bound severity gate and export candidate bytes
+        run: |
+          python3 publisher/scripts/package-discovery-candidate.py export --source source \
+            --commit 8a2e84b32d4ce2bdc3bc529b56afb5663ab133e3 --module semantic --output package
+          python3 - <<'PY'
+          import hashlib,json,pathlib,zipfile
+          root=pathlib.Path('package')
+          with zipfile.ZipFile(root/'application.jar') as jar:
+              files=sorted(pathlib.Path('source/src/main/resources/db/migration').glob('*.sql'))
+              for file in files:
+                  assert jar.read('BOOT-INF/classes/db/migration/'+file.name)==file.read_bytes()
+              assert not any('it/comune/trieste/ouf/pairwise/' in name for name in jar.namelist())
+              assert 'BOOT-INF/lib/authorization-sdk-1.2.0.jar' in jar.namelist()
+              assert not any('authorization-sdk-1.2.0-tests.jar' in name for name in jar.namelist())
+          inventory=json.loads((root/'source-inventory.json').read_text())
+          assert inventory['truncated'] is False
+          assert any(row['path'].endswith('V11__discovery_durable_recovery.sql') for row in inventory['tree'])
+          (root/'migration-continuity.json').write_text(json.dumps({
+              'sourceCommit':'8a2e84b32d4ce2bdc3bc529b56afb5663ab133e3',
+              'migrations':[{'name':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()} for f in files],
+              'runtimeIdentityFixtureAbsent':True,'targetApplyAuthorized':False},indent=2)+'\n')
+          files=sorted(p for p in root.iterdir() if p.is_file() and p.name not in ('SHA256SUMS','attestation-checksums.sha256'))
+          rows=[]; subjects=[]
+          for p in files:
+              h=hashlib.sha256()
+              with p.open('rb') as stream:
+                  for chunk in iter(lambda:stream.read(1024*1024),b''):h.update(chunk)
+              rows.append(h.hexdigest()+'  '+p.name+'\n')
+              subjects.append(h.hexdigest()+'  '+str(p)+'\n')
+          (root/'SHA256SUMS').write_text(''.join(rows))
+          (root/'attestation-checksums.sha256').write_text(''.join(subjects))
+          PY
+          (cd package && sha256sum -c SHA256SUMS)
+      - name: Attest exact candidate bytes, source inventory, migrations and current image scan
+        id: provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-checksums: package/attestation-checksums.sha256
+          create-storage-record: false
+      - name: Verify exact GitHub publisher and retain offline bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVENANCE_BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+        run: |
+          set -euo pipefail
+          cp "$PROVENANCE_BUNDLE" package/provenance.json
+          for file in image.docker.tar source.tar source-inventory.json application.jar package-record.json migration-continuity.json trivy-image.json Dockerfile.resolved; do
+            gh attestation verify "package/$file" --repo GioNob/ouf-semantic-registry \
+              --signer-workflow GioNob/ouf-semantic-registry/.github/workflows/discovery-durable-candidate.yml \
+              --source-digest "$GITHUB_SHA" --source-ref "$GITHUB_REF" \
+              --deny-self-hosted-runners --bundle "$PROVENANCE_BUNDLE" --format json \
+              > "package/$file.verification.json"
+          done
+          echo OUF_DURABLE_DISCOVERY_CANDIDATE_CRYPTO=PASS_TARGET_APPLY_NOT_AUTHORIZED
+      - name: Retain offline candidate and verifications
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovery-durable-offline-candidate-${{ github.run_id }}
+          path: package/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Retain safe failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovery-durable-package-denial-${{ github.run_id }}
+          path: |
+            package/package-record.json
+            package/trivy-image.json
+            package/migration-continuity.json
+          retention-days: 30
+          if-no-files-found: warn
