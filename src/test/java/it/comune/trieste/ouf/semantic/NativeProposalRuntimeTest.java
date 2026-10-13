@@ -20,6 +20,7 @@ class NativeProposalRuntimeTest {
   @Autowired NativeProposalService proposals;
   @Autowired ArtifactService artifacts;
   @Autowired GovernanceService governance;
+  @Autowired ValidationService validation;
   @Autowired JdbcClient db;
   @Autowired ObjectMapper json;
   @TempDir Path tmp;
@@ -42,7 +43,7 @@ class NativeProposalRuntimeTest {
     assertThat(requested.get("challenges")).asList().hasSize(2);
     assertThat(proposals.requestReview("tenant-a","author","AI_AGENT",key,1,"retry")).isEqualTo(proposals.read("tenant-a","author",key));
     // A reconstructed service reads the committed receipt; no process-local authority.
-    var restarted=new NativeProposalService(db,json,artifacts,new ValidationService(db),governance);
+    var restarted=new NativeProposalService(db,json,artifacts,validation,governance);
     assertThat(restarted.read("tenant-a","author",key)).isEqualTo(proposals.read("tenant-a","author",key));
     assertThat(db.sql("select count(*) from ouf_sem.approval_challenge where revision_id=:r").param("r",revision(created)).query(Long.class).single()).isEqualTo(1);
     assertThat(db.sql("select lifecycle_status from ouf_sem.artifact_revision where revision_id=:r").param("r",revision(created)).query(String.class).single()).isEqualTo("UNDER_REVIEW");
