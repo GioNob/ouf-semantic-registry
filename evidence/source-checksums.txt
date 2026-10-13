@@ -47,7 +47,7 @@ dd7bc6a023cbbd0e2ac05a594254cbc407c3f2f3cddbec460571134e902ca827  src/test/java/
 169ff0200ba3d0477fa86a06de77c9bd766ada3d39932164a0d73bdfe99bdfe3  src/main/java/it/comune/trieste/ouf/semantic/api/ArtifactApi.java
 0c755ad8a0884839068b6ffc452bf359ebfbdf67c4b5a674e7d1a87ef90a107f  src/main/java/it/comune/trieste/ouf/semantic/application/ArtifactService.java
 d39bbeb0eaf83db9b6bc40343c6a8147862c10ff76879af407b52ca6f67d7e6c  src/main/java/it/comune/trieste/ouf/semantic/api/GovernanceApi.java
-9755d6697afeeb3cdb3d4c218017cca2e5eb82e39b8026c4acb941b1ac14a00d  src/main/java/it/comune/trieste/ouf/semantic/application/GovernanceService.java
+84f69f1f966c7e580a25d27073d812dcd3b66466c35f01bdd8e290591ca285ea  src/main/java/it/comune/trieste/ouf/semantic/application/GovernanceService.java
 12b225461ca322f9644e3f1cecdc7d26917806714fceb0e9281aff53a20a57d5  src/test/java/it/comune/trieste/ouf/semantic/HttpApiRuntimeTest.java
 a2799f0a63c93464c0940957a9537da72b3ca13aebf89f510469fec7c1fb6572  src/main/resources/application.yml
 8112bc648c0f4e648eb9d4a4e830a681f3a7d9e35cea671445e7fc579affb39c  src/main/java/it/comune/trieste/ouf/semantic/api/RequestObservabilityFilter.java
