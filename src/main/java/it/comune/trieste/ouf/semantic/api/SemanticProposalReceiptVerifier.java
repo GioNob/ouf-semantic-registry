@@ -47,7 +47,7 @@ public class SemanticProposalReceiptVerifier {
       }
       var before=Files.readAttributes(p,"unix:uid,mode,nlink,size,ino,dev,lastModifiedTime,ctime",LinkOption.NOFOLLOW_LINKS);
       if(Files.isSymbolicLink(p)||!Files.isRegularFile(p,LinkOption.NOFOLLOW_LINKS)
-          ||((Number)before.get("uid")).intValue()!=0||(((Number)before.get("mode")).intValue()&0077)!=0
+          ||((Number)before.get("uid")).intValue()!=0||!Set.of(0400,0440,0600,0640).contains(((Number)before.get("mode")).intValue()&0777)
           ||((Number)before.get("nlink")).intValue()!=1||((Number)before.get("size")).longValue()>128)throw new IllegalArgumentException();
       byte[] raw=new byte[129];int n;
       try(var channel=Files.newByteChannel(p,Set.of(StandardOpenOption.READ,LinkOption.NOFOLLOW_LINKS))){n=channel.read(java.nio.ByteBuffer.wrap(raw));}
