@@ -36,7 +36,7 @@ public class ProposalCommandApi {
     return service.review(tenant(request),actor.subject(),actor.type(),key,body.revisionId(),
         body.expectedRowVersion(),body.validationRunId(),correlation(headers));
   }
-  @SemanticCapability("ouf.semantic.propose") @PostMapping("/read")
+  @SemanticCapability("ouf.semantic.read") @PostMapping("/read")
   public Map<String,Object> read(@Valid @RequestBody Read body,HttpServletRequest request){
     var actor=actors.actor(request);var result=service.receipt(tenant(request),actor.subject(),body.commandKey());
     String op=String.valueOf(result.get("operation"));

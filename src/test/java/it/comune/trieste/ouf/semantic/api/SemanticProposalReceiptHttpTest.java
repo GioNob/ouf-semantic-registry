@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(SemanticProposalReceiptHttpTest.Fixture.class)
 class SemanticProposalReceiptHttpTest {
   private static final byte[] KEY="ab".repeat(32).getBytes(StandardCharsets.US_ASCII);
-  private static final Set<String> CAPS=Set.of("ouf.semantic.propose","ouf.semantic.review.prepare","ouf.semantic.approval.request");
+  private static final Set<String> CAPS=Set.of("ouf.semantic.read","ouf.semantic.propose","ouf.semantic.review.prepare","ouf.semantic.approval.request");
   @Autowired MockMvc http;
   @Autowired ObjectMapper json;
   @TestConfiguration static class Fixture {
@@ -55,7 +55,7 @@ class SemanticProposalReceiptHttpTest {
     var c=new LinkedHashMap<String,Object>();c.put("semanticId",semantic);c.put("artifactType","CLASS");c.put("namespace","ouf");c.put("localName","SignedPlace"+UUID.randomUUID().toString().replace("-",""));
     c.put("ownerRef","owner");c.put("authorityRef","authority");c.put("semanticVersion","1.0.0");c.put("labels",Map.of("it","Luogo"));c.put("definition",Map.of());c.put("commandKey",k);
     var created=send("create","ouf.semantic.propose","ouf.semantic.propose",k,c,CAPS,200);
-    var read=send("read","ouf.semantic.proposal.read","ouf.semantic.propose",UUID.randomUUID().toString(),Map.of("commandKey",k),CAPS,200);
+    var read=send("read","ouf.semantic.proposal.read","ouf.semantic.read",UUID.randomUUID().toString(),Map.of("commandKey",k),CAPS,200);
     assertThat(read.get("result").get("revisionId").asText()).isEqualTo(created.get("revisionId").asText());
     send("create","ouf.semantic.propose","ouf.semantic.propose",k,c,Set.of(),403);
     String revision=created.get("revisionId").asText();String vk=UUID.randomUUID().toString();
