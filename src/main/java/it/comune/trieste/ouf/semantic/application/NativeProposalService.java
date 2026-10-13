@@ -36,6 +36,10 @@ public class NativeProposalService {
           ||!seen.add(c.semanticId())||c.semanticId()==null||c.namespace()==null||c.localName()==null
           ||!c.semanticId().equals(c.namespace()+c.localName())||c.ownerRef()==null||c.ownerRef().isBlank()
           ||c.authorityRef()==null||c.authorityRef().isBlank()||c.semanticVersion()==null
+          ||c.semanticId().length()>2048||c.namespace().isBlank()||c.namespace().length()>512
+          ||c.localName().isBlank()||c.localName().length()>128||c.ownerRef().length()>200||c.authorityRef().length()>200
+          ||c.labels()==null||c.definition()==null||c.labels().size()>20||c.definition().size()>32
+          ||c.labels().values().stream().anyMatch(v->!(v instanceof String text)||text.isBlank()||text.length()>512)
           ||!c.semanticVersion().matches("[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?(?:\\+[A-Za-z0-9.-]+)?"))
         throw new IllegalArgumentException("SEM_NATIVE_COMMAND_INVALID");
     }
@@ -96,7 +100,9 @@ public class NativeProposalService {
     save((UUID)row.get("proposal_id"),"UNDER_REVIEW",2,result);return result;
   }
   private void save(UUID id,String phase,long version,Map<String,Object> result) {
+    String payload=encode(result);
+    if(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8).length>262144)throw new ArtifactService.Conflict("SEM_PROPOSAL_RESULT_LIMIT");
     db.sql("update ouf_sem.native_proposal set phase=:p,row_version=:v,result_json=cast(:r as jsonb),updated_at=transaction_timestamp() where proposal_id=:i")
-      .param("p",phase).param("v",version).param("r",encode(result)).param("i",id).update();
+      .param("p",phase).param("v",version).param("r",payload).param("i",id).update();
   }
 }
