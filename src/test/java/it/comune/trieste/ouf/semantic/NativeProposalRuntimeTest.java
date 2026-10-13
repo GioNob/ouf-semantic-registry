@@ -48,6 +48,26 @@ class NativeProposalRuntimeTest {
     assertThat(db.sql("select count(*) from ouf_sem.approval_challenge where revision_id=:r").param("r",revision(created)).query(Long.class).single()).isEqualTo(1);
     assertThat(db.sql("select lifecycle_status from ouf_sem.artifact_revision where revision_id=:r").param("r",revision(created)).query(String.class).single()).isEqualTo("UNDER_REVIEW");
   }
+  @SuppressWarnings("unchecked") @Test void retainedTwentyOneTeatriCommandsReachRealOwnerChallengesWithWarningsPreserved() throws Exception {
+    String key="teatri-fixture-"+UUID.randomUUID();String original="https://api.ouf-lab.it/semantic/teatri#";
+    String ns="urn:teatri-fixture:"+UUID.randomUUID()+":";
+    String fixture=new String(getClass().getResourceAsStream("/teatri-native-commands.json").readAllBytes(),java.nio.charset.StandardCharsets.UTF_8).replace(original,ns);
+    var input=json.readValue(fixture,new com.fasterxml.jackson.core.type.TypeReference<List<ArtifactApi.CreateArtifact>>(){});
+    var created=proposals.create("tenant-a","teatri-author","AI_AGENT",key,input,"teatri");
+    assertThat(created.get("revisions")).asList().hasSize(21);
+    var checked=proposals.validate("tenant-a","teatri-author",key,0);
+    assertThat(checked.get("validationPassed")).isEqualTo(true);
+    int warnings=0;
+    for(var run:(List<Map<String,Object>>)checked.get("validations")) {
+      assertThat(run.get("status")).isEqualTo("PASS");assertThat(((Number)run.get("error_count")).intValue()).isZero();
+      warnings+=((Number)run.get("warning_count")).intValue();
+      for(var issue:(List<Map<String,Object>>)run.get("issues"))assertThat(issue.get("rule_id")).isEqualTo("VAL-008");
+    }
+    assertThat(warnings).isEqualTo(21);
+    var result=proposals.requestReview("tenant-a","teatri-author","AI_AGENT",key,1,"teatri");
+    assertThat(result.get("challenges")).asList().hasSize(21);assertThat(result.get("published")).isEqualTo(false);
+    assertThat(proposals.requestReview("tenant-a","teatri-author","AI_AGENT",key,1,"retry")).isEqualTo(proposals.read("tenant-a","teatri-author",key));
+  }
   @Test void concurrentCreateAndReviewHaveOneOwnerEffect() throws Exception {
     String key=UUID.randomUUID().toString();var input=commands();
     try(var pool=Executors.newVirtualThreadPerTaskExecutor()) {
@@ -108,7 +128,7 @@ class NativeProposalRuntimeTest {
       String cap=json.readTree(raw).required("CapabilityID").asText();String permission=name.equals("read")?"ouf.semantic.propose":cap;
       String proof=f.required(name).required("receipt").asText();
       var denied=new MockHttpServletRequest("POST","/api/internal/v1/semantic/proposals/"+name);denied.addHeader("X-OUF-Semantic-Proposal-Receipt",proof);TestAuthorization.bind(denied,"human-a","HUMAN",Set.of());
-      if(name.equals("create"))assertThatThrownBy(()->api.create(raw,denied)).isInstanceOf(SecurityException.class);
+      assertThatThrownBy(()->{switch(name){case "create"->api.create(raw,denied);case "validate"->api.validate(raw,denied);case "request"->api.review(raw,denied);default->api.read(raw,denied);}}).isInstanceOf(SecurityException.class);
       var req=new MockHttpServletRequest("POST","/api/internal/v1/semantic/proposals/"+name);req.addHeader("X-OUF-Semantic-Proposal-Receipt",proof);TestAuthorization.bind(req,"human-a","HUMAN",Set.of(permission));
       Object result=switch(name){case "create"->api.create(raw,req);case "validate"->api.validate(raw,req);case "request"->api.review(raw,req);default->api.read(raw,req);};
       assertThat(((Map<?,?>)result).get("published")).isEqualTo(false);
