@@ -58,7 +58,7 @@ public class ProposalCommandService {
         +"where tenant_id=:t and principal_id=:p and idempotency_key=:k and result_json is not null")
         .param("t",tenant).param("p",principal).param("k",key).query().listOfRows();
     if(rows.size()!=1)throw new NoSuchElementException("PROPOSAL_RECEIPT_NOT_FOUND");
-    return Map.of("operation",rows.get(0).get("operation"),"result",decode(rows.get(0).get("result")));
+    return Map.of("operation",rows.get(0).get("operation"),"result",decode(rows.get(0).get("result")),"historicalSnapshot",true,"ownerStateMustBeRechecked",true);
   }
   private Map<String,Object> lockDraft(UUID revision,long expected) {
     var rows=db.sql("select row_version,lifecycle_status,encode(public.digest("+
@@ -89,7 +89,10 @@ public class ProposalCommandService {
       if(row.get("result")==null)throw new GovernanceService.Conflict("PROPOSAL_RECONCILE_REQUIRED");
       return decode(row.get("result"));
     }
-    var result=effects.get();
+    Map<String,Object> result=new LinkedHashMap<>(effects.get());
+    result.put("receiptSemantics","DURABLE_COMMAND_RESULT_NOT_CURRENT_STATE");
+    result.put("runtimeAuthorityIssued",false);
+    result.put("notReleaseAcceptance",true);
     db.sql("update ouf_sem.proposal_command_receipt set result_json=cast(:r as jsonb) "
         +"where tenant_id=:t and principal_id=:p and idempotency_key=:k and result_json is null")
         .param("r",encode(result)).param("t",tenant).param("p",principal).param("k",key).update();
