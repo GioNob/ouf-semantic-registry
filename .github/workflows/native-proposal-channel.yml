@@ -1,0 +1,35 @@
+name: Native proposal Gateway owner chain
+on: [push, pull_request, workflow_dispatch]
+permissions: {contents: read}
+jobs:
+  native-proposal-postgresql:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env: {POSTGRES_DB: ouf_semantic, POSTGRES_USER: ouf_semantic, POSTGRES_PASSWORD: ci-only-password}
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U ouf_semantic -d ouf_semantic" --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      OUF_SEM_DB_URL: jdbc:postgresql://127.0.0.1:5432/ouf_semantic
+      OUF_SEM_DB_USER: ouf_semantic
+      OUF_SEM_DB_PASSWORD: ci-only-password
+      OUF_DISCOVERY_WORKER_ENABLED: 'false'
+      OUF_SEMANTIC_GATEWAY_PAIRWISE_ROOT: ${{ github.workspace }}/.pairwise/gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: GioNob/ouf-api-gateway
+          ref: 5bdb36f3980a5b33fbce0a9bfe2c2cb64393e63a
+          path: .pairwise/gateway
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21', cache: maven}
+      - run: pip install -r .pairwise/gateway/requirements-dev.txt
+      - run: bash scripts/install-authorization-sdk.sh
+      - name: Real Gateway Lua to owner PostgreSQL and denial/concurrency qualification
+        run: timeout --signal=TERM --kill-after=30s 15m mvn -B -ntp -Dtest=NativeProposalRuntimeTest,SemanticConsultationTest,HttpApiRuntimeTest test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: native-proposal-owner-evidence, path: target/surefire-reports/, if-no-files-found: error}
