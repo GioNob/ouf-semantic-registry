@@ -35,7 +35,7 @@ public class ChatbotSemanticFixture {
       var grants=new ArrayList<Grant>();
       for(var g:service.currentSnapshot().bundle().grants())grants.add(new Grant("service:"+g.grantId(),g.capabilityId(),g.tenantId(),g.subjectId(),g.servicePrincipalId(),g.organizationId(),g.validFrom(),g.validUntil()));
       for(var g:human.currentSnapshot().bundle().grants())grants.add(new Grant("human:"+g.grantId(),g.capabilityId(),g.tenantId(),g.subjectId(),g.servicePrincipalId(),g.organizationId(),g.validFrom(),g.validUntil()));
-      TestAuthorization.install(service,new PolicyBundle("chatbot-semantic-fixture",1,Instant.now(),new ArrayList<>(caps.values()),grants));
+      TestAuthorization.install(service,new PolicyBundle("fixture",2,Instant.now(),new ArrayList<>(caps.values()),grants));
       Filter identity=(input,output,chain)->{
         var request=(HttpServletRequest)input;var response=(HttpServletResponse)output;
         boolean workload=matches(request.getHeader("Authorization"),serviceToken),person=matches(request.getHeader("Authorization"),humanToken);
