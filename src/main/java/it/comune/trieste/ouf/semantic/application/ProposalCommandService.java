@@ -17,9 +17,27 @@ public class ProposalCommandService {
   private final ArtifactService artifacts;
   private final ValidationService validation;
   private final GovernanceService governance;
+  private final InterchangeService interchange;
   public ProposalCommandService(JdbcClient db,ObjectMapper json,ArtifactService artifacts,
-      ValidationService validation,GovernanceService governance) {
-    this.db=db;this.json=json;this.artifacts=artifacts;this.validation=validation;this.governance=governance;
+      ValidationService validation,GovernanceService governance,InterchangeService interchange) {
+    this.db=db;this.json=json;this.artifacts=artifacts;this.validation=validation;this.governance=governance;this.interchange=interchange;
+  }
+  @Transactional(timeout=10) public Map<String,Object> createImported(String tenant,String principal,String type,String key,
+      CreateArtifact command,String turtle,String mediaType,String correlation) {
+    if(!"ONTOLOGY".equals(command.artifactType())||!"text/turtle".equals(mediaType)||turtle==null||turtle.isBlank()
+        ||turtle.getBytes(java.nio.charset.StandardCharsets.UTF_8).length>49152
+        ||(command.definition()!=null&&!command.definition().isEmpty()))throw new IllegalArgumentException("SEM_PROPOSAL_RDF_SHAPE_INVALID");
+    return execute(tenant,principal,key,"CREATE",Map.of("artifact",command,"rdfTurtle",turtle,"mediaType",mediaType),()->{
+      // The existing in-memory Turtle parser never resolves imports or fetches URLs.
+      var result=interchange.importDraft(command.semanticId(),command.artifactType(),command.namespace(),command.localName(),
+          command.ownerRef(),command.authorityRef(),command.semanticVersion(),mediaType,turtle.getBytes(java.nio.charset.StandardCharsets.UTF_8),principal);
+      // Bind the immutable RDF digest into the same JSON fingerprint validated/approved by the owner.
+      var definition=Map.of("importedSnapshot",Map.of("contentHash",result.get("contentHash"),"mediaType",mediaType,"statementCount",result.get("statementCount")));
+      db.sql("update ouf_sem.artifact_revision set label_json=cast(:labels as jsonb),definition_json=cast(:definition as jsonb) where revision_id=:revision and lifecycle_status='DRAFT'")
+          .param("labels",encode(command.labels()==null?Map.of():command.labels())).param("definition",encode(definition))
+          .param("revision",result.get("revisionId")).update();
+      return result;
+    });
   }
   @Transactional(timeout=10) public Map<String,Object> create(String tenant,String principal,String type,String key,
       CreateArtifact command,String correlation) {

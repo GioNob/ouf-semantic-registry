@@ -55,6 +55,18 @@ class ProposalCommandRuntimeTest {
     String k=key();var c=command();commands.create("tenant-a","agent","AI_AGENT",k,c,"test");
     assertThatThrownBy(()->commands.create("tenant-a","agent","AI_AGENT",k,command(),"test")).hasMessage("IDEMPOTENCY_KEY_REUSE");
   }
+  @Test void importedRdfReplayRetainsExactSnapshotAndRejectsChangedOrUnsafeShape() {
+    var c=command();var ontology=new CreateArtifact(c.semanticId(),"ONTOLOGY",c.namespace(),c.localName(),c.ownerRef(),c.authorityRef(),c.semanticVersion(),c.labels(),Map.of());
+    String turtle="<"+c.semanticId()+"> a <http://www.w3.org/2002/07/owl#Ontology> .",k=key();
+    var first=commands.createImported("tenant-a","agent","AI_AGENT",k,ontology,turtle,"text/turtle","test");
+    assertThat(commands.createImported("tenant-a","agent","AI_AGENT",k,ontology,turtle,"text/turtle","test")).isEqualTo(first);
+    assertThatThrownBy(()->commands.createImported("tenant-a","agent","AI_AGENT",k,ontology,turtle+"\n","text/turtle","test")).hasMessage("IDEMPOTENCY_KEY_REUSE");
+    assertThatThrownBy(()->commands.createImported("tenant-a","agent","AI_AGENT",key(),ontology,turtle,"application/ld+json","test")).hasMessage("SEM_PROPOSAL_RDF_SHAPE_INVALID");
+    assertThatThrownBy(()->commands.createImported("tenant-a","agent","AI_AGENT",key(),ontology,"é".repeat(24577),"text/turtle","test")).hasMessage("SEM_PROPOSAL_RDF_SHAPE_INVALID");
+    assertThatThrownBy(()->commands.createImported("tenant-a","agent","AI_AGENT",key(),c,turtle,"text/turtle","test")).hasMessage("SEM_PROPOSAL_RDF_SHAPE_INVALID");
+    assertThatThrownBy(()->commands.createImported("tenant-a","agent","AI_AGENT",key(),ontology,"<urn:other> a <http://www.w3.org/2002/07/owl#Ontology> .","text/turtle","test")).hasMessage("RDF_IDENTITY_OR_TYPE_MISMATCH");
+    assertThat(db.sql("select count(*) from ouf_sem.revision_interchange_snapshot where revision_id=:r").param("r",revision(first)).query(Long.class).single()).isEqualTo(1L);
+  }
   @Test void receiptReadIsTenantAndPrincipalScopedAndDurable() {
     String k=key();var c=command();commands.create("tenant-a","agent","AI_AGENT",k,c,"test");
     assertThat(commands.receipt("tenant-a","agent",k).get("operation")).isEqualTo("CREATE");

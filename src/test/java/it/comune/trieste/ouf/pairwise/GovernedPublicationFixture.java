@@ -17,11 +17,34 @@ public class GovernedPublicationFixture {
  public static void main(String[] args){SpringApplication.run(new Class<?>[]{SemanticRegistryApplication.class,AuthenticatedSemanticFixture.FixtureConfiguration.class,Fixture.class},args);}
  @Configuration(proxyBeanMethods=false) public static class Fixture {
   @Bean SemanticDiscoveryProvider deterministicProvider(){return provider();}
-  @Bean ApplicationRunner publish(DiscoveryService discovery,ArtifactService artifacts,ValidationService validation,GovernanceService governance,ObjectMapper json){return args->{
-   var result=run(discovery,artifacts,validation,governance);
+  @Bean ApplicationRunner publish(DiscoveryService discovery,ArtifactService artifacts,ValidationService validation,GovernanceService governance,ProposalCommandService proposals,ObjectMapper json){return args->{
+   String imported=System.getenv("OUF_R4A_IMPORT_PROPOSAL");
+   var result=imported==null||imported.isBlank()?run(discovery,artifacts,validation,governance):runImported(proposals,validation,governance,json,Path.of(imported));
    Path output=Path.of(System.getenv("OUF_R2C_SEMANTIC_RESULT"));
    Files.writeString(output,json.writeValueAsString(result));
   };}
+ }
+ public static Map<String,Object> runImported(ProposalCommandService proposals,ValidationService validation,GovernanceService governance,ObjectMapper json,Path path)throws Exception {
+  var retained=json.readTree(Files.readAllBytes(path));var input=retained.required("importCommand");
+  var c=json.treeToValue(input,it.comune.trieste.ouf.semantic.api.ProposalCommandApi.Create.class);
+  var artifact=new it.comune.trieste.ouf.semantic.api.ArtifactApi.CreateArtifact(c.semanticId(),c.artifactType(),c.namespace(),c.localName(),c.ownerRef(),c.authorityRef(),c.semanticVersion(),c.labels(),c.definition());
+  String key="r4a-import-"+retained.required("rdfSha256").asText();
+  var created=proposals.createImported("tenant-a","fixture-agent","AI_AGENT",key,artifact,c.rdfTurtle(),c.mediaType(),"r4a-import");
+  if(!created.equals(proposals.createImported("tenant-a","fixture-agent","AI_AGENT",key,artifact,c.rdfTurtle(),c.mediaType(),"r4a-import")))throw new IllegalStateException("R4A_IMPORT_NOT_IDEMPOTENT");
+  UUID revision=UUID.fromString(created.get("revisionId").toString());
+  var validated=proposals.validate("tenant-a","fixture-agent",key+"-validate",revision,0);
+  if(!"PASS".equals(validated.get("status")))throw new IllegalStateException("R4A_IMPORT_VALIDATION_FAILED");
+  var review=proposals.review("tenant-a","fixture-agent","AI_AGENT",key+"-review",revision,0,UUID.fromString(validated.get("validation_run_id").toString()),"r4a-import");
+  UUID challenge=UUID.fromString(review.get("challengeId").toString());String hash=review.get("targetContentHash").toString();
+  try{governance.decide(challenge,"APPROVED","fixture-agent","AI_AGENT","fixture:agent","r4a-import");throw new IllegalStateException("R4A_AGENT_APPROVAL_ALLOWED");}catch(GovernanceService.Forbidden expected){}
+  UUID decision=(UUID)governance.decide(challenge,"APPROVED","fixture-human","HUMAN","fixture:mfa","r4a-import").get("decisionId");
+  var published=governance.publish(revision,decision,key+"-publish",hash,"fixture-human","HUMAN","r4a-import");
+  if(!published.equals(governance.publish(revision,decision,key+"-publish",hash,"fixture-human","HUMAN","r4a-import")))throw new IllegalStateException("R4A_IMPORT_PUBLICATION_NOT_IDEMPOTENT");
+  UUID set=(UUID)published.get("publicationSetId");var resolved=validation.resolve(c.semanticId(),revision,set);
+  if(!((Map<?,?>)resolved.get("rdf_snapshot")).get("content_hash").equals(retained.required("rdfSha256").asText()))throw new IllegalStateException("R4A_IMPORT_SNAPSHOT_CHANGED");
+  return Map.of("binding",Map.of("semanticId",c.semanticId(),"semanticVersion",c.semanticVersion(),"revisionId",revision,"publicationSetId",set),
+      "artifactId",created.get("artifactId"),"challengeId",challenge,"rdfSnapshotHash",retained.required("rdfSha256").asText(),
+      "checks",List.of("exact_prepared_rdf_imported","proposal_idempotent_and_draft","current_validation_passed","agent_cannot_approve","fixture_human_approved_one_ontology","publication_idempotent","exact_reference_and_rdf_hash_resolved"));
  }
  public static SemanticDiscoveryProvider provider(){return new SemanticDiscoveryProvider(){
   public String providerId(){return "R2C_DECLARED_UPSTREAM_FIXTURE";}

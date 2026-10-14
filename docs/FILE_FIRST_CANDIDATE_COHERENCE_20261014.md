@@ -34,3 +34,32 @@ The retained consultation/RDF tests and proposal receipt tests run in the same
 module suite. These are isolated test evidence, never proof of a deployed target
 or completed CSV → ingestion → UDP → MCP cycle. Browser THS and target rollout
 are separate integration work; this change does not issue runtime authority.
+
+
+The same CREATE command also accepts a bounded imported ontology: `artifactType`
+ONTOLOGY, `rdfTurtle` at most 49,152 UTF-8 bytes, `mediaType` exactly `text/turtle`,
+and empty/absent `definition`. Native commands remain supported. The existing
+InterchangeService validates the ontology identity and stores the immutable RDF;
+its exact SHA-256 is bound into the definition validated and approved by the owner.
+The durable intent hash includes exact RDF bytes, media type and artifact identity.
+There is no URL input/fetch, JSON-LD context resolution or OWL import resolution.
+The whole delegated envelope remains bounded at 65,536 bytes.
+
+The Teatri fixture is the exact prepared review from 14 October (RDF SHA-256
+`6e4668ea42cf1c75b822e17a8ca9cb71fb2c4d8f500eed628282fa6039a6dbaa`).
+The HTTP/JWT test runs it through one imported ontology, owner validation, HUMAN
+review/publication and exact semantic read. It checks all 21 declared terms,
+including CAP as xsd:string. This validates the code against the proposed schema;
+it does not approve those semantics or read the production CSV.
+
+Review cards expose the verified RDF snapshot, durable approvalDecisionId,
+lifecycleStatus and publicationSetId so a browser can reconcile after a lost
+response without repeating a decision. `ouf.authorization.ths.public-origin`
+(HTTPS origin) adds `/trusted-human/semantic/?challenge=<uuid>` review URLs for
+the shared Onboarding THS session; no second login implementation is introduced.
+
+The restored SDK is an exact mirror of canonical Onboarding commit
+`77df1d780f9a7164e3ae5374691be7915a7d715e`, including its checksum manifest.
+Gateway receipt integration is pinned to
+`0a95ae3e0d56f71252fe830a180df8b08cd5e558`; actual Lua generates the read receipt
+and the committed proposal vectors include the imported-ontology variant.

@@ -28,12 +28,13 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Actual RSA JWT decoding, owner policy, HTTP controllers and PostgreSQL. No target proof. */
-@SpringBootTest(properties={"spring.profiles.active=file-first","ouf.iam.enabled=true","ouf.iam.audience=ouf-api-gateway"})
+@SpringBootTest(properties={"spring.profiles.active=file-first","ouf.iam.enabled=true","ouf.iam.audience=ouf-api-gateway","ouf.authorization.ths.public-origin=https://ths.example.test"})
 @AutoConfigureMockMvc
 @DirtiesContext
 class FileFirstIamHttpRuntimeTest {
   static final Set<String> CAPS=Set.of("ouf.semantic.read","ouf.semantic.search","ouf.semantic.propose",
       "ouf.semantic.review.prepare","ouf.semantic.approval.request","ouf.semantic.review","ouf.semantic.approve","ouf.semantic.publish");
+  static final java.util.concurrent.atomic.AtomicInteger IMPORT_FETCHES=new java.util.concurrent.atomic.AtomicInteger();
   static final RSAKey KEY;
   static final HttpServer ISSUER;
   static final String URL;
@@ -51,6 +52,7 @@ class FileFirstIamHttpRuntimeTest {
         byte[] b=("{\"keys\":["+KEY.toPublicJWK().toJSONString()+"]}").getBytes(StandardCharsets.UTF_8);
         e.getResponseHeaders().set("Content-Type","application/json");e.sendResponseHeaders(200,b.length);e.getResponseBody().write(b);e.close();
       });
+      ISSUER.createContext("/must-not-fetch",e->{IMPORT_FETCHES.incrementAndGet();e.sendResponseHeaders(500,-1);e.close();});
       ISSUER.start();
     } catch(Exception e){throw new ExceptionInInitializerError(e);}
   }
@@ -86,14 +88,22 @@ class FileFirstIamHttpRuntimeTest {
         .andExpect(status().isOk()).andReturn().getResponse();
     return json.readTree(response.getContentAsByteArray());
   }
-  @Test void freshJwtProposalValidationHumanDecisionPublicationAndCurrentSearchShareOneApplication()throws Exception {
+  @Test void freshJwtProposalValidationHumanDecisionPublicationAndCurrentSearchShareOneApplication()throws Exception {exercise(false);}
+  @Test void importedOntologyReusesIdempotentCommandsAndReviewBindsExactRdfWithoutFetchingImports()throws Exception {exercise(true);}
+  private void exercise(boolean imported)throws Exception {
     policy(true);String agent=jwt("AI_AGENT"),human=jwt("HUMAN");String suffix=UUID.randomUUID().toString().replace("-","");
-    var created=command("create",Map.of("semanticId","ouf:file-first:"+suffix,"artifactType","CLASS","namespace","ouf",
+    var draft=new LinkedHashMap<String,Object>(Map.of("semanticId","ouf:file-first:"+suffix,"artifactType",imported?"ONTOLOGY":"CLASS","namespace","ouf",
         "localName","Place"+suffix,"ownerRef","owner","authorityRef","authority","semanticVersion","1.0.0",
-        "labels",Map.of("it","Teatro"+suffix),"definition",Map.of()),agent);
+        "labels",Map.of("it","Teatro"+suffix),"definition",Map.of()));
+    JsonNode retained=null;
+    if(imported){try(var input=getClass().getResourceAsStream("/teatri-reuse-semantic-proposal-20261014.json")){retained=json.readTree(input);draft=json.convertValue(retained.get("importCommand"),new com.fasterxml.jackson.core.type.TypeReference<LinkedHashMap<String,Object>>(){});}}
+    String semanticId=draft.get("semanticId").toString(),label=((Map<?,?>)draft.get("labels")).get("it").toString();
+    var created=command("create",draft,agent);
     String revision=created.get("revisionId").asText();
     var valid=command("validate",Map.of("revisionId",revision,"expectedRowVersion",0),agent);
     var review=command("review",Map.of("revisionId",revision,"expectedRowVersion",0,"validationRunId",valid.get("validation_run_id").asText()),agent);
+    assertThat(review.get("reviewUrl").asText()).startsWith("https://ths.example.test/trusted-human/semantic/?challenge=");
+    if(imported){assertThat(review.get("interchangeSnapshot").get("content").asText()).isEqualTo(draft.get("rdfTurtle"));assertThat(review.get("definition_json").get("importedSnapshot").get("contentHash").asText()).isEqualTo(created.get("contentHash").asText());assertThat(IMPORT_FETCHES.get()).isZero();}
     String challenge=review.get("challengeId").asText(),path="/api/trusted-human/v1/semantic-approval-challenges/"+challenge;
     http.perform(get(path).header("Authorization","Bearer "+human)).andExpect(status().isOk())
         .andExpect(jsonPath("$.target_content_hash").value(review.get("targetContentHash").asText()));
@@ -102,17 +112,36 @@ class FileFirstIamHttpRuntimeTest {
     var decision=json.readTree(http.perform(post(path+"/decision").header("Authorization","Bearer "+human)
         .contentType(MediaType.APPLICATION_JSON).content("{\"decision\":\"APPROVED\"}"))
         .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+    http.perform(get(path).header("Authorization","Bearer "+human)).andExpect(status().isOk())
+        .andExpect(jsonPath("$.approvalDecisionId").value(decision.get("decisionId").asText()));
     var publication=json.readTree(http.perform(post(path+"/publish").header("Authorization","Bearer "+human)
         .header("Idempotency-Key",UUID.randomUUID().toString()).contentType(MediaType.APPLICATION_JSON)
         .content(json.writeValueAsBytes(Map.of("approvalDecisionId",decision.get("decisionId").asText(),"contentHash",review.get("targetContentHash").asText()))))
         .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
-    http.perform(get("/api/semantic/v1/search").param("q","Teatro"+suffix).param("type","CLASS")
+    http.perform(get("/api/semantic/v1/search").param("q",label).param("type",imported?"ONTOLOGY":"CLASS")
         .header("Authorization","Bearer "+human)).andExpect(status().isOk()).andExpect(jsonPath("$[0].revision_id").value(revision));
-    http.perform(get("/api/semantic/v1/references:resolve").param("semanticId","ouf:file-first:"+suffix)
+    var exact=json.readTree(http.perform(get("/api/semantic/v1/references:resolve").param("semanticId",semanticId)
         .param("revisionId",revision).param("publicationSetId",publication.get("publicationSetId").asText())
-        .header("Authorization","Bearer "+human)).andExpect(status().isOk()).andExpect(jsonPath("$.label.it").value("Teatro"+suffix));
+        .header("Authorization","Bearer "+human)).andExpect(status().isOk()).andExpect(jsonPath("$.label.it").value(label))
+        .andReturn().getResponse().getContentAsByteArray());
+    if(imported) {
+      assertThat(exact.get("rdf_snapshot").get("content_hash").asText()).isEqualTo(retained.get("rdfSha256").asText());
+      assertThat(exact.get("rdf_snapshot").get("partial").asBoolean()).isFalse();
+      var terms=new TreeSet<String>();boolean capString=false;
+      for(var statement:exact.get("rdf_snapshot").get("statements")) {
+        String subject=statement.get("subject").get("value").asText(),predicate=statement.get("predicate").asText(),object=statement.get("object").get("value").asText();
+        if(predicate.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")&&Set.of("http://www.w3.org/2002/07/owl#Class","http://www.w3.org/2002/07/owl#DatatypeProperty","http://www.w3.org/1999/02/22-rdf-syntax-ns#Property").contains(object))terms.add(subject);
+        if(subject.equals("https://api.ouf-lab.it/semantic/teatri#cap")&&predicate.equals("http://www.w3.org/2000/01/rdf-schema#range")&&object.equals("http://www.w3.org/2001/XMLSchema#string"))capString=true;
+      }
+      var expected=new TreeSet<String>();expected.add(retained.get("mappingBlueprint").get("targetClassIri").asText());
+      for(var field:retained.get("mappingBlueprint").get("fields"))expected.add(field.get("targetPropertyIri").asText());
+      assertThat(expected).hasSize(21);assertThat(terms).containsExactlyElementsOf(expected);assertThat(capString).isTrue();
+    }
+    http.perform(get(path).header("Authorization","Bearer "+human)).andExpect(status().isOk())
+        .andExpect(jsonPath("$.lifecycleStatus").value("ACTIVE"))
+        .andExpect(jsonPath("$.publicationSetId").value(publication.get("publicationSetId").asText()));
     policy(false);
-    http.perform(get("/api/semantic/v1/search").param("q","Teatro"+suffix).header("Authorization","Bearer "+human)).andExpect(status().isForbidden());
+    http.perform(get("/api/semantic/v1/search").param("q",label).header("Authorization","Bearer "+human)).andExpect(status().isForbidden());
     assertThat(context.getBeansOfType(it.comune.trieste.ouf.semantic.application.DiscoveryWorker.class)).isEmpty();
     assertThat(context.getEnvironment().getProperty("ouf.semantic.providers.schema-gov.enabled")).isEqualTo("false");
   }
