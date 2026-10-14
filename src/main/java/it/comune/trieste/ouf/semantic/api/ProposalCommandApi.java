@@ -45,9 +45,11 @@ public class ProposalCommandApi {
     return service.review(tenant(request),actor.subject(),actor.type(),key,body.revisionId(),
         body.expectedRowVersion(),body.validationRunId(),correlation(headers));
   }
-  @SemanticCapability("ouf.semantic.read") @PostMapping("/read")
+  @SemanticCapability("ouf.semantic.proposal.read") @PostMapping("/read")
   public Map<String,Object> read(@Valid @RequestBody Read body,HttpServletRequest request){
-    var actor=actors.actor(request);var result=service.receipt(tenant(request),actor.subject(),body.commandKey());
+    var actor=actors.actor(request);
+    if(!"HUMAN".equals(actor.type()))throw new it.comune.trieste.ouf.semantic.application.GovernanceService.Forbidden("SEM_HUMAN_REQUIRED");
+    var result=service.receipt(tenant(request),actor.subject(),body.commandKey());
     String op=String.valueOf(result.get("operation"));
     actors.require(actor,switch(op){case "VALIDATE"->"ouf.semantic.review.prepare";case "REVIEW"->"ouf.semantic.approval.request";default->"ouf.semantic.propose";});
     return result;

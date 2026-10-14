@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 @DirtiesContext
 class FileFirstIamHttpRuntimeTest {
-  static final Set<String> CAPS=Set.of("ouf.semantic.read","ouf.semantic.search","ouf.semantic.propose",
+  static final Set<String> CAPS=Set.of("ouf.semantic.read","ouf.semantic.proposal.read","ouf.semantic.search","ouf.semantic.propose",
       "ouf.semantic.review.prepare","ouf.semantic.approval.request","ouf.semantic.review","ouf.semantic.approve","ouf.semantic.publish");
   static final java.util.concurrent.atomic.AtomicInteger IMPORT_FETCHES=new java.util.concurrent.atomic.AtomicInteger();
   static final RSAKey KEY;

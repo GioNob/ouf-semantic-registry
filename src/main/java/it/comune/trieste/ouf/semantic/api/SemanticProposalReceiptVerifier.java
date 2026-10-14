@@ -65,7 +65,7 @@ public class SemanticProposalReceiptVerifier {
       if(!MessageDigest.isEqual(mac.doFinal(("ouf-semantic-proposal-owner-v1."+parts[0]).getBytes(StandardCharsets.US_ASCII)),Base64.getUrlDecoder().decode(parts[1])))throw new SecurityException();
       var r=json.readValue(Base64.getUrlDecoder().decode(parts[0]),Receipt.class);
       String cap=switch(path){case "/api/semantic/v1/proposal-commands/create"->"ouf.semantic.propose";
-        case "/api/semantic/v1/proposal-commands/read"->"ouf.semantic.read";
+        case "/api/semantic/v1/proposal-commands/read"->"ouf.semantic.proposal.read";
         case "/api/semantic/v1/proposal-commands/validate"->"ouf.semantic.review.prepare";
         case "/api/semantic/v1/proposal-commands/review"->"ouf.semantic.approval.request";default->throw new SecurityException();};
       long now=clock.instant().getEpochSecond();
