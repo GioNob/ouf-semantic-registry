@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(SemanticProposalReceiptHttpTest.Fixture.class)
 class SemanticProposalReceiptHttpTest {
   private static final byte[] KEY="ab".repeat(32).getBytes(StandardCharsets.US_ASCII);
-  private static final Set<String> CAPS=Set.of("ouf.semantic.read","ouf.semantic.propose","ouf.semantic.review.prepare","ouf.semantic.approval.request");
+  private static final Set<String> CAPS=Set.of("ouf.semantic.proposal.read","ouf.semantic.propose","ouf.semantic.review.prepare","ouf.semantic.approval.request");
   @Autowired MockMvc http;
   @Autowired ObjectMapper json;
   @TestConfiguration static class Fixture {
@@ -33,19 +33,19 @@ class SemanticProposalReceiptHttpTest {
   private String proof(String path,String cap,String key,byte[] body)throws Exception{
     var r=new SemanticProposalReceiptVerifier.Receipt(1,"semantic-proposal-owner","POST",path,
         HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(body)),cap,1000,1030,
-        "https://auth.test/realms/ouf","gateway","workload","agent","tenant-a","AI_AGENT","1","",String.join(" ",CAPS),key);
+        "https://auth.test/realms/ouf","gateway","workload","agent","tenant-a",path.endsWith("/read")?"HUMAN":"AI_AGENT","1","",String.join(" ",CAPS),key);
     var enc=Base64.getUrlEncoder().withoutPadding();String p=enc.encodeToString(json.writeValueAsBytes(r));
     var mac=Mac.getInstance("HmacSHA256");mac.init(new SecretKeySpec(KEY,"HmacSHA256"));
     return p+"."+enc.encodeToString(mac.doFinal(("ouf-semantic-proposal-owner-v1."+p).getBytes(StandardCharsets.US_ASCII)));
   }
   private byte[] envelope(String cap,String op,String key,Map<String,Object> args)throws Exception{
     return json.writeValueAsBytes(Map.of("CapabilityID",cap,"GatewayBindingRef","capability://"+cap,"Owner","semantic","OperationClass",op,
-        "IdempotencyKey",key,"Identity",Map.of("PrincipalID","agent","TenantID","tenant-a","ActorType","AI_AGENT"),"Arguments",args));
+        "IdempotencyKey",key,"Identity",Map.of("PrincipalID","agent","TenantID","tenant-a","ActorType",op.equals("READ")?"HUMAN":"AI_AGENT"),"Arguments",args));
   }
   private JsonNode send(String mode,String cap,String ownerCap,String key,Map<String,Object> args,Set<String> grants,int expected)throws Exception{
     String path="/api/semantic/v1/proposal-commands/"+mode;byte[] raw=envelope(cap,mode.equals("read")?"READ":"COMMAND",key,args);
     String signature=proof(path,ownerCap,key,raw);
-    var response=http.perform(post(path).with(r->{it.comune.trieste.ouf.authorization.TestAuthorization.bind(r,"agent","AI_AGENT",grants);return r;})
+    var response=http.perform(post(path).with(r->{it.comune.trieste.ouf.authorization.TestAuthorization.bind(r,"agent",mode.equals("read")?"HUMAN":"AI_AGENT",grants);return r;})
         .header("X-OUF-Semantic-Proposal-Receipt",signature).header("Idempotency-Key",key).contentType(MediaType.APPLICATION_JSON).content(raw))
         .andExpect(status().is(expected)).andReturn().getResponse();
     return json.readTree(response.getContentAsByteArray());
@@ -55,8 +55,11 @@ class SemanticProposalReceiptHttpTest {
     var c=new LinkedHashMap<String,Object>();c.put("semanticId",semantic);c.put("artifactType","CLASS");c.put("namespace","ouf");c.put("localName","SignedPlace"+UUID.randomUUID().toString().replace("-",""));
     c.put("ownerRef","owner");c.put("authorityRef","authority");c.put("semanticVersion","1.0.0");c.put("labels",Map.of("it","Luogo"));c.put("definition",Map.of());c.put("commandKey",k);
     var created=send("create","ouf.semantic.propose","ouf.semantic.propose",k,c,CAPS,200);
-    var read=send("read","ouf.semantic.proposal.read","ouf.semantic.read",UUID.randomUUID().toString(),Map.of("commandKey",k),CAPS,200);
+    var read=send("read","ouf.semantic.proposal.read","ouf.semantic.proposal.read",UUID.randomUUID().toString(),Map.of("commandKey",k),CAPS,200);
     assertThat(read.get("result").get("revisionId").asText()).isEqualTo(created.get("revisionId").asText());
+    send("read","ouf.semantic.proposal.read","ouf.semantic.proposal.read",UUID.randomUUID().toString(),Map.of("commandKey",k),Set.of("ouf.semantic.read","ouf.semantic.propose"),403);
+    send("read","ouf.semantic.proposal.read","ouf.semantic.proposal.read",UUID.randomUUID().toString(),Map.of("commandKey",k),Set.of("ouf.semantic.proposal.read"),403);
+    send("read","ouf.semantic.proposal.read","ouf.semantic.read",UUID.randomUUID().toString(),Map.of("commandKey",k),CAPS,403);
     send("create","ouf.semantic.propose","ouf.semantic.propose",k,c,Set.of(),403);
     String revision=created.get("revisionId").asText();String vk=UUID.randomUUID().toString();
     var validation=send("validate","ouf.semantic.review.prepare","ouf.semantic.review.prepare",vk,Map.of("commandKey",vk,"revisionId",revision,"expectedRowVersion",0),CAPS,200);

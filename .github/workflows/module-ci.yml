@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: GioNob/ouf-api-gateway
-          ref: 0a95ae3e0d56f71252fe830a180df8b08cd5e558
+          ref: 09c431be83a5d25ce4cc76d33aafea0ed1523702
           path: .pairwise/gateway
       - name: Install actual Gateway receipt fixture dependencies
         run: python3 -m pip install -r .pairwise/gateway/requirements-dev.txt
