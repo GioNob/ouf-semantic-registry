@@ -1,0 +1,9 @@
+# File-first onboarding uses governed internal semantics, never external discovery.
+# Enabling provider work requires its separately qualified runtime/migrations.
+ouf:
+  semantic:
+    providers:
+      schema-gov:
+        enabled: false
+    discovery-worker:
+      enabled: false

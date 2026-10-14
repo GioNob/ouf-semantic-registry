@@ -14,14 +14,23 @@ public class ProposalCommandApi {
   private final ProposalCommandService service;
   private final TrustedActorResolver actors;
   public ProposalCommandApi(ProposalCommandService service,TrustedActorResolver actors){this.service=service;this.actors=actors;}
+  public record Create(@NotBlank String semanticId,
+      @NotNull @Pattern(regexp="CLASS|PROPERTY|RELATIONSHIP|VOCABULARY|CONCEPT|ONTOLOGY") String artifactType,
+      @NotBlank String namespace,@NotBlank String localName,@NotBlank String ownerRef,
+      @NotBlank String authorityRef,@NotBlank String semanticVersion,Map<String,Object> labels,
+      Map<String,Object> definition,@Size(max=49152) String rdfTurtle,String mediaType) {
+    ArtifactApi.CreateArtifact artifact(){return new ArtifactApi.CreateArtifact(semanticId,artifactType,namespace,localName,ownerRef,authorityRef,semanticVersion,labels,definition);}
+  }
   public record Validate(@NotNull UUID revisionId,@NotNull @Min(0) Long expectedRowVersion){}
   public record Review(@NotNull UUID revisionId,@NotNull @Min(0) Long expectedRowVersion,@NotNull UUID validationRunId){}
   public record Read(@NotBlank @Pattern(regexp="[A-Za-z0-9_:.-]{1,128}") String commandKey){}
   @SemanticCapability("ouf.semantic.propose") @PostMapping("/create")
-  public Map<String,Object> create(@Valid @RequestBody ArtifactApi.CreateArtifact body,
+  public Map<String,Object> create(@Valid @RequestBody Create body,
       @RequestHeader("Idempotency-Key") String key,HttpServletRequest request,@RequestHeader HttpHeaders headers){
     var actor=actors.actor(request);
-    return service.create(tenant(request),actor.subject(),actor.type(),key,body,correlation(headers));
+    if(body.rdfTurtle()!=null||body.mediaType()!=null)
+      return service.createImported(tenant(request),actor.subject(),actor.type(),key,body.artifact(),body.rdfTurtle(),body.mediaType(),correlation(headers));
+    return service.create(tenant(request),actor.subject(),actor.type(),key,body.artifact(),correlation(headers));
   }
   @SemanticCapability("ouf.semantic.review.prepare") @PostMapping("/validate")
   public Map<String,Object> validate(@Valid @RequestBody Validate body,

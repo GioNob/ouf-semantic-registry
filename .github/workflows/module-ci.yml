@@ -35,19 +35,29 @@ jobs:
       OUF_SEM_DB_USER: ouf_semantic
       OUF_SEM_DB_PASSWORD: ci-only-password
       OUF_DISCOVERY_WORKER_ENABLED: "false"
+      OUF_SEMANTIC_GATEWAY_PAIRWISE_ROOT: ${{ github.workspace }}/.pairwise/gateway
       MAVEN_OPTS: >-
         -Dmaven.wagon.http.connectionTimeout=10000
         -Dmaven.wagon.http.readTimeout=30000
         -Djava.net.preferIPv4Stack=true
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: GioNob/ouf-api-gateway
+          ref: 0a95ae3e0d56f71252fe830a180df8b08cd5e558
+          path: .pairwise/gateway
+      - name: Install actual Gateway receipt fixture dependencies
+        run: python3 -m pip install -r .pairwise/gateway/requirements-dev.txt
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
           cache: maven
       - name: Verify frozen source checksums
-        run: sha256sum -c evidence/source-checksums.txt
+        run: |
+          sha256sum -c evidence/source-checksums.txt
+          python3 scripts/check-file-first-source-continuity.py
       - name: Validate cross-module evidence register
         run: python3 scripts/validate-pet-register.py
       - name: Compile, test and package with bounded Maven execution
