@@ -93,7 +93,7 @@ public class ProposalCommandService {
       Supplier<Map<String,Object>> effects) {
     validKey(key);
     // Unique insert fences concurrent callers; all I/O here is local and transactional.
-    String hash=db.sql("select encode(public.digest(cast(:p as jsonb)::text::bytea,'sha256'),'hex')")
+    String hash=db.sql("select encode(public.digest(convert_to(cast(:p as jsonb)::text,'UTF8'),'sha256'),'hex')")
         .param("p",encode(payload)).query(String.class).single();
     int inserted=db.sql("insert into ouf_sem.proposal_command_receipt(tenant_id,principal_id,idempotency_key,operation,request_hash) "
         +"values(:t,:p,:k,:o,:h) on conflict do nothing")
