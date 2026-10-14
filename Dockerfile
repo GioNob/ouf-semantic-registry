@@ -11,6 +11,9 @@ RUN timeout --signal=TERM --kill-after=30s 15m mvn -B -ntp -DskipTests package
 
 FROM eclipse-temurin:21-jre
 RUN useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin ouf
+# The base-image Pebble supervisor is unused by the explicit Java ENTRYPOINT.
+# Remove its separately reported Go executable from this new candidate only.
+RUN rm -f /usr/bin/pebble
 WORKDIR /app
 COPY --from=build /build/target/semantic-registry-*.jar /app/application.jar
 USER 10001:10001
