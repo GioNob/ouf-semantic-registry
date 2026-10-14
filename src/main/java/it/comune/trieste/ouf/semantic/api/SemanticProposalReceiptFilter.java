@@ -23,6 +23,7 @@ public class SemanticProposalReceiptFilter extends OncePerRequestFilter {
       byte[] body=request.getInputStream().readNBytes(65537);
       verified=verifier.verify(request.getHeader("X-OUF-Semantic-Proposal-Receipt"),request.getRequestURI(),body);
     }catch(SecurityException e){response.setStatus(403);response.setContentType("application/problem+json");response.getWriter().write("{\"code\":\"SEM_PROPOSAL_RECEIPT_INVALID\",\"status\":403}");return;}
+    request.setAttribute(it.comune.trieste.ouf.authorization.ServletAuthorization.TRUSTED_PRINCIPAL,verified.principal());
     byte[] args=verified.arguments();
     chain.doFilter(new HttpServletRequestWrapper(request){
       @Override public Principal getUserPrincipal(){return verified.principal();}

@@ -1,1 +1,12 @@
-{"repository":"GioNob/ouf-source-onboarding","commit":"0bf7a926e7a348a02f348e2444a020f135769a80","path":"authorization-sdk","coordinates":"it.comune.trieste.ouf:authorization-sdk:1.2.0","manifest":"authorization-sdk/SOURCE_SHA256SUMS"}
+{
+  "repository": "GioNob/ouf-source-onboarding",
+  "commit": "0bf7a926e7a348a02f348e2444a020f135769a80",
+  "path": "authorization-sdk",
+  "coordinates": "it.comune.trieste.ouf:authorization-sdk:1.2.0",
+  "manifest": "authorization-sdk/SOURCE_SHA256SUMS",
+  "retainedRegistryAdapter": {
+    "sourceCommit": "8a2e84b32d4ce2bdc3bc529b56afb5663ab133e3",
+    "path": "vendor/authorization-sdk/src/main/java/it/comune/trieste/ouf/authorization/ServletAuthorization.java",
+    "reason": "IAM and delegated receipts bind the verified server principal before current owner policy evaluation"
+  }
+}

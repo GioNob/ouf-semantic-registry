@@ -47,7 +47,9 @@ jobs:
           java-version: "21"
           cache: maven
       - name: Verify frozen source checksums
-        run: sha256sum -c evidence/source-checksums.txt
+        run: |
+          sha256sum -c evidence/source-checksums.txt
+          python3 scripts/check-file-first-source-continuity.py
       - name: Validate cross-module evidence register
         run: python3 scripts/validate-pet-register.py
       - name: Compile, test and package with bounded Maven execution
