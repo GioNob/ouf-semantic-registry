@@ -93,10 +93,11 @@ public class ProposalCommandService {
     result.put("receiptSemantics","DURABLE_COMMAND_RESULT_NOT_CURRENT_STATE");
     result.put("runtimeAuthorityIssued",false);
     result.put("notReleaseAcceptance",true);
+    String encodedResult=encode(result);
     db.sql("update ouf_sem.proposal_command_receipt set result_json=cast(:r as jsonb) "
         +"where tenant_id=:t and principal_id=:p and idempotency_key=:k and result_json is null")
-        .param("r",encode(result)).param("t",tenant).param("p",principal).param("k",key).update();
-    return result;
+        .param("r",encodedResult).param("t",tenant).param("p",principal).param("k",key).update();
+    return decode(encodedResult);
   }
   private static void validKey(String key) {
     if(key==null||!key.matches("[A-Za-z0-9_:.-]{1,128}"))throw new IllegalArgumentException("PROPOSAL_KEY_INVALID");
