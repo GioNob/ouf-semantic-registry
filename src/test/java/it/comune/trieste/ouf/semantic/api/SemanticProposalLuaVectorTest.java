@@ -17,7 +17,8 @@ class SemanticProposalLuaVectorTest {
       for(var v:vectors){
         byte[] body=v.required("body").asText().getBytes(StandardCharsets.UTF_8);
         var verified=verifier.verify(v.required("proof").asText(),v.required("path").asText(),body);
-        assertThat(verified.principal().context().actorType().name()).isEqualTo("AI_AGENT");
+        boolean receiptRead=v.required("path").asText().endsWith("/read");
+        assertThat(verified.principal().context().actorType().name()).isEqualTo(receiptRead?"HUMAN":"AI_AGENT");
         assertThat(verified.principal().context().subjectId()).isEqualTo("human-a");
         assertThat(json.readTree(verified.arguments()).has("commandKey")).isEqualTo(v.required("path").asText().endsWith("/read"));
         assertThatThrownBy(()->verifier.verify(v.required("proof").asText(),v.required("path").asText(),"{}".getBytes(StandardCharsets.UTF_8)))
