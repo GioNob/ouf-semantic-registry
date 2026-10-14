@@ -18,7 +18,7 @@ public class ChatbotSemanticFixture {
   public static void main(String[] args){SpringApplication.run(new Class<?>[]{SemanticRegistryApplication.class,Fixture.class},args);}
   @Configuration(proxyBeanMethods=false) public static class Fixture {
     private static final Set<String> SERVICE=Set.of("ouf.semantic.read");
-    private static final Set<String> HUMAN=Set.of("ouf.semantic.proposal.read","ouf.semantic.propose","ouf.semantic.review.prepare",
+    private static final Set<String> HUMAN=Set.of("ouf.semantic.consultation.read","ouf.semantic.proposal.read","ouf.semantic.propose","ouf.semantic.review.prepare",
         "ouf.semantic.approval.request","ouf.semantic.review","ouf.semantic.approve","ouf.semantic.reject","ouf.semantic.publish");
     @Bean FilterRegistrationBean<Filter> chatbotSemanticIdentity()throws Exception{
       String serviceToken=required("OUF_PAIRWISE_TOKEN"),humanToken=required("OUF_PAIRWISE_HUMAN_TOKEN");
@@ -31,6 +31,7 @@ public class ChatbotSemanticFixture {
         if(old==null)caps.put(c.capabilityId(),c);
         else {var actors=new HashSet<>(old.allowedActors());actors.addAll(c.allowedActors());caps.put(c.capabilityId(),new CapabilityDescriptor(c.capabilityId(),c.operation(),c.requiredScope(),actors));}
       }
+      caps.put("ouf.semantic.consultation.read",new CapabilityDescriptor("ouf.semantic.consultation.read","READ","ouf.semantic.read",Set.of(PrincipalContext.ActorType.HUMAN)));
       var grants=new ArrayList<Grant>();
       for(var g:service.currentSnapshot().bundle().grants())grants.add(new Grant("service:"+g.grantId(),g.capabilityId(),g.tenantId(),g.subjectId(),g.servicePrincipalId(),g.organizationId(),g.validFrom(),g.validUntil()));
       for(var g:human.currentSnapshot().bundle().grants())grants.add(new Grant("human:"+g.grantId(),g.capabilityId(),g.tenantId(),g.subjectId(),g.servicePrincipalId(),g.organizationId(),g.validFrom(),g.validUntil()));
@@ -43,10 +44,12 @@ public class ChatbotSemanticFixture {
         boolean reference="GET".equals(method)&&path.equals("/api/semantic/v1/references:resolve");
         boolean proposal="POST".equals(method)&&path.matches("/api/semantic/v1/proposal-commands/(create|read|validate|review)")
             &&request.getHeader("X-OUF-Semantic-Proposal-Receipt")!=null;
+        boolean consultation="POST".equals(method)&&path.equals("/api/internal/v1/semantic/consultation/get")
+            &&request.getHeader("X-OUF-Semantic-Read-Receipt")!=null;
         boolean humanRoute=person&&path.matches("/api/trusted-human/v1/semantic-approval-challenges/[a-f0-9-]{36}(/decision|/publish)?")
             &&(("GET".equals(method)&&!path.endsWith("/decision")&&!path.endsWith("/publish"))
                 ||("POST".equals(method)&&(path.endsWith("/decision")||path.endsWith("/publish"))));
-        if(!reference&&!proposal&&!humanRoute){response.sendError(403);return;}
+        if(!reference&&!proposal&&!consultation&&!humanRoute){response.sendError(403);return;}
         request.getServletContext().setAttribute(ServletAuthorization.RUNTIME,service);
         chain.doFilter(new HttpServletRequestWrapper(request){@Override public Principal getUserPrincipal(){
           return TestAuthorization.principal(workload?"fixture-ingestion":"fixture-human",workload?"SERVICE":"HUMAN",workload?SERVICE:HUMAN);
