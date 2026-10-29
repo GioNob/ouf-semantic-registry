@@ -54,7 +54,9 @@ jobs:
           ref: ace683b1019f79adaace86796b67e463b93ec12e
           path: .pairwise/discovery-gateway
       - name: Install actual Gateway receipt fixture dependencies
-        run: python3 -m pip install -r .pairwise/gateway/requirements-dev.txt -r .pairwise/discovery-gateway/requirements-dev.txt
+        # Both exporters run under the current fixture's pinned dependencies;
+        # do not install conflicting historical versions into the same interpreter.
+        run: python3 -m pip install -r .pairwise/gateway/requirements-dev.txt
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
