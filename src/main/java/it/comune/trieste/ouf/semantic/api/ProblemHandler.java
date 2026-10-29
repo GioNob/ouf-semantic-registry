@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestControllerAdvice
 public class ProblemHandler {
+  @ExceptionHandler(it.comune.trieste.ouf.semantic.application.DiscoveryService.ProviderUnavailable.class)
+  ResponseEntity<ProblemDetail> discoveryUnavailable(RuntimeException e,HttpServletRequest r){return problem(HttpStatus.SERVICE_UNAVAILABLE,"SEM_DISCOVERY_NO_ENABLED_PROVIDER",r);}
   @ExceptionHandler(Conflict.class) ResponseEntity<ProblemDetail> conflict(Conflict e,HttpServletRequest r){return problem(HttpStatus.CONFLICT,e.getMessage(),r);}
   @ExceptionHandler(it.comune.trieste.ouf.semantic.application.GovernanceService.Conflict.class) ResponseEntity<ProblemDetail> governanceConflict(RuntimeException e,HttpServletRequest r){return problem(HttpStatus.CONFLICT,e.getMessage(),r);}
   @ExceptionHandler(Forbidden.class) ResponseEntity<ProblemDetail> forbidden(Forbidden e,HttpServletRequest r){return problem(HttpStatus.FORBIDDEN,e.getMessage(),r);}
