@@ -77,4 +77,3 @@ class DiscoveryAvailabilityRuntimeTest {
       .andExpect(status().isServiceUnavailable()).andExpect(jsonPath("$.code").value("SEM_DISCOVERY_NO_ENABLED_PROVIDER"));
   }
 }
-

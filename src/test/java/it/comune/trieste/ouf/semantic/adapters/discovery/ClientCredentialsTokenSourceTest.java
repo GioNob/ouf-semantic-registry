@@ -100,4 +100,3 @@ class ClientCredentialsTokenSourceTest {
     public Instant instant(){return now;}
   }
 }
-

@@ -102,4 +102,3 @@ final class ClientCredentialsTokenSource implements Supplier<String> {
   }
   private static String enc(String s){return URLEncoder.encode(s,StandardCharsets.UTF_8);}
 }
-

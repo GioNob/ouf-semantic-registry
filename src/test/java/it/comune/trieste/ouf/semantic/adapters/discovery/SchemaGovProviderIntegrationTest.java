@@ -37,4 +37,3 @@ class SchemaGovProviderIntegrationTest {
   }
   private SchemaGovProperties config(int attempts,int threshold){return new SchemaGovProperties(true,base,"/sparql","/fetch",Duration.ofSeconds(1),Duration.ofSeconds(2),1024*1024,1,attempts,Duration.ofMillis(1),threshold,Duration.ofSeconds(30));}
 }
-

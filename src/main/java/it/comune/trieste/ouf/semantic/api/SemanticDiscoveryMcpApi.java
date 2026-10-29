@@ -59,4 +59,3 @@ public class SemanticDiscoveryMcpApi {
   private static IllegalArgumentException invalid(){return new IllegalArgumentException("SEM_DISCOVERY_ARGUMENTS_INVALID");}
   @ExceptionHandler(SecurityException.class) ResponseEntity<?> denied(){return ResponseEntity.status(403).body(Map.of("code","SEM_DISCOVERY_RECEIPT_OR_POLICY_DENIED"));}
 }
-

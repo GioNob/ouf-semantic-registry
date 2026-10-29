@@ -18,4 +18,3 @@ public class DiscoveryApi {
   @SemanticCapability("ouf.semantic.propose") @PostMapping("/{requestId}/candidates/{candidateId}:adopt") Map<String,Object> adopt(@PathVariable UUID requestId,@PathVariable UUID candidateId,@RequestBody Adoption r,HttpServletRequest request){UUID artifact=service.adopt(requestId,candidateId,r.semanticId(),r.namespace(),r.localName(),r.ownerRef(),r.authorityRef(),actors.actor(request).subject());return Map.of("artifactId",artifact,"status","DRAFT");}
   @SemanticCapability("ouf.semantic.discovery") @GetMapping("/providers") Map<String,Object> providers(HttpServletRequest request){return Map.of("providers",List.of(jobs.providerStatus(schemaGov.providerId(),schemaGov.enabled(),actors.actor(request).subject())));}
 }
-

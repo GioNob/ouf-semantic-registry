@@ -142,4 +142,3 @@ class DiscoveryDurableRecoveryRuntimeTest {
   }
   @Test void unversionedCompletionIsDenied(){UUID id=request(true);assertThatThrownBy(()->db.sql("select ouf_sem.complete_discovery_job(:r,true,null)").param("r",id).query().singleRow()).isInstanceOf(org.springframework.dao.DataAccessException.class);}
 }
-

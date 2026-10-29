@@ -9,4 +9,3 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record GatewayOAuthProperties(boolean enabled, URI tokenEndpoint, String clientId,
     Path clientSecretFile, String scope, Duration requestTimeout, Duration refreshSkew,
     int maxResponseBytes) {}
-

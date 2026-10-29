@@ -54,4 +54,3 @@ ouf:
     discovery-worker:
       enabled: ${OUF_DISCOVERY_WORKER_ENABLED:true}
       fixed-delay: ${OUF_DISCOVERY_WORKER_DELAY:2s}
-

@@ -42,4 +42,3 @@ class DiscoveryWorkerBoundedTest {
     for(int bound:new int[]{0,-1,33,Integer.MAX_VALUE})assertThatThrownBy(()->new DiscoveryWorker(service,bound)).hasMessage("SEM_DISCOVERY_BATCH_SIZE_INVALID");
   }
 }
-

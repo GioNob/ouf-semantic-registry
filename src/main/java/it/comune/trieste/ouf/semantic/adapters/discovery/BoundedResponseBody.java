@@ -39,4 +39,3 @@ final class BoundedResponseBody implements HttpResponse.BodySubscriber<byte[]> {
   public void onError(Throwable error){result.completeExceptionally(error);}
   public void onComplete(){result.complete(bytes.toByteArray());}
 }
-

@@ -44,4 +44,3 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
   private static String enc(String v){return URLEncoder.encode(v,StandardCharsets.UTF_8);}
   private static String binding(JsonNode n,String name){String v=n.path(name).path("value").asText(null);return v==null||v.isBlank()?null:v;}
 }
-

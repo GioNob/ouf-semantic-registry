@@ -9,4 +9,3 @@ ALTER TABLE ouf_sem.discovery_request
 CREATE UNIQUE INDEX discovery_request_idempotency_idx
  ON ouf_sem.discovery_request(created_by_subject,idempotency_key_hash)
  WHERE idempotency_key_hash IS NOT NULL;
-

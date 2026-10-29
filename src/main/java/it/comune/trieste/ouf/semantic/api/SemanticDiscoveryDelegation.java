@@ -64,4 +64,3 @@ public class SemanticDiscoveryDelegation {
   }
   private static boolean text(String s,int max){return s!=null&&!s.isBlank()&&s.length()<=max&&s.chars().noneMatch(Character::isISOControl);}
 }
-

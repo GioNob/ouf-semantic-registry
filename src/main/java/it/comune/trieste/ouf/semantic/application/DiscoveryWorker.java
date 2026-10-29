@@ -29,4 +29,3 @@ public class DiscoveryWorker {
     }finally{running.set(false);}
   }
 }
-

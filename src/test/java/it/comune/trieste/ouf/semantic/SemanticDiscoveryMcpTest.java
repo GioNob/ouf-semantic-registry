@@ -131,4 +131,3 @@ class SemanticDiscoveryMcpTest {
     assertThatThrownBy(()->new SemanticDiscoveryDelegation(json,"","","","").verify(good,prefix+"request",cap,raw)).isInstanceOf(SecurityException.class);
   }
 }
-

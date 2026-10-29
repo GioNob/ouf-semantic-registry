@@ -11,4 +11,3 @@ public interface SemanticDiscoveryProvider {
   record Candidate(String canonicalUri,String sourceLocation,String artifactType,String trust,double score,
                    List<String> reasons,List<String> gaps,byte[] content,String mediaType){}
 }
-

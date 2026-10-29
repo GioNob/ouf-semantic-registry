@@ -90,4 +90,3 @@ class DiscoveryJobRuntimeTest {
       .andExpect(status().isOk()).andExpect(jsonPath("$.state").value("PENDING")).andExpect(jsonPath("$.candidateCount").value(0));
   }
 }
-
