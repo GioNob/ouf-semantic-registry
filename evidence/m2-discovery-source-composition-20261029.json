@@ -1,0 +1,138 @@
+{
+  "schema": "ouf.semantic.m2-discovery-source-composition.v1",
+  "date": "2026-10-29",
+  "baseSourceCommit": "eccef11a97367f20e278db40b9ed6f45dd980c37",
+  "reusedDiscoverySourceCommit": "3ec99277b8383e496913b9fd3bb05c877825abf5",
+  "baseIsRuntimeSourceProof": false,
+  "targetApplyAuthorized": false,
+  "runtimeAuthorityIssued": false,
+  "releaseAcceptance": false,
+  "retainedMigrationCount": 10,
+  "reusedFiles": [
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/BoundedGatewayClient.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/BoundedGatewayClient.java",
+      "sha256": "c6b0f04566c0227f0f3e89f01a9732975ab112bb0d9093c4353854e5ac396ed1"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/BoundedResponseBody.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/BoundedResponseBody.java",
+      "sha256": "87bf7f4e89146658f0d9b9ff6690378aaf47c75e52b811ff50ebcf7e441471f9"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/ClientCredentialsTokenSource.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/ClientCredentialsTokenSource.java",
+      "sha256": "88c8cd9dab6d081eccab66718ed7ad2ac18e4d630d18afa844ec9841aaa46e99"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/GatewayOAuthProperties.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/GatewayOAuthProperties.java",
+      "sha256": "7f9b108efcd09a47c44951fca3dd2829ae32baf195157a79d1934042b19acf92"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/ProviderFailurePolicy.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/ProviderFailurePolicy.java",
+      "sha256": "f5cf2e997f41644343d547e1ed76a079765f8e832094fcb14ea84225910798c6"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/SchemaGovProvider.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/SchemaGovProvider.java",
+      "sha256": "cee99646c8502f54a8fffef3eef1fff6b1b396b83caffc0c2bec6398136b274c"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/api/DiscoveryApi.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/api/DiscoveryApi.java",
+      "sha256": "c7d9bdb2954450b5064bc719c239d84f799ee9d0820d99ef166329850fa2ad55"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/api/ProblemHandler.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/api/ProblemHandler.java",
+      "sha256": "7e3e0ecc8419641642e967011f289ff4e7df1cc8665256bef33dfc1a42e315d0"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/api/SemanticDiscoveryDelegation.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/api/SemanticDiscoveryDelegation.java",
+      "sha256": "4929bed86daae5915c11ba59bbfcbadee3b698ee884ba543b573b69d3650962b"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/api/SemanticDiscoveryMcpApi.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/api/SemanticDiscoveryMcpApi.java",
+      "sha256": "ccb72fe4b388913f2fa1ba792541f8f0de1ac99995b2bd42451672a72d413602"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryJobService.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryJobService.java",
+      "sha256": "de6e1660d66251da3dfa6429882460df0c86cde1018515ea1cf4b3be1f8701dd"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryService.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryService.java",
+      "sha256": "3eb6ef7509bd2710f56c4f82a7f5b5892b8de9a6a9d599f7b9a02f162f057b56"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryWorker.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryWorker.java",
+      "sha256": "a36bb88d5abee1317759fd37331ae9462a6baf2c90ffc99ac2fc0942f926d516"
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/ports/SemanticDiscoveryProvider.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/ports/SemanticDiscoveryProvider.java",
+      "sha256": "aacc5ddddd16e0a8c30e2bf50f70fd214b58a117b54b953fa201a95894aa2206"
+    },
+    {
+      "sourcePath": "src/main/resources/application.yml",
+      "destinationPath": "src/main/resources/application.yml",
+      "sha256": "0149130fee105ff6e037a751d6a11678d881f80e6abe7e8581c5c46e9f3fd3d0"
+    },
+    {
+      "sourcePath": "src/main/resources/db/migration/V10__discovery_request_idempotency.sql",
+      "destinationPath": "src/main/resources/db/migration/V11__discovery_request_idempotency.sql",
+      "sha256": "b67c8e7976ab0cbb168fa177c51c106ad6f506789c3f3bec719de2d51671948c"
+    },
+    {
+      "sourcePath": "src/main/resources/db/migration/V11__discovery_durable_recovery.sql",
+      "destinationPath": "src/main/resources/db/migration/V12__discovery_durable_recovery.sql",
+      "sha256": "6867f813820811818f5edda8c65fb77c68a9668e084829fb011ede848f6b2b00"
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryAvailabilityRuntimeTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryAvailabilityRuntimeTest.java",
+      "sha256": "88efb93ab8a9223c224351adaae7d1fd7eacaea513e17c1af118a4cc473e3f8e"
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryDurableRecoveryRuntimeTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryDurableRecoveryRuntimeTest.java",
+      "sha256": "5fd128543833563a96879719b42435b8bde16c75bed765a3e36a726b8b567011"
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryJobRuntimeTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryJobRuntimeTest.java",
+      "sha256": "ca64c61d77fd25e9b742cc48239ca80d90b4c34f25cd2505d77cc7bcf3f229b6"
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryWorkerBoundedTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryWorkerBoundedTest.java",
+      "sha256": "ae5de4268e61aa44866e683b05c22d96526f94a1acb44a3147349c44813c1f6e"
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/SemanticDiscoveryMcpTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/SemanticDiscoveryMcpTest.java",
+      "sha256": "7f39967abbd6dd1a3c74330c47441da6b14b93ade3988ed0cea189e706292cd2"
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/adapters/discovery/ClientCredentialsTokenSourceTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/adapters/discovery/ClientCredentialsTokenSourceTest.java",
+      "sha256": "2b40391698780bc3354e9e8f536d467a94f4cf4c9dacf198d22133bd6822c039"
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/adapters/discovery/SchemaGovProviderIntegrationTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/adapters/discovery/SchemaGovProviderIntegrationTest.java",
+      "sha256": "2af324488a56cfa3c428e33acb6540619ab93d4e76634b83f8030ef8cc714860"
+    }
+  ],
+  "retainedProposalMigrationSha256": "767cdf6c97b7de2d010b3d03747be6d1dbe035f6ed81f5ea702adf909d828f75",
+  "appendedMigrations": {
+    "src/main/resources/db/migration/V11__discovery_request_idempotency.sql": "b67c8e7976ab0cbb168fa177c51c106ad6f506789c3f3bec719de2d51671948c",
+    "src/main/resources/db/migration/V12__discovery_durable_recovery.sql": "6867f813820811818f5edda8c65fb77c68a9668e084829fb011ede848f6b2b00"
+  }
+}

@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestControllerAdvice
 public class ProblemHandler {
+  @ExceptionHandler(it.comune.trieste.ouf.semantic.application.DiscoveryService.ProviderUnavailable.class)
+  ResponseEntity<ProblemDetail> discoveryUnavailable(RuntimeException e,HttpServletRequest r){return problem(HttpStatus.SERVICE_UNAVAILABLE,"SEM_DISCOVERY_NO_ENABLED_PROVIDER",r);}
   @ExceptionHandler(Conflict.class) ResponseEntity<ProblemDetail> conflict(Conflict e,HttpServletRequest r){return problem(HttpStatus.CONFLICT,e.getMessage(),r);}
   @ExceptionHandler(it.comune.trieste.ouf.semantic.application.GovernanceService.Conflict.class) ResponseEntity<ProblemDetail> governanceConflict(RuntimeException e,HttpServletRequest r){return problem(HttpStatus.CONFLICT,e.getMessage(),r);}
   @ExceptionHandler(Forbidden.class) ResponseEntity<ProblemDetail> forbidden(Forbidden e,HttpServletRequest r){return problem(HttpStatus.FORBIDDEN,e.getMessage(),r);}
@@ -23,3 +25,4 @@ public class ProblemHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class) ResponseEntity<ProblemDetail> invalid(MethodArgumentNotValidException e,HttpServletRequest r){var response=problem(HttpStatus.BAD_REQUEST,"SEM_REQUEST_INVALID",r);response.getBody().setProperty("violations",e.getBindingResult().getFieldErrors().stream().map(x->java.util.Map.of("field",x.getField(),"message",String.valueOf(x.getDefaultMessage()))).toList());return response;}
   private ResponseEntity<ProblemDetail> problem(HttpStatus status,String code,HttpServletRequest request){String safe=(code==null||code.isBlank())?"SEM_INTERNAL_ERROR":code;var p=ProblemDetail.forStatusAndDetail(status,safe);p.setType(URI.create("urn:ouf:error:"+safe.replaceAll("[^A-Za-z0-9._:-]","_")));p.setProperty("code",safe);Object correlation=request.getAttribute(RequestObservabilityFilter.CORRELATION_ATTRIBUTE);if(correlation!=null)p.setProperty("correlationId",correlation);return ResponseEntity.status(status).body(p);}
 }
+
