@@ -10,6 +10,7 @@ import it.comune.trieste.ouf.semantic.ports.SemanticDiscoveryProvider;
 import java.util.*;
 import java.util.concurrent.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -21,6 +22,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 @SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false"})
 @AutoConfigureMockMvc
 class DiscoveryJobRuntimeTest {
+  private final Set<String> fixtureIdentities=new HashSet<>();
+  @AfterEach void leaveNoRunnableJobsForOtherRuntimeTests(){
+    for(String subject:fixtureIdentities)
+      db.sql("update ouf_sem.discovery_request set state='CANCELLED',lease_until=null where created_by_subject=:a and state in ('PENDING','RUNNING')")
+        .param("a",subject).update();
+  }
   @Autowired JdbcClient db;
   @Autowired ObjectMapper json;
   @Autowired SafeRdfParser parser;
@@ -35,7 +42,7 @@ class DiscoveryJobRuntimeTest {
     var providers=List.of(provider);
     return new DiscoveryJobService(db,new DiscoveryService(db,providers,parser,json),providers,json);
   }
-  private String unique(){return UUID.randomUUID().toString();}
+  private String unique(){String value=UUID.randomUUID().toString();fixtureIdentities.add(value);return value;}
   private UUID id(Map<String,Object> result){return (UUID)result.get("requestId");}
   @Test void identicalKeyAndNormalizedQueryReturnsOneJob(){
     String actor=unique(),key=unique();var jobs=service(true);
