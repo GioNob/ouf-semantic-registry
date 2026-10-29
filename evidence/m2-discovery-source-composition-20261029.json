@@ -10,6 +10,20 @@
   "retainedMigrationCount": 10,
   "reusedFiles": [
     {
+      "sourcePath": "pairwise/gateway-fixture/src/main/java/it/comune/trieste/ouf/fixture/SchemaGovFixtureApi.java",
+      "destinationPath": "pairwise/gateway-fixture/src/main/java/it/comune/trieste/ouf/fixture/SchemaGovFixtureApi.java",
+      "sha256": "cbc3e279d221f73905b2667af6c5b75b2fbf3f6f1547a11feb2129d633a5f6b2",
+      "composedSha256": "cbc3e279d221f73905b2667af6c5b75b2fbf3f6f1547a11feb2129d633a5f6b2",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "pairwise/run-semantic-gateway-live.sh",
+      "destinationPath": "pairwise/run-semantic-gateway-live.sh",
+      "sha256": "02fe66c3983dbb5435427649632b695ab81ef23224e6343a9d6b13b87627e745",
+      "composedSha256": "02fe66c3983dbb5435427649632b695ab81ef23224e6343a9d6b13b87627e745",
+      "byteIdentical": true
+    },
+    {
       "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/BoundedGatewayClient.java",
       "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/BoundedGatewayClient.java",
       "sha256": "05a93306abafbd627863f1da10022d6edb3afae514a105b73530835de4cf75de",
