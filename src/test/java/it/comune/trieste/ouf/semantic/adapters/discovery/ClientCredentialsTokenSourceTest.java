@@ -93,6 +93,27 @@ class ClientCredentialsTokenSourceTest {
     Path target=temp.resolve("target");Files.move(secret,target);Files.createSymbolicLink(secret,target);assertThatThrownBy(source()::get).hasMessage("GATEWAY_CREDENTIAL_FILE_INVALID");
     assertThat(tokenCalls).hasValue(0);
   }
+  @Test void changedCredentialInvalidatesAnOtherwiseCurrentCachedBearer() throws Exception {
+    var source=source();assertThat(source.get()).isEqualTo("fixture.token");
+    Files.writeString(secret,"rotated-test-secret");response=response.replace("fixture.token","rotated.token");
+    assertThat(source.get()).isEqualTo("rotated.token");assertThat(tokenCalls).hasValue(2);
+    assertThat(form).contains("client_secret=rotated-test-secret");
+  }
+  @Test void invalidCredentialCustodyInvalidatesTheCacheBeforeAnyFurtherNetworkCall() throws Exception {
+    var source=source();source.get();
+    Files.setPosixFilePermissions(secret,PosixFilePermissions.fromString("rw-r--r--"));
+    assertThatThrownBy(source::get).hasMessage("GATEWAY_CREDENTIAL_FILE_INVALID");assertThat(tokenCalls).hasValue(1);
+    Files.setPosixFilePermissions(secret,PosixFilePermissions.fromString("rw-------"));
+    response=response.replace("fixture.token","fresh.token");
+    assertThat(source.get()).isEqualTo("fresh.token");assertThat(tokenCalls).hasValue(2);
+  }
+  @Test void rejectsArbitraryGroupReadAndGroupWriteBeforeNetwork() throws Exception {
+    for(String permissions:List.of("r--r-----","rw-r-----","r--rw----","r--r-x---","r--r--r--")){
+      Files.setPosixFilePermissions(secret,PosixFilePermissions.fromString(permissions));
+      assertThatThrownBy(source()::get).hasMessage("GATEWAY_CREDENTIAL_FILE_INVALID");
+    }
+    assertThat(tokenCalls).hasValue(0);
+  }
   static class MutableClock extends Clock {
     Instant now=Instant.parse("2026-10-02T00:00:00Z");
     public ZoneId getZone(){return ZoneOffset.UTC;}

@@ -8,6 +8,7 @@ import java.net.http.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.PosixFilePermission;
+import java.security.MessageDigest;
 import java.time.*;
 import java.util.*;
 import java.util.function.Supplier;
@@ -22,6 +23,9 @@ final class ClientCredentialsTokenSource implements Supplier<String> {
   private final boolean loopbackFixture;
   private String cached;
   private Instant refreshAt;
+  private byte[] credentialDigest;
+  // Canonical Semantic runtime identity in the admitted installation profile.
+  private static final int SEMANTIC_RUNTIME_GID=10001;
 
   ClientCredentialsTokenSource(GatewayOAuthProperties cfg, ObjectMapper json) {
     this(cfg,json,Clock.systemUTC(),false);
@@ -33,12 +37,15 @@ final class ClientCredentialsTokenSource implements Supplier<String> {
   }
   @Override public synchronized String get() {
     validate();
-    if(cached!=null && clock.instant().isBefore(refreshAt))return cached;
-    // A failed renewal must never return the old token.
-    cached=null;refreshAt=null;
     try {
+      // Custody changes and local rotation must also invalidate a cached token.
+      String credential=secret();
+      byte[] currentDigest=MessageDigest.getInstance("SHA-256").digest(credential.getBytes(StandardCharsets.UTF_8));
+      if(cached!=null && MessageDigest.isEqual(currentDigest,credentialDigest)
+          && clock.instant().isBefore(refreshAt))return cached;
+      clear();
       String form="grant_type=client_credentials&client_id="+enc(cfg.clientId())
-          +"&client_secret="+enc(secret())+"&scope="+enc(cfg.scope());
+          +"&client_secret="+enc(credential)+"&scope="+enc(cfg.scope());
       Instant started=clock.instant();
       HttpRequest request=HttpRequest.newBuilder(cfg.tokenEndpoint()).timeout(cfg.requestTimeout())
           .header("Accept","application/json")
@@ -60,11 +67,12 @@ final class ClientCredentialsTokenSource implements Supplier<String> {
         throw new ProviderFailure("GATEWAY_TOKEN_INVALID");
       refreshAt=started.plusSeconds(expires.intValue()).minus(cfg.refreshSkew());
       if(!clock.instant().isBefore(refreshAt))throw new ProviderFailure("GATEWAY_TOKEN_INVALID");
-      cached=token;return cached;
-    }catch(ProviderFailure e){throw e;}
-    catch(InterruptedException e){Thread.currentThread().interrupt();throw new ProviderFailure("GATEWAY_TOKEN_UNAVAILABLE");}
-    catch(Exception e){throw new ProviderFailure("GATEWAY_TOKEN_UNAVAILABLE");}
+      credentialDigest=currentDigest;cached=token;return cached;
+    }catch(ProviderFailure e){clear();throw e;}
+    catch(InterruptedException e){clear();Thread.currentThread().interrupt();throw new ProviderFailure("GATEWAY_TOKEN_UNAVAILABLE");}
+    catch(Exception e){clear();throw new ProviderFailure("GATEWAY_TOKEN_UNAVAILABLE");}
   }
+  private void clear(){cached=null;refreshAt=null;credentialDigest=null;}
   private void validate() {
     if(cfg==null || !cfg.enabled())throw new ProviderFailure("GATEWAY_AUTH_REQUIRED");
     URI u=cfg.tokenEndpoint();
@@ -87,18 +95,39 @@ final class ClientCredentialsTokenSource implements Supplier<String> {
   private String secret() throws Exception {
     Path file=cfg.clientSecretFile();
     if(!Files.isRegularFile(file,LinkOption.NOFOLLOW_LINKS))throw new ProviderFailure("GATEWAY_CREDENTIAL_FILE_INVALID");
+    Map<String,Object> groupCustody=null;
+    Set<PosixFilePermission> permissions=null;
     try {
-      Set<PosixFilePermission> permissions=Files.getPosixFilePermissions(file,LinkOption.NOFOLLOW_LINKS);
-      if(permissions.stream().anyMatch(p->p.name().startsWith("GROUP_") || p.name().startsWith("OTHERS_")))
-        throw new ProviderFailure("GATEWAY_CREDENTIAL_FILE_INVALID");
+      permissions=Files.getPosixFilePermissions(file,LinkOption.NOFOLLOW_LINKS);
     }catch(UnsupportedOperationException ignored){ /* Non-POSIX deployment ACLs remain an installation check. */ }
+    if(permissions!=null && permissions.stream().anyMatch(p->p.name().startsWith("GROUP_") || p.name().startsWith("OTHERS_"))){
+        // The native profile deliberately mounts root:10001 mode0440. This
+        // exact read-only service-group binding is distinct from arbitrary
+        // group/world-readable credentials. Owner-private legacy files remain.
+        if(!permissions.equals(Set.of(PosixFilePermission.OWNER_READ,PosixFilePermission.GROUP_READ)))
+          throw new ProviderFailure("GATEWAY_CREDENTIAL_FILE_INVALID");
+        groupCustody=groupCustody(file);
+    }
     byte[] bytes;
     try(var in=Files.newInputStream(file,LinkOption.NOFOLLOW_LINKS)){bytes=in.readNBytes(4097);}
     if(bytes.length>4096)throw new ProviderFailure("GATEWAY_CREDENTIAL_FILE_INVALID");
+    if(groupCustody!=null && !groupCustody.equals(groupCustody(file)))
+      throw new ProviderFailure("GATEWAY_CREDENTIAL_FILE_INVALID");
     String value=new String(bytes,StandardCharsets.UTF_8).strip();
     if(value.isEmpty() || value.chars().anyMatch(Character::isISOControl))
       throw new ProviderFailure("GATEWAY_CREDENTIAL_FILE_INVALID");
     return value;
+  }
+  private static Map<String,Object> groupCustody(Path file) {
+    try {
+    var attrs=Files.readAttributes(file,"unix:uid,gid,mode,nlink,size,dev,ino,lastModifiedTime,ctime",LinkOption.NOFOLLOW_LINKS);
+    if(((Number)attrs.get("uid")).longValue()!=0 || ((Number)attrs.get("gid")).longValue()!=SEMANTIC_RUNTIME_GID
+        || (((Number)attrs.get("mode")).intValue()&07777)!=0440 || ((Number)attrs.get("nlink")).longValue()!=1
+        || ((Number)attrs.get("size")).longValue()<1 || ((Number)attrs.get("size")).longValue()>4096)
+      throw new ProviderFailure("GATEWAY_CREDENTIAL_FILE_INVALID");
+    return attrs;
+    }catch(ProviderFailure failure){throw failure;}
+    catch(Exception failure){throw new ProviderFailure("GATEWAY_CREDENTIAL_FILE_INVALID");}
   }
   private static String enc(String s){return URLEncoder.encode(s,StandardCharsets.UTF_8);}
 }
