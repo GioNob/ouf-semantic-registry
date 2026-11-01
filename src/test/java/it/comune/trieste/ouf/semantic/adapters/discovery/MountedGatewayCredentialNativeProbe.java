@@ -11,6 +11,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import it.comune.trieste.ouf.semantic.api.NativeIssuedWorkloadAdmission;
 
 /** Disposable CI probe, outside the production JAR and default JUnit discovery. */
 public final class MountedGatewayCredentialNativeProbe {
@@ -20,6 +21,10 @@ public final class MountedGatewayCredentialNativeProbe {
         .filter(v->v.startsWith("Uid:")).findFirst().orElseThrow();
     if(!uid.substring(4).trim().matches("10001\\s+10001\\s+10001\\s+10001"))
       throw new AssertionError("ACTUAL_NONROOT_SEMANTIC_UID_REQUIRED");
+    if(args[1].startsWith("real-iam")){
+      realIam(Path.of(args[0]).resolve("root-service-readonly"),args[1]);
+      System.out.println("NATIVE_GATEWAY_CREDENTIAL_CONTRACT=PASS");return;
+    }
     Path credential=Path.of(args[0]).resolve(args[1]);
     boolean accepted=Set.of("root-service-readonly","owner-private-readonly","owner-private-writable").contains(args[1]);
     AtomicInteger calls=new AtomicInteger();
@@ -53,5 +58,28 @@ public final class MountedGatewayCredentialNativeProbe {
       }
       System.out.println("NATIVE_GATEWAY_CREDENTIAL_CONTRACT=PASS");
     }finally{server.stop(0);}
+  }
+  private static void realIam(Path credential,String scenario) {
+    try {
+      URI issuer=URI.create(System.getProperty("ouf.native.iamIssuer"));
+      if(!issuer.getScheme().equals("http") || !issuer.getHost().equals("127.0.0.1")
+          || !issuer.getPath().equals("/realms/ouf-native-provider") || issuer.getUserInfo()!=null
+          || issuer.getQuery()!=null || issuer.getFragment()!=null)throw new AssertionError("EXACT_LOOPBACK_IAM_FIXTURE_REQUIRED");
+      var cfg=new GatewayOAuthProperties(true,URI.create(issuer+"/protocol/openid-connect/token"),"native-workload",credential,
+          "gateway.invoke",Duration.ofSeconds(5),Duration.ofSeconds(10),32768);
+      var source=new ClientCredentialsTokenSource(cfg,new ObjectMapper(),Clock.systemUTC(),true);
+      String token=source.get();
+      if(!token.equals(source.get()) || !NativeIssuedWorkloadAdmission.accepts(token,issuer.toString(),"ouf-native-gateway"))
+        throw new AssertionError("REAL_ISSUED_WORKLOAD_AND_CACHE_ADMISSION_REQUIRED");
+      if(scenario.equals("real-iam-wrong-audience")){
+        if(NativeIssuedWorkloadAdmission.accepts(token,issuer.toString(),"unapproved-audience"))
+          throw new AssertionError("WRONG_REAL_BEARER_AUDIENCE_WAS_ACCEPTED");
+      }else if(scenario.equals("real-iam-invalid-signature")){
+        String[] parts=token.split("\\.",-1);
+        parts[2]=(parts[2].charAt(0)=='A'?'B':'A')+parts[2].substring(1);
+        if(NativeIssuedWorkloadAdmission.accepts(String.join(".",parts),issuer.toString(),"ouf-native-gateway"))
+          throw new AssertionError("ALTERED_REAL_BEARER_SIGNATURE_WAS_ACCEPTED");
+      }else if(!scenario.equals("real-iam"))throw new AssertionError("EXACT_NATIVE_IAM_SCENARIO_REQUIRED");
+    }catch(Exception failure){throw new AssertionError("NATIVE_WORKLOAD_BEARER_ADMISSION_UNPROVEN");}
   }
 }
