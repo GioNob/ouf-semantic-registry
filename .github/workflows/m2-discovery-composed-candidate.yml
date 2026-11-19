@@ -1,7 +1,7 @@
-name: M2 composed discovery offline candidate
+name: M2 native credential discovery offline candidate
 on:
   push:
-    branches: [feat/m2-durable-discovery-composition-20261029]
+    branches: [fix/m2-native-provider-credential-custody-20261101]
     paths:
       - .github/workflows/m2-discovery-composed-candidate.yml
       - scripts/package-discovery-candidate.py
@@ -11,7 +11,7 @@ permissions:
   attestations: write
   id-token: write
 concurrency:
-  group: ouf-m2-composed-discovery-offline-candidate
+  group: ouf-m2-native-credential-discovery-offline-candidate
   cancel-in-progress: false
 jobs:
   package:
@@ -25,18 +25,18 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           repository: GioNob/ouf-semantic-registry
-          ref: 4f8fb581916075a539bda4428be7bd8af073a569
+          ref: c2dae77b42f1811b704465f6ab813c91d808ade4
           persist-credentials: false
           path: source
       - name: Build qualified exact source with recorded digest-resolved bases
         run: |
           python3 publisher/scripts/package-discovery-candidate.py build --source source \
-            --commit 4f8fb581916075a539bda4428be7bd8af073a569 --module semantic --output package
+            --commit c2dae77b42f1811b704465f6ab813c91d808ade4 --module semantic --output package
       - name: Scan exact candidate against current vulnerability databases
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           version: v0.70.0
-          image-ref: ouf-cohort-semantic:4f8fb581916075a539bda4428be7bd8af073a569
+          image-ref: ouf-cohort-semantic:c2dae77b42f1811b704465f6ab813c91d808ade4
           scan-type: image
           scanners: vuln
           format: json
@@ -49,7 +49,7 @@ jobs:
       - name: Enforce image-bound severity gate and export candidate bytes
         run: |
           python3 publisher/scripts/package-discovery-candidate.py export --source source \
-            --commit 4f8fb581916075a539bda4428be7bd8af073a569 --module semantic --output package
+            --commit c2dae77b42f1811b704465f6ab813c91d808ade4 --module semantic --output package
           python3 - <<'PY'
           import hashlib,json,pathlib,zipfile
           root=pathlib.Path('package')
@@ -62,14 +62,14 @@ jobs:
               manifest=json.loads(pathlib.Path('source/evidence/m2-discovery-source-composition-20261029.json').read_text())
               assert manifest['targetApplyAuthorized'] is False
               assert hashlib.sha256(pathlib.Path('source/src/main/resources/db/migration/V10__proposal_command_receipts.sql').read_bytes()).hexdigest()==manifest['retainedProposalMigrationSha256']
-              assert not any('it/comune/trieste/ouf/pairwise/' in name for name in jar.namelist())
+              assert not any('it/comune/trieste/ouf/pairwise/' in name or 'MountedGatewayCredentialNativeProbe' in name or 'NativeIssuedWorkloadAdmission' in name for name in jar.namelist())
               assert 'BOOT-INF/lib/authorization-sdk-1.2.0.jar' in jar.namelist()
               assert not any('authorization-sdk-1.2.0-tests.jar' in name for name in jar.namelist())
           inventory=json.loads((root/'source-inventory.json').read_text())
           assert inventory['truncated'] is False
           assert any(row['path'].endswith('V12__discovery_durable_recovery.sql') for row in inventory['tree'])
           (root/'migration-continuity.json').write_text(json.dumps({
-              'sourceCommit':'4f8fb581916075a539bda4428be7bd8af073a569',
+              'sourceCommit':'c2dae77b42f1811b704465f6ab813c91d808ade4',
               'migrations':[{'name':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()} for f in files],
               'runtimeIdentityFixtureAbsent':True,'targetApplyAuthorized':False},indent=2)+'\n')
           files=sorted(p for p in root.iterdir() if p.is_file() and p.name not in ('SHA256SUMS','attestation-checksums.sha256'))
@@ -108,7 +108,7 @@ jobs:
       - name: Retain offline candidate and verifications
         uses: actions/upload-artifact@v4
         with:
-          name: m2-composed-discovery-offline-candidate-${{ github.run_id }}
+          name: m2-native-credential-discovery-offline-candidate-${{ github.run_id }}
           path: package/
           retention-days: 30
           if-no-files-found: error
@@ -116,7 +116,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: m2-composed-discovery-package-denial-${{ github.run_id }}
+          name: m2-native-credential-discovery-package-denial-${{ github.run_id }}
           path: |
             package/package-record.json
             package/trivy-image.json

@@ -1,0 +1,5 @@
+# Porting sulla baseline D-055
+
+La [PR #24](https://github.com/GioNob/ouf-semantic-registry/pull/24) fornisce il reconciler del binding tra un client Keycloak esistente e uno scope esistente (`5332700`, test `4c43e14`). `plan` legge il binding, `apply` corregge la deriva verso l'assegnazione `default` o `optional` richiesta e `verify` segnala un'eventuale difformità. Il test originale controlla il testo dello script. Resta da qualificare su un realm di prova il cambio tra le due assegnazioni, la ripetizione senza ulteriori scritture e il recupero dopo un cambio interrotto. Per il client MCP, realm, scope e tipo di assegnazione richiedono conferma dell'owner IAM prima dell'uso.
+
+La [PR #42](https://github.com/GioNob/ouf-semantic-registry/pull/42) fissa il packaging al sorgente `c2dae77b` (`4c8bcde`) e conserva la [qualifica del 1° novembre 2026](../evidence/m2-native-provider-credential-qualified-20261101.json) (`2cae629`). I 133 test di modulo e i 14 casi nativi sono risultati storici del candidato. Il record mantiene `releaseAcceptance` e `targetApplyAuthorized` a `false`.
