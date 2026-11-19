@@ -1,0 +1,201 @@
+{
+  "schema": "ouf.semantic.m2-discovery-source-composition.v1",
+  "date": "2026-10-29",
+  "baseSourceCommit": "eccef11a97367f20e278db40b9ed6f45dd980c37",
+  "reusedDiscoverySourceCommit": "3ec99277b8383e496913b9fd3bb05c877825abf5",
+  "baseIsRuntimeSourceProof": false,
+  "targetApplyAuthorized": false,
+  "runtimeAuthorityIssued": false,
+  "releaseAcceptance": false,
+  "retainedMigrationCount": 10,
+  "reusedFiles": [
+    {
+      "sourcePath": "pairwise/gateway-fixture/src/main/java/it/comune/trieste/ouf/fixture/SchemaGovFixtureApi.java",
+      "destinationPath": "pairwise/gateway-fixture/src/main/java/it/comune/trieste/ouf/fixture/SchemaGovFixtureApi.java",
+      "sha256": "cbc3e279d221f73905b2667af6c5b75b2fbf3f6f1547a11feb2129d633a5f6b2",
+      "composedSha256": "cbc3e279d221f73905b2667af6c5b75b2fbf3f6f1547a11feb2129d633a5f6b2",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "pairwise/run-semantic-gateway-live.sh",
+      "destinationPath": "pairwise/run-semantic-gateway-live.sh",
+      "sha256": "02fe66c3983dbb5435427649632b695ab81ef23224e6343a9d6b13b87627e745",
+      "composedSha256": "02fe66c3983dbb5435427649632b695ab81ef23224e6343a9d6b13b87627e745",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/BoundedGatewayClient.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/BoundedGatewayClient.java",
+      "sha256": "05a93306abafbd627863f1da10022d6edb3afae514a105b73530835de4cf75de",
+      "composedSha256": "05a93306abafbd627863f1da10022d6edb3afae514a105b73530835de4cf75de",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/BoundedResponseBody.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/BoundedResponseBody.java",
+      "sha256": "d0d5681adc6758c0932c05531a5ae4ca35a4fea4c775a478e6f160132de52ccd",
+      "composedSha256": "d0d5681adc6758c0932c05531a5ae4ca35a4fea4c775a478e6f160132de52ccd",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/ClientCredentialsTokenSource.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/ClientCredentialsTokenSource.java",
+      "sha256": "fa4b16bd8ae61dd3cd0baa5fa9bbd7138b3969b56cfec6428ae5a8c266fc775a",
+      "composedSha256": "fa4b16bd8ae61dd3cd0baa5fa9bbd7138b3969b56cfec6428ae5a8c266fc775a",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/GatewayOAuthProperties.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/GatewayOAuthProperties.java",
+      "sha256": "c931e4c7c040288a74c0a1f6befd179351484521a63ec77b05e55ade67331f44",
+      "composedSha256": "c931e4c7c040288a74c0a1f6befd179351484521a63ec77b05e55ade67331f44",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/ProviderFailurePolicy.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/ProviderFailurePolicy.java",
+      "sha256": "4fcde571538d710942b4b39d065eb8e5417ed91751af922332712f14dee4e44b",
+      "composedSha256": "4fcde571538d710942b4b39d065eb8e5417ed91751af922332712f14dee4e44b",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/SchemaGovProvider.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/adapters/discovery/SchemaGovProvider.java",
+      "sha256": "ebb16b7a183dd422416ed6408b93b77d97e74c7ab3214260a5f3ffb6fae5116a",
+      "composedSha256": "ebb16b7a183dd422416ed6408b93b77d97e74c7ab3214260a5f3ffb6fae5116a",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/api/DiscoveryApi.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/api/DiscoveryApi.java",
+      "sha256": "259e6b91269073e7659f7faf152f03bca42911d898ff6e44be4c5be97f6a8960",
+      "composedSha256": "259e6b91269073e7659f7faf152f03bca42911d898ff6e44be4c5be97f6a8960",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/api/ProblemHandler.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/api/ProblemHandler.java",
+      "sha256": "3f4846514365511f55ba9b6b7627bc9bbec6abb309d8011c5e00730a083fdd9b",
+      "composedSha256": "3f4846514365511f55ba9b6b7627bc9bbec6abb309d8011c5e00730a083fdd9b",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/api/SemanticDiscoveryDelegation.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/api/SemanticDiscoveryDelegation.java",
+      "sha256": "2b72fc8a0a1641f1d24751fdbafde29548341c67f713e9c42976953ee57a986a",
+      "composedSha256": "2b72fc8a0a1641f1d24751fdbafde29548341c67f713e9c42976953ee57a986a",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/api/SemanticDiscoveryMcpApi.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/api/SemanticDiscoveryMcpApi.java",
+      "sha256": "8aa53e680f6d0d4a4b4ec21770c54fdd49d2fbdf0bf9993239c3cc6349f77ab4",
+      "composedSha256": "8aa53e680f6d0d4a4b4ec21770c54fdd49d2fbdf0bf9993239c3cc6349f77ab4",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryJobService.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryJobService.java",
+      "sha256": "39602c28cbc4f56a36a6ad9ae93b745ec8a9c12684145468fca8bf5f7509016a",
+      "composedSha256": "39602c28cbc4f56a36a6ad9ae93b745ec8a9c12684145468fca8bf5f7509016a",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryService.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryService.java",
+      "sha256": "5ab94f5057a6e64bf98bb1a0f36d7e66dda3d793c406ed5ffac0151bb02b4143",
+      "composedSha256": "5ab94f5057a6e64bf98bb1a0f36d7e66dda3d793c406ed5ffac0151bb02b4143",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryWorker.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/application/DiscoveryWorker.java",
+      "sha256": "d3b77edfaf079b9ede8ecabf96ddda87c6de7fba6a1b44825b878f1e6fff3e01",
+      "composedSha256": "d3b77edfaf079b9ede8ecabf96ddda87c6de7fba6a1b44825b878f1e6fff3e01",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/java/it/comune/trieste/ouf/semantic/ports/SemanticDiscoveryProvider.java",
+      "destinationPath": "src/main/java/it/comune/trieste/ouf/semantic/ports/SemanticDiscoveryProvider.java",
+      "sha256": "50fefcd1c59d0270a1eefb220dc1e91c1498c248101e5eaa30a376a6885642e7",
+      "composedSha256": "50fefcd1c59d0270a1eefb220dc1e91c1498c248101e5eaa30a376a6885642e7",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/resources/application.yml",
+      "destinationPath": "src/main/resources/application.yml",
+      "sha256": "cace1e547299f65ba7077fe3ac564573a13d01eb1d6263e0676e6f31f8b72d61",
+      "composedSha256": "cace1e547299f65ba7077fe3ac564573a13d01eb1d6263e0676e6f31f8b72d61",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/resources/db/migration/V10__discovery_request_idempotency.sql",
+      "destinationPath": "src/main/resources/db/migration/V11__discovery_request_idempotency.sql",
+      "sha256": "85708e1d37184177471f225806ca21c4088915f766197020f8fefe109407e911",
+      "composedSha256": "85708e1d37184177471f225806ca21c4088915f766197020f8fefe109407e911",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/main/resources/db/migration/V11__discovery_durable_recovery.sql",
+      "destinationPath": "src/main/resources/db/migration/V12__discovery_durable_recovery.sql",
+      "sha256": "04cf00b80724f4a47b8f920ca36384a176e40ea8efd3d84c4f404863bfd79d43",
+      "composedSha256": "04cf00b80724f4a47b8f920ca36384a176e40ea8efd3d84c4f404863bfd79d43",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryAvailabilityRuntimeTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryAvailabilityRuntimeTest.java",
+      "sha256": "e860e766ac75a8fc80a221ee89fa2f4ffb62641944c5e26c0d4cc69d8bddc8d7",
+      "composedSha256": "e860e766ac75a8fc80a221ee89fa2f4ffb62641944c5e26c0d4cc69d8bddc8d7",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryDurableRecoveryRuntimeTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryDurableRecoveryRuntimeTest.java",
+      "sha256": "7a64e3e15155059e48add898653c8ad52dc68a5c3ed1ef36a083da3444d11c64",
+      "composedSha256": "7a64e3e15155059e48add898653c8ad52dc68a5c3ed1ef36a083da3444d11c64",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryJobRuntimeTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryJobRuntimeTest.java",
+      "sha256": "24f81cc782e2e3e1a120df42f746fe39e60210cdd5ee5ab277e766256ef304cc",
+      "composedSha256": "9f6a8eff163a6a44a8bd3e53b8a9dfb03fc7a64f8ac6daa345e927be6e25c773",
+      "byteIdentical": false,
+      "adaptation": "Cancel only this test fixture runnable jobs after each case; preserve runtime queue and other test histories."
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryWorkerBoundedTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/DiscoveryWorkerBoundedTest.java",
+      "sha256": "ee6fcdcc0849f3527d7a4407b4f4c4e60f2320742af8ec1456ebd460e66c1626",
+      "composedSha256": "ee6fcdcc0849f3527d7a4407b4f4c4e60f2320742af8ec1456ebd460e66c1626",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/SemanticDiscoveryMcpTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/SemanticDiscoveryMcpTest.java",
+      "sha256": "807e9d70d6ceeb46a0f8a7393f9551fa4ebb7b57d2a6d7f8f7299b5de123a2b0",
+      "composedSha256": "807e9d70d6ceeb46a0f8a7393f9551fa4ebb7b57d2a6d7f8f7299b5de123a2b0",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/adapters/discovery/ClientCredentialsTokenSourceTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/adapters/discovery/ClientCredentialsTokenSourceTest.java",
+      "sha256": "6752500f9ba580e18a9e86ed9b5211eb9ff011cfaa48a1f01fbf4e761b658798",
+      "composedSha256": "6752500f9ba580e18a9e86ed9b5211eb9ff011cfaa48a1f01fbf4e761b658798",
+      "byteIdentical": true
+    },
+    {
+      "sourcePath": "src/test/java/it/comune/trieste/ouf/semantic/adapters/discovery/SchemaGovProviderIntegrationTest.java",
+      "destinationPath": "src/test/java/it/comune/trieste/ouf/semantic/adapters/discovery/SchemaGovProviderIntegrationTest.java",
+      "sha256": "d817da14b9093db8aba1732083c921598ec20cb467f59177619fbcf554fdb96b",
+      "composedSha256": "d817da14b9093db8aba1732083c921598ec20cb467f59177619fbcf554fdb96b",
+      "byteIdentical": true
+    }
+  ],
+  "retainedProposalMigrationSha256": "7ee3a19ad02cdc4ea5ccd58d8ab96268046bd114962c7d6cd5c8717c8c3b0820",
+  "appendedMigrations": {
+    "src/main/resources/db/migration/V11__discovery_request_idempotency.sql": "85708e1d37184177471f225806ca21c4088915f766197020f8fefe109407e911",
+    "src/main/resources/db/migration/V12__discovery_durable_recovery.sql": "04cf00b80724f4a47b8f920ca36384a176e40ea8efd3d84c4f404863bfd79d43"
+  }
+}

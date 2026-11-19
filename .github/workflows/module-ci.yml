@@ -35,6 +35,7 @@ jobs:
       OUF_SEM_DB_USER: ouf_semantic
       OUF_SEM_DB_PASSWORD: ci-only-password
       OUF_DISCOVERY_WORKER_ENABLED: "false"
+      OUF_DISCOVERY_GATEWAY_PAIRWISE_ROOT: ${{ github.workspace }}/.pairwise/discovery-gateway
       OUF_SEMANTIC_GATEWAY_PAIRWISE_ROOT: ${{ github.workspace }}/.pairwise/gateway
       MAVEN_OPTS: >-
         -Dmaven.wagon.http.connectionTimeout=10000
@@ -47,7 +48,14 @@ jobs:
           repository: GioNob/ouf-api-gateway
           ref: 09c431be83a5d25ce4cc76d33aafea0ed1523702
           path: .pairwise/gateway
+      - uses: actions/checkout@v4
+        with:
+          repository: GioNob/ouf-api-gateway
+          ref: ace683b1019f79adaace86796b67e463b93ec12e
+          path: .pairwise/discovery-gateway
       - name: Install actual Gateway receipt fixture dependencies
+        # Both exporters run under the current fixture's pinned dependencies;
+        # do not install conflicting historical versions into the same interpreter.
         run: python3 -m pip install -r .pairwise/gateway/requirements-dev.txt
       - uses: actions/setup-java@v4
         with:
@@ -108,3 +116,4 @@ jobs:
         run: docker build --tag ouf-semantic-registry:${{ github.sha }} .
       - name: Inspect image as non-root
         run: test "$(docker image inspect ouf-semantic-registry:${{ github.sha }} --format '{{.Config.User}}')" = "10001:10001"
+
