@@ -1,3 +1,22 @@
+# CURRENT — Native credential custody and issued-bearer candidate qualified
+
+1 November 2026. Standing repository development authorization continues;
+no target grant, activation, old-authority replay or acceptance is implied.
+Production fix10980762 accepts only the exact root:10001/0440 shared-group
+credential and invalidates bearer caches on local credential/custody changes.
+Source c2dae77b: actual UID10001 client + retained Keycloak26.7.4/real IAM
+admission PASS14 (run41263404454/job124721089189, final log read). Wrong
+signature/audience and invalid custody denied; disposable loopback HTTP only.
+Producer4c8bcde: run41263544004/job124721503151 produced artifact13066396654,
+ZIP SHA1a7045ffb39486f2579fb342d7fd881f5a123f74a0810d353bce3c755bfc76ba.
+Exact image a6f00cda, source221 blobs, all8payload hashes and12SQL checked;
+scan53MEDIUM/4LOW, no HIGH/CRITICAL/UNKNOWN. Module133 tests PASS, no skips.
+Independent Docker29.8.1 OCI/seven-mount/rootfs proof in deploy run41264083529:
+Java did not start, private inputs synthetic. Old4f8 candidate stays selected
+until a fresh composed package/private review/authority explicitly selects this
+one. Target bearer, private custody, full controller, E2E and two clients OPEN.
+Evidence: evidence/m2-native-provider-credential-qualified-20261101.json
+
 # OUF project instructions
 
 ## Default resilience requirement
