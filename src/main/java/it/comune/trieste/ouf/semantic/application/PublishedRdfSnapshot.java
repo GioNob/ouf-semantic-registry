@@ -12,7 +12,7 @@ public final class PublishedRdfSnapshot {
   private final SafeRdfParser parser=new SafeRdfParser();
   private final ObjectMapper json=new ObjectMapper();
 
-  public Map<String,Object> project(byte[] bytes,String mediaType,String hash,long count) {
+  Model verifiedModel(byte[] bytes,String mediaType,String hash) {
     if(bytes==null || bytes.length==0 || bytes.length>SafeRdfParser.MAX_BYTES)
       throw new IllegalArgumentException("SEM_READ_RDF_SIZE_LIMIT");
     // Remote JSON-LD contexts/imports must not create an ungoverned fetch path.
@@ -20,11 +20,23 @@ public final class PublishedRdfSnapshot {
       try {rejectRemoteContexts(json.readTree(bytes));}
       catch(java.io.IOException e){throw new IllegalArgumentException("SEM_READ_RDF_JSON_INVALID",e);}
     }
-    var parsed=parser.parse(bytes,mediaType);
-    if(!parsed.contentHash().equals(hash) || parsed.statementCount()!=count)
-      throw new IllegalStateException("SEM_READ_RDF_SNAPSHOT_MISMATCH");
-    Model model=parser.model(bytes,mediaType);
+    verifyHash(bytes,hash);
+    return parser.model(bytes,mediaType);
+  }
+
+  static void verifyHash(byte[] bytes,String hash) {
     try {
+      byte[] digest=java.security.MessageDigest.getInstance("SHA-256").digest(bytes);
+      if(!HexFormat.of().formatHex(digest).equals(hash))
+        throw new IllegalStateException("SEM_READ_RDF_SNAPSHOT_MISMATCH");
+    } catch(java.security.NoSuchAlgorithmException e){throw new IllegalStateException(e);}
+  }
+
+  public Map<String,Object> project(byte[] bytes,String mediaType,String hash,long expectedCount) {
+    Model model=verifiedModel(bytes,mediaType,hash);
+    try {
+      long count=model.size();
+      if(expectedCount>=0 && count!=expectedCount)throw new IllegalStateException("SEM_READ_RDF_SNAPSHOT_MISMATCH");
       Comparator<Statement> order=Comparator
         .comparing((Statement s)->org.apache.jena.riot.out.NodeFmtLib.strNT(s.getSubject().asNode()))
         .thenComparing(s->s.getPredicate().getURI())

@@ -21,6 +21,14 @@ public class ProposalCommandApi {
       Map<String,Object> definition,@Size(max=49152) String rdfTurtle,String mediaType) {
     ArtifactApi.CreateArtifact artifact(){return new ArtifactApi.CreateArtifact(semanticId,artifactType,namespace,localName,ownerRef,authorityRef,semanticVersion,labels,definition);}
   }
+  public record Adopt(@NotNull UUID requestId,@NotNull UUID candidateId){}
+  @SemanticCapability("ouf.semantic.discovery.adopt") @PostMapping("/adopt")
+  public Map<String,Object> adopt(@Valid @RequestBody Adopt body,
+      @RequestHeader("Idempotency-Key") String key,HttpServletRequest request){
+    if(!(request.getAttribute(SemanticProposalReceiptFilter.VERIFIED) instanceof SemanticProposalReceiptVerifier.Verified))
+      throw new it.comune.trieste.ouf.semantic.application.GovernanceService.Forbidden("SEM_PROPOSAL_RECEIPT_INVALID");
+    return service.adopt(OwnerAuthorization.bind(request).principal(),key,body.requestId(),body.candidateId());
+  }
   public record Validate(@NotNull UUID revisionId,@NotNull @Min(0) Long expectedRowVersion){}
   public record Review(@NotNull UUID revisionId,@NotNull @Min(0) Long expectedRowVersion,@NotNull UUID validationRunId){}
   public record Read(@NotBlank @Pattern(regexp="[A-Za-z0-9_:.-]{1,128}") String commandKey){}
@@ -51,7 +59,7 @@ public class ProposalCommandApi {
     if(!"HUMAN".equals(actor.type()))throw new it.comune.trieste.ouf.semantic.application.GovernanceService.Forbidden("SEM_HUMAN_REQUIRED");
     var result=service.receipt(tenant(request),actor.subject(),body.commandKey());
     String op=String.valueOf(result.get("operation"));
-    actors.require(actor,switch(op){case "VALIDATE"->"ouf.semantic.review.prepare";case "REVIEW"->"ouf.semantic.approval.request";default->"ouf.semantic.propose";});
+    actors.require(actor,switch(op){case "ADOPT"->"ouf.semantic.discovery.adopt";case "VALIDATE"->"ouf.semantic.review.prepare";case "REVIEW"->"ouf.semantic.approval.request";default->"ouf.semantic.propose";});
     return result;
   }
   private static String tenant(HttpServletRequest request){return OwnerAuthorization.bind(request).principal().tenantId();}

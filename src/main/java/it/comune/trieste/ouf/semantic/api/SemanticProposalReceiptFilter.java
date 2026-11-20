@@ -10,11 +10,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 public class SemanticProposalReceiptFilter extends OncePerRequestFilter {
+  static final String VERIFIED=SemanticProposalReceiptFilter.class.getName()+".verified";
   private final SemanticProposalReceiptVerifier verifier;
   public SemanticProposalReceiptFilter(SemanticProposalReceiptVerifier verifier){this.verifier=verifier;}
   @Override protected boolean shouldNotFilter(HttpServletRequest request){
     return !request.getRequestURI().startsWith("/api/semantic/v1/proposal-commands/")
-        ||request.getHeader("X-OUF-Semantic-Proposal-Receipt")==null;
+        ||(request.getHeader("X-OUF-Semantic-Proposal-Receipt")==null
+          && !request.getRequestURI().equals("/api/semantic/v1/proposal-commands/adopt"));
   }
   @Override protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain chain)throws IOException,ServletException{
     final SemanticProposalReceiptVerifier.Verified verified;
@@ -24,6 +26,7 @@ public class SemanticProposalReceiptFilter extends OncePerRequestFilter {
       verified=verifier.verify(request.getHeader("X-OUF-Semantic-Proposal-Receipt"),request.getRequestURI(),body);
     }catch(SecurityException e){response.setStatus(403);response.setContentType("application/problem+json");response.getWriter().write("{\"code\":\"SEM_PROPOSAL_RECEIPT_INVALID\",\"status\":403}");return;}
     request.setAttribute(it.comune.trieste.ouf.authorization.ServletAuthorization.TRUSTED_PRINCIPAL,verified.principal());
+    request.setAttribute(VERIFIED,verified);
     byte[] args=verified.arguments();
     chain.doFilter(new HttpServletRequestWrapper(request){
       @Override public Principal getUserPrincipal(){return verified.principal();}

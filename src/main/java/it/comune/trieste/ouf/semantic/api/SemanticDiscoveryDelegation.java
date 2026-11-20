@@ -35,6 +35,14 @@ public class SemanticDiscoveryDelegation {
       key=value.getBytes(StandardCharsets.US_ASCII);
     } catch(java.io.IOException e){throw new IllegalStateException("SEM_DISCOVERY_DELEGATION_KEY_UNAVAILABLE",e);}
   }
+  public static String jobSubject(PrincipalContext principal,ObjectMapper json) {
+    try {
+      byte[] identity=json.writeValueAsBytes(List.of(principal.issuer(),principal.tenantId(),principal.subjectId()));
+      return "mcp-discovery-v1:"+HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(identity));
+    } catch (GeneralSecurityException | com.fasterxml.jackson.core.JsonProcessingException e) {
+      throw new IllegalStateException("SEM_DISCOVERY_IDENTITY_INVALID",e);
+    }
+  }
   public PrincipalContext verify(String proof,String path,String capability,byte[] body) {
     try {
       if(key.length!=64 || !Set.of("ouf.semantic.discovery","ouf.semantic.discovery.status","ouf.semantic.discovery.candidates").contains(capability)

@@ -22,11 +22,32 @@ public class DiscoveryService {
     UUID id=UUID.randomUUID();db.sql("insert into ouf_sem.discovery_request(request_id,requested_artifact_type,intent,preferred_languages,state,created_by_subject) values(:i,:t,:n,:l,'PENDING',:a)").param("i",id).param("t",type).param("n",intent).param("l",languages.toArray(String[]::new)).param("a",actor).update();return id;
   }
   public List<Map<String,Object>> candidates(UUID request){return db.sql("select candidate_id,provider_id,canonical_uri,artifact_type,provider_trust,score,match_reasons,gaps,expires_at from ouf_sem.discovery_candidate where request_id=:r and expires_at>transaction_timestamp() order by score desc,canonical_uri").param("r",request).query().listOfRows();}
-  @Transactional public UUID adopt(UUID candidate,String semanticId,String namespace,String localName,String owner,String authority,String actor){return db.sql("select ouf_sem.adopt_candidate(:c,:s,:n,:l,:o,:u,:a)").param("c",candidate).param("s",semanticId).param("n",namespace).param("l",localName).param("o",owner).param("u",authority).param("a",actor).query(UUID.class).single();}
+  @Transactional public UUID adopt(UUID candidate,String semanticId,String namespace,String localName,String owner,String authority,String actor){
+    UUID request=db.sql("select request_id from ouf_sem.discovery_candidate where candidate_id=:c")
+        .param("c",candidate).query(UUID.class).optional().orElseThrow(()->new NoSuchElementException("SEMANTIC_CANDIDATE_NOT_FOUND"));
+    return adopt(request,candidate,semanticId,namespace,localName,owner,authority,actor);
+  }
   @Transactional public UUID adopt(UUID request,UUID candidate,String semanticId,String namespace,String localName,String owner,String authority,String actor){
-    var rows=db.sql("select candidate_id from ouf_sem.discovery_candidate where candidate_id=:c and request_id=:r for update").param("c",candidate).param("r",request).query(UUID.class).list();
+    var rows=db.sql("""
+        select c.canonical_uri,c.media_type,c.content_hash,c.content_bytes,c.adopted_artifact_id,
+               c.expires_at<=clock_timestamp() expired
+        from ouf_sem.discovery_candidate c join ouf_sem.discovery_request j using(request_id)
+        where c.candidate_id=:c and j.request_id=:r and j.created_by_subject=:actor
+          and j.created_by_subject not like 'mcp-discovery-v1:%' for update of c
+        """).param("c",candidate).param("r",request).param("actor",actor).query().listOfRows();
     if(rows.size()!=1)throw new NoSuchElementException("SEMANTIC_CANDIDATE_NOT_FOUND");
-    return adopt(candidate,semanticId,namespace,localName,owner,authority,actor);
+    var row=rows.getFirst();
+    if(Boolean.TRUE.equals(row.get("expired")))throw new GovernanceService.Conflict("CANDIDATE_EXPIRED");
+    if(row.get("adopted_artifact_id") instanceof UUID artifact)return artifact;
+    var model=new PublishedRdfSnapshot().verifiedModel((byte[])row.get("content_bytes"),
+        (String)row.get("media_type"),(String)row.get("content_hash"));
+    try {
+      var metadata=CandidateAdoptionService.metadata(model.getResource((String)row.get("canonical_uri")));
+      return db.sql("select ouf_sem.adopt_candidate(:c,:s,:n,:l,:o,:u,:a,:publisher,:license,'{}'::jsonb)")
+          .param("c",candidate).param("s",semanticId).param("n",namespace).param("l",localName)
+          .param("o",owner).param("u",authority).param("a",actor)
+          .param("publisher",metadata.publisher()).param("license",metadata.license()).query(UUID.class).single();
+    } finally {model.close();}
   }
   /** Remote I/O is outside a DB transaction. Only the final generation CAS publishes bytes. */
   public int executeOne(){

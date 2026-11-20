@@ -1,6 +1,8 @@
 package it.comune.trieste.ouf.semantic.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.comune.trieste.ouf.authorization.PrincipalContext;
+import it.comune.trieste.ouf.semantic.api.SemanticDiscoveryDelegation;
 import it.comune.trieste.ouf.semantic.api.ArtifactApi.CreateArtifact;
 import java.time.Duration;
 import java.util.*;
@@ -18,9 +20,20 @@ public class ProposalCommandService {
   private final ValidationService validation;
   private final GovernanceService governance;
   private final InterchangeService interchange;
+  private final CandidateAdoptionService adoption;
   public ProposalCommandService(JdbcClient db,ObjectMapper json,ArtifactService artifacts,
-      ValidationService validation,GovernanceService governance,InterchangeService interchange) {
+      ValidationService validation,GovernanceService governance,InterchangeService interchange,CandidateAdoptionService adoption) {
+    this.adoption=adoption;
     this.db=db;this.json=json;this.artifacts=artifacts;this.validation=validation;this.governance=governance;this.interchange=interchange;
+  }
+  @Transactional(timeout=10)
+  public Map<String,Object> adopt(PrincipalContext principal,String key,UUID requestId,UUID candidateId) {
+    if(principal.actorType()!=PrincipalContext.ActorType.HUMAN)
+      throw new GovernanceService.Forbidden("SEM_HUMAN_REQUIRED");
+    String jobSubject=SemanticDiscoveryDelegation.jobSubject(principal,json);
+    return execute(principal.tenantId(),principal.subjectId(),key,"ADOPT",
+        Map.of("requestId",requestId,"candidateId",candidateId,"jobSubject",jobSubject),
+        ()->adoption.adopt(requestId,candidateId,jobSubject,principal.subjectId()));
   }
   @Transactional(timeout=10) public Map<String,Object> createImported(String tenant,String principal,String type,String key,
       CreateArtifact command,String turtle,String mediaType,String correlation) {

@@ -30,6 +30,11 @@ public class GovernanceService {
         .param("i",challenge).query().listOfRows().stream().findFirst().orElseThrow(()->new NoSuchElementException("APPROVAL_CHALLENGE_NOT_FOUND"));
     Map<String,Object> out=new LinkedHashMap<>(row);
     for(String field:List.of("label_json","description_json","definition_json"))try{out.put(field,json.readValue(String.valueOf(row.get(field)),Object.class));}catch(Exception e){throw new IllegalStateException("SEMANTIC_CARD_DECODE_FAILED",e);}
+    if(out.get("definition_json") instanceof Map<?,?> definition && definition.containsKey("adoptionProvenance") && db.sql(
+        "select exists(select 1 from ouf_sem.revision_adoption where revision_id=:r)")
+        .param("r",row.get("revision_id")).query(Boolean.class).single()) {
+      out.put("adoptionProvenance",definition.get("adoptionProvenance"));
+    }
     var snapshots=db.sql("select media_type,content_hash,content_bytes,statement_count from ouf_sem.revision_interchange_snapshot where revision_id=:r").param("r",row.get("revision_id")).query().listOfRows();
     if(!snapshots.isEmpty()) {
       var snapshot=snapshots.get(0);byte[] bytes=(byte[])snapshot.get("content_bytes");String hash=snapshot.get("content_hash").toString().strip();
