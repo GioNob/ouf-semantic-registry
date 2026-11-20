@@ -379,7 +379,7 @@ Ogni switch deve preservare:
 Questa sezione documenta il lab corrente senza trasformarlo in default di prodotto.
 
 - VPS: Netcup
-- edge IP lab: `62.83.33.202`
+- edge IP lab: `<edge-ip>` (valore dell'installazione, non pubblicato: D-058)
 - IAM hostname lab: `auth.ouf-lab.it`
 - API hostname lab: `api.ouf-lab.it`
 - backend network: `ouf-backend`
@@ -463,7 +463,7 @@ Per il laboratorio Netcup, una revision candidata deve produrre almeno:
 - client-secret e fingerprint-key come reference a file protetti sotto `/opt/ouf/secrets/`.
 
 Situazione osservata durante R3a:
-- il record pubblico `api.ouf-lab.it -> 62.83.33.202` è stato pubblicato;
+- il record pubblico `<api-host> -> <edge-ip>` è stato pubblicato;
 - HTTPS pubblico verso Caddy/APISIX ha restituito `404`, confermando TLS e proxy;
 - da `ouf-backend`, il tentativo di hairpin verso l'IP pubblico non era raggiungibile;
 - pertanto il lab richiede la projection Caddy con alias DNS interno dichiarativo per `api.ouf-lab.it`, analogo al già accettato issuer alias.
