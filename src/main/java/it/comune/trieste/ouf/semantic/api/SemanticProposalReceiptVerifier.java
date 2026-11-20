@@ -65,6 +65,7 @@ public class SemanticProposalReceiptVerifier {
       if(!MessageDigest.isEqual(mac.doFinal(("ouf-semantic-proposal-owner-v1."+parts[0]).getBytes(StandardCharsets.US_ASCII)),Base64.getUrlDecoder().decode(parts[1])))throw new SecurityException();
       var r=json.readValue(Base64.getUrlDecoder().decode(parts[0]),Receipt.class);
       String cap=switch(path){case "/api/semantic/v1/proposal-commands/create"->"ouf.semantic.propose";
+        case "/api/semantic/v1/proposal-commands/adopt"->"ouf.semantic.discovery.adopt";
         case "/api/semantic/v1/proposal-commands/read"->"ouf.semantic.proposal.read";
         case "/api/semantic/v1/proposal-commands/validate"->"ouf.semantic.review.prepare";
         case "/api/semantic/v1/proposal-commands/review"->"ouf.semantic.approval.request";default->throw new SecurityException();};
@@ -76,7 +77,10 @@ public class SemanticProposalReceiptVerifier {
           ||r.acr()==null||r.acr().isBlank()||!Set.of("HUMAN","AI_AGENT","SERVICE").contains(r.actor())
           ||r.idempotencyKey()==null||!r.idempotencyKey().matches("[A-Za-z0-9_:.-]{1,128}"))throw new SecurityException();
       if(r.scope()==null||r.scope().length()>8192)throw new SecurityException();
-      var scopes=new HashSet<>(Arrays.asList(r.scope().split(" +")));if(!scopes.contains(cap))throw new SecurityException();
+      boolean adoption=cap.equals("ouf.semantic.discovery.adopt");
+      var scopes=new HashSet<>(Arrays.asList(r.scope().split(" +")));
+      if(!scopes.contains(adoption?"ouf.semantic.discovery":cap) || (adoption && !"HUMAN".equals(r.actor())))
+        throw new SecurityException();
       var roles=new TreeSet<String>();if(r.roles()!=null&&!r.roles().isEmpty())for(String role:r.roles().split(" ",-1)){
         if(!role.matches("[A-Za-z0-9_:./-]{1,128}")||!roles.add(role)||roles.size()>32)throw new SecurityException();
       }
@@ -91,6 +95,14 @@ public class SemanticProposalReceiptVerifier {
       // commandKey is the stable caller intent, not an owner DTO field.
       var copy=((com.fasterxml.jackson.databind.node.ObjectNode)args).deepCopy();
       if(!path.endsWith("/read")){if(!r.idempotencyKey().equals(copy.required("commandKey").asText()))throw new SecurityException();copy.remove("commandKey");}
+      if(adoption) {
+        if(copy.size()!=2 || !args.required("commandKey").isTextual() || !envelope.required("IdempotencyKey").isTextual())
+          throw new SecurityException();
+        for(String field:List.of("requestId","candidateId")){
+          String value=copy.required(field).textValue();
+          if(value==null || !UUID.fromString(value).toString().equalsIgnoreCase(value))throw new SecurityException();
+        }
+      }
       var principal=new PrincipalContext(r.subject(),r.tenant(),PrincipalContext.ActorType.valueOf(r.actor()),r.workload(),r.acr(),r.issuer(),r.audience(),scopes,
           new PrincipalContext.IdentityClaims(roles,r.acr(),Set.of(),null));
       return new Verified(new TrustedPrincipal(principal),r.idempotencyKey(),json.writeValueAsBytes(copy));

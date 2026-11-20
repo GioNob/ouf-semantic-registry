@@ -6,7 +6,7 @@ import java.util.*;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 
-/** Disposable CI database only: exercise the real file V10 -> discovery V12 upgrade. */
+/** Disposable CI database only: exercise the real file V10 -> discovery V13 upgrade. */
 class DiscoveryFileMigrationContinuityTest {
   @Test void fileReceiptsHistoryAndDiscoveryBudgetsSurviveAdditiveUpgradeAndReconnect() throws Exception {
     String url=Objects.requireNonNull(System.getenv("OUF_SEM_DB_URL"),"isolated PostgreSQL fixture required");
@@ -31,14 +31,29 @@ class DiscoveryFileMigrationContinuityTest {
           try(var s=connection.prepareStatement("insert into ouf_sem.discovery_request(request_id,requested_artifact_type,intent,state,created_by_subject,attempt_count) values(?,'CLASS','retained discovery','PENDING','legacy-caller',5)")) {
             s.setObject(1,legacy);s.executeUpdate();
           }
+          try(var s=connection.createStatement()) {
+            s.executeUpdate("""
+                insert into ouf_sem.discovery_candidate(candidate_id,request_id,provider_id,canonical_uri,source_location,
+                  artifact_type,provider_trust,score,normalized_payload,content_hash,media_type,content_bytes,expires_at)
+                select gen_random_uuid(),request_id,'TEST','urn:v4','urn:source','CLASS','HIGH',1,'{}',
+                  encode(public.digest('v4','sha256'),'hex'),'text/turtle',convert_to('v4','UTF8'),now()+interval '1 hour'
+                from ouf_sem.discovery_request
+                """);
+            s.execute("select ouf_sem.adopt_candidate(candidate_id,'urn:v4','urn:','v4','owner','authority','legacy-caller') from ouf_sem.discovery_candidate");
+          }
         }
         var after=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
             .defaultSchema("ouf_sem").locations("classpath:db/migration").load();
-        assertThat(after.migrate().migrationsExecuted).isEqualTo(2);
+        assertThat(after.migrate().migrationsExecuted).isEqualTo(3);
         after.validate();
         try(var connection=DriverManager.getConnection(dbUrl,user,password)) {
           assertThat(history(connection).subList(0,10)).isEqualTo(oldHistory);
-          assertThat(history(connection)).hasSize(12);
+          assertThat(history(connection)).hasSize(13);
+          assertThat(value(connection,"""
+              select semantic_version || ':' || row_version || ':' || convert_from(s.content_bytes,'UTF8')
+              from ouf_sem.artifact_revision r join ouf_sem.revision_rdf_snapshot s using(revision_id)
+              where r.definition_json->'adoptionProvenance'->>'snapshotId'=s.snapshot_id::text
+              """)).isEqualTo("1.0.0:1:v4");
           assertThat(value(connection,"select result_json->>'proposalId' from ouf_sem.proposal_command_receipt where idempotency_key='same-file-intent'" )).isEqualTo("retained");
           try(var s=connection.prepareStatement("select intent,state,attempt_count,worker_generation,recovery_state from ouf_sem.discovery_request where request_id=?")) {
             s.setObject(1,legacy);

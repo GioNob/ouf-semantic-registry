@@ -12,7 +12,7 @@ public final class PublishedRdfSnapshot {
   private final SafeRdfParser parser=new SafeRdfParser();
   private final ObjectMapper json=new ObjectMapper();
 
-  public Map<String,Object> project(byte[] bytes,String mediaType,String hash,long count) {
+  private void checkInput(byte[] bytes,String mediaType) {
     if(bytes==null || bytes.length==0 || bytes.length>SafeRdfParser.MAX_BYTES)
       throw new IllegalArgumentException("SEM_READ_RDF_SIZE_LIMIT");
     // Remote JSON-LD contexts/imports must not create an ungoverned fetch path.
@@ -20,32 +20,60 @@ public final class PublishedRdfSnapshot {
       try {rejectRemoteContexts(json.readTree(bytes));}
       catch(java.io.IOException e){throw new IllegalArgumentException("SEM_READ_RDF_JSON_INVALID",e);}
     }
-    var parsed=parser.parse(bytes,mediaType);
-    if(!parsed.contentHash().equals(hash) || parsed.statementCount()!=count)
-      throw new IllegalStateException("SEM_READ_RDF_SNAPSHOT_MISMATCH");
+  }
+
+  Model verifiedModel(byte[] bytes,String mediaType,String hash) {
+    checkInput(bytes,mediaType);
+    verifyHash(bytes,hash);
+    return parser.model(bytes,mediaType);
+  }
+
+  static void verifyHash(byte[] bytes,String hash) {
+    try {
+      byte[] digest=java.security.MessageDigest.getInstance("SHA-256").digest(bytes);
+      if(!HexFormat.of().formatHex(digest).equals(hash))
+        throw new IllegalStateException("SEM_READ_RDF_SNAPSHOT_MISMATCH");
+    } catch(java.security.NoSuchAlgorithmException e){throw new IllegalStateException(e);}
+  }
+
+  public Map<String,Object> project(byte[] bytes,String mediaType,String hash,long expectedCount) {
+    checkInput(bytes,mediaType);
     Model model=parser.model(bytes,mediaType);
     try {
-      Comparator<Statement> order=Comparator
-        .comparing((Statement s)->org.apache.jena.riot.out.NodeFmtLib.strNT(s.getSubject().asNode()))
-        .thenComparing(s->s.getPredicate().getURI())
-        .thenComparing(s->org.apache.jena.riot.out.NodeFmtLib.strNT(s.getObject().asNode()));
-      var selected=new TreeSet<Statement>(order);
-      var iterator=model.listStatements();
-      try {
-        while(iterator.hasNext()) {
-          selected.add(iterator.nextStatement());
-          if(selected.size()>MAX_STATEMENTS)selected.pollLast();
-        }
-      } finally {iterator.close();}
-      List<Map<String,Object>> statements=new ArrayList<>();
-      for(var s:selected)statements.add(Map.of("subject",node(s.getSubject()),
-        "predicate",s.getPredicate().getURI(),"object",node(s.getObject())));
-      return Map.of("content_hash",hash,"media_type",mediaType,"statement_count",count,
-        "statements",statements,"partial",count>statements.size(),
-        "interpretation","ASSERTED_RDF_NO_INFERENCE",
-        "blank_node_scope","THIS_SNAPSHOT_RESPONSE",
-        "term_reference_scope","CONTAINING_REVISION_AND_PUBLICATION_SET");
+      verifyHash(bytes,hash);
+      if(model.size()!=expectedCount)throw new IllegalStateException("SEM_READ_RDF_SNAPSHOT_MISMATCH");
+      return project(model,mediaType,hash);
     } finally {model.close();}
+  }
+
+  Map<String,Object> projectAdopted(byte[] bytes,String mediaType,String hash) {
+    Model model=verifiedModel(bytes,mediaType,hash);
+    try {return project(model,mediaType,hash);}
+    finally {model.close();}
+  }
+
+  private Map<String,Object> project(Model model,String mediaType,String hash) {
+    long count=model.size();
+    Comparator<Statement> order=Comparator
+      .comparing((Statement s)->org.apache.jena.riot.out.NodeFmtLib.strNT(s.getSubject().asNode()))
+      .thenComparing(s->s.getPredicate().getURI())
+      .thenComparing(s->org.apache.jena.riot.out.NodeFmtLib.strNT(s.getObject().asNode()));
+    var selected=new TreeSet<Statement>(order);
+    var iterator=model.listStatements();
+    try {
+      while(iterator.hasNext()) {
+        selected.add(iterator.nextStatement());
+        if(selected.size()>MAX_STATEMENTS)selected.pollLast();
+      }
+    } finally {iterator.close();}
+    List<Map<String,Object>> statements=new ArrayList<>();
+    for(var s:selected)statements.add(Map.of("subject",node(s.getSubject()),
+      "predicate",s.getPredicate().getURI(),"object",node(s.getObject())));
+    return Map.of("content_hash",hash,"media_type",mediaType,"statement_count",count,
+      "statements",statements,"partial",count>statements.size(),
+      "interpretation","ASSERTED_RDF_NO_INFERENCE",
+      "blank_node_scope","THIS_SNAPSHOT_RESPONSE",
+      "term_reference_scope","CONTAINING_REVISION_AND_PUBLICATION_SET");
   }
   private static Map<String,Object> node(RDFNode node) {
     if(node.isURIResource())return Map.of("kind","IRI","value",node.asResource().getURI());

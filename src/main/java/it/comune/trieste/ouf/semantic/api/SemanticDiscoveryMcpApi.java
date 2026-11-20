@@ -4,13 +4,11 @@ import com.fasterxml.jackson.databind.*;
 import it.comune.trieste.ouf.authorization.*;
 import it.comune.trieste.ouf.semantic.application.DiscoveryJobService;
 import jakarta.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/** Delegated discovery jobs only. Adoption and publication retain their native HUMAN boundaries. */
+/** Delegated discovery jobs only. Adoption uses the proposal command channel. */
 @RestController
 @RequestMapping("/api/internal/v1/semantic/discovery")
 public class SemanticDiscoveryMcpApi {
@@ -33,9 +31,7 @@ public class SemanticDiscoveryMcpApi {
       for(var fields=a.fieldNames();fields.hasNext();)if(!keys.contains(fields.next()))throw new IllegalArgumentException();
       // Namespace delegated jobs by trusted issuer, tenant and subject, never caller-supplied identity.
       // Native subject-only job history is preserved and cannot alias this bridge's namespace.
-      String actor="mcp-discovery-v1:"+HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(
-          json.writeValueAsBytes(List.of(principal.issuer(),principal.tenantId(),principal.subjectId()))));
-      return new Input(a,actor);
+      return new Input(a,SemanticDiscoveryDelegation.jobSubject(principal,json));
     }catch(Exception e){throw new IllegalArgumentException("SEM_DISCOVERY_ARGUMENTS_INVALID");}
   }
   @PostMapping("/request") public Object create(@RequestBody byte[] raw,HttpServletRequest request) {
