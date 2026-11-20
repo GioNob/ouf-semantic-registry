@@ -55,6 +55,8 @@ class PublishedRdfSnapshotTest {
       .hasMessage("SEM_READ_RDF_SNAPSHOT_MISMATCH");
     assertThatThrownBy(()->projection.project(bytes,"text/turtle",parsed.contentHash(),2))
       .hasMessage("SEM_READ_RDF_SNAPSHOT_MISMATCH");
+    assertThatThrownBy(()->projection.project(bytes,"text/turtle",parsed.contentHash(),-1))
+      .hasMessage("SEM_READ_RDF_SNAPSHOT_MISMATCH");
   }
   @Test void rejectsRemoteJsonLdContextsBeforeParserCanFetchThemAndAcceptsLocalContexts() {
     for(String payload:List.of("{\"@context\":\"https://example.invalid/context\"}",

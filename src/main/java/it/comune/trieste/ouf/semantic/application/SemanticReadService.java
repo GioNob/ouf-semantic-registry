@@ -113,11 +113,13 @@ public class SemanticReadService {
       if(((Number)snapshot.get("byte_count")).longValue()>8388608)
         throw new IllegalArgumentException("SEM_READ_RDF_SIZE_LIMIT");
       byte[] bytes=(byte[])snapshot.get("content_bytes");
-      Number count=(Number)snapshot.get("statement_count");
-      var projection=new LinkedHashMap<>(new PublishedRdfSnapshot().project(bytes,
-          (String)snapshot.get("media_type"),snapshot.get("content_hash").toString().strip(),
-          count==null?-1:count.longValue()));
-      if(snapshot.get("snapshot_id")!=null) {
+      String mediaType=(String)snapshot.get("media_type"),hash=snapshot.get("content_hash").toString().strip();
+      var rdf=new PublishedRdfSnapshot();
+      if(snapshot.get("snapshot_id")==null) {
+        long count=((Number)snapshot.get("statement_count")).longValue();
+        row.put("rdf_snapshot",rdf.project(bytes,mediaType,hash,count));
+      } else {
+        var projection=new LinkedHashMap<>(rdf.projectAdopted(bytes,mediaType,hash));
         projection.put("snapshot_id",snapshot.get("snapshot_id"));
         projection.put("byte_count",bytes.length);
         projection.put("content_path","/api/semantic/v1/publication-sets/"+publicationSet+"/artifacts/"+row.get("artifact_id"));
@@ -132,7 +134,6 @@ public class SemanticReadService {
         if(4L*((bytes.length+2)/3)+20<=available)
           projection.put("content_base64",Base64.getEncoder().encodeToString(bytes));
       }
-      row.put("rdf_snapshot",projection);
     }
     return boundedResult(row);
   }

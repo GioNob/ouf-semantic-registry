@@ -109,7 +109,8 @@ class SemanticProposalReceiptHttpTest {
     var signed=post(path).header("X-OUF-Semantic-Proposal-Receipt",proof(path,ADOPT,key,raw))
         .contentType(MediaType.APPLICATION_JSON).content(raw);
     var receipt=json.readTree(http.perform(signed).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
-    assertThat(json.readTree(http.perform(signed).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray())).isEqualTo(receipt);
+    var replay=signed.header("idempotency-key","unsigned-1","unsigned-2");
+    assertThat(json.readTree(http.perform(replay).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray())).isEqualTo(receipt);
     String readPath="/api/semantic/v1/proposal-commands/read",readKey=UUID.randomUUID().toString();
     byte[] query=envelope(readCap,"READ",readKey,Map.of("commandKey",key));
     var lookup=post(readPath).header("X-OUF-Semantic-Proposal-Receipt",proof(readPath,readCap,readKey,query))
