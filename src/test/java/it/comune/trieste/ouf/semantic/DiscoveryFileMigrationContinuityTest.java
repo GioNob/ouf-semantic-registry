@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-/** Disposable CI database only: exercise upgrades through V17 using populated schemas. */
+/** Disposable CI database only: exercise upgrades through V18 using populated schemas. */
 class DiscoveryFileMigrationContinuityTest {
   @Test void fileReceiptsHistoryAndDiscoveryBudgetsSurviveAdditiveUpgradeAndReconnect() throws Exception {
     String url=Objects.requireNonNull(System.getenv("OUF_SEM_DB_URL"),"isolated PostgreSQL fixture required");
@@ -141,22 +141,6 @@ class DiscoveryFileMigrationContinuityTest {
           assertThat(history(connection)).hasSize(15);
           assertThat(value(connection,"select count(*) from ouf_sem.discovery_incident where state='OPEN' and opened_worker_version is null")).isEqualTo("2");
           assertThat(value(connection,"select count(*) from ouf_sem.claim_discovery_version_probe('new',array['TLS'])")).isEqualTo("0");
-          SemanticDiscoveryProvider provider=new SemanticDiscoveryProvider(){
-            public String providerId(){return "D078";}
-            public List<Candidate> search(Query query){return List.of();}
-          };
-          var release=new Properties();release.setProperty("version","new");
-          var worker=new DiscoveryService(JdbcClient.create(v15.getConfiguration().getDataSource()),List.of(provider),
-              new SafeRdfParser(),new ObjectMapper(),new BuildProperties(release));
-          assertThat(worker.executeOne()).isOne();
-          assertThat(worker.executeOne()).isZero();
-          assertThat(value(connection,"select state||':'||attempt_count from ouf_sem.discovery_request where created_by_subject='D078'")).isEqualTo("SUCCEEDED:2");
-          assertThat(value(connection,"select state from ouf_sem.discovery_incident where provider_id='D078'")).isEqualTo("RESOLVED");
-          assertThat(value(connection,"select state||':'||cumulative_attempts from ouf_sem.discovery_dependency where provider_id='D078'")).isEqualTo("HEALTHY:2");
-          assertThat(history(connection).subList(0,10)).isEqualTo(oldHistory);
-          assertThat(value(connection,"select attempt_count::text||':'||recovery_state from ouf_sem.discovery_request where idempotency_key_hash=repeat('b',64)")).isEqualTo("128:PAUSED_EXHAUSTED");
-          assertThat(value(connection,"select cumulative_attempts::text||':'||state from ouf_sem.discovery_dependency where scope_subject='composed-caller'")).isEqualTo("128:PAUSED_EXHAUSTED");
-          verifyFreshRequestAfterExpiry(JdbcClient.create(v15.getConfiguration().getDataSource()));
           try(var s=connection.createStatement()) {
             s.executeUpdate("""
                 with review as (
@@ -172,6 +156,9 @@ class DiscoveryFileMigrationContinuityTest {
         var v16=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
             .defaultSchema("ouf_sem").locations("classpath:db/migration").target("16").load();
         assertThat(v16.migrate().migrationsExecuted).isOne();
+        var v17=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
+            .defaultSchema("ouf_sem").locations("classpath:db/migration").target("17").load();
+        assertThat(v17.migrate().migrationsExecuted).isOne();
         // Reopening the fully upgraded database must preserve the history and all claims.
         var reopened=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
             .defaultSchema("ouf_sem").locations("classpath:db/migration").load();
@@ -179,7 +166,31 @@ class DiscoveryFileMigrationContinuityTest {
         assertThat(reopened.migrate().migrationsExecuted).isZero();
         reopened.validate();
         try(var connection=DriverManager.getConnection(dbUrl,user,password)) {
-          assertThat(history(connection)).hasSize(17);
+          assertThat(history(connection)).hasSize(18);
+          assertThat(value(connection,"select count(*) from ouf_sem.discovery_request where fetch_denied_count<>0")).isEqualTo("0");
+          // Exercise the running 1.0.2 publication signature on the upgraded schema.
+          try(var statement=connection.createStatement()){
+            statement.executeUpdate("update ouf_sem.discovery_request set state='RUNNING', worker_generation=1, lease_until=now()+interval '1 minute', budget_deadline=now()+interval '1 hour' where request_id='"+legacy+"'");
+          }
+          assertThat(value(connection,"select ouf_sem.publish_discovery_candidates('"+legacy+"',0,'[]',0,0,3)::text")).isEqualTo("false");
+          assertThat(value(connection,"select ouf_sem.publish_discovery_candidates('"+legacy+"',1,'[]',1,2)::text")).isEqualTo("true");
+          assertThat(value(connection,"select rdf_invalid_count||':'||rdf_bound_count||':'||fetch_denied_count from ouf_sem.discovery_request where request_id='"+legacy+"'")).isEqualTo("1:2:0");
+          SemanticDiscoveryProvider provider=new SemanticDiscoveryProvider(){
+            public String providerId(){return "D078";}
+            public List<Candidate> search(Query query){return List.of();}
+          };
+          var release=new Properties();release.setProperty("version","new");
+          var worker=new DiscoveryService(JdbcClient.create(reopened.getConfiguration().getDataSource()),List.of(provider),
+              new SafeRdfParser(),new ObjectMapper(),new BuildProperties(release));
+          assertThat(worker.executeOne()).isOne();
+          assertThat(worker.executeOne()).isZero();
+          assertThat(value(connection,"select state||':'||attempt_count from ouf_sem.discovery_request where created_by_subject='D078'")).isEqualTo("SUCCEEDED:2");
+          assertThat(value(connection,"select state from ouf_sem.discovery_incident where provider_id='D078'")).isEqualTo("RESOLVED");
+          assertThat(value(connection,"select state||':'||cumulative_attempts from ouf_sem.discovery_dependency where provider_id='D078'")).isEqualTo("HEALTHY:2");
+          assertThat(history(connection).subList(0,10)).isEqualTo(oldHistory);
+          assertThat(value(connection,"select attempt_count::text||':'||recovery_state from ouf_sem.discovery_request where idempotency_key_hash=repeat('b',64)")).isEqualTo("128:PAUSED_EXHAUSTED");
+          assertThat(value(connection,"select cumulative_attempts::text||':'||state from ouf_sem.discovery_dependency where scope_subject='composed-caller'")).isEqualTo("128:PAUSED_EXHAUSTED");
+          verifyFreshRequestAfterExpiry(JdbcClient.create(reopened.getConfiguration().getDataSource()));
           assertThat(value(connection,"select count(*) from ouf_sem.immutable_semantic_snapshot where ontology_rdf is not null")).isEqualTo("0");
           assertThat(legacyPublish(connection,"v13-bound")).isEqualTo(legacySet);
           assertThatThrownBy(()->legacyPublish(connection,"v13-incomplete"))

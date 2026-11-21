@@ -3,14 +3,77 @@ package it.comune.trieste.ouf.semantic.adapters.discovery;
 import static org.assertj.core.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.Mockito.*;
+import static it.comune.trieste.ouf.semantic.adapters.discovery.SchemaGovFetchFixture.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.comune.trieste.ouf.semantic.ports.SemanticDiscoveryProvider.Query;
 import java.net.URI;
 import java.time.*;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class SchemaGovProviderTest {
+  private final Query property=new Query("PROPERTY","latitudine",List.of("it"));
+
+  @ParameterizedTest @ValueSource(ints={400,404,406,409,410,414,422,451})
+  void individualDenialCountsOnceAndDoesNotConsumeACandidateSlot(int status){
+    var gateway=new SchemaGovFetchFixture(1,DENIED,DENIED,VALID);
+    gateway.reject(DENIED,"PROVIDER_HTTP_"+status);
+    gateway.describe(VALID,"<"+VALID+"> <http://www.w3.org/2000/01/rdf-schema#label> \"valid\" .");
+    var result=gateway.provider.searchWithExclusions(property);
+    assertThat(result.candidates()).hasSize(1);
+    assertThat(result.fetchDenied()).isOne();
+    gateway.verifyFetches(DENIED,1);
+    gateway.verifyFetches(VALID,1);
+  }
+
+  @Test void namespaceDenialsNeverBlockTheProviderAndAttemptsStayBounded(){
+    // Out-of-namespace results sort before admitted ones (ORDER BY ?resource).
+    var three=new SchemaGovFetchFixture(3,"urn:a","urn:a","urn:b","urn:c");
+    for(String uri:List.of("urn:a","urn:b","urn:c"))three.reject(uri,"PROVIDER_HTTP_400");
+    var all=three.provider.searchWithExclusions(property);
+    assertThat(all.candidates()).isEmpty();
+    assertThat(all.fetchDenied()).isEqualTo(3);
+    three.verifyFetches("urn:a",1);
+    var bounded=new SchemaGovFetchFixture(1,"urn:a","urn:b","urn:c","urn:d");
+    for(String uri:List.of("urn:a","urn:b","urn:c","urn:d"))bounded.reject(uri,"PROVIDER_HTTP_400");
+    assertThat(bounded.provider.searchWithExclusions(property).fetchDenied()).isEqualTo(3);
+    bounded.verifyFetches("urn:d",0);
+  }
+
+  @Test void laterSuccessPreventsEscalationAndUnavailableOntologyOnlyAddsAGap(){
+    var gateway=new SchemaGovFetchFixture(4,"urn:a","urn:b","urn:c",VALID);
+    for(String uri:List.of("urn:a","urn:b","urn:c"))gateway.reject(uri,"PROVIDER_HTTP_404");
+    String ontology="https://w3id.org/italia/onto/CLV/";
+    gateway.describe(VALID,"<"+VALID+"> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <"+ontology+"> .");
+    gateway.reject(ontology,"PROVIDER_HTTP_400");
+    var result=gateway.provider.searchWithExclusions(property);
+    assertThat(result.fetchDenied()).isEqualTo(3);
+    assertThat(result.candidates()).singleElement().satisfies(c->{
+      assertThat(c.canonicalUri()).isEqualTo(VALID);
+      assertThat(c.ontologyProvenance()).isNull();
+      assertThat(c.gaps()).containsExactly("ONTOLOGY_PROVENANCE_UNAVAILABLE");
+    });
+  }
+
+  @Test void searchDenialRemainsAProviderFailure(){
+    var gateway=new SchemaGovFetchFixture(1,VALID);
+    gateway.rejectSearch("PROVIDER_HTTP_400");
+    assertThatThrownBy(()->gateway.provider.searchWithExclusions(property))
+        .isInstanceOf(BoundedGatewayClient.ProviderFailure.class).hasMessage("PROVIDER_HTTP_400");
+    gateway.verifyFetches(VALID,0);
+  }
+
+  @ParameterizedTest @ValueSource(strings={"PROVIDER_HTTP_401","PROVIDER_HTTP_403","PROVIDER_HTTP_405","PROVIDER_HTTP_408",
+      "PROVIDER_HTTP_429","PROVIDER_HTTP_503","PROVIDER_TIMEOUT","GATEWAY_TOKEN_REJECTED",
+      "PROVIDER_MEDIA_TYPE_REJECTED","PROVIDER_RESPONSE_TOO_LARGE"})
+  void requiredFetchPreservesChannelFailures(String code){
+    var gateway=new SchemaGovFetchFixture(1,VALID);
+    gateway.reject(VALID,code);
+    assertThatThrownBy(()->gateway.provider.searchWithExclusions(property))
+        .isInstanceOf(BoundedGatewayClient.ProviderFailure.class).hasMessage(code);
+  }
   private static BoundedGatewayClient.Response turtle(String content){
     return new BoundedGatewayClient.Response(content.getBytes(UTF_8),"text/turtle");
   }

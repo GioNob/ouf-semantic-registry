@@ -17,6 +17,11 @@ import org.springframework.stereotype.Component;
 public class SchemaGovProvider implements SemanticDiscoveryProvider {
   private static final Set<String> JSON=Set.of("application/json","application/sparql-results+json");
   private static final Set<String> RDF=Set.of("text/turtle","application/ld+json","application/rdf+xml");
+  // During a required GET these statuses can describe the supplied resource or URI.
+  private static final Set<String> RESOURCE_DENIALS=Set.of("PROVIDER_HTTP_400","PROVIDER_HTTP_404",
+      "PROVIDER_HTTP_406","PROVIDER_HTTP_409","PROVIDER_HTTP_410","PROVIDER_HTTP_414","PROVIDER_HTTP_422","PROVIDER_HTTP_451");
+  // A denied URI does not use a candidate slot; total fetch attempts stay bounded.
+  private static final int MAX_ATTEMPT_FACTOR=3;
   private final SchemaGovProperties cfg;private final BoundedGatewayClient client;private final ObjectMapper json;private final Clock clock;
   @Autowired
   public SchemaGovProvider(SchemaGovProperties cfg,ObjectMapper json,GatewayOAuthProperties auth){this(cfg,new BoundedGatewayClient(cfg.connectTimeout(),new ClientCredentialsTokenSource(auth,json)),json,Clock.systemUTC());}
@@ -31,7 +36,10 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
   public String providerId(){return "SCHEMA_GOV_IT";}
   @Override public boolean enabled(){return cfg.enabled();}
   public List<Candidate> search(Query q){
-    if(!cfg.enabled())return List.of();
+    return searchWithExclusions(q).candidates();
+  }
+  @Override public SearchResult searchWithExclusions(Query q){
+    if(!cfg.enabled())return new SearchResult(List.of(),0);
     URI endpoint=underGateway(cfg.searchPath());
     String form="query="+enc(query(q))+"&format="+enc("application/sparql-results+json");
     var response=client.postForm(cfg.gatewayBaseUrl(),endpoint,form,timeout(q.deadline()),cfg.maxResponseBytes(),JSON);
@@ -44,11 +52,20 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
     // Fetch required descriptions first so optional metadata cannot starve a later candidate.
     var descriptions=new LinkedHashMap<String,BoundedGatewayClient.Response>();
     var reasons=new HashMap<String,List<String>>();
+    var attempted=new HashSet<String>();
     for(JsonNode row:rows){
-      if(descriptions.size()>=cfg.maxCandidates())break;
-      String uri=binding(row,"resource");
-      if(uri==null || descriptions.containsKey(uri))continue;
-      descriptions.put(uri,fetch(uri,q.deadline()));
+      if(descriptions.size()>=cfg.maxCandidates() || attempted.size()>=cfg.maxCandidates()*MAX_ATTEMPT_FACTOR)break;
+      String uri=row.path("resource").path("value").textValue();
+      if(uri==null || uri.isBlank())
+        throw new BoundedGatewayClient.ProviderFailure("SCHEMA_GOV_SPARQL_RESULT_INVALID");
+      if(!attempted.add(uri))continue;
+      try {
+        descriptions.put(uri,fetch(uri,q.deadline()));
+      } catch(BoundedGatewayClient.ProviderFailure failure){
+        // Installation namespace policy and absent resources describe this URI only.
+        if(!RESOURCE_DENIALS.contains(failure.decision().code()))throw failure;
+        continue;
+      }
       String label=binding(row,"label"),language=row.path("label").path("xml:lang").asText(null);
       reasons.put(uri,label==null?List.of("schema.gov.it SPARQL match"):
           List.of("label: "+label+(language==null?"":" ["+language+"]")));
@@ -66,7 +83,7 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
       candidates.add(new Candidate(uri,uri,q.artifactType(),"HIGH",.85,reasons.get(uri),metadata.gaps(),
           body.body(),body.mediaType(),metadata.triples(),metadata.labels()));
     }
-    return List.copyOf(candidates);
+    return new SearchResult(candidates,attempted.size()-descriptions.size());
   }
   private BoundedGatewayClient.Response fetch(String resource,Instant deadline){
     return client.get(cfg.gatewayBaseUrl(),underGateway(cfg.fetchPath()+"?uri="+enc(resource)),
