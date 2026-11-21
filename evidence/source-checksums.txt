@@ -58,7 +58,7 @@ f3621f07c6934e14324cd26f9e14ce51f8f4d42ae2e5dd2445c4fe374200a447  src/main/java/
 caeef50430547c3353c54c6912494cc511a6e1bba5e718673084296015f9d705  src/main/java/it/comune/trieste/ouf/semantic/api/SemanticProposalReceiptFilter.java
 8e9af4caf007656ca37e07d1af23d8c6b337d26bbe496f05cbf2a321afb4342d  src/main/java/it/comune/trieste/ouf/semantic/api/SemanticProposalReceiptVerifier.java
 897f335214c25d4a6980b83b82f17256175a7e6ba8c9ca4ce431414bd64819b2  src/main/java/it/comune/trieste/ouf/semantic/api/SemanticPublishedTermsApi.java
-b4f4f204672ce40910eeb1e3ea54a99148f5abe772d35f760cb29621bf9025ab  src/main/java/it/comune/trieste/ouf/semantic/api/SemanticTrustedHumanApi.java
+5bd925860a1f25d1c141bdf5542908e512e0cae775c8e60a2bdc71b0c036fd39  src/main/java/it/comune/trieste/ouf/semantic/api/SemanticTrustedHumanApi.java
 b93adefc03767a45923d83fd3ad3596f55c9429a0cb9373ee9b1d7dbf34b4cd0  src/main/java/it/comune/trieste/ouf/semantic/api/TrustedActorResolver.java
 0f674f01d04dfcd3a3e8c4b768db4a0939daf72c27586aaf1ad6f00bd569ccab  src/main/java/it/comune/trieste/ouf/semantic/api/ValidationApi.java
 0c755ad8a0884839068b6ffc452bf359ebfbdf67c4b5a674e7d1a87ef90a107f  src/main/java/it/comune/trieste/ouf/semantic/application/ArtifactService.java
