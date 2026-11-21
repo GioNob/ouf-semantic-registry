@@ -26,6 +26,11 @@ class DiscoveryDurableRecoveryRuntimeTest {
   }
   Map<String,Object> reserve(UUID id,long generation,String provider){try{return json.readValue(db.sql("select ouf_sem.reserve_discovery_dependency(:r,:g,:p)::text").param("r",id).param("g",generation).param("p",provider).query(String.class).single(),new com.fasterxml.jackson.core.type.TypeReference<Map<String,Object>>(){});}catch(Exception e){throw new AssertionError(e);}}
   long token(Map<String,Object> admission){assertThat(admission).containsEntry("admitted",true);return ((Number)admission.get("generation")).longValue();}
+  Map<String,Object> reserve(UUID job,String provider,String version) throws Exception {
+    String result=db.sql("select ouf_sem.reserve_discovery_dependency(:r,1,:p,:v)::text")
+        .param("r",job).param("p",provider).param("v",version).query(String.class).single();
+    return json.readValue(result,new com.fasterxml.jackson.core.type.TypeReference<Map<String,Object>>(){});
+  }
   boolean done(UUID id,long generation,String provider,long token,String kind,String code,double delay){return db.sql("select ouf_sem.finish_discovery_dependency(:r,:g,:p,:t,:k,:c,:d)").param("r",id).param("g",generation).param("p",provider).param("t",token).param("k",kind).param("c",code).param("d",delay).query(Boolean.class).single();}
   boolean finish(UUID id,long generation,String outcome,String bytes){return db.sql("select ouf_sem.finish_discovery_job(:r,:g,:o,null,cast(:b as jsonb),null)").param("r",id).param("g",generation).param("o",outcome).param("b",bytes).query(Boolean.class).single();}
   Map<String,Object> dependency(String provider){return db.sql("select * from ouf_sem.discovery_dependency where scope_subject=:a and provider_id=:p").param("a",actor).param("p",provider).query().singleRow();}
@@ -59,11 +64,12 @@ class DiscoveryDurableRecoveryRuntimeTest {
     assertThat(db.sql("select count(*) from ouf_sem.discovery_incident where scope_subject=:a").param("a",actor).query(Long.class).single()).isEqualTo(1);
     assertThat(dependency("TEST")).containsEntry("attempts",2).containsEntry("cumulative_attempts",2L);
   }
-  @Test void newJobAndRestartCannotBypassExhaustionButIndependentProviderContinues(){
+  @Test void newJobAndRestartCannotBypassExhaustionButIndependentProviderContinues() throws Exception {
     UUID a=request(true);long t=token(reserve(a,1,"TEST"));
     db.sql("update ouf_sem.discovery_dependency set attempts=128 where scope_subject=:a and provider_id='TEST'").param("a",actor).update();
     assertThat(done(a,1,"TEST",t,"TRANSIENT","PROVIDER_TIMEOUT",0)).isTrue();
     UUID b=request(true);assertThat(reserve(b,1,"TEST")).containsEntry("state","PAUSED_EXHAUSTED");
+    assertThat(reserve(b,"TEST","new-image")).containsEntry("state","PAUSED_EXHAUSTED").containsEntry("admitted",false);
     assertThat(reserve(b,1,"INDEPENDENT")).containsEntry("admitted",true);
     var jobs=new DiscoveryJobService(db,new DiscoveryService(db,List.of(),parser,json),List.of(),json);
     assertThat(jobs.providerStatus("TEST",true,actor)).containsEntry("recoveryState","PAUSED_EXHAUSTED");
@@ -141,4 +147,145 @@ class DiscoveryDurableRecoveryRuntimeTest {
     assertThat(finish(id,1,"SUCCESS",candidate())).isFalse();
   }
   @Test void unversionedCompletionIsDenied(){UUID id=request(true);assertThatThrownBy(()->db.sql("select ouf_sem.complete_discovery_job(:r,true,null)").param("r",id).query().singleRow()).isInstanceOf(org.springframework.dao.DataAccessException.class);}
+
+  @Test void versionProbeIsOneShotAcrossConcurrentWorkersRestartsAndRollbacks() throws Exception {
+    UUID first=request(true), other=request(true);
+    long initial=token(reserve(first,"TEST","v1"));
+    assertThat(done(first,1,"TEST",initial,"BLOCKED","PROVIDER_UNKNOWN",0)).isTrue();
+    ready("TEST");
+    assertThat(reserve(first,"TEST","v1")).containsEntry("state","BLOCKED");
+    var start=new CyclicBarrier(2);
+    try(var pool=Executors.newFixedThreadPool(2)){
+      var one=pool.submit(()->{start.await(5,TimeUnit.SECONDS);return reserve(first,"TEST","v2");});
+      var two=pool.submit(()->{start.await(5,TimeUnit.SECONDS);return reserve(other,"TEST","v2");});
+      var left=one.get(10,TimeUnit.SECONDS);var right=two.get(10,TimeUnit.SECONDS);
+      assertThat(List.of(left.get("admitted"),right.get("admitted"))).containsExactlyInAnyOrder(true,false);
+    }
+    var active=dependency("TEST");
+    assertThat(active).containsEntry("state","BLOCKED").containsEntry("cumulative_attempts",2L);
+    db.sql("update ouf_sem.discovery_dependency set busy_until=clock_timestamp()-interval '1 second' where scope_subject=:a")
+        .param("a",actor).update();
+    assertThat(reserve(first,"TEST","v2")).containsEntry("state","BLOCKED");
+    assertThat(reserve(first,1,"TEST")).containsEntry("state","BLOCKED");
+    long next=token(reserve(other,"TEST","v3"));
+    assertThat(done((UUID)active.get("active_request"),1,"TEST",2,"SUCCESS",null,0)).isFalse();
+    assertThat(done(other,1,"TEST",next,"BLOCKED","PROVIDER_UNKNOWN",0)).isTrue();
+    ready("TEST");
+    for(String used:List.of("v1","v2","v3"))assertThat(reserve(first,"TEST",used)).containsEntry("state","BLOCKED");
+    assertThat(done(first,1,"TEST",token(reserve(first,"TEST","v4")),"SUCCESS",null,0)).isTrue();
+    assertThat(dependency("TEST")).containsEntry("state","HEALTHY").containsEntry("cumulative_attempts",4L);
+    assertThat(db.sql("select opened_worker_version from ouf_sem.discovery_incident where scope_subject=:a and state='RESOLVED'")
+        .param("a",actor).query(String.class).single()).isEqualTo("v1");
+    assertThat(db.sql("select attempts from ouf_sem.discovery_incident where scope_subject=:a")
+        .param("a",actor).query(Integer.class).single()).isEqualTo(4);
+  }
+  @Test void securityAndUnrecognizedCodesStayBlockedOnUpgrade() throws Exception {
+    UUID id=request(true);
+    for(String code:List.of("PROVIDER_TLS_UNPROVEN","GATEWAY_TOKEN_REJECTED","GATEWAY_AUTH_REQUIRED",
+        "GATEWAY_ORIGIN_VIOLATION","GATEWAY_HTTPS_REQUIRED","PROVIDER_REDIRECT_FORBIDDEN",
+        "GATEWAY_CREDENTIAL_FILE_INVALID","PROVIDER_HTTP_401","PROVIDER_HTTP_403","PROVIDER_HTTP_407","FUTURE_CODE")){
+      long t=token(reserve(id,code,"v1"));
+      assertThat(done(id,1,code,t,"BLOCKED",code,0)).isTrue();
+      ready(code);
+      assertThat(reserve(id,code,"v2")).as(code).containsEntry("state","BLOCKED").containsEntry("admitted",false);
+      db.sql("update ouf_sem.discovery_dependency set state='PAUSED_EXHAUSTED',budget_deadline=now() where scope_subject=:a and provider_id=:p")
+          .param("a",actor).param("p",code).update();
+      assertThat(reserve(id,code,"v2")).as(code).containsEntry("state","PAUSED_EXHAUSTED").containsEntry("admitted",false);
+    }
+  }
+  @Test void transientProbeFailureKeepsTheOriginalBlockAndRespectsRetryAfter() throws Exception {
+    UUID id=request(true);
+    assertThat(done(id,1,"TEST",token(reserve(id,"TEST","v1")),"BLOCKED","SCHEMA_GOV_SPARQL_RESULT_INVALID",0)).isTrue();
+    ready("TEST");
+    assertThat(done(id,1,"TEST",token(reserve(id,"TEST","v2")),"TRANSIENT","PROVIDER_HTTP_503",7200)).isTrue();
+    assertThat(dependency("TEST")).containsEntry("state","BLOCKED");
+    assertThat(reserve(id,"TEST","v2")).containsEntry("state","BLOCKED");
+    assertThat(reserve(id,"TEST","v3")).containsEntry("state","RETRY_WAIT").containsEntry("admitted",false);
+    ready("TEST");
+    assertThat(done(id,1,"TEST",token(reserve(id,"TEST","v3")),"SUCCESS",null,0)).isTrue();
+  }
+  @Test void exhaustedCorrectableIncidentHonorsRetryAfterAndAllowsOnlyAnUnusedVersion() throws Exception {
+    UUID id=request(true),fresh=request(true);
+    assertThat(done(id,1,"TEST",token(reserve(id,"TEST","v1")),"BLOCKED","PROVIDER_UNKNOWN",0)).isTrue();
+    ready("TEST");
+    assertThat(done(id,1,"TEST",token(reserve(id,"TEST","v2")),"TRANSIENT","PROVIDER_HTTP_503",90000)).isTrue();
+    var exhausted=dependency("TEST");
+    assertThat(exhausted).containsEntry("state","PAUSED_EXHAUSTED");
+    assertThat(reserve(fresh,"TEST","v3")).containsEntry("state","RETRY_WAIT").containsEntry("admitted",false);
+    ready("TEST");
+    for(String used:List.of("v1","v2"))
+      assertThat(reserve(fresh,"TEST",used)).containsEntry("state","PAUSED_EXHAUSTED").containsEntry("admitted",false);
+    assertThat(dependency("TEST")).containsEntry("budget_deadline",exhausted.get("budget_deadline")).containsEntry("cumulative_attempts",2L);
+    long probe=token(reserve(fresh,"TEST","v3"));
+    assertThat(dependency("TEST")).containsEntry("attempts",1).containsEntry("cumulative_attempts",3L)
+        .containsEntry("incident_id",exhausted.get("incident_id"));
+    assertThat(done(fresh,1,"TEST",probe,"SUCCESS",null,0)).isTrue();
+    assertThat(dependency("TEST")).containsEntry("state","HEALTHY");
+  }
+  @Test void correctableBlockOnLastAttemptCanOpenANewEpisodeBeforeDeadline() throws Exception {
+    UUID old=request(true),fresh=request(true);
+    assertThat(done(old,1,"TEST",token(reserve(old,"TEST","v1")),"TRANSIENT","PROVIDER_TIMEOUT",0)).isTrue();
+    // Advance the fixture to the last available attempt, keeping the time budget live.
+    db.sql("update ouf_sem.discovery_dependency set attempts=127,cumulative_attempts=127,next_attempt_at=now() where scope_subject=:a")
+        .param("a",actor).update();
+    assertThat(done(old,1,"TEST",token(reserve(old,"TEST","v1")),"BLOCKED","PROVIDER_UNKNOWN",0)).isTrue();
+    ready("TEST");
+    long probe=token(reserve(fresh,"TEST","v2"));
+    assertThat(dependency("TEST")).containsEntry("attempts",1).containsEntry("cumulative_attempts",129L);
+    assertThat(done(fresh,1,"TEST",probe,"SUCCESS",null,0)).isTrue();
+    assertThat(db.sql("select attempts from ouf_sem.discovery_incident where scope_subject=:a and state='RESOLVED'")
+        .param("a",actor).query(Integer.class).single()).isEqualTo(129);
+  }
+  @Test void invalidCandidateIsExcludedAndProviderSucceeds(){checkCandidateExclusions(true);}
+  @Test void allExcludedCandidatesLeaveSuccessfulEmptyJobWithTypedCounts(){checkCandidateExclusions(false);}
+  @Test void unknownFailureLogsOnlyItsTypeAndInnermostSemanticFrame(){
+    UUID id=request(false);
+    var cause=new IllegalArgumentException("private-provider-body");
+    cause.setStackTrace(new StackTraceElement[]{
+        new StackTraceElement("example.Library","parse","private-file",2),
+        new StackTraceElement("it.comune.trieste.ouf.semantic.TestAdapter","fetch","private-file",42)});
+    SemanticDiscoveryProvider provider=new SemanticDiscoveryProvider(){
+      public String providerId(){return "UNKNOWN_TEST";}
+      public List<Candidate> search(Query q){throw new IllegalStateException("private-wrapper",cause);}
+    };
+    var service=new DiscoveryService(db,List.of(provider),parser,json);
+    var logger=(ch.qos.logback.classic.Logger)org.slf4j.LoggerFactory.getLogger(DiscoveryService.class);
+    var logs=new ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent>();
+    logs.start();logger.addAppender(logs);
+    try{
+      service.executeOne();
+      assertThat(logs.list).singleElement().satisfies(event->{
+        assertThat(event.getFormattedMessage()).isEqualTo("Unclassified discovery exception type=java.lang.IllegalArgumentException frame=it.comune.trieste.ouf.semantic.TestAdapter:42");
+        assertThat(event.getThrowableProxy()).isNull();
+      });
+      assertThat(new DiscoveryJobService(db,service,List.of(provider),json).status(id,actor))
+          .containsEntry("errorCode","SEM_DISCOVERY_PROVIDER_FAILED");
+    }finally{logger.detachAppender(logs);logs.stop();}
+  }
+  private void checkCandidateExclusions(boolean includeValid){
+    UUID id=request(false);
+    SemanticDiscoveryProvider provider=new SemanticDiscoveryProvider(){
+      public String providerId(){return "RDF_TEST";}
+      public List<Candidate> search(Query q){
+        var rows=new ArrayList<Candidate>();
+        rows.add(candidate("urn:bad","invalid turtle".getBytes()));
+        rows.add(candidate("urn:large",new byte[SafeRdfParser.MAX_BYTES+1]));
+        if(includeValid)rows.add(candidate("urn:good","<urn:good> a <urn:Class> .".getBytes()));
+        return rows;
+      }
+      private Candidate candidate(String uri,byte[] bytes){
+        return new Candidate(uri,uri,"CLASS","HIGH",1,List.of(),List.of(),bytes,"text/turtle");
+      }
+    };
+    var service=new DiscoveryService(db,List.of(provider),parser,json);
+    assertThat(service.executeOne()).isOne();
+    var status=new DiscoveryJobService(db,service,List.of(provider),json).status(id,actor);
+    assertThat(status).containsEntry("state","SUCCEEDED").containsEntry("candidateCount",includeValid?1L:0L)
+        .containsEntry("excludedCandidates",Map.of("CANDIDATE_RDF_INVALID",1,"CANDIDATE_RDF_BOUND",1)).doesNotContainKey("errorCode");
+    var uris=service.candidates(id).stream().map(row->row.get("canonical_uri")).toList();
+    if(includeValid)assertThat(uris).containsExactly("urn:good");else assertThat(uris).isEmpty();
+    assertThat(dependency("RDF_TEST")).containsEntry("state","HEALTHY");
+    assertThat(db.sql("select outcome from ouf_sem.discovery_attempt where request_id=:id").param("id",id)
+        .query(String.class).single()).isEqualTo("SUCCESS");
+  }
 }
