@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 class ProposalCommandRuntimeTest {
   @Autowired ProposalCommandService commands;
   @Autowired ArtifactService artifacts;
+  @Autowired GovernanceService governance;
   @Autowired JdbcClient db;
   @Autowired MockMvc http;
   @Autowired ObjectMapper json;
@@ -90,6 +91,47 @@ class ProposalCommandRuntimeTest {
     assertThatThrownBy(()->commands.review("tenant-a","agent","AI_AGENT",key(),r,0,v,"test")).hasMessage("DRAFT_VERSION_CONFLICT");
     assertThatThrownBy(()->commands.review("tenant-a","agent","AI_AGENT",key(),r,1,v,"test")).hasMessage("CURRENT_GREEN_VALIDATION_REQUIRED");
   }
+  @org.junit.jupiter.params.ParameterizedTest
+  @org.junit.jupiter.params.provider.ValueSource(booleans={true,false})
+  void expiredConfirmationCanRestartFromPrepareOrRequest(boolean prepareFirst) {
+    UUID r=revision(commands.create("tenant-a","agent","AI_AGENT",key(),command(),"test"));
+    var original=commands.validate("tenant-a","agent",key(),r,0);
+    UUID run=UUID.fromString(original.get("validation_run_id").toString());
+    UUID old=UUID.randomUUID();
+    // Reproduce a committed V13 review whose 15 minutes have passed.
+    db.sql("update ouf_sem.artifact_revision set lifecycle_status='UNDER_REVIEW',content_hash=:h where revision_id=:r")
+        .param("h",original.get("validated_content_hash")).param("r",r).update();
+    db.sql("""
+        insert into ouf_sem.approval_challenge(challenge_id,revision_id,target_content_hash,status,
+          created_at,expires_at,created_by_subject)
+        values(:c,:r,:h,'OPEN',now()-interval '16 minutes',now()-interval '1 minute','agent')
+        """).param("c",old).param("r",r).param("h",original.get("validated_content_hash")).update();
+    assertThat(governance.card(old)).containsEntry("status","EXPIRED");
+    long version=0;
+    if(prepareFirst) {
+      var fresh=commands.validate("tenant-a","agent",key(),r,version);
+      assertThat(fresh).containsEntry("status","PASS").containsEntry("validated_row_version",1);
+      run=UUID.fromString(fresh.get("validation_run_id").toString());
+      version=1;
+      assertThat(governance.card(old)).containsEntry("revisionStatus","DRAFT");
+    }
+    String requestKey=key();
+    var reopened=commands.review("tenant-a","agent","AI_AGENT",requestKey,r,version,run,"test");
+    assertThat(reopened).containsEntry("expectedRowVersion",1).containsEntry("status","OPEN");
+    assertThat(reopened.get("validationRunId")).isNotEqualTo(original.get("validation_run_id"));
+    assertThat(commands.review("tenant-a","agent","AI_AGENT",requestKey,r,version,run,"test")).isEqualTo(reopened);
+    assertThat(db.sql("select status from ouf_sem.approval_challenge where challenge_id=:c")
+        .param("c",old).query(String.class).single()).isEqualTo("EXPIRED");
+    assertThat(db.sql("select count(*) from ouf_sem.approval_challenge where revision_id=:r and status='OPEN'")
+        .param("r",r).query(Long.class).single()).isOne();
+    assertThatThrownBy(()->governance.decide(old,"APPROVED","human","HUMAN","fixture","test"))
+        .hasMessage("APPROVAL_CHALLENGE_NOT_OPEN");
+    UUID current=UUID.fromString(reopened.get("challengeId").toString());
+    var decision=governance.decide(current,"APPROVED","human","HUMAN","fixture","test");
+    assertThat(governance.publish(r,(UUID)decision.get("decisionId"),key(),(String)reopened.get("targetContentHash"),
+        "human","HUMAN","test")).containsEntry("status","PUBLISHED");
+  }
+
   @Test void validationFailureRetainsWarningsButCannotOpenReview() {
     var c=command();var broken=new CreateArtifact(c.semanticId(),"PROPERTY",c.namespace(),c.localName(),c.ownerRef(),c.authorityRef(),c.semanticVersion(),c.labels(),Map.of("domainRefs",List.of("ouf:absent:"+key())));
     UUID r=revision(commands.create("tenant-a","agent","AI_AGENT",key(),broken,"test"));

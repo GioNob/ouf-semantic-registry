@@ -86,6 +86,12 @@ class HttpApiRuntimeTest {
             "approvalDecisionId",decisionId,"contentHash",hash))))
         .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("PUBLISHED"))
         .andReturn());
+    http.perform(post("/api/trusted-human/v1/semantic-approval-challenges/{id}/publish",challengeId)
+        .with(actor("reviewer","OUF_HUMAN_USER",Set.of("ouf.semantic.publish")))
+        .header("Idempotency-Key","http-"+revision).contentType(MediaType.APPLICATION_JSON)
+        .content(json.writeValueAsBytes(java.util.Map.of("approvalDecisionId",decisionId,"contentHash","f".repeat(64)))))
+        .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("PUBLICATION_IDEMPOTENCY_CONFLICT"))
+        .andExpect(jsonPath("$.publicationSetId").doesNotExist());
     UUID publication=UUID.fromString(published.get("publicationSetId").asText());
     org.assertj.core.api.Assertions.assertThat(published.get("manifestHash").asText())
         .hasSize(64).isNotEqualTo(hash);

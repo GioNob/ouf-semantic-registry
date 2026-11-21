@@ -16,7 +16,12 @@ public class ProblemHandler {
   @ExceptionHandler(it.comune.trieste.ouf.semantic.application.DiscoveryService.ProviderUnavailable.class)
   ResponseEntity<ProblemDetail> discoveryUnavailable(RuntimeException e,HttpServletRequest r){return problem(HttpStatus.SERVICE_UNAVAILABLE,"SEM_DISCOVERY_NO_ENABLED_PROVIDER",r);}
   @ExceptionHandler(Conflict.class) ResponseEntity<ProblemDetail> conflict(Conflict e,HttpServletRequest r){return problem(HttpStatus.CONFLICT,e.getMessage(),r);}
-  @ExceptionHandler(it.comune.trieste.ouf.semantic.application.GovernanceService.Conflict.class) ResponseEntity<ProblemDetail> governanceConflict(RuntimeException e,HttpServletRequest r){return problem(HttpStatus.CONFLICT,e.getMessage(),r);}
+  @ExceptionHandler(it.comune.trieste.ouf.semantic.application.GovernanceService.Conflict.class) ResponseEntity<ProblemDetail> governanceConflict(
+      it.comune.trieste.ouf.semantic.application.GovernanceService.Conflict e,HttpServletRequest r){
+    var response=problem(HttpStatus.CONFLICT,e.getMessage(),r);
+    if(e.reason()!=null)response.getBody().setProperty("reason",e.reason());
+    return response;
+  }
   @ExceptionHandler(Forbidden.class) ResponseEntity<ProblemDetail> forbidden(Forbidden e,HttpServletRequest r){return problem(HttpStatus.FORBIDDEN,e.getMessage(),r);}
   @ExceptionHandler(UnsafeRdf.class) ResponseEntity<ProblemDetail> unsafeRdf(UnsafeRdf e,HttpServletRequest r){return problem(HttpStatus.UNPROCESSABLE_ENTITY,e.getMessage(),r);}
   @ExceptionHandler(ProviderFailure.class) ResponseEntity<ProblemDetail> provider(ProviderFailure e,HttpServletRequest r){return problem(HttpStatus.BAD_GATEWAY,e.getMessage(),r);}
