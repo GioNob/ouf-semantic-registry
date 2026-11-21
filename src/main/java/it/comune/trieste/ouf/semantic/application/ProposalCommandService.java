@@ -109,7 +109,7 @@ public class ProposalCommandService {
   }
   private Map<String,Object> lockDraft(UUID revision,long expected,String actor) {
     var rows=db.sql("select row_version,lifecycle_status,encode(public.digest("+
-        "(label_json::text||description_json::text||definition_json::text)::bytea,'sha256'),'hex') current_hash "
+        "convert_to(label_json::text||description_json::text||definition_json::text,'UTF8'),'sha256'),'hex') current_hash "
         +"from ouf_sem.artifact_revision where revision_id=:r for update")
         .param("r",revision).query().listOfRows();
     if(rows.size()!=1)throw new NoSuchElementException("REVISION_NOT_FOUND");
