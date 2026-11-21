@@ -45,7 +45,7 @@ public class DiscoveryService {
   }
   @Transactional public UUID adopt(UUID request,UUID candidate,String semanticId,String namespace,String localName,String owner,String authority,String actor){
     var rows=db.sql("""
-        select c.canonical_uri,c.media_type,c.content_hash,c.content_bytes,c.adopted_artifact_id,
+        select c.canonical_uri,c.media_type,c.content_hash,c.content_bytes,c.ontology_rdf,c.ontology_sha256,c.adopted_artifact_id,
                c.expires_at<=clock_timestamp() expired
         from ouf_sem.discovery_candidate c join ouf_sem.discovery_request j using(request_id)
         where c.candidate_id=:c and j.request_id=:r and j.created_by_subject=:actor
@@ -58,7 +58,8 @@ public class DiscoveryService {
     var model=new PublishedRdfSnapshot().verifiedModel((byte[])row.get("content_bytes"),
         (String)row.get("media_type"),(String)row.get("content_hash"));
     try {
-      var metadata=CandidateAdoptionService.metadata(model.getResource((String)row.get("canonical_uri")));
+      var metadata=CandidateAdoptionService.metadata(model.getResource((String)row.get("canonical_uri")),
+          (byte[])row.get("ontology_rdf"),(String)row.get("ontology_sha256"));
       return db.sql("select ouf_sem.adopt_candidate(:c,:s,:n,:l,:o,:u,:a,:publisher,:license,'{}'::jsonb)")
           .param("c",candidate).param("s",semanticId).param("n",namespace).param("l",localName)
           .param("o",owner).param("u",authority).param("a",actor)
@@ -94,7 +95,13 @@ public class DiscoveryService {
       }
       long token=((Number)admission.get("generation")).longValue();
       try{
-        var query=new SemanticDiscoveryProvider.Query(job.get("requested_artifact_type").toString(),job.get("intent").toString(),languages(job.get("preferred_languages")));
+        var started=java.time.Instant.now();
+        var remaining=db.sql("select floor(extract(epoch from (busy_until-clock_timestamp()))*1000)::bigint from ouf_sem.discovery_dependency where scope_subject=:a and provider_id=:p and generation=:g")
+            .param("a",job.get("created_by_subject")).param("p",p.providerId()).param("g",token)
+            .query(Long.class).optional();
+        if(remaining.isEmpty())return 1;
+        var query=new SemanticDiscoveryProvider.Query(job.get("requested_artifact_type").toString(),job.get("intent").toString(),
+            languages(job.get("preferred_languages")),started.plusMillis(remaining.get()));
         var result=p.search(query);
         if(result.size()>64 || candidates.size()+invalid+bound+result.size()>256)throw new IllegalArgumentException("candidate bound");
         for(var c:result){
@@ -109,6 +116,8 @@ public class DiscoveryService {
           item.put("provider",p.providerId());item.put("uri",c.canonicalUri());item.put("source",c.sourceLocation());
           item.put("type",c.artifactType());item.put("trust",c.trust());item.put("score",c.score());
           item.put("reasons",c.reasons());item.put("gaps",c.gaps());item.put("hash",parsed.contentHash());
+          item.put("labels",c.labels());
+          if(c.ontologyProvenance()!=null)item.put("ontology",Base64.getEncoder().encodeToString(c.ontologyProvenance()));
           item.put("mediaType",c.mediaType());item.put("bytes",Base64.getEncoder().encodeToString(c.content()));candidates.add(item);
         }
       }catch(RuntimeException error){

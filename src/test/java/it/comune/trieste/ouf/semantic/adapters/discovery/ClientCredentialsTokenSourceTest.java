@@ -50,7 +50,7 @@ class ClientCredentialsTokenSourceTest {
   }
   @Test void concurrentCallsObtainOneTokenAndRenewBeforeExpiry() throws Exception {
     var source=source();try(var executor=Executors.newFixedThreadPool(6)){
-      List<Future<String>> calls=new ArrayList<>();for(int i=0;i<12;i++)calls.add(executor.submit(source::get));
+      List<Future<String>> calls=new ArrayList<>();for(int i=0;i<12;i++)calls.add(executor.submit(() -> source.get()));
       for(var call:calls)assertThat(call.get()).isEqualTo("fixture.token");
     }
     assertThat(tokenCalls).hasValue(1);clock.now=clock.now.plusSeconds(291);source.get();assertThat(tokenCalls).hasValue(2);

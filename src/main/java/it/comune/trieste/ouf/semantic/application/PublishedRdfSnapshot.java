@@ -1,7 +1,5 @@
 package it.comune.trieste.ouf.semantic.application;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
 import java.util.*;
 import org.apache.jena.rdf.model.*;
@@ -10,15 +8,14 @@ import org.apache.jena.rdf.model.*;
 public final class PublishedRdfSnapshot {
   public static final int MAX_STATEMENTS=1000;
   private final SafeRdfParser parser=new SafeRdfParser();
-  private final ObjectMapper json=new ObjectMapper();
 
   private void checkInput(byte[] bytes,String mediaType) {
     if(bytes==null || bytes.length==0 || bytes.length>SafeRdfParser.MAX_BYTES)
       throw new IllegalArgumentException("SEM_READ_RDF_SIZE_LIMIT");
     // Remote JSON-LD contexts/imports must not create an ungoverned fetch path.
     if("application/ld+json".equals(mediaType)) {
-      try {rejectRemoteContexts(json.readTree(bytes));}
-      catch(java.io.IOException e){throw new IllegalArgumentException("SEM_READ_RDF_JSON_INVALID",e);}
+      try {SafeRdfParser.checkLocalContexts(bytes);}
+      catch(SafeRdfParser.UnsafeRdf rejected){throw new IllegalArgumentException(rejected.getMessage(),rejected);}
     }
   }
 
@@ -87,16 +84,5 @@ public final class PublishedRdfSnapshot {
       return out;
     }
     throw new IllegalArgumentException("SEM_READ_RDF_NODE_UNSUPPORTED");
-  }
-  private static void rejectRemoteContexts(JsonNode node) {
-    if(node==null)return;
-    if(node.isObject()) {
-      if(node.has("@import"))throw new IllegalArgumentException("SEM_READ_RDF_REMOTE_CONTEXT_FORBIDDEN");
-      JsonNode context=node.get("@context");
-      if(context!=null && (context.isTextual() || (context.isArray() &&
-          java.util.stream.StreamSupport.stream(context.spliterator(),false).anyMatch(JsonNode::isTextual))))
-        throw new IllegalArgumentException("SEM_READ_RDF_REMOTE_CONTEXT_FORBIDDEN");
-    }
-    if(node.isContainerNode())node.forEach(PublishedRdfSnapshot::rejectRemoteContexts);
   }
 }

@@ -1,0 +1,28 @@
+@prefix rdf:	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix ns1:	<https://w3id.org/italia/onto/POI/> .
+@prefix owl:	<http://www.w3.org/2002/07/owl#> .
+ns1:PointOfInterest	rdf:type	owl:Class .
+@prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#> .
+ns1:PointOfInterest	rdfs:subClassOf	_:b352980 .
+@prefix ns4:	<https://w3id.org/italia/onto/l0/> .
+ns1:PointOfInterest	rdfs:subClassOf	ns4:Entity ,
+		_:b352981 ,
+		_:b354068 ,
+		_:b354064 ,
+		_:b354065 ,
+		_:b354066 ,
+		_:b354060 ,
+		_:b354067 ,
+		_:b354061 ,
+		_:b354062 ,
+		_:b354063 ,
+		_:b354052 ,
+		_:b354054 ;
+	rdfs:label	"Point of Interest"@en ,
+		"Punto di Interesse"@it .
+@prefix ns5:	<https://w3id.org/italia/onto/> .
+ns1:PointOfInterest	rdfs:isDefinedBy	ns5:POI ;
+	rdfs:comment	"This class represents a point of interest, which is a particular point that someone finds useful or interesting. It may be a parking , an accommodation, a bus stop, a pharmacy, a shopping centre, a crossroads, etc. This class represents a \"superstructure\" used to model things of some kind of interest; however, at the same time it can be viewed as a location or place or feature (it is indeed a subclass of Entity in the top level ontology L0 which can be in turn a Location or an Object). This kind of modelling allows users to get information if they search for both a location and things to which they are interested in."@en ,
+		"Questa classe rappresenta un punto di interesse, ovvero un particolare punto che qualcuno trova utile o di interesse. Esso pu\u00F2 essere un parcheggio, una struttura ricettiva, una feramta dell'autobus, una farmacia, un centro commerciale, un incrocio, ecc. E' da notare che questa classe rappresenta di fatto una sovrastruttura utile per modellare cose di interesse ma allo stesso tempo \u00E8 anche accettato considerarla come luogo (infatti la classe \u00E8 definita come sotto classe di \"Entity-Entit\u00E0\" dell'ontologia L0 che a sua volta pu\u00F2 essere un oggetto o un luogo). Questo tipo di modellazione quindi consente a utenti di poter cercare oggetti di interesse ma anche fare query su punti di interessse intesi come luoghi."@it ;
+	owl:versionInfo	"stabile"@it ,
+		"stable"@en .
