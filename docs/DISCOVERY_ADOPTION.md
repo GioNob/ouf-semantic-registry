@@ -82,6 +82,14 @@ Con una challenge scaduta il chatbot avvia un nuovo `semantic.review.prepare` co
 
 V16 applica questa riconciliazione anche alle challenge aperte prima del rilascio. Per i claim di pubblicazione esistenti, V16 cerca una sola coppia revisione/decisione compatibile con evento, membro del manifesto, hash e tempi della decisione. Un replay dubbio restituisce HTTP 409 con `PUBLICATION_RECONCILIATION_REQUIRED`. Una chiave vincolata a un intento diverso restituisce HTTP 409 con `PUBLICATION_IDEMPOTENCY_CONFLICT`.
 
+### Termini pubblicati per la scheda di onboarding (D-081)
+
+La THS legge classi e proprietà dal registro con `GET /api/trusted-human/v1/semantic-published-terms?revisionIds=<uuid>,<uuid>`. La rotta richiede il principal `HUMAN` e il grant `ouf.semantic.review` della scheda di approvazione. Per il task-33c il Gateway deve inoltrare questo percorso esatto con il parametro query `revisionIds`.
+
+Inviare da 1 a 64 UUID in un solo parametro. I duplicati contano per il limite e compaiono una sola volta nella risposta. Un parametro assente, ripetuto o malformato restituisce HTTP 400. Con HTTP 200, `terms` e `missing` seguono l’ordine della richiesta. `terms` contiene le revisioni attualmente attive presenti in un manifesto pubblicato. `publicationSetId` identifica il primo manifesto pubblicato che contiene quella coppia di `semanticId` e `revisionId`. In `missing` compare soltanto l’UUID richiesto.
+
+Per la scheda usare `label.it`, `description.it`, `artifactType`, `publisher`, `license` e `licenseWarning` restituiti dal registro. Anche `en` è disponibile per etichetta e descrizione. Una traduzione assente vale `null`. Il publisher proviene dalla provenienza della revisione adottata, con ripiego su `authority_ref` dell’artefatto. Se la revisione non documenta una licenza, `license` vale `null` e `licenseWarning` vale `licenza mancante`. La THS deve rendere visibili le lacune e gli UUID in `missing`, senza completarli con i testi di `reviewTerms` dell’agente.
+
 ## Catalogo e grant al rilascio
 
 Aggiungere questo elemento a `catalogue/r4a-semantic-human-capabilities.json` nell’artefatto Onboarding.
