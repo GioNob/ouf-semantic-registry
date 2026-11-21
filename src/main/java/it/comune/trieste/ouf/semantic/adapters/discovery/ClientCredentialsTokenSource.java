@@ -24,6 +24,7 @@ final class ClientCredentialsTokenSource implements Supplier<String> {
   private String cached;
   private Instant refreshAt;
   private byte[] credentialDigest;
+  private final java.util.concurrent.locks.ReentrantLock refreshLock=new java.util.concurrent.locks.ReentrantLock();
   // Canonical Semantic runtime identity in the admitted installation profile.
   private static final int SEMANTIC_RUNTIME_GID=10001;
 
@@ -35,7 +36,19 @@ final class ClientCredentialsTokenSource implements Supplier<String> {
     this.http=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2))
         .followRedirects(HttpClient.Redirect.NEVER).build();
   }
-  @Override public synchronized String get() {
+  @Override public String get() {
+    return get(System.nanoTime()+Duration.ofSeconds(30).toNanos());
+  }
+  String get(long deadline) {
+    try {
+      if(!refreshLock.tryLock(BoundedGatewayClient.remaining(deadline).toNanos(),java.util.concurrent.TimeUnit.NANOSECONDS))
+        throw new ProviderFailure("PROVIDER_TIMEOUT");
+    } catch(InterruptedException e){
+      Thread.currentThread().interrupt();throw new ProviderFailure("PROVIDER_INTERRUPTED",e);
+    }
+    try{return refresh(deadline);}finally{refreshLock.unlock();}
+  }
+  private String refresh(long deadline){
     validate();
     try {
       // Custody changes and local rotation must also invalidate a cached token.
@@ -47,7 +60,8 @@ final class ClientCredentialsTokenSource implements Supplier<String> {
       String form="grant_type=client_credentials&client_id="+enc(cfg.clientId())
           +"&client_secret="+enc(credential)+"&scope="+enc(cfg.scope());
       Instant started=clock.instant();
-      HttpRequest request=HttpRequest.newBuilder(cfg.tokenEndpoint()).timeout(cfg.requestTimeout())
+      Duration remaining=BoundedGatewayClient.remaining(deadline);
+      HttpRequest request=HttpRequest.newBuilder(cfg.tokenEndpoint()).timeout(remaining.compareTo(cfg.requestTimeout())<0?remaining:cfg.requestTimeout())
           .header("Accept","application/json")
           .header("Content-Type","application/x-www-form-urlencoded; charset=UTF-8")
           .POST(HttpRequest.BodyPublishers.ofString(form)).build();
@@ -69,7 +83,7 @@ final class ClientCredentialsTokenSource implements Supplier<String> {
       if(!clock.instant().isBefore(refreshAt))throw new ProviderFailure("GATEWAY_TOKEN_INVALID");
       credentialDigest=currentDigest;cached=token;return cached;
     }catch(ProviderFailure e){clear();throw e;}
-    catch(InterruptedException e){clear();Thread.currentThread().interrupt();throw new ProviderFailure("GATEWAY_TOKEN_UNAVAILABLE");}
+    catch(InterruptedException e){clear();Thread.currentThread().interrupt();throw new ProviderFailure("PROVIDER_INTERRUPTED",e);}
     catch(Exception e){clear();throw new ProviderFailure("GATEWAY_TOKEN_UNAVAILABLE");}
   }
   private void clear(){cached=null;refreshAt=null;credentialDigest=null;}

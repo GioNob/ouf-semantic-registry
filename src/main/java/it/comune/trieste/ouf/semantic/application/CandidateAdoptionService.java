@@ -23,7 +23,7 @@ class CandidateAdoptionService {
 
   Map<String,Object> adopt(UUID request,UUID candidate,String jobSubject,String principal) {
     var row=db.sql("""
-        select c.canonical_uri,c.artifact_type,c.media_type,c.content_hash,c.content_bytes,c.adopted_artifact_id,
+        select c.canonical_uri,c.artifact_type,c.media_type,c.content_hash,c.content_bytes,c.ontology_rdf,c.ontology_sha256,c.adopted_artifact_id,
                c.expires_at<=clock_timestamp() expired
           from ouf_sem.discovery_request j join ouf_sem.discovery_candidate c using(request_id)
          where j.request_id=:r and c.candidate_id=:c and j.created_by_subject=:actor and j.state='SUCCEEDED'
@@ -39,7 +39,7 @@ class CandidateAdoptionService {
     UUID artifact;
     try {
       Resource resource=model.getResource(uri);
-      var metadata=metadata(resource);
+      var metadata=metadata(resource,(byte[])row.get("ontology_rdf"),(String)row.get("ontology_sha256"));
       String publisher=metadata.publisher();
       if(publisher==null)throw new GovernanceService.Conflict("CANDIDATE_PUBLISHER_MISSING");
       String definition=referenceDefinition(resource,(String)row.get("artifact_type")).toString();
@@ -78,6 +78,7 @@ class CandidateAdoptionService {
         join ouf_sem.revision_adoption b on b.revision_id=r.revision_id
         join ouf_sem.immutable_semantic_snapshot s on s.snapshot_id=b.snapshot_id
           and s.content_hash=c.content_hash and s.media_type=c.media_type
+          and s.ontology_sha256 is not distinct from c.ontology_sha256
         join ouf_sem.external_semantic_origin o on o.origin_id=s.origin_id and o.artifact_id=a.artifact_id
           and o.provider_id=c.provider_id and o.canonical_uri=c.canonical_uri and o.source_url=c.source_location
         where (c.adopted_artifact_id is null or c.adopted_artifact_id=a.artifact_id)
@@ -144,7 +145,7 @@ class CandidateAdoptionService {
     if(revision.get("legacy_bytes") instanceof byte[] bytes) {
       Model model=new PublishedRdfSnapshot().verifiedModel(bytes,(String)revision.get("media_type"),source.get("rdfSha256").asText());
       try {
-        var terms=metadata(model.getResource(source.get("canonicalUri").asText()));
+        var terms=metadata(model.getResource(source.get("canonicalUri").asText()),(byte[])null,null);
         if(terms.publisher()==null)throw new GovernanceService.Conflict("CANDIDATE_PUBLISHER_MISSING");
         source.put("publisher",terms.publisher());
         source.put("license",terms.license());
@@ -186,7 +187,12 @@ class CandidateAdoptionService {
 
   record Metadata(String publisher,String license){}
 
-  static Metadata metadata(Resource resource) {
+  static Metadata metadata(Resource resource,byte[] ontology,String ontologyHash) {
+    if(ontology!=null){
+      var companion=new PublishedRdfSnapshot().verifiedModel(ontology,"application/n-triples",ontologyHash);
+      try {resource.getModel().add(companion);}
+      finally {companion.close();}
+    }
     var sources=new ArrayList<Resource>();
     var links=resource.listProperties(RDFS.isDefinedBy);
     try {

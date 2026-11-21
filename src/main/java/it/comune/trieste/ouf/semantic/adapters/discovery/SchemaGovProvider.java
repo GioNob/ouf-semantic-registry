@@ -5,10 +5,9 @@ import it.comune.trieste.ouf.semantic.ports.SemanticDiscoveryProvider;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -33,13 +32,53 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
   @Override public boolean enabled(){return cfg.enabled();}
   public List<Candidate> search(Query q){
     if(!cfg.enabled())return List.of();
-    // Durable admission/retry belongs to DiscoveryService, never to this transport adapter.
-    URI endpoint=underGateway(cfg.searchPath());String sparql=query(q);
-    try{JsonNode root=json.readTree(once(()->client.postForm(cfg.gatewayBaseUrl(),endpoint,"query="+enc(sparql)+"&format="+enc("application/sparql-results+json"),cfg.requestTimeout(),cfg.maxResponseBytes(),JSON)).body());JsonNode rows=root.path("results").path("bindings");if(!rows.isArray())throw new BoundedGatewayClient.ProviderFailure("SCHEMA_GOV_SPARQL_RESULT_INVALID");List<Candidate> out=new ArrayList<>();Set<String> seen=new HashSet<>();for(JsonNode n:rows){if(out.size()>=cfg.maxCandidates())break;String canonical=binding(n,"resource");if(canonical==null||!seen.add(canonical))continue;URI fetch=underGateway(cfg.fetchPath()+"?uri="+enc(canonical));var body=once(()->client.get(cfg.gatewayBaseUrl(),fetch,cfg.requestTimeout(),cfg.maxResponseBytes(),RDF));String label=binding(n,"label");String language=n.path("label").path("xml:lang").asText(null);List<String> reasons=label==null?List.of("schema.gov.it SPARQL match"):List.of("label: "+label+(language==null?"":" ["+language+"]"));out.add(new Candidate(canonical,canonical,q.artifactType(),"HIGH",.85,reasons,List.of(),body.body(),body.mediaType()));}return List.copyOf(out);}catch(BoundedGatewayClient.ProviderFailure e){throw e;}catch(Exception e){throw new BoundedGatewayClient.ProviderFailure("SCHEMA_GOV_SPARQL_RESULT_INVALID",e);}
+    URI endpoint=underGateway(cfg.searchPath());
+    String form="query="+enc(query(q))+"&format="+enc("application/sparql-results+json");
+    var response=client.postForm(cfg.gatewayBaseUrl(),endpoint,form,timeout(q.deadline()),cfg.maxResponseBytes(),JSON);
+    JsonNode root;
+    try {root=json.readTree(response.body());}
+    catch(java.io.IOException e){throw new BoundedGatewayClient.ProviderFailure("SCHEMA_GOV_SPARQL_RESULT_INVALID",e);}
+    if(root==null || !root.path("results").path("bindings").isArray())
+      throw new BoundedGatewayClient.ProviderFailure("SCHEMA_GOV_SPARQL_RESULT_INVALID");
+    JsonNode rows=root.path("results").path("bindings");
+    // Fetch required descriptions first so optional metadata cannot starve a later candidate.
+    var descriptions=new LinkedHashMap<String,BoundedGatewayClient.Response>();
+    var reasons=new HashMap<String,List<String>>();
+    for(JsonNode row:rows){
+      if(descriptions.size()>=cfg.maxCandidates())break;
+      String uri=binding(row,"resource");
+      if(uri==null || descriptions.containsKey(uri))continue;
+      descriptions.put(uri,fetch(uri,q.deadline()));
+      String label=binding(row,"label"),language=row.path("label").path("xml:lang").asText(null);
+      reasons.put(uri,label==null?List.of("schema.gov.it SPARQL match"):
+          List.of("label: "+label+(language==null?"":" ["+language+"]")));
+    }
+    var candidates=new ArrayList<Candidate>();
+    var evidence=new OntologyProvenance(Math.min(cfg.maxResponseBytes(),65536));
+    // Reserve time for local parsing and the final publication fence.
+    var cutoff=q.deadline().minusSeconds(1);
+    for(var entry:descriptions.entrySet()){
+      String uri=entry.getKey();
+      var body=entry.getValue();
+      if(Thread.currentThread().isInterrupted())throw new BoundedGatewayClient.ProviderFailure("PROVIDER_INTERRUPTED");
+      var metadata=clock.instant().isBefore(cutoff)?evidence.read(uri,body,link->fetch(link,cutoff)):
+          new OntologyProvenance.Evidence(null,Map.of(),List.of("ONTOLOGY_PROVENANCE_UNAVAILABLE"));
+      candidates.add(new Candidate(uri,uri,q.artifactType(),"HIGH",.85,reasons.get(uri),metadata.gaps(),
+          body.body(),body.mediaType(),metadata.triples(),metadata.labels()));
+    }
+    return List.copyOf(candidates);
+  }
+  private BoundedGatewayClient.Response fetch(String resource,Instant deadline){
+    return client.get(cfg.gatewayBaseUrl(),underGateway(cfg.fetchPath()+"?uri="+enc(resource)),
+        timeout(deadline),cfg.maxResponseBytes(),RDF);
+  }
+  private Duration timeout(Instant deadline){
+    if(Thread.currentThread().isInterrupted())throw new BoundedGatewayClient.ProviderFailure("PROVIDER_INTERRUPTED");
+    var remaining=Duration.between(clock.instant(),deadline);
+    if(remaining.toMillis()<1)throw new BoundedGatewayClient.ProviderFailure("PROVIDER_TIMEOUT");
+    return remaining.compareTo(cfg.requestTimeout())<0?remaining:cfg.requestTimeout();
   }
   static String query(Query q){String pattern=switch(q.artifactType()){case "CLASS"->"?resource a owl:Class .";case "PROPERTY"->"VALUES ?kind { owl:ObjectProperty owl:DatatypeProperty } ?resource a ?kind .";case "RELATIONSHIP"->"?resource a owl:ObjectProperty .";case "CONCEPT"->"?resource a skos:Concept .";case "VOCABULARY"->"?resource a skos:ConceptScheme .";case "ONTOLOGY"->"?resource a owl:Ontology .";default->throw new IllegalArgumentException("unsupported artifact type");};String literal=q.intent().replace("\\","\\\\").replace("\"","\\\"").replace("\n"," ").replace("\r"," ");return "PREFIX owl: <http://www.w3.org/2002/07/owl#>\nPREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT DISTINCT ?resource ?label WHERE { "+pattern+" OPTIONAL { ?resource rdfs:label|skos:prefLabel ?label } FILTER(CONTAINS(LCASE(STR(COALESCE(?label,?resource))),LCASE(\""+literal+"\"))) } ORDER BY ?resource LIMIT 50";}
-  // One transport attempt: no sleeping or retry multiplication under the owner budget.
-  private BoundedGatewayClient.Response once(java.util.function.Supplier<BoundedGatewayClient.Response> call){return call.get();}
   private URI underGateway(String path){URI u=cfg.gatewayBaseUrl().resolve(path);BoundedGatewayClient.requireSameOrigin(cfg.gatewayBaseUrl(),u);return u;}
   private static String enc(String v){return URLEncoder.encode(v,StandardCharsets.UTF_8);}
   private static String binding(JsonNode n,String name){String v=n.path(name).path("value").asText(null);return v==null||v.isBlank()?null:v;}
