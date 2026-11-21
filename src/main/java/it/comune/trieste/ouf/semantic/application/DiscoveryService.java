@@ -6,14 +6,30 @@ import it.comune.trieste.ouf.semantic.adapters.discovery.ProviderFailurePolicy;
 import java.time.OffsetDateTime;
 import it.comune.trieste.ouf.semantic.ports.SemanticDiscoveryProvider;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DiscoveryService {
+  private static final Logger log=LoggerFactory.getLogger(DiscoveryService.class);
+  private final String workerVersion;
   private final JdbcClient db;private final List<SemanticDiscoveryProvider> providers;private final SafeRdfParser parser;private final ObjectMapper json;
-  public DiscoveryService(JdbcClient db,List<SemanticDiscoveryProvider> providers,SafeRdfParser parser,ObjectMapper json){this.db=db;this.providers=List.copyOf(providers);this.parser=parser;this.json=json;}
+  public DiscoveryService(JdbcClient db,List<SemanticDiscoveryProvider> providers,SafeRdfParser parser,ObjectMapper json){
+    this(db,providers,parser,json,null);
+  }
+  @Autowired
+  public DiscoveryService(JdbcClient db,List<SemanticDiscoveryProvider> providers,SafeRdfParser parser,ObjectMapper json,
+      BuildProperties build){
+    String workerVersion=build==null?null:build.getVersion();
+    if(build!=null && (workerVersion==null || !workerVersion.matches("[A-Za-z0-9][A-Za-z0-9._-]{0,63}")))
+      throw new IllegalArgumentException("DISCOVERY_WORKER_VERSION_INVALID");
+    this.db=db;this.providers=List.copyOf(providers);this.parser=parser;this.json=json;this.workerVersion=workerVersion;
+  }
   public static final class ProviderUnavailable extends RuntimeException {
     public ProviderUnavailable(){super("SEM_DISCOVERY_NO_ENABLED_PROVIDER");}
   }
@@ -51,11 +67,17 @@ public class DiscoveryService {
   }
   /** Remote I/O is outside a DB transaction. Only the final generation CAS publishes bytes. */
   public int executeOne(){
+    var enabled=providers.stream().filter(SemanticDiscoveryProvider::enabled).toList();
     var jobs=db.sql("select * from ouf_sem.claim_discovery_job('semantic-discovery-worker',120)").query().listOfRows();
+    if(jobs.isEmpty() && workerVersion!=null && !enabled.isEmpty()){
+      jobs=db.sql("select * from ouf_sem.claim_discovery_version_probe(:v,:providers)")
+          .param("v",workerVersion).param("providers",enabled.stream().map(SemanticDiscoveryProvider::providerId).toArray(String[]::new))
+          .query().listOfRows();
+    }
     if(jobs.isEmpty())return 0;
     var job=jobs.getFirst();UUID id=(UUID)job.get("request_id");long generation=((Number)job.get("worker_generation")).longValue();
     var candidates=new ArrayList<Map<String,Object>>();
-    var enabled=providers.stream().filter(SemanticDiscoveryProvider::enabled).toList();
+    int invalid=0, bound=0;
     if(enabled.isEmpty()){finish(id,generation,"BLOCKED","SEM_DISCOVERY_NO_ENABLED_PROVIDER",List.of(),null);return 1;}
     // Provider identity must be unique: sharing tokens between adapters is unsafe.
     if(enabled.stream().map(SemanticDiscoveryProvider::providerId).distinct().count()!=enabled.size()){
@@ -63,8 +85,8 @@ public class DiscoveryService {
     }
     for(var p:enabled){
       if(Thread.currentThread().isInterrupted()){finish(id,generation,"CANCELLED","PROVIDER_INTERRUPTED",List.of(),null);return 1;}
-      var admission=read(db.sql("select ouf_sem.reserve_discovery_dependency(:r,:g,:p)::text")
-        .param("r",id).param("g",generation).param("p",p.providerId()).query(String.class).single());
+      var admission=read(db.sql("select ouf_sem.reserve_discovery_dependency(:r,:g,:p,:v)::text")
+        .param("r",id).param("g",generation).param("p",p.providerId()).param("v",workerVersion).query(String.class).single());
       if(!Boolean.TRUE.equals(admission.get("admitted"))){
         String state=admission.get("state").toString();
         if(!"STALE".equals(state))finish(id,generation,state,"SEM_DISCOVERY_DEPENDENCY_PAUSED",List.of(),admission.get("next"));
@@ -74,9 +96,15 @@ public class DiscoveryService {
       try{
         var query=new SemanticDiscoveryProvider.Query(job.get("requested_artifact_type").toString(),job.get("intent").toString(),languages(job.get("preferred_languages")));
         var result=p.search(query);
-        if(result.size()>64 || candidates.size()+result.size()>256)throw new IllegalArgumentException("candidate bound");
+        if(result.size()>64 || candidates.size()+invalid+bound+result.size()>256)throw new IllegalArgumentException("candidate bound");
         for(var c:result){
-          var parsed=parser.parse(c.content(),c.mediaType());
+          SafeRdfParser.Parsed parsed;
+          try{parsed=parser.parse(c.content(),c.mediaType());}
+          catch(SafeRdfParser.UnsafeRdf rejected){
+            if("RDF_SIZE_LIMIT".equals(rejected.getMessage()))bound++;
+            else invalid++;
+            continue;
+          }
           var item=new LinkedHashMap<String,Object>();
           item.put("provider",p.providerId());item.put("uri",c.canonicalUri());item.put("source",c.sourceLocation());
           item.put("type",c.artifactType());item.put("trust",c.trust());item.put("score",c.score());
@@ -85,6 +113,7 @@ public class DiscoveryService {
         }
       }catch(RuntimeException error){
         var decision=ProviderFailurePolicy.exception(error);
+        if("PROVIDER_UNKNOWN".equals(decision.code()))logUnknown(error);
         if(decision.kind()==ProviderFailurePolicy.Kind.CANCELLED)Thread.currentThread().interrupt();
         if(!providerFinished(id,generation,p.providerId(),token,decision.kind().name(),decision.code(),decision.retryAfter().toSeconds()))return 1;
         var dependency=db.sql("select state,next_attempt_at from ouf_sem.discovery_dependency where scope_subject=:a and provider_id=:p")
@@ -94,7 +123,24 @@ public class DiscoveryService {
       }
       if(!providerFinished(id,generation,p.providerId(),token,"SUCCESS",null,0))return 1;
     }
-    finish(id,generation,"SUCCESS",null,candidates,null);return 1;
+    db.sql("select ouf_sem.publish_discovery_candidates(:r,:g,cast(:b as jsonb),:invalid,:bound)")
+      .param("r",id).param("g",generation).param("b",write(candidates)).param("invalid",invalid).param("bound",bound)
+      .query(Boolean.class).single();
+    return 1;
+  }
+  private static void logUnknown(Throwable error){
+    String location="unavailable";
+    Throwable cause=error, innermost=error;
+    for(int depth=0;cause!=null && depth<16;depth++,cause=cause.getCause()){
+      innermost=cause;
+      for(var frame:cause.getStackTrace()){
+        if(frame.getClassName().startsWith("it.comune.trieste.ouf.semantic.")){
+          location=frame.getClassName()+":"+frame.getLineNumber();
+          break;
+        }
+      }
+    }
+    log.warn("Unclassified discovery exception type={} frame={}",innermost.getClass().getName(),location);
   }
   private boolean providerFinished(UUID id,long generation,String provider,long token,String kind,String code,long delay){
     return db.sql("select ouf_sem.finish_discovery_dependency(:r,:g,:p,:t,:k,:c,:d)")
