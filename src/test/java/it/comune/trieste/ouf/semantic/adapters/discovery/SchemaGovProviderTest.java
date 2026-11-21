@@ -5,6 +5,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.Mockito.*;
 import static it.comune.trieste.ouf.semantic.adapters.discovery.SchemaGovFetchFixture.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import it.comune.trieste.ouf.semantic.ports.SemanticDiscoveryProvider.Candidate;
 import it.comune.trieste.ouf.semantic.ports.SemanticDiscoveryProvider.Query;
 import java.net.URI;
 import java.time.*;
@@ -15,6 +17,60 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class SchemaGovProviderTest {
   private final Query property=new Query("PROPERTY","latitudine",List.of("it"));
+
+  private static void label(ArrayNode rows,String uri,String text,String language){
+    var row=rows.addObject();
+    row.putObject("resource").put("type","uri").put("value",uri);
+    row.putObject("label").put("value",text).put("xml:lang",language);
+  }
+
+  @Test void exactIdentifierBeyondTheUriCutoffIsFetchedOnceUsingItsBestLabel(){
+    var rows=new ObjectMapper().createArrayNode();
+    String ns="https://w3id.org/italia/onto/";
+    var earlier=List.of("CLV","COV","CPSV","HER","IoT","L2","MU","PARK","POI","RO","SM");
+    for(String name:earlier)label(rows,ns+name+"/id","identificativo locale","it");
+    String identifier=ns+"l0/identifier";
+    label(rows,identifier,"codice identificativo","it");
+    label(rows,identifier,"  IDENTIFICATIVO  ","IT");
+    var gateway=new SchemaGovFetchFixture(10,rows);
+    for(String name:earlier)gateway.describe(ns+name+"/id","<urn:a> <urn:b> <urn:c> .");
+    gateway.describe(identifier,"<"+identifier+"> a <http://www.w3.org/2002/07/owl#DatatypeProperty> .");
+    var candidates=gateway.provider.search(new Query("PROPERTY","identificativo",List.of("it")));
+    assertThat(candidates).hasSize(10);
+    assertThat(candidates.getFirst().canonicalUri()).isEqualTo(identifier);
+    assertThat(candidates.getFirst().score()).isEqualTo(1.0);
+    assertThat(candidates.getFirst().reasons()).contains("exact label, preferred language it (score 1.0)");
+    gateway.verifyFetches(identifier,1);
+    gateway.verifyFetches(ns+"RO/id",0);
+    gateway.verifyFetches(ns+"SM/id",0);
+  }
+
+  @Test void tiersPrecedeLanguageAndEqualScoresUseUriOrder(){
+    var rows=new ObjectMapper().createArrayNode();
+    label(rows,"urn:z","id campo","it");
+    label(rows,"urn:x","codice-id-valido","it");
+    label(rows,"urn:b","id","en");
+    label(rows,"urn:a","id","en");
+    label(rows,"urn:d","id","it");
+    label(rows,"urn:c","valido","it");
+    var gateway=new SchemaGovFetchFixture(6,rows);
+    for(String name:List.of("a","b","c","d","x","z"))
+      gateway.describe("urn:"+name,"<urn:a> <urn:b> <urn:c> .");
+    var matches=gateway.provider.search(new Query("PROPERTY","id",List.of("it","en")));
+    assertThat(matches).extracting(Candidate::canonicalUri).containsExactly("urn:d","urn:a","urn:b","urn:z","urn:x","urn:c");
+    assertThat(matches).extracting(Candidate::score).containsExactly(1.0,.99,.99,.85,.70,.55);
+  }
+
+  @Test void invalidRdfAndDeniedFetchLeaveRoomForAValidDescription(){
+    var gateway=new SchemaGovFetchFixture(1,"urn:a","urn:b","urn:c");
+    gateway.describe("urn:a","broken");
+    gateway.reject("urn:b","PROVIDER_HTTP_404");
+    gateway.describe("urn:c","<urn:c> <urn:p> <urn:o> .");
+    var result=gateway.provider.searchWithExclusions(property);
+    assertThat(result.candidates()).extracting(Candidate::canonicalUri).containsExactly("urn:c");
+    assertThat(result.fetchDenied()).isOne();
+    assertThat(result.rdfInvalid()).isOne();
+  }
 
   @ParameterizedTest @ValueSource(ints={400,404,406,409,410,414,422,451})
   void individualDenialCountsOnceAndDoesNotConsumeACandidateSlot(int status){
@@ -84,7 +140,9 @@ class SchemaGovProviderTest {
         <urn:other> rdfs:isDefinedBy <urn:unrelated> .
         """);
     var calls=new java.util.ArrayList<String>();
-    var evidence=new OntologyProvenance(4096).read("urn:poi",description,id->{
+    var reader=new OntologyProvenance(4096);
+    var poi=reader.inspect("urn:poi",description);
+    var evidence=reader.read(poi,id->{
       calls.add(id);
       return turtle("""
           @prefix dct: <http://purl.org/dc/terms/> .
@@ -97,19 +155,20 @@ class SchemaGovProviderTest {
     assertThat(triples.lines().toList()).hasSize(4).isSorted();
     assertThat(triples).contains("<urn:license>","<urn:agid>").doesNotContain("omit","unrelated","urn:c");
     assertThat(evidence.gaps()).containsExactly("ONTOLOGY_PROVENANCE_UNAVAILABLE");
-    var reversed=new OntologyProvenance(4096).read("urn:poi",description,id->turtle(
+    var reversed=new OntologyProvenance(4096).read(poi,id->turtle(
         "<"+id+"> <http://purl.org/dc/terms/license> <urn:license> ; <http://purl.org/dc/terms/publisher> <urn:agid> ."));
     assertThat(reversed.triples()).isEqualTo(evidence.triples());
   }
   @Test void discardsMalformedOrOversizedProjectionAndPropagatesCancellation(){
     var description=turtle("<urn:poi> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <urn:ontology> .");
+    var poi=new OntologyProvenance(4096).inspect("urn:poi",description);
     for(var response:List.of(turtle("broken"),turtle("<urn:ontology> <http://purl.org/dc/terms/publisher> <urn:agid> ."),
         new BoundedGatewayClient.Response("{\"@context\":\"https://context.invalid/\"}".getBytes(UTF_8),"application/ld+json"))){
-      var metadata=new OntologyProvenance(16).read("urn:poi",description,id->response);
+      var metadata=new OntologyProvenance(16).read(poi,id->response);
       assertThat(metadata.triples()).isNull();
       assertThat(metadata.gaps()).containsExactly("ONTOLOGY_PROVENANCE_UNAVAILABLE");
     }
-    assertThatThrownBy(()->new OntologyProvenance(4096).read("urn:poi",description,id->{
+    assertThatThrownBy(()->new OntologyProvenance(4096).read(poi,id->{
       throw new BoundedGatewayClient.ProviderFailure("PROVIDER_INTERRUPTED");
     })).hasMessage("PROVIDER_INTERRUPTED");
   }

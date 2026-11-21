@@ -11,6 +11,7 @@ import org.apache.jena.vocabulary.*;
 /** One discovery attempt. Cache only bounded projections, including unavailable results. */
 final class OntologyProvenance {
   record Evidence(byte[] triples, Map<String,String> labels, List<String> gaps) {}
+  record Description(Map<String,String> labels,SortedSet<String> definitions) {}
   private static final Set<Property> TERMS=Set.of(DCTerms.publisher,DCTerms.license,DCTerms.rightsHolder,
       OWL.versionInfo,RDFS.label);
   private final SafeRdfParser parser=new SafeRdfParser();
@@ -19,13 +20,8 @@ final class OntologyProvenance {
   private boolean gatewayUnavailable;
   OntologyProvenance(int limit){this.limit=limit;}
 
-  Evidence read(String uri,BoundedGatewayClient.Response description,Function<String,BoundedGatewayClient.Response> fetch){
-    Model model;
-    try {model=parser.model(description.body(),description.mediaType());}
-    catch(SafeRdfParser.UnsafeRdf rejected){
-      // The worker records the original bytes as an invalid/oversized candidate.
-      return new Evidence(null,Map.of(),List.of());
-    }
+  Description inspect(String uri,BoundedGatewayClient.Response description){
+    Model model=parser.model(description.body(),description.mediaType());
     try {
       var subject=model.getResource(uri);
       var labels=new TreeMap<String,String>();
@@ -42,21 +38,27 @@ final class OntologyProvenance {
       subject.listProperties(RDFS.isDefinedBy).forEachRemaining(s->{
         if(s.getObject().isURIResource() && !uri.equals(s.getResource().getURI()))definitions.add(s.getResource().getURI());
       });
-      var joined=new java.io.ByteArrayOutputStream();
-      boolean incomplete=definitions.size()>2;
-      for(String link:definitions.stream().limit(2).toList()){
-        var bytes=projections.computeIfAbsent(link,id->projection(id,fetch));
-        if(bytes.isEmpty()){
-          incomplete=true;
-          continue;
-        }
-        if(bytes.get().length>limit-joined.size())
-          return new Evidence(null,labels,List.of("ONTOLOGY_PROVENANCE_UNAVAILABLE"));
-        joined.writeBytes(bytes.get());
-      }
-      return new Evidence(joined.size()==0?null:joined.toByteArray(),labels,
-          incomplete?List.of("ONTOLOGY_PROVENANCE_UNAVAILABLE"):List.of());
+      return new Description(labels,definitions);
     } finally {model.close();}
+  }
+
+  Evidence read(Description description,Function<String,BoundedGatewayClient.Response> fetch){
+    var labels=description.labels();
+    var definitions=description.definitions();
+    var joined=new java.io.ByteArrayOutputStream();
+    boolean incomplete=definitions.size()>2;
+    for(String link:definitions.stream().limit(2).toList()){
+      var bytes=projections.computeIfAbsent(link,id->projection(id,fetch));
+      if(bytes.isEmpty()){
+        incomplete=true;
+        continue;
+      }
+      if(bytes.get().length>limit-joined.size())
+        return new Evidence(null,labels,List.of("ONTOLOGY_PROVENANCE_UNAVAILABLE"));
+      joined.writeBytes(bytes.get());
+    }
+    return new Evidence(joined.size()==0?null:joined.toByteArray(),labels,
+        incomplete?List.of("ONTOLOGY_PROVENANCE_UNAVAILABLE"):List.of());
   }
 
   private Optional<byte[]> projection(String uri,Function<String,BoundedGatewayClient.Response> fetch){

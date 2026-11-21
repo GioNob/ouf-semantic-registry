@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 /** Effects inside the proposal receipt transaction. All evidence is read locally. */
 @Service
 class CandidateAdoptionService {
+  private static final int MAX_DESCRIPTION_LANGUAGES=16;
+  private static final int MAX_DESCRIPTION_CODE_POINTS=4096;
   private final JdbcClient db;
   private final ObjectMapper json;
 
@@ -43,10 +45,11 @@ class CandidateAdoptionService {
       String publisher=metadata.publisher();
       if(publisher==null)throw new GovernanceService.Conflict("CANDIDATE_PUBLISHER_MISSING");
       String definition=referenceDefinition(resource,(String)row.get("artifact_type")).toString();
-      artifact=db.sql("select ouf_sem.adopt_or_find_candidate(:c,:uri,:ns,:name,:actor,:publisher,:license,cast(:definition as jsonb))")
+      artifact=db.sql("select ouf_sem.adopt_or_find_candidate(:c,:uri,:ns,:name,:actor,:publisher,:license,cast(:definition as jsonb),cast(:description as jsonb))")
           .param("c",candidate).param("uri",uri).param("ns",resource.getNameSpace()).param("name",resource.getLocalName())
           .param("actor",principal)
-          .param("publisher",publisher).param("license",metadata.license()).param("definition",definition).query(UUID.class).single();
+          .param("publisher",publisher).param("license",metadata.license()).param("definition",definition)
+          .param("description",json.valueToTree(metadata.descriptions()).toString()).query(UUID.class).single();
     } catch(DataAccessException e) {
       if(e.getMostSpecificCause() instanceof java.sql.SQLException sql) {
         if("P1503".equals(sql.getSQLState()))
@@ -185,9 +188,10 @@ class CandidateAdoptionService {
     return result;
   }
 
-  record Metadata(String publisher,String license){}
+  record Metadata(String publisher,String license,Map<String,String> descriptions){}
 
   static Metadata metadata(Resource resource,byte[] ontology,String ontologyHash) {
+    var descriptions=descriptions(resource);
     if(ontology!=null){
       var companion=new PublishedRdfSnapshot().verifiedModel(ontology,"application/n-triples",ontologyHash);
       try {resource.getModel().add(companion);}
@@ -201,7 +205,32 @@ class CandidateAdoptionService {
         if(node.isURIResource())sources.add(node.asResource());
       }
     } finally {links.close();}
-    return new Metadata(metadata(resource,sources,"publisher"),metadata(resource,sources,"license"));
+    return new Metadata(metadata(resource,sources,"publisher"),metadata(resource,sources,"license"),descriptions);
+  }
+
+  static Map<String,String> descriptions(Resource subject){
+    var result=new TreeMap<String,String>();
+    for(Property predicate:List.of(RDFS.comment,SKOS.definition)){
+      var values=new TreeMap<String,String>();
+      var statements=subject.listProperties(predicate);
+      try {
+        while(statements.hasNext()){
+          RDFNode node=statements.next().getObject();
+          if(!node.isLiteral())continue;
+          Literal literal=node.asLiteral();
+          String language=literal.getLanguage().toLowerCase(Locale.ROOT);
+          String value=literal.getLexicalForm().strip();
+          if(language.length()>63 || value.isEmpty() || value.indexOf('\0')>=0)continue;
+          if(value.codePointCount(0,value.length())>MAX_DESCRIPTION_CODE_POINTS)
+            value=value.substring(0,value.offsetByCodePoints(0,MAX_DESCRIPTION_CODE_POINTS));
+          values.merge(language.isEmpty()?"und":language,value,(a,b)->a.compareTo(b)<=0?a:b);
+          if(values.size()>MAX_DESCRIPTION_LANGUAGES)values.pollLastEntry();
+        }
+      } finally {statements.close();}
+      values.forEach(result::putIfAbsent);
+    }
+    while(result.size()>MAX_DESCRIPTION_LANGUAGES)result.pollLastEntry();
+    return result;
   }
 
   private static String metadata(Resource resource,List<Resource> definingResources,String field) {

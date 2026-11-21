@@ -26,7 +26,8 @@ class SchemaGovProviderIntegrationTest {
     gateway.createContext("/fetch",x->{fetches.incrementAndGet();byte[] b="@prefix owl: <http://www.w3.org/2002/07/owl#> . <https://w3id.org/italia/onto/CLV/City> a owl:Class .".getBytes(StandardCharsets.UTF_8);x.getResponseHeaders().add("Content-Type","text/turtle");x.sendResponseHeaders(200,b.length);x.getResponseBody().write(b);x.close();});
     var provider=new SchemaGovProvider(config(1,2),new ObjectMapper());
     var result=provider.search(new Query("CLASS","città",List.of("it")));
-    assertThat(result).hasSize(1);assertThat(fetches).hasValue(1);assertThat(result.get(0).reasons()).containsExactly("label: Città [it]");
+    assertThat(result).hasSize(1);assertThat(fetches).hasValue(1);
+    assertThat(result.getFirst().reasons()).containsExactly("label: Città [it]","exact label, preferred language it (score 1.0)");
   }
   @Test void transportDoesNotMultiplyOwnerRetries() {
     AtomicInteger calls=new AtomicInteger();gateway.createContext("/sparql",x->{int n=calls.incrementAndGet();if(n==1){x.sendResponseHeaders(503,-1);x.close();return;}byte[] b="{\"results\":{\"bindings\":[]}}".getBytes();x.getResponseHeaders().add("Content-Type","application/sparql-results+json");x.sendResponseHeaders(200,b.length);x.getResponseBody().write(b);x.close();});

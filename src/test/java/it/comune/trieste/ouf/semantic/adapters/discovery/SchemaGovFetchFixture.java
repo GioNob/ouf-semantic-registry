@@ -3,6 +3,7 @@ package it.comune.trieste.ouf.semantic.adapters.discovery;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.time.*;
@@ -16,13 +17,20 @@ final class SchemaGovFetchFixture {
   final SchemaGovProvider provider;
 
   SchemaGovFetchFixture(int maxCandidates,String... uris){
+    this(maxCandidates,bindings(uris));
+  }
+  private static ArrayNode bindings(String[] uris){
+    var rows=new ObjectMapper().createArrayNode();
+    for(String uri:uris)rows.addObject().putObject("resource").put("type","uri").put("value",uri);
+    return rows;
+  }
+  SchemaGovFetchFixture(int maxCandidates,ArrayNode rows){
     var json=new ObjectMapper();
     var cfg=new SchemaGovProperties(true,base,"/search","/fetch",Duration.ofSeconds(1),Duration.ofSeconds(2),
         8192,maxCandidates,1,Duration.ofSeconds(1),3,Duration.ofSeconds(30));
     provider=new SchemaGovProvider(cfg,client,json,Clock.systemUTC());
     var result=json.createObjectNode();
-    var rows=result.putObject("results").putArray("bindings");
-    for(String uri:uris)rows.addObject().putObject("resource").put("type","uri").put("value",uri);
+    result.putObject("results").set("bindings",rows);
     when(client.postForm(eq(base),eq(base.resolve("/search")),anyString(),any(Duration.class),eq(8192),anySet()))
         .thenReturn(new BoundedGatewayClient.Response(result.toString().getBytes(UTF_8),"application/sparql-results+json"));
   }
