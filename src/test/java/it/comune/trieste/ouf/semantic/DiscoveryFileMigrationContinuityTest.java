@@ -1,12 +1,20 @@
 package it.comune.trieste.ouf.semantic;
 
 import static org.assertj.core.api.Assertions.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import it.comune.trieste.ouf.semantic.application.DiscoveryJobService;
+import it.comune.trieste.ouf.semantic.application.DiscoveryService;
+import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
+import it.comune.trieste.ouf.semantic.ports.SemanticDiscoveryProvider;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.info.BuildProperties;
+import org.springframework.jdbc.core.simple.JdbcClient;
 
-/** Disposable CI database only: exercise the real file V10 -> discovery V13 upgrade. */
+/** Disposable CI database only: exercise V10 -> V13 -> V14 -> V15 using populated schemas. */
 class DiscoveryFileMigrationContinuityTest {
   @Test void fileReceiptsHistoryAndDiscoveryBudgetsSurviveAdditiveUpgradeAndReconnect() throws Exception {
     String url=Objects.requireNonNull(System.getenv("OUF_SEM_DB_URL"),"isolated PostgreSQL fixture required");
@@ -43,7 +51,7 @@ class DiscoveryFileMigrationContinuityTest {
           }
         }
         var after=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
-            .defaultSchema("ouf_sem").locations("classpath:db/migration").load();
+            .defaultSchema("ouf_sem").locations("classpath:db/migration").target("13").load();
         assertThat(after.migrate().migrationsExecuted).isEqualTo(3);
         after.validate();
         try(var connection=DriverManager.getConnection(dbUrl,user,password)) {
@@ -70,16 +78,42 @@ class DiscoveryFileMigrationContinuityTest {
           }
           try(var s=connection.createStatement()) {
             s.execute("insert into ouf_sem.discovery_dependency(scope_subject,provider_id,state,attempts,cumulative_attempts) values('composed-caller','TEST','PAUSED_EXHAUSTED',128,128)");
+            s.execute("update ouf_sem.discovery_request set next_attempt_at=now()+interval '1 hour' where created_by_subject='legacy-caller'");
           }
+          seedV13Block(connection,"D078","PROVIDER_UNKNOWN");
+          seedV13Block(connection,"TLS","PROVIDER_TLS_UNPROVEN");
+        }
+        Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem").defaultSchema("ouf_sem")
+            .locations("classpath:db/migration").target("14").load().migrate();
+        try(var connection=DriverManager.getConnection(dbUrl,user,password);var s=connection.createStatement()){
+          // V14 could leave this dependency exhausted even though the failed job still had time.
+          s.executeUpdate("update ouf_sem.discovery_dependency set state='PAUSED_EXHAUSTED',budget_deadline=now()-interval '1 hour' where provider_id='D078'");
         }
         // New Flyway instance and physical connection cannot recreate or reset committed history.
         var reopened=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
             .defaultSchema("ouf_sem").locations("classpath:db/migration").load();
+        assertThat(reopened.migrate().migrationsExecuted).isOne();
         assertThat(reopened.migrate().migrationsExecuted).isZero();reopened.validate();
         try(var connection=DriverManager.getConnection(dbUrl,user,password)) {
+          assertThat(history(connection)).hasSize(15);
+          assertThat(value(connection,"select count(*) from ouf_sem.discovery_incident where state='OPEN' and opened_worker_version is null")).isEqualTo("2");
+          assertThat(value(connection,"select count(*) from ouf_sem.claim_discovery_version_probe('new',array['TLS'])")).isEqualTo("0");
+          SemanticDiscoveryProvider provider=new SemanticDiscoveryProvider(){
+            public String providerId(){return "D078";}
+            public List<Candidate> search(Query query){return List.of();}
+          };
+          var release=new Properties();release.setProperty("version","new");
+          var worker=new DiscoveryService(JdbcClient.create(reopened.getConfiguration().getDataSource()),List.of(provider),
+              new SafeRdfParser(),new ObjectMapper(),new BuildProperties(release));
+          assertThat(worker.executeOne()).isOne();
+          assertThat(worker.executeOne()).isZero();
+          assertThat(value(connection,"select state||':'||attempt_count from ouf_sem.discovery_request where created_by_subject='D078'")).isEqualTo("SUCCEEDED:2");
+          assertThat(value(connection,"select state from ouf_sem.discovery_incident where provider_id='D078'")).isEqualTo("RESOLVED");
+          assertThat(value(connection,"select state||':'||cumulative_attempts from ouf_sem.discovery_dependency where provider_id='D078'")).isEqualTo("HEALTHY:2");
           assertThat(history(connection).subList(0,10)).isEqualTo(oldHistory);
           assertThat(value(connection,"select attempt_count::text||':'||recovery_state from ouf_sem.discovery_request where idempotency_key_hash=repeat('b',64)")).isEqualTo("128:PAUSED_EXHAUSTED");
           assertThat(value(connection,"select cumulative_attempts::text||':'||state from ouf_sem.discovery_dependency where scope_subject='composed-caller'")).isEqualTo("128:PAUSED_EXHAUSTED");
+          verifyFreshRequestAfterExpiry(JdbcClient.create(reopened.getConfiguration().getDataSource()));
           try(var s=connection.createStatement()) {
             assertThatThrownBy(()->s.executeUpdate("update ouf_sem.proposal_command_receipt set result_json='{}' where idempotency_key='same-file-intent'"))
                 .isInstanceOf(SQLException.class).hasMessageContaining("PROPOSAL_RECEIPT_IMMUTABLE");
@@ -88,6 +122,74 @@ class DiscoveryFileMigrationContinuityTest {
       } finally {
         try(var statement=control.createStatement()){statement.execute("DROP DATABASE "+database+" WITH (FORCE)");}
       }
+    }
+  }
+  private static void verifyFreshRequestAfterExpiry(JdbcClient db) {
+    var calls=new AtomicInteger();
+    String actor="mcp-discovery-v1:"+"d".repeat(64);
+    SemanticDiscoveryProvider provider=new SemanticDiscoveryProvider(){
+      public String providerId(){return "FRESH";}
+      public List<Candidate> search(Query query){
+        if(calls.incrementAndGet()==1)throw new IllegalStateException("fixture");
+        assertThat(db.sql("""
+            select d.attempts=1 and d.cumulative_attempts=2 and a.version_probe
+              and a.previous_episode_attempts=1 and a.previous_budget_deadline<a.started_at
+              and d.budget_deadline between a.started_at+interval '24 hours' and clock_timestamp()+interval '24 hours'
+              and d.busy_until>clock_timestamp() and d.busy_until<=r.lease_until
+              and i.state='OPEN' and i.code='PROVIDER_UNKNOWN'
+            from ouf_sem.discovery_dependency d join ouf_sem.discovery_attempt a using(scope_subject,provider_id,generation,incident_id)
+            join ouf_sem.discovery_incident i using(incident_id) join ouf_sem.discovery_request r on r.request_id=a.request_id
+            where d.scope_subject=:actor and d.provider_id='FRESH'
+            """).param("actor",actor).query(Boolean.class).single()).isTrue();
+        return List.of();
+      }
+    };
+    var json=new ObjectMapper();
+    var release=new Properties();
+    release.setProperty("version","v1");
+    var original=new DiscoveryService(db,List.of(provider),new SafeRdfParser(),json,new BuildProperties(release));
+    var jobs=new DiscoveryJobService(db,original,List.of(provider),json);
+    UUID old=(UUID)jobs.request("CLASS","poi",List.of("it"),actor,"discovery-request-01").get("requestId");
+    assertThat(original.executeOne()).isOne();
+    assertThat(jobs.status(old,actor)).containsEntry("state","FAILED").containsEntry("attemptCount",1);
+    db.sql("update ouf_sem.discovery_request set budget_deadline=now()-interval '1 hour' where request_id=:r").param("r",old).update();
+    var failedReceipt=jobs.status(old,actor);
+    db.sql("update ouf_sem.discovery_dependency set budget_deadline=now()-interval '1 hour',next_attempt_at=now() where scope_subject=:a")
+        .param("a",actor).update();
+    UUID same=(UUID)jobs.request("CLASS","poi",List.of("it"),actor,"discovery-request-02").get("requestId");
+    assertThat(original.executeOne()).isOne();
+    assertThat(jobs.status(same,actor)).containsEntry("state","FAILED");
+    assertThat(calls).hasValue(1);
+    release.setProperty("version","v2");
+    var upgraded=new DiscoveryService(db,List.of(provider),new SafeRdfParser(),json,new BuildProperties(release));
+    assertThat(upgraded.executeOne()).isZero();
+    var newJobs=new DiscoveryJobService(db,upgraded,List.of(provider),json);
+    UUID fresh=(UUID)newJobs.request("CLASS","poi",List.of("it"),actor,"discovery-request-03").get("requestId");
+    assertThat(fresh).isNotEqualTo(old);
+    assertThat(upgraded.executeOne()).isOne();
+    assertThat(calls).hasValue(2);
+    assertThat(newJobs.status(fresh,actor)).containsEntry("state","SUCCEEDED").containsEntry("attemptCount",1);
+    assertThat(newJobs.request("CLASS","poi",List.of("it"),actor,"discovery-request-01")).isEqualTo(failedReceipt);
+    assertThat(newJobs.providerStatus("FRESH",true,actor)).containsEntry("recoveryState","HEALTHY").containsEntry("cumulative_attempts",2L);
+    assertThat(db.sql("""
+        select a.outcome from ouf_sem.discovery_attempt a join ouf_sem.discovery_incident i using(incident_id)
+        where i.scope_subject=:actor and i.state='RESOLVED' and i.attempts=2 order by a.generation
+        """).param("actor",actor).query(String.class).list()).containsExactly("BLOCKED","SUCCESS");
+  }
+  private static void seedV13Block(Connection c,String provider,String code) throws SQLException {
+    UUID job=UUID.randomUUID();
+    try(var s=c.prepareStatement("""
+        insert into ouf_sem.discovery_request(request_id,requested_artifact_type,intent,state,created_by_subject,
+          attempt_count,worker_generation,lease_until,budget_deadline)
+        values(?,'CLASS','poi','RUNNING',?,1,1,now()+interval '120 seconds',now()+interval '24 hours')
+        """)){
+      s.setObject(1,job);s.setString(2,provider);s.executeUpdate();
+    }
+    try(var s=c.createStatement()){
+      s.execute("select ouf_sem.reserve_discovery_dependency('"+job+"',1,'"+provider+"')");
+      s.execute("select ouf_sem.finish_discovery_dependency('"+job+"',1,'"+provider+"',1,'BLOCKED','"+code+"',0)");
+      s.execute("select ouf_sem.finish_discovery_job('"+job+"',1,'BLOCKED','"+code+"','[]',null)");
+      s.executeUpdate("update ouf_sem.discovery_dependency set next_attempt_at=now() where provider_id='"+provider+"'");
     }
   }
   private static List<String> history(Connection c) throws SQLException {

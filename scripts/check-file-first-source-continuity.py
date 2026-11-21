@@ -25,11 +25,13 @@ for path, digest in composition['appendedMigrations'].items():
         raise SystemExit('composed discovery migration changed: ' + path)
 expected |= expected_additions
 expected.add('src/main/resources/db/migration/V13__governed_discovery_adoption.sql')
+expected.add('src/main/resources/db/migration/V14__discovery_candidate_resilience.sql')
+expected.add('src/main/resources/db/migration/V15__discovery_version_probe_episode.sql')
 actual = {p.relative_to(root).as_posix() for p in (root / 'src/main/resources/db/migration').glob('*.sql')}
 if actual != expected:
     raise SystemExit('file-first migration set changed; target compatibility review required')
 for name in ('SemanticIamSecurityConfiguration', 'SemanticConsultationApi', 'SemanticReadDelegation', 'ProposalCommandApi'):
     if not (root / ('src/main/java/it/comune/trieste/ouf/semantic/api/' + name + '.java')).is_file():
         raise SystemExit('required owner adapter missing: ' + name)
-print('FILE_FIRST_SOURCE_CONTINUITY=PASS RETAINED_MIGRATIONS=10 APPENDED_DISCOVERY_MIGRATIONS=2 ADOPTION_MIGRATIONS=1 TARGET_ACCEPTANCE=false')
+print('FILE_FIRST_SOURCE_CONTINUITY=PASS RETAINED_MIGRATIONS=10 APPENDED_DISCOVERY_MIGRATIONS=4 ADOPTION_MIGRATIONS=1 TARGET_ACCEPTANCE=false')
 
