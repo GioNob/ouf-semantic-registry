@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 022
 
 here="$(cd "$(dirname "$0")" && pwd)"
 root="$(git rev-parse --show-toplevel)"
