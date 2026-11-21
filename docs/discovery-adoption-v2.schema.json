@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "semantic.discovery.adopt v2",
+  "oneOf": [
+    {
+      "$ref": "discovery-adoption-v1.schema.json#/$defs/arguments"
+    },
+    {
+      "$ref": "#/$defs/receipt"
+    }
+  ],
+  "$defs": {
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requestId": {
+          "$ref": "discovery-adoption-v1.schema.json#/$defs/uuid"
+        },
+        "candidateId": {
+          "$ref": "discovery-adoption-v1.schema.json#/$defs/uuid"
+        },
+        "artifactId": {
+          "$ref": "discovery-adoption-v1.schema.json#/$defs/uuid"
+        },
+        "revisionId": {
+          "$ref": "discovery-adoption-v1.schema.json#/$defs/uuid"
+        },
+        "expectedRowVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "semanticId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "DRAFT",
+            "UNDER_REVIEW",
+            "ACTIVE"
+          ]
+        },
+        "provenance": {
+          "$ref": "discovery-adoption-v1.schema.json#/$defs/provenance"
+        },
+        "receiptSemantics": {
+          "enum": [
+            "DURABLE_COMMAND_RESULT_NOT_CURRENT_STATE",
+            "CURRENT_ADOPTION_REFERENCE"
+          ]
+        },
+        "runtimeAuthorityIssued": {
+          "const": false
+        },
+        "notReleaseAcceptance": {
+          "const": true
+        },
+        "publicationSetId": {
+          "$ref": "discovery-adoption-v1.schema.json#/$defs/uuid"
+        },
+        "challengeId": {
+          "$ref": "discovery-adoption-v1.schema.json#/$defs/uuid"
+        },
+        "challengeStatus": {
+          "enum": [
+            "OPEN",
+            "APPROVED",
+            "EXPIRED"
+          ]
+        },
+        "trustedApprovalRef": {
+          "type": "string",
+          "pattern": "^ths://semantic-approval-challenges/[0-9a-f-]{36}$"
+        }
+      },
+      "required": [
+        "requestId",
+        "candidateId",
+        "artifactId",
+        "revisionId",
+        "expectedRowVersion",
+        "semanticId",
+        "status",
+        "provenance",
+        "receiptSemantics",
+        "runtimeAuthorityIssued",
+        "notReleaseAcceptance"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "ACTIVE"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "publicationSetId"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "publicationSetId"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNDER_REVIEW"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "challengeId",
+              "challengeStatus",
+              "trustedApprovalRef"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "challengeId"
+                  ]
+                },
+                {
+                  "required": [
+                    "challengeStatus"
+                  ]
+                },
+                {
+                  "required": [
+                    "trustedApprovalRef"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

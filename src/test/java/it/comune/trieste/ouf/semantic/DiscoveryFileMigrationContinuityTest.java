@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-/** Disposable CI database only: exercise V10 -> V13 -> V14 -> V15 using populated schemas. */
+/** Disposable CI database only: exercise V10 -> V13 -> V14 -> V15 -> V16 using populated schemas. */
 class DiscoveryFileMigrationContinuityTest {
   @Test void fileReceiptsHistoryAndDiscoveryBudgetsSurviveAdditiveUpgradeAndReconnect() throws Exception {
     String url=Objects.requireNonNull(System.getenv("OUF_SEM_DB_URL"),"isolated PostgreSQL fixture required");
@@ -83,17 +83,60 @@ class DiscoveryFileMigrationContinuityTest {
           seedV13Block(connection,"D078","PROVIDER_UNKNOWN");
           seedV13Block(connection,"TLS","PROVIDER_TLS_UNPROVEN");
         }
-        Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem").defaultSchema("ouf_sem")
-            .locations("classpath:db/migration").target("14").load().migrate();
+        // Seed a real V13 publication and historical claims for the V16 reconciliation.
+        String legacySet;
+        try(var connection=DriverManager.getConnection(dbUrl,user,password);var statement=connection.createStatement()) {
+          statement.execute("select ouf_sem.validate_revision(revision_id,'fixture') from ouf_sem.artifact_revision");
+          statement.execute("""
+              update ouf_sem.artifact_revision r set lifecycle_status='UNDER_REVIEW',content_hash=v.validated_content_hash
+              from ouf_sem.validation_run v where v.revision_id=r.revision_id and v.status='PASS'
+              """);
+          statement.execute("""
+              insert into ouf_sem.approval_challenge(challenge_id,revision_id,target_content_hash,status,expires_at,created_by_subject)
+              select gen_random_uuid(),revision_id,content_hash,'APPROVED',now()+interval '15 minutes','fixture'
+              from ouf_sem.artifact_revision
+              """);
+          statement.execute("""
+              insert into ouf_sem.approval_decision(decision_id,challenge_id,decision,target_content_hash,decided_by_subject)
+              select gen_random_uuid(),challenge_id,'APPROVED',target_content_hash,'fixture' from ouf_sem.approval_challenge
+              """);
+          legacySet=legacyPublish(connection,"v13-bound");
+          statement.execute("insert into ouf_sem.publish_claim(idempotency_key,request_hash) values('v13-incomplete',repeat('c',64))");
+          // A later manifest contains the same revision but has contradictory publication evidence.
+          statement.execute("""
+              insert into ouf_sem.semantic_publication_set
+              select gen_random_uuid(),nextval('ouf_sem.publication_no_seq'),repeat('f',64),now(),'fixture','BUILDING'
+              """);
+          statement.execute("""
+              insert into ouf_sem.semantic_publication_member
+              select s.publication_set_id,a.semantic_id,r.revision_id from ouf_sem.semantic_publication_set s
+              cross join ouf_sem.artifact_revision r join ouf_sem.semantic_artifact a using(artifact_id)
+              where s.status='BUILDING'
+              """);
+          statement.execute("update ouf_sem.semantic_publication_set set status='PUBLISHED' where status='BUILDING'");
+          statement.execute("""
+              insert into ouf_sem.audit_event(event_id,event_type,subject_ref,resource_type,resource_id,detail_json)
+              select gen_random_uuid(),'SEMANTIC_PUBLISHED','fixture','REVISION',m.revision_id::text,
+                jsonb_build_object('publicationSetId',m.publication_set_id)
+              from ouf_sem.semantic_publication_member m join ouf_sem.semantic_publication_set s using(publication_set_id)
+              cross join generate_series(1,2) where s.checksum=repeat('f',64)
+              """);
+          statement.execute("""
+              insert into ouf_sem.publish_claim(idempotency_key,request_hash,publication_set_id)
+              select 'v13-ambiguous',r.content_hash,s.publication_set_id from ouf_sem.artifact_revision r
+              cross join ouf_sem.semantic_publication_set s where s.checksum=repeat('f',64)
+              """);
+        }
+        var v14=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem").defaultSchema("ouf_sem")
+            .locations("classpath:db/migration").target("14").load();
+        assertThat(v14.migrate().migrationsExecuted).isOne();
         try(var connection=DriverManager.getConnection(dbUrl,user,password);var s=connection.createStatement()){
           // V14 could leave this dependency exhausted even though the failed job still had time.
           s.executeUpdate("update ouf_sem.discovery_dependency set state='PAUSED_EXHAUSTED',budget_deadline=now()-interval '1 hour' where provider_id='D078'");
         }
-        // New Flyway instance and physical connection cannot recreate or reset committed history.
-        var reopened=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
-            .defaultSchema("ouf_sem").locations("classpath:db/migration").load();
-        assertThat(reopened.migrate().migrationsExecuted).isOne();
-        assertThat(reopened.migrate().migrationsExecuted).isZero();reopened.validate();
+        var v15=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
+            .defaultSchema("ouf_sem").locations("classpath:db/migration").target("15").load();
+        assertThat(v15.migrate().migrationsExecuted).isOne();
         try(var connection=DriverManager.getConnection(dbUrl,user,password)) {
           assertThat(history(connection)).hasSize(15);
           assertThat(value(connection,"select count(*) from ouf_sem.discovery_incident where state='OPEN' and opened_worker_version is null")).isEqualTo("2");
@@ -103,7 +146,7 @@ class DiscoveryFileMigrationContinuityTest {
             public List<Candidate> search(Query query){return List.of();}
           };
           var release=new Properties();release.setProperty("version","new");
-          var worker=new DiscoveryService(JdbcClient.create(reopened.getConfiguration().getDataSource()),List.of(provider),
+          var worker=new DiscoveryService(JdbcClient.create(v15.getConfiguration().getDataSource()),List.of(provider),
               new SafeRdfParser(),new ObjectMapper(),new BuildProperties(release));
           assertThat(worker.executeOne()).isOne();
           assertThat(worker.executeOne()).isZero();
@@ -113,7 +156,41 @@ class DiscoveryFileMigrationContinuityTest {
           assertThat(history(connection).subList(0,10)).isEqualTo(oldHistory);
           assertThat(value(connection,"select attempt_count::text||':'||recovery_state from ouf_sem.discovery_request where idempotency_key_hash=repeat('b',64)")).isEqualTo("128:PAUSED_EXHAUSTED");
           assertThat(value(connection,"select cumulative_attempts::text||':'||state from ouf_sem.discovery_dependency where scope_subject='composed-caller'")).isEqualTo("128:PAUSED_EXHAUSTED");
-          verifyFreshRequestAfterExpiry(JdbcClient.create(reopened.getConfiguration().getDataSource()));
+          verifyFreshRequestAfterExpiry(JdbcClient.create(v15.getConfiguration().getDataSource()));
+          try(var s=connection.createStatement()) {
+            s.executeUpdate("""
+                with review as (
+                  insert into ouf_sem.artifact_revision(revision_id,artifact_id,revision_no,lifecycle_status,content_hash,created_by_subject)
+                  select gen_random_uuid(),artifact_id,2,'UNDER_REVIEW',repeat('d',64),'fixture' from ouf_sem.semantic_artifact
+                  returning revision_id,content_hash
+                )
+                insert into ouf_sem.approval_challenge(challenge_id,revision_id,target_content_hash,status,created_at,expires_at,created_by_subject)
+                select gen_random_uuid(),revision_id,content_hash,'OPEN',now()-interval '1 hour',now()-interval '1 minute','fixture' from review
+                """);
+          }
+        }
+        var v16=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
+            .defaultSchema("ouf_sem").locations("classpath:db/migration").target("16").load();
+        assertThat(v16.migrate().migrationsExecuted).isOne();
+        // Reopening the fully upgraded database must preserve the history and all claims.
+        var reopened=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
+            .defaultSchema("ouf_sem").locations("classpath:db/migration").load();
+        assertThat(reopened.migrate().migrationsExecuted).isZero();
+        reopened.validate();
+        try(var connection=DriverManager.getConnection(dbUrl,user,password)) {
+          assertThat(history(connection)).hasSize(16);
+          assertThat(legacyPublish(connection,"v13-bound")).isEqualTo(legacySet);
+          assertThatThrownBy(()->legacyPublish(connection,"v13-incomplete"))
+              .isInstanceOf(SQLException.class).hasMessageContaining("PUBLICATION_RECONCILIATION_REQUIRED");
+          assertThatThrownBy(()->legacyPublish(connection,"v13-ambiguous"))
+              .isInstanceOf(SQLException.class).hasMessageContaining("PUBLICATION_RECONCILIATION_REQUIRED");
+          assertThat(value(connection,"select count(*) from ouf_sem.publish_claim where decision_id is null")).isEqualTo("2");
+          assertThat(value(connection,"select ouf_sem.expire_review(revision_id,row_version,'fixture')::text from ouf_sem.artifact_revision where revision_no=2"))
+              .isEqualTo("true");
+          assertThat(value(connection,"""
+              select c.status||':'||r.lifecycle_status||':'||r.row_version from ouf_sem.approval_challenge c
+              join ouf_sem.artifact_revision r using(revision_id) where r.revision_no=2
+              """)).isEqualTo("EXPIRED:DRAFT:1");
           try(var s=connection.createStatement()) {
             assertThatThrownBy(()->s.executeUpdate("update ouf_sem.proposal_command_receipt set result_json='{}' where idempotency_key='same-file-intent'"))
                 .isInstanceOf(SQLException.class).hasMessageContaining("PROPOSAL_RECEIPT_IMMUTABLE");
@@ -190,6 +267,15 @@ class DiscoveryFileMigrationContinuityTest {
       s.execute("select ouf_sem.finish_discovery_dependency('"+job+"',1,'"+provider+"',1,'BLOCKED','"+code+"',0)");
       s.execute("select ouf_sem.finish_discovery_job('"+job+"',1,'BLOCKED','"+code+"','[]',null)");
       s.executeUpdate("update ouf_sem.discovery_dependency set next_attempt_at=now() where provider_id='"+provider+"'");
+    }
+  }
+  private static String legacyPublish(Connection c,String fixtureKey) throws SQLException {
+    try(var statement=c.prepareStatement("""
+        select ouf_sem.publish_revision(c.revision_id,d.decision_id,?,d.target_content_hash,'fixture','test')
+        from ouf_sem.approval_challenge c join ouf_sem.approval_decision d using(challenge_id)
+        """)) {
+      statement.setString(1,fixtureKey);
+      try(var row=statement.executeQuery()){assertThat(row.next()).isTrue();return row.getString(1);}
     }
   }
   private static List<String> history(Connection c) throws SQLException {
