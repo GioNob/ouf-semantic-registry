@@ -1,6 +1,6 @@
 # Adozione di un candidato della discovery
 
-Il tool `semantic.discovery.adopt` esegue un comando HUMAN dell’owner Semantic. Gateway invia `POST /api/semantic/v1/proposal-commands/adopt` con `Content-Type: application/json` e la prova `X-OUF-Semantic-Proposal-Receipt`. Lo schema JSON 2020-12 definisce gli argomenti del tool in `#/$defs/arguments` e la risposta HTTP 200 in `#/$defs/receipt`. Entrambi gli oggetti sono chiusi. [Schema macchina](discovery-adoption-v1.schema.json)
+Il tool `semantic.discovery.adopt` esegue un comando HUMAN dell’owner Semantic. Gateway invia `POST /api/semantic/v1/proposal-commands/adopt` con `Content-Type: application/json` e la prova `X-OUF-Semantic-Proposal-Receipt`. Lo schema JSON 2020-12 definisce gli argomenti del tool per riferimento allo schema v1 e la risposta HTTP 200 in `#/$defs/receipt`. Entrambi gli oggetti sono chiusi. [Schema macchina v2](discovery-adoption-v2.schema.json)
 
 ## Trasporto
 
@@ -55,7 +55,9 @@ La prova HTTP ha la forma `payload.signature`. `payload` è il JSON della prova 
 
 L’owner rilegge solo candidati di job `SUCCEEDED` dello stesso delegato. Usa URI canonico come `semanticId`, namespace e nome locale della risorsa RDF, soggetto come owner, publisher come authority e `1.0.0` come versione locale iniziale. `sourceLocation` è la sorgente registrata dal provider. Publisher e licenza si leggono dai predicati Dublin Core `publisher` e `license` (terms o elements/1.1) sul soggetto canonico. In mancanza del predicato, si esaminano le risorse esplicitamente collegate da `rdfs:isDefinedBy` nello stesso grafo. Sono ammessi IRI o valori letterali univoci. Con licenza presente, `licenseWarning` vale `null`. La selezione di classe e categoria per il mapping resta all’umano dopo la discovery (D-059 e D-060).
 
-La chiave appartiene alla coppia tenant/soggetto e condivide lo spazio delle chiavi degli altri comandi di proposta. Commit di DRAFT, snapshot, audit e ricevuta avvengono nella stessa transazione. In caso di esito incerto usare `semantic.proposal.read` con `commandKey` originale oppure ripresentare l’intento identico con prova fresca. La lettura richiede HUMAN e i grant correnti `ouf.semantic.proposal.read` e `ouf.semantic.discovery.adopt`, con i rispettivi scope. Restituisce `operation: "ADOPT"`, `result` uguale alla ricevuta, `historicalSnapshot: true` e `ownerStateMustBeRechecked: true`. Il replay restituisce lo stato alla creazione anche dopo scadenza del candidato o pubblicazione.
+La chiave appartiene alla coppia tenant/soggetto e condivide lo spazio delle chiavi degli altri comandi di proposta. Commit di DRAFT, snapshot, audit e ricevuta avvengono nella stessa transazione. In caso di esito incerto usare `semantic.proposal.read` con `commandKey` originale oppure ripresentare l’intento identico con prova fresca. La lettura richiede HUMAN e i grant correnti `ouf.semantic.proposal.read` e `ouf.semantic.discovery.adopt`, con i rispettivi scope. Restituisce `operation: "ADOPT"`, `result` uguale alla ricevuta, `historicalSnapshot: true` e `ownerStateMustBeRechecked: true`. La ricevuta storica resta leggibile dopo la scadenza e la pubblicazione. Ripresentare il comando ADOPT verifica lo stato corrente anche con la stessa chiave. Se differisce dalla ricevuta, la risposta indica `receiptSemantics=CURRENT_ADOPTION_REFERENCE`.
+
+Un candidato di un nuovo job può riusare la revisione se coincidono URI, tipo, provider, sorgente e snapshot RDF con la provenienza attestata. Una bozza è visibile al delegato del job di adozione originario, identificato da issuer, tenant e soggetto. La risposta `DRAFT` contiene la versione da preparare. La risposta `UNDER_REVIEW` contiene anche `challengeId`, `challengeStatus` e `trustedApprovalRef`. Con `ACTIVE` usare direttamente `semanticId`, `revisionId` e `publicationSetId` per il mapping e la lettura esatta. Il comando conserva la ricevuta v1 della prima creazione.
 
 | HTTP | Codice | Significato |
 |---|---|---|
@@ -64,7 +66,9 @@ La chiave appartiene alla coppia tenant/soggetto e condivide lo spazio delle chi
 | 404 | `SEMANTIC_CANDIDATE_NOT_FOUND` | Coppia assente o fuori dal job del delegato. |
 | 409 | `CANDIDATE_EXPIRED` | Candidato scaduto prima dell’adozione. |
 | 409 | `IDEMPOTENCY_KEY_REUSE` | Intento o operazione diversi sotto la stessa chiave. |
-| 409 | `CANDIDATE_ALREADY_ADOPTED` / `SEMANTIC_ID_CONFLICT` | Altra adozione già registrata o identità semantica occupata. |
+| 409 | `SEMANTIC_IDENTITY_MISMATCH` | Il campo `reason` vale `NAME_OR_ORIGIN_ALREADY_BOUND` per un nome o un’origine già assegnati, oppure `TYPE_OR_PROVENANCE_UNMATCHED` se tipo o provenienza non confermano la corrispondenza. |
+| 409 | `SEMANTIC_REVISION_UNAVAILABLE` | Revisione deprecata o ritirata. |
+| 409 | `PUBLICATION_RECONCILIATION_REQUIRED` / `REVIEW_RECONCILIATION_REQUIRED` | Evidenza insufficiente per indicare un riferimento univoco. |
 | 409 | `CANDIDATE_PUBLISHER_MISSING` / `CANDIDATE_METADATA_AMBIGUOUS` / `CANDIDATE_METADATA_UNRESOLVED` | I byte disponibili non identificano il publisher o un valore di metadato univoco e leggibile. |
 | 409 | `CANDIDATE_REFERENCE_UNRESOLVED` / `CANDIDATE_VOCABULARY_UNRESOLVED` | Domain/range di una relazione o schema di un concetto non identificabili nel registro locale. |
 
@@ -73,6 +77,10 @@ La chiave appartiene alla coppia tenant/soggetto e condivide lo spazio delle chi
 Passare `revisionId` e `expectedRowVersion` a `semantic.review.prepare`. Con `PASS`, invocare `semantic.approval.request` con la stessa revisione/versione e il `validationRunId` ottenuto. Usare una chiave distinta per ciascun comando. La scheda THS `GET /api/trusted-human/v1/semantic-approval-challenges/{id}` contiene `adoptionProvenance`, identica alla provenienza della ricevuta e inclusa in `definition_json` per il calcolo del fingerprint approvato. Il campo `rdfSha256` identifica i byte RDF, mentre `targetContentHash` identifica il contenuto della revisione sottoposta alla decisione. La decisione e la pubblicazione seguono i due comandi HUMAN della THS.
 
 `semantic.get(semanticId,revisionId,publicationSetId)` risolve anche una pubblicazione storica. Per una revisione adottata, `rdf_snapshot` espone `snapshot_id`, `content_hash`, `media_type`, `byte_count` e `content_path`. `content_base64` contiene i byte esatti quando entrano nel limite JSON dell’owner. Per leggere integralmente uno snapshot più grande, usare GET sull’owner al `content_path` con grant `ouf.semantic.read` e `Accept` uguale a `media_type`. Il path è vincolato a PublicationSet e artefatto. Il limite JSON può ridurre anche la lista delle triple proiettate, segnalata da `partial`.
+
+Con una challenge scaduta il chatbot avvia un nuovo `semantic.review.prepare` con la versione nota. Il registro chiude la challenge come `EXPIRED` e valida la bozza alla versione successiva. Passare `validated_row_version` e il nuovo run alla richiesta di approvazione. Anche una nuova `semantic.approval.request` che presenta il run verde della versione appena scaduta esegue la nuova validazione prima di aprire la challenge. Per una nuova preparazione o richiesta serve una nuova chiave. La THS presenta la nuova challenge sul percorso di decisione esistente.
+
+V16 applica questa riconciliazione anche alle challenge aperte prima del rilascio. Per i claim di pubblicazione esistenti, V16 cerca una sola coppia revisione/decisione compatibile con evento, membro del manifesto, hash e tempi della decisione. Un replay dubbio restituisce HTTP 409 con `PUBLICATION_RECONCILIATION_REQUIRED`. Una chiave vincolata a un intento diverso restituisce HTTP 409 con `PUBLICATION_IDEMPOTENCY_CONFLICT`.
 
 ## Catalogo e grant al rilascio
 
