@@ -167,6 +167,17 @@ class OntopiaPublicationRuntimeTest extends SignedProposalFixture {
             "contentHash",review.required("targetContentHash").asText()))))
         .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("PUBLISHED")).andReturn().getResponse().getContentAsByteArray());
     String set=publication.required("publicationSetId").asText();
+    var batch=json.readTree(http.perform(get("/api/trusted-human/v1/semantic-published-terms")
+        .param("revisionIds",revision).with(reviewer("ouf.semantic.review")))
+        .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
+    var expected=json.createObjectNode();
+    expected.put("revisionId",revision).put("semanticId",POI).put("artifactType","CLASS").put("semanticVersion","1.0.0");
+    expected.putObject("label").put("it","Punto di Interesse").put("en","Point of Interest");
+    expected.putObject("description").setAll(Map.of("it",descriptions.required("it"),"en",descriptions.required("en")));
+    expected.put("publisher",AGID).putNull("license").put("licenseWarning","licenza mancante");
+    expected.put("publicationSetId",set).put("status","ACTIVE");
+    assertThat(batch.required("terms")).isEqualTo(json.createArrayNode().add(expected));
+    assertThat(batch.required("missing")).isEqualTo(json.createArrayNode());
     var detail=delegated("consultation/get","ouf.semantic.consultation.read","ouf.semantic.read","READ",
         Map.of("semanticId",POI,"revisionId",revision,"publicationSetId",set));
     assertThat(detail.required("rdf_snapshot").required("content_base64").binaryValue()).isEqualTo(fixture.poiBytes);

@@ -4,6 +4,44 @@ info:
   version: 1.0.0
 x-ouf-mcp-exposed: false
 paths:
+  /api/trusted-human/v1/semantic-published-terms:
+    get:
+      operationId: getSemanticPublishedTerms
+      summary: Read active published revisions for the THS onboarding card
+      description: Requires a trusted HUMAN principal with ouf.semantic.review.
+      x-ouf-mcp-exposed: false
+      security: [{thsBearer: []}]
+      parameters:
+        - name: revisionIds
+          in: query
+          required: true
+          style: form
+          explode: false
+          description: One comma-separated list. Duplicates count toward the limit and are returned once.
+          schema:
+            type: array
+            minItems: 1
+            maxItems: 64
+            items: {type: string, format: uuid}
+      responses:
+        '200':
+          description: Each list follows request order. An unavailable revision is represented only by its requested UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [terms, missing]
+                properties:
+                  terms:
+                    type: array
+                    items: {$ref: '#/components/schemas/PublishedTerm'}
+                  missing:
+                    type: array
+                    items: {type: string, format: uuid}
+        '400': {description: 'Missing or repeated parameter, invalid UUID list or more than 64 entries'}
+        '401': {description: Invalid bearer token}
+        '403': {description: Trusted HUMAN principal and review grant required}
   /api/trusted-human/v1/semantic-approval-challenges/{id}:
     get:
       operationId: getSemanticApprovalCard
@@ -61,6 +99,33 @@ paths:
       parameters: [$ref: '#/components/parameters/Id']
       responses: {'200': {description: Artifact retired without history deletion}}
 components:
+  securitySchemes:
+    thsBearer: {type: http, scheme: bearer, bearerFormat: JWT}
+  schemas:
+    LocalizedText:
+      type: object
+      additionalProperties: false
+      description: A missing translation is null.
+      required: [it, en]
+      properties:
+        it: {type: [string, 'null']}
+        en: {type: [string, 'null']}
+    PublishedTerm:
+      type: object
+      additionalProperties: false
+      required: [revisionId, semanticId, artifactType, semanticVersion, label, description, publisher, license, licenseWarning, publicationSetId, status]
+      properties:
+        revisionId: {type: string, format: uuid}
+        semanticId: {type: string}
+        artifactType: {type: string, enum: [CLASS, PROPERTY, RELATIONSHIP, VOCABULARY, CONCEPT, ONTOLOGY]}
+        semanticVersion: {type: [string, 'null']}
+        label: {$ref: '#/components/schemas/LocalizedText'}
+        description: {$ref: '#/components/schemas/LocalizedText'}
+        publisher: {type: string, description: Publisher recorded in the adopted revision or its artifact authority_ref.}
+        license: {type: [string, 'null']}
+        licenseWarning: {enum: ['licenza mancante', null]}
+        publicationSetId: {type: string, format: uuid, description: First published set containing this exact revision and semanticId.}
+        status: {const: ACTIVE}
   parameters:
     Id:
       name: id
