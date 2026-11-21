@@ -103,18 +103,37 @@ public class SemanticReadService {
     row.put("dependencies",dependencies.subList(0,Math.min(100,dependencies.size())));
     row.put("dependencies_partial",dependencies.size()>100);
     var snapshots=db.sql("""
-        select media_type,content_hash,statement_count,
+        select snapshot_id,media_type,content_hash,statement_count,
           octet_length(content_bytes) byte_count,
           case when octet_length(content_bytes)<=8388608 then content_bytes end content_bytes
-        from ouf_sem.revision_interchange_snapshot where revision_id=:r
+        from ouf_sem.revision_rdf_snapshot where revision_id=:r
         """).param("r",revision).query().listOfRows();
     if(!snapshots.isEmpty()) {
       var snapshot=snapshots.get(0);
       if(((Number)snapshot.get("byte_count")).longValue()>8388608)
         throw new IllegalArgumentException("SEM_READ_RDF_SIZE_LIMIT");
-      row.put("rdf_snapshot",new PublishedRdfSnapshot().project((byte[])snapshot.get("content_bytes"),
-        (String)snapshot.get("media_type"),snapshot.get("content_hash").toString().strip(),
-        ((Number)snapshot.get("statement_count")).longValue()));
+      byte[] bytes=(byte[])snapshot.get("content_bytes");
+      String mediaType=(String)snapshot.get("media_type"),hash=snapshot.get("content_hash").toString().strip();
+      var rdf=new PublishedRdfSnapshot();
+      if(snapshot.get("snapshot_id")==null) {
+        long count=((Number)snapshot.get("statement_count")).longValue();
+        row.put("rdf_snapshot",rdf.project(bytes,mediaType,hash,count));
+      } else {
+        var projection=new LinkedHashMap<>(rdf.projectAdopted(bytes,mediaType,hash));
+        projection.put("snapshot_id",snapshot.get("snapshot_id"));
+        projection.put("byte_count",bytes.length);
+        projection.put("content_path","/api/semantic/v1/publication-sets/"+publicationSet+"/artifacts/"+row.get("artifact_id"));
+        row.put("rdf_snapshot",projection);
+        int available=maxResultBytes-encodedSize(row);
+        // A large graph still has an exact authorized representation at the pinned publication.
+        if(available<0) {
+          projection.put("statements",List.of());
+          projection.put("partial",((Number)projection.get("statement_count")).longValue()>0);
+          available=maxResultBytes-encodedSize(row);
+        }
+        if(4L*((bytes.length+2)/3)+20<=available)
+          projection.put("content_base64",Base64.getEncoder().encodeToString(bytes));
+      }
     }
     return boundedResult(row);
   }
@@ -130,10 +149,12 @@ public class SemanticReadService {
       catch(JsonProcessingException e){throw new IllegalStateException("SEM_READ_JSON_INVALID",e);}
     }
   }
-  private <T> T boundedResult(T result) {
-    try {if(json.writeValueAsBytes(result).length>maxResultBytes)
-      throw new IllegalArgumentException("SEM_READ_RESULT_TOO_LARGE");}
+  private int encodedSize(Object result) {
+    try {return json.writeValueAsBytes(result).length;}
     catch(JsonProcessingException e){throw new IllegalStateException("SEM_READ_JSON_INVALID",e);}
+  }
+  private <T> T boundedResult(T result) {
+    if(encodedSize(result)>maxResultBytes)throw new IllegalArgumentException("SEM_READ_RESULT_TOO_LARGE");
     return result;
   }
 }

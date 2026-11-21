@@ -4,18 +4,17 @@ import java.net.URI;
 import java.net.http.*;
 import java.time.Duration;
 import java.util.Set;
-import java.util.function.Supplier;
 
 public class BoundedGatewayClient {
   private final HttpClient http;
-  private final Supplier<String> tokenSource;
+  private final java.util.function.Supplier<String> tokenSource;
   public BoundedGatewayClient(Duration connectTimeout){this(connectTimeout,null);}
-  public BoundedGatewayClient(Duration connectTimeout,Supplier<String> tokenSource){this.tokenSource=tokenSource;this.http=HttpClient.newBuilder().connectTimeout(connectTimeout).followRedirects(HttpClient.Redirect.NEVER).build();}
+  public BoundedGatewayClient(Duration connectTimeout,java.util.function.Supplier<String> tokenSource){this.tokenSource=tokenSource;this.http=HttpClient.newBuilder().connectTimeout(connectTimeout).followRedirects(HttpClient.Redirect.NEVER).build();}
   public Response get(URI base,URI uri,Duration timeout,int maxBytes,Set<String> mediaTypes){
-    return send(base,request(base,uri).timeout(timeout).header("Accept",String.join(",",mediaTypes)).GET().build(),maxBytes,mediaTypes);
+    return send(base,request(base,uri,timeout).header("Accept",String.join(",",mediaTypes)).GET().build(),maxBytes,mediaTypes);
   }
   public Response postForm(URI base,URI uri,String form,Duration timeout,int maxBytes,Set<String> mediaTypes){
-    return send(base,request(base,uri).timeout(timeout).header("Accept",String.join(",",mediaTypes)).header("Content-Type","application/x-www-form-urlencoded; charset=UTF-8").POST(HttpRequest.BodyPublishers.ofString(form)).build(),maxBytes,mediaTypes);
+    return send(base,request(base,uri,timeout).header("Accept",String.join(",",mediaTypes)).header("Content-Type","application/x-www-form-urlencoded; charset=UTF-8").POST(HttpRequest.BodyPublishers.ofString(form)).build(),maxBytes,mediaTypes);
   }
   private Response send(URI base,HttpRequest req,int maxBytes,Set<String> mediaTypes){
     URI uri=req.uri();
@@ -29,11 +28,20 @@ public class BoundedGatewayClient {
       return new Response(res.body(),type);
     }catch(ProviderFailure e){throw e;}catch(Exception e){var decision=ProviderFailurePolicy.exception(e);if(decision.kind()==ProviderFailurePolicy.Kind.CANCELLED)Thread.currentThread().interrupt();throw new ProviderFailure(decision,e);}
   }
-  private HttpRequest.Builder request(URI base,URI target){
+  static Duration remaining(long deadline){
+    long nanos=deadline-System.nanoTime();
+    if(nanos<1_000_000)throw new ProviderFailure("PROVIDER_TIMEOUT");
+    return Duration.ofNanos(nanos);
+  }
+  private HttpRequest.Builder request(URI base,URI target,Duration timeout){
     requireSameOrigin(base,target); // Never obtain or disclose a token to another origin.
     var builder=HttpRequest.newBuilder(target);
-    if(tokenSource!=null)builder.header("Authorization","Bearer "+tokenSource.get());
-    return builder;
+    long deadline=System.nanoTime()+timeout.toNanos();
+    if(tokenSource!=null){
+      String token=tokenSource instanceof ClientCredentialsTokenSource oauth?oauth.get(deadline):tokenSource.get();
+      builder.header("Authorization","Bearer "+token);
+    }
+    return builder.timeout(remaining(deadline));
   }
   static void requireSameOrigin(URI base,URI target){if(base==null||target==null||base.getHost()==null||target.getHost()==null||base.getUserInfo()!=null||base.getFragment()!=null||target.getFragment()!=null)throw new ProviderFailure("GATEWAY_ORIGIN_VIOLATION");if(!"https".equalsIgnoreCase(base.getScheme())&&!isLoopback(base))throw new ProviderFailure("GATEWAY_HTTPS_REQUIRED");if(!base.getScheme().equalsIgnoreCase(target.getScheme())||!base.getHost().equalsIgnoreCase(target.getHost())||effectivePort(base)!=effectivePort(target)||target.getUserInfo()!=null)throw new ProviderFailure("GATEWAY_ORIGIN_VIOLATION");}
   private static boolean isLoopback(URI u){return "http".equalsIgnoreCase(u.getScheme())&&Set.of("127.0.0.1","localhost","::1").contains(u.getHost());}

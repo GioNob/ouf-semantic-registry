@@ -23,3 +23,19 @@ Confronto con la baseline descritta nei report 04 §3 e 17. I valori operativi e
 | Ingresso MCP | Per creare la richiesta di prova e rileggerla, preservare la configurazione IAM e di delega già autorizzata, incluso il file di chiave indicato da `ouf.semantic.discovery-delegation.key-file`. Questi binding servono all'ingresso. Il fetch usa la credenziale workload della riga OAuth. |
 
 Il solo delta applicativo previsto è il flag worker, a condizione che i prerequisiti del provider corrispondano al profilo. Il cambio ENV modifica l'impronta della configurazione e richiede la nuova autorizzazione operativa del profilo successore descritta nel report 17. La qualifica di repository usa risposte Gateway sintetiche. La prova sul successore deve rileggere stato SUCCEEDED, URI nel namespace approvato e provider `SCHEMA_GOV_IT` per lo stesso request ID.
+
+## Esiti della discovery con il worker 1.0.3 e lo schema V18
+
+Dopo una ricerca SPARQL riuscita, il worker tenta una descrizione RDF per URI distinto, fino a `maxCandidates`. Anche un URI rifiutato occupa un posto nel limite. Lo stato della richiesta espone i conteggi pubblicati in `excludedCandidates`.
+
+| Codice | Quando aumenta |
+|---|---|
+| `CANDIDATE_FETCH_DENIED` | Il GET della descrizione riceve 400, 404, 406, 409, 410, 414, 422 o 451. Per esempio, il Gateway rifiuta il namespace oppure la risorsa è assente. |
+| `CANDIDATE_RDF_INVALID` | Il parser rifiuta il contenuto RDF ricevuto. |
+| `CANDIDATE_RDF_BOUND` | Il parser riceve un contenuto vuoto o oltre il proprio limite di dimensione. |
+
+Il worker prosegue con gli altri URI. Un 4xx sul GET facoltativo di un’ontologia collegata da `rdfs:isDefinedBy` può lasciare `ONTOLOGY_PROVENANCE_UNAVAILABLE` sul candidato. La richiesta può terminare `SUCCEEDED` con `candidateCount` pari a zero.
+
+Un rifiuto attribuibile al singolo URI (per esempio un namespace non ammesso dall'installazione) non è mai un guasto del canale, nemmeno se riguarda tutti i risultati: la discovery termina con i candidati validi, anche zero, e il conteggio `CANDIDATE_FETCH_DENIED` resta visibile. I rifiutati non occupano posti candidato (`max-candidates` conta solo le descrizioni valide); i tentativi di fetch sono limitati a tre volte `max-candidates`. Restano guasti del provider gli errori della ricerca, di autenticazione o token del Gateway, i 5xx, i timeout e il budget.
+
+Gli errori della ricerca e i guasti del canale durante i fetch obbligatori seguono la politica di recupero del provider, inclusi 401/403, errori del token, 408/429, 5xx, timeout, limiti di trasporto e risposte malformate. Per un incidente `OPEN` con codice `PROVIDER_HTTP_400` aperto dalla 1.0.2, la 1.0.3 è eleggibile al sondaggio V15. Un tentativo ammesso e concluso con successo risolve l’incidente e riporta la dipendenza a `HEALTHY`. La migrazione V18 aggiunge il contatore inizializzato a zero e conserva la funzione di pubblicazione usata dalla 1.0.2.
