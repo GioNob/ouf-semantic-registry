@@ -27,6 +27,53 @@ public class SemanticReadService {
       r.description_json::text description,r.definition_json::text definition
       """;
 
+  public record LocalizedText(String it, String en) {}
+  public record PublishedTerm(UUID revisionId, String semanticId, String artifactType, String semanticVersion,
+      LocalizedText label, LocalizedText description, String publisher, String license, String licenseWarning,
+      UUID publicationSetId, String status) {}
+  public record PublishedTerms(List<PublishedTerm> terms, List<UUID> missing) {}
+
+  public PublishedTerms publishedTerms(List<UUID> revisionIds) {
+    var rows = db.sql("""
+        select r.revision_id, a.semantic_id, a.artifact_type, r.semantic_version, r.lifecycle_status,
+               r.label_json->>'it' label_it, r.label_json->>'en' label_en,
+               r.description_json->>'it' description_it, r.description_json->>'en' description_en,
+               coalesce(case when b.revision_id is not null then r.definition_json #>> '{adoptionProvenance,publisher}' end,
+                        a.authority_ref) publisher,
+               case when b.revision_id is not null then r.definition_json #>> '{adoptionProvenance,license}' end license,
+               p.publication_set_id
+        from ouf_sem.artifact_revision r
+        join ouf_sem.semantic_artifact a using (artifact_id)
+        join ouf_sem.artifact_active_revision ar on ar.artifact_id=a.artifact_id and ar.revision_id=r.revision_id
+        join lateral (
+          select m.publication_set_id from ouf_sem.semantic_publication_member m
+          join ouf_sem.semantic_publication_set s using (publication_set_id)
+          where m.revision_id=r.revision_id and m.semantic_id=a.semantic_id and s.status='PUBLISHED'
+          order by s.publication_no limit 1
+        ) p on true
+        left join ouf_sem.revision_adoption b on b.revision_id=r.revision_id
+        where r.revision_id in (:ids) and r.lifecycle_status='ACTIVE' and a.retired_at is null
+        """).param("ids", revisionIds).query((rs, n) -> {
+          String license = rs.getString("license");
+          return new PublishedTerm(rs.getObject("revision_id", UUID.class), rs.getString("semantic_id"),
+              rs.getString("artifact_type"), rs.getString("semantic_version"),
+              new LocalizedText(rs.getString("label_it"), rs.getString("label_en")),
+              new LocalizedText(rs.getString("description_it"), rs.getString("description_en")),
+              rs.getString("publisher"), license, license == null ? "licenza mancante" : null,
+              rs.getObject("publication_set_id", UUID.class), rs.getString("lifecycle_status"));
+        }).list();
+    var byId = new HashMap<UUID, PublishedTerm>();
+    for (var term : rows) byId.put(term.revisionId(), term);
+    var terms = new ArrayList<PublishedTerm>();
+    var missing = new ArrayList<UUID>();
+    for (var id : revisionIds) {
+      var term = byId.get(id);
+      if (term == null) missing.add(id);
+      else terms.add(term);
+    }
+    return new PublishedTerms(terms, missing);
+  }
+
   public List<Map<String,Object>> search(String q,String status,int limit,
       String type,String namespace,String domain,String range) {
     bounded(q,"q",256,true); bounded(namespace,"namespace",512,false);

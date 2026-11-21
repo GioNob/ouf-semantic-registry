@@ -62,9 +62,15 @@ class SemanticReadRuntimeTest {
     var f=fixture();
     UUID next=UUID.randomUUID(),set=UUID.randomUUID();
     revision(f.artifact,next,2,f.label,"replacement",f.domain,f.range);
-    publication(set,next,f.semanticId);
     db.sql("update ouf_sem.artifact_active_revision set revision_id=:r where artifact_id=:a")
       .param("r",next).param("a",f.artifact).update();
+    // The old revision has only a published membership. The new one has only the active pointer.
+    var ids=List.of(f.revision,next);
+    assertThat(reads.publishedTerms(ids)).isEqualTo(new SemanticReadService.PublishedTerms(List.of(),ids));
+    publication(set,next,f.semanticId);
+    var terms=reads.publishedTerms(ids);
+    assertThat(terms.missing()).containsExactly(f.revision);
+    assertThat(terms.terms()).extracting(SemanticReadService.PublishedTerm::revisionId).containsExactly(next);
     var results=reads.search(f.label,"ACTIVE",20,null,null,null,null);
     assertThat(results).extracting(r->r.get("revision_id")).contains(next).doesNotContain(f.revision);
     var old=reads.resolve(f.semanticId,f.revision,f.publication);

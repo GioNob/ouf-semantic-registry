@@ -120,6 +120,12 @@ class DiscoveryAdoptionRuntimeTest {
     var later=governance.publish(otherRevision,(UUID)approved.get("decisionId"),otherKey,(String)otherReview.get("targetContentHash"),
         "reviewer","HUMAN",otherKey);
     assertThat(reads.resolve(c.uri(),revision,(UUID)later.get("publicationSetId"))).containsEntry("revision_id",revision);
+    var terms=reads.publishedTerms(List.of(otherRevision,revision)).terms();
+    assertThat(terms).extracting(SemanticReadService.PublishedTerm::revisionId).containsExactly(otherRevision,revision);
+    var original=terms.get(1);
+    assertThat(original.publicationSetId()).isEqualTo(set);
+    assertThat(original.license()).isEqualTo(licensed ? LICENSE : null);
+    assertThat(original.licenseWarning()).isEqualTo(licensed ? null : "licenza mancante");
     var second=seed(false,licensed,c.uri(),MAPPER,licensed?"mapping":"second CSV");
     for(var reused:List.of(commands.adopt(MAPPER,key,c.request(),c.id()),
         commands.adopt(MAPPER,key+"-same",c.request(),c.id()),commands.adopt(MAPPER,key+"-second",second.request(),second.id()))) {
@@ -136,6 +142,7 @@ class DiscoveryAdoptionRuntimeTest {
     assertThat(db.sql("select count(*) from ouf_sem.publish_claim where revision_id=:r")
         .param("r",revision).query(Long.class).single()).isOne();
     governance.lifecycle(revision,"DEPRECATED","reviewer","HUMAN","fixture:decision",key);
+    assertThat(reads.publishedTerms(List.of(revision))).isEqualTo(new SemanticReadService.PublishedTerms(List.of(),List.of(revision)));
     var rdf=(Map<?,?>)reads.resolve(c.uri(),revision,set).get("rdf_snapshot");
     assertThat(rdf.get("snapshot_id")).isEqualTo(snapshot);
     assertThat(rdf.get("content_hash")).isEqualTo(c.hash());
