@@ -33,6 +33,8 @@ WITH publication_events AS (
 UPDATE ouf_sem.publish_claim k SET revision_id=e.revision_id,decision_id=e.decision_id
  FROM evidence e WHERE e.matches=1 AND k.idempotency_key=e.idempotency_key;
 
+-- The deferred foreign keys above must be checked before altering the table again.
+SET CONSTRAINTS ALL IMMEDIATE;
 -- Unprovable legacy claims retain their evidence and cannot be reused.
 ALTER TABLE ouf_sem.publish_claim ADD CONSTRAINT publish_claim_intent_required
  CHECK(revision_id IS NOT NULL AND decision_id IS NOT NULL) NOT VALID;
