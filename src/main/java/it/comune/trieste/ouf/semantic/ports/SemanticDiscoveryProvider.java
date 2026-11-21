@@ -12,10 +12,11 @@ public interface SemanticDiscoveryProvider {
   default SearchResult searchWithExclusions(Query query){
     return new SearchResult(search(query),0);
   }
-  record SearchResult(List<Candidate> candidates,int fetchDenied){
+  record SearchResult(List<Candidate> candidates,int fetchDenied,int rdfInvalid,int rdfBound){
+    public SearchResult(List<Candidate> candidates,int fetchDenied){this(candidates,fetchDenied,0,0);}
     public SearchResult {
       candidates=List.copyOf(candidates);
-      if(fetchDenied<0)throw new IllegalArgumentException("negative exclusion count");
+      if(fetchDenied<0 || rdfInvalid<0 || rdfBound<0)throw new IllegalArgumentException("negative exclusion count");
     }
   }
   record Query(String artifactType,String intent,List<String> preferredLanguages,Instant deadline){

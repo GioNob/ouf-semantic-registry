@@ -140,6 +140,7 @@ class OntopiaPublicationRuntimeTest extends SignedProposalFixture {
     var validation=send("validate","ouf.semantic.review.prepare","ouf.semantic.review.prepare",key,
         Map.of("commandKey",key,"revisionId",revision,"expectedRowVersion",version),CAPS,200);
     assertThat(validation.required("status").asText()).isEqualTo("PASS");
+    assertThat(validation.required("issues").findValuesAsText("rule_id")).doesNotContain("VAL-008");
     key=UUID.randomUUID().toString();
     var review=send("review","ouf.semantic.approval.request","ouf.semantic.approval.request",key,
         Map.of("commandKey",key,"revisionId",revision,"expectedRowVersion",version,
@@ -149,6 +150,14 @@ class OntopiaPublicationRuntimeTest extends SignedProposalFixture {
     var card=json.readTree(http.perform(get(ths).with(reviewer("ouf.semantic.review")))
         .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());
     assertThat(card.required("adoptionProvenance")).isEqualTo(provenance);
+    var descriptions=card.required("description_json");
+    var source=new SafeRdfParser().model(fixture.poiBytes,"text/turtle");
+    try {
+      var comments=source.getResource(POI).listProperties(RDFS.comment).toList();
+      assertThat(comments).extracting(statement->statement.getLiteral().getLanguage()).containsExactlyInAnyOrder("it","en");
+      for(var comment:comments)
+        assertThat(descriptions.required(comment.getLiteral().getLanguage()).asText()).isEqualTo(comment.getString());
+    } finally {source.close();}
     var approved=json.readTree(http.perform(post(ths+"/decision").with(reviewer("ouf.semantic.approve"))
         .contentType(MediaType.APPLICATION_JSON).content("{\"decision\":\"APPROVED\"}"))
         .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray());

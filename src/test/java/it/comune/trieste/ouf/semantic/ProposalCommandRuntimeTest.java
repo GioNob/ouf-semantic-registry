@@ -6,9 +6,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.*;
 import it.comune.trieste.ouf.semantic.api.ArtifactApi.CreateArtifact;
 import it.comune.trieste.ouf.semantic.application.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -51,6 +55,29 @@ class ProposalCommandRuntimeTest {
     assertThat(postCommand("review",review,reviewKey,CAPS,200)).isEqualTo(receipt);
     assertThat(db.sql("select count(*) from ouf_sem.approval_challenge where revision_id=:r").param("r",UUID.fromString(r)).query(Long.class).single()).isEqualTo(1L);
     assertThat(db.sql("select count(*) from ouf_sem.artifact_active_revision where artifact_id=:a").param("a",UUID.fromString(created.get("artifactId").asText())).query(Long.class).single()).isZero();
+  }
+  @ParameterizedTest
+  @ValueSource(strings={"Città di Trieste", "Città detta \"Trieste\" sul percorso A\\B"})
+  void revisionFingerprintSurvivesValidationReviewAndPublication(String description)throws Exception {
+    UUID revision=revision(commands.create("tenant-a","agent","AI_AGENT",key(),command(),"test"));
+    db.sql("update ouf_sem.artifact_revision set description_json=jsonb_build_object('it',cast(? as text)) where revision_id=?")
+        .param(description).param(revision).update();
+    String content=db.sql("select label_json::text||description_json::text||definition_json::text from ouf_sem.artifact_revision where revision_id=?")
+        .param(revision).query(String.class).single();
+    String expected=HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content.getBytes(StandardCharsets.UTF_8)));
+    if(!description.contains("\\")) {
+      String legacy=db.sql("select encode(public.digest(cast(? as text)::bytea,'sha256'),'hex')")
+          .param(content).query(String.class).single();
+      assertThat(expected).isEqualTo(legacy);
+    }
+    var validation=commands.validate("tenant-a","agent",key(),revision,0);
+    assertThat(validation).containsEntry("status","PASS").containsEntry("validated_content_hash",expected);
+    var review=commands.review("tenant-a","agent","AI_AGENT",key(),revision,0,
+        UUID.fromString(validation.get("validation_run_id").toString()),"test");
+    assertThat(review).containsEntry("targetContentHash",expected);
+    var decision=governance.decide(UUID.fromString(review.get("challengeId").toString()),"APPROVED","human","HUMAN","fixture","test");
+    assertThat(governance.publish(revision,(UUID)decision.get("decisionId"),key(),expected,"human","HUMAN","test"))
+        .containsEntry("status","PUBLISHED");
   }
   @Test void duplicateCreateWithChangedIntentConflicts() {
     String k=key();var c=command();commands.create("tenant-a","agent","AI_AGENT",k,c,"test");

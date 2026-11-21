@@ -1,6 +1,7 @@
 package it.comune.trieste.ouf.semantic.adapters.discovery;
 
 import com.fasterxml.jackson.databind.*;
+import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
 import it.comune.trieste.ouf.semantic.ports.SemanticDiscoveryProvider;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -50,40 +51,40 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
       throw new BoundedGatewayClient.ProviderFailure("SCHEMA_GOV_SPARQL_RESULT_INVALID");
     JsonNode rows=root.path("results").path("bindings");
     // Fetch required descriptions first so optional metadata cannot starve a later candidate.
-    var descriptions=new LinkedHashMap<String,BoundedGatewayClient.Response>();
-    var reasons=new HashMap<String,List<String>>();
+    record Fetched(SchemaGovRanking.Match match,BoundedGatewayClient.Response body,OntologyProvenance.Description description){}
+    var descriptions=new ArrayList<Fetched>();
+    var evidence=new OntologyProvenance(Math.min(cfg.maxResponseBytes(),65536));
     var attempted=new HashSet<String>();
-    for(JsonNode row:rows){
+    int denied=0,invalid=0,bound=0;
+    for(var match:SchemaGovRanking.rank(rows,q)){
       if(descriptions.size()>=cfg.maxCandidates() || attempted.size()>=cfg.maxCandidates()*MAX_ATTEMPT_FACTOR)break;
-      String uri=row.path("resource").path("value").textValue();
-      if(uri==null || uri.isBlank())
-        throw new BoundedGatewayClient.ProviderFailure("SCHEMA_GOV_SPARQL_RESULT_INVALID");
+      String uri=match.uri();
       if(!attempted.add(uri))continue;
       try {
-        descriptions.put(uri,fetch(uri,q.deadline()));
+        var body=fetch(uri,q.deadline());
+        descriptions.add(new Fetched(match,body,evidence.inspect(uri,body)));
+      } catch(SafeRdfParser.UnsafeRdf rejected){
+        if("RDF_SIZE_LIMIT".equals(rejected.getMessage()))bound++;
+        else invalid++;
       } catch(BoundedGatewayClient.ProviderFailure failure){
         // Installation namespace policy and absent resources describe this URI only.
         if(!RESOURCE_DENIALS.contains(failure.decision().code()))throw failure;
-        continue;
+        denied++;
       }
-      String label=binding(row,"label"),language=row.path("label").path("xml:lang").asText(null);
-      reasons.put(uri,label==null?List.of("schema.gov.it SPARQL match"):
-          List.of("label: "+label+(language==null?"":" ["+language+"]")));
     }
     var candidates=new ArrayList<Candidate>();
-    var evidence=new OntologyProvenance(Math.min(cfg.maxResponseBytes(),65536));
     // Reserve time for local parsing and the final publication fence.
     var cutoff=q.deadline().minusSeconds(1);
-    for(var entry:descriptions.entrySet()){
-      String uri=entry.getKey();
-      var body=entry.getValue();
+    for(var entry:descriptions){
+      var match=entry.match();
+      var body=entry.body();
       if(Thread.currentThread().isInterrupted())throw new BoundedGatewayClient.ProviderFailure("PROVIDER_INTERRUPTED");
-      var metadata=clock.instant().isBefore(cutoff)?evidence.read(uri,body,link->fetch(link,cutoff)):
-          new OntologyProvenance.Evidence(null,Map.of(),List.of("ONTOLOGY_PROVENANCE_UNAVAILABLE"));
-      candidates.add(new Candidate(uri,uri,q.artifactType(),"HIGH",.85,reasons.get(uri),metadata.gaps(),
+      var metadata=clock.instant().isBefore(cutoff)?evidence.read(entry.description(),link->fetch(link,cutoff)):
+          new OntologyProvenance.Evidence(null,entry.description().labels(),List.of("ONTOLOGY_PROVENANCE_UNAVAILABLE"));
+      candidates.add(new Candidate(match.uri(),match.uri(),q.artifactType(),"HIGH",match.score(),match.reasons(),metadata.gaps(),
           body.body(),body.mediaType(),metadata.triples(),metadata.labels()));
     }
-    return new SearchResult(candidates,attempted.size()-descriptions.size());
+    return new SearchResult(candidates,denied,invalid,bound);
   }
   private BoundedGatewayClient.Response fetch(String resource,Instant deadline){
     return client.get(cfg.gatewayBaseUrl(),underGateway(cfg.fetchPath()+"?uri="+enc(resource)),
@@ -98,5 +99,4 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
   static String query(Query q){String pattern=switch(q.artifactType()){case "CLASS"->"?resource a owl:Class .";case "PROPERTY"->"VALUES ?kind { owl:ObjectProperty owl:DatatypeProperty } ?resource a ?kind .";case "RELATIONSHIP"->"?resource a owl:ObjectProperty .";case "CONCEPT"->"?resource a skos:Concept .";case "VOCABULARY"->"?resource a skos:ConceptScheme .";case "ONTOLOGY"->"?resource a owl:Ontology .";default->throw new IllegalArgumentException("unsupported artifact type");};String literal=q.intent().replace("\\","\\\\").replace("\"","\\\"").replace("\n"," ").replace("\r"," ");return "PREFIX owl: <http://www.w3.org/2002/07/owl#>\nPREFIX skos: <http://www.w3.org/2004/02/skos/core#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT DISTINCT ?resource ?label WHERE { "+pattern+" OPTIONAL { ?resource rdfs:label|skos:prefLabel ?label } FILTER(CONTAINS(LCASE(STR(COALESCE(?label,?resource))),LCASE(\""+literal+"\"))) } ORDER BY ?resource LIMIT 50";}
   private URI underGateway(String path){URI u=cfg.gatewayBaseUrl().resolve(path);BoundedGatewayClient.requireSameOrigin(cfg.gatewayBaseUrl(),u);return u;}
   private static String enc(String v){return URLEncoder.encode(v,StandardCharsets.UTF_8);}
-  private static String binding(JsonNode n,String name){String v=n.path(name).path("value").asText(null);return v==null||v.isBlank()?null:v;}
 }

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-/** Disposable CI database only: exercise upgrades through V18 using populated schemas. */
+/** Disposable CI database only: exercise upgrades through V19 using populated schemas. */
 class DiscoveryFileMigrationContinuityTest {
   @Test void fileReceiptsHistoryAndDiscoveryBudgetsSurviveAdditiveUpgradeAndReconnect() throws Exception {
     String url=Objects.requireNonNull(System.getenv("OUF_SEM_DB_URL"),"isolated PostgreSQL fixture required");
@@ -159,6 +159,14 @@ class DiscoveryFileMigrationContinuityTest {
         var v17=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
             .defaultSchema("ouf_sem").locations("classpath:db/migration").target("17").load();
         assertThat(v17.migrate().migrationsExecuted).isOne();
+        var v18=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
+            .defaultSchema("ouf_sem").locations("classpath:db/migration").target("18").load();
+        assertThat(v18.migrate().migrationsExecuted).isOne();
+        String published="select to_jsonb(r)::text from ouf_sem.artifact_revision r where lifecycle_status='ACTIVE'";
+        String beforeDescriptionUpgrade;
+        try(var connection=DriverManager.getConnection(dbUrl,user,password)){
+          beforeDescriptionUpgrade=value(connection,published);
+        }
         // Reopening the fully upgraded database must preserve the history and all claims.
         var reopened=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
             .defaultSchema("ouf_sem").locations("classpath:db/migration").load();
@@ -166,7 +174,8 @@ class DiscoveryFileMigrationContinuityTest {
         assertThat(reopened.migrate().migrationsExecuted).isZero();
         reopened.validate();
         try(var connection=DriverManager.getConnection(dbUrl,user,password)) {
-          assertThat(history(connection)).hasSize(18);
+          assertThat(history(connection)).hasSize(19);
+          assertThat(value(connection,published)).isEqualTo(beforeDescriptionUpgrade);
           assertThat(value(connection,"select count(*) from ouf_sem.discovery_request where fetch_denied_count<>0")).isEqualTo("0");
           // Exercise the running 1.0.2 publication signature on the upgraded schema.
           try(var statement=connection.createStatement()){
