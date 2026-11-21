@@ -4,6 +4,19 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      predecessor:
+        description: Reviewed Semantic release commit
+        required: false
+        type: string
+      predecessor_run:
+        description: Run that produced the installed governed image
+        required: false
+        type: string
+      predecessor_image_id:
+        description: Docker image ID from the release record
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -121,10 +134,9 @@ jobs:
       - name: Inspect image as non-root
         run: |
           test "$(docker image inspect "ouf-semantic-registry:$GITHUB_SHA" --format '{{.Config.User}}')" = "10001:10001"
-      - name: Preserve tested image for governed delivery
-        if: github.event_name == 'pull_request'
+      - name: Package the candidate for the predecessor-return job
         env:
-          OUF_REVIEWED_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha }}
+          OUF_REVIEWED_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
           umask 077
@@ -199,6 +211,55 @@ jobs:
           (root / "manifest.json").write_text(json.dumps(manifest, sort_keys=True, separators=(",", ":")) + "\n")
           (root / "SHA256SUMS").write_text(f"{archive_sha256}  {archive.name}\n")
           PYIMAGE
+      - name: Transfer the candidate within this CI run
+        id: transfer
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-registry-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/governed-image/
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+    outputs:
+      candidate-artifact: ${{ steps.transfer.outputs.artifact-id }}
+
+  predecessor-return:
+    needs: container-smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+    env:
+      PREDECESSOR_COMMIT: ${{ inputs.predecessor || vars.SEMANTIC_PREDECESSOR_COMMIT || 'd9f0bf9cc3ed074371a8e337ac6f833e91c2f51b' }}
+      PREDECESSOR_RUN: ${{ inputs.predecessor_run || vars.SEMANTIC_PREDECESSOR_RUN }}
+      PREDECESSOR_IMAGE_ID: ${{ inputs.predecessor_image_id || vars.SEMANTIC_PREDECESSOR_IMAGE_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require the installed release pins
+        run: |
+          [[ "$PREDECESSOR_COMMIT" =~ ^[a-f0-9]{8,40}$ && "$PREDECESSOR_RUN" =~ ^[1-9][0-9]*$ && "$PREDECESSOR_IMAGE_ID" =~ ^sha256:[0-9a-f]{64}$ ]] || {
+            echo "::error::D-080 requires the reviewed commit, governed artifact run and installed Docker image ID."
+            exit 1
+          }
+      - name: Retrieve the governed predecessor
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ env.PREDECESSOR_RUN }}
+          name: semantic-registry-governed-image-${{ env.PREDECESSOR_RUN }}
+          path: target/predecessor
+      - name: Retrieve the candidate built by container-smoke
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ needs.container-smoke.outputs.candidate-artifact }}
+          merge-multiple: true
+          path: target/governed-image
+      - name: Exercise both release images on one PostgreSQL database
+        run: bash scripts/predecessor-return/run.sh
       - name: Upload tested image without publishing a release
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
