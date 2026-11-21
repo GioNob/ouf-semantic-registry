@@ -37,7 +37,11 @@ public class DiscoveryService {
     if(providers.stream().noneMatch(SemanticDiscoveryProvider::enabled))throw new ProviderUnavailable();
     UUID id=UUID.randomUUID();db.sql("insert into ouf_sem.discovery_request(request_id,requested_artifact_type,intent,preferred_languages,state,created_by_subject) values(:i,:t,:n,:l,'PENDING',:a)").param("i",id).param("t",type).param("n",intent).param("l",languages.toArray(String[]::new)).param("a",actor).update();return id;
   }
-  public List<Map<String,Object>> candidates(UUID request){return db.sql("select candidate_id,provider_id,canonical_uri,artifact_type,provider_trust,score,match_reasons,gaps,expires_at from ouf_sem.discovery_candidate where request_id=:r and expires_at>transaction_timestamp() order by score desc,canonical_uri").param("r",request).query().listOfRows();}
+  public List<Map<String,Object>> candidates(UUID request){return db.sql("""
+      select candidate_id,provider_id,canonical_uri,artifact_type,provider_trust,score,match_reasons,gaps,expires_at
+      from ouf_sem.discovery_candidate where request_id=:r and expires_at>transaction_timestamp()
+      order by score desc,canonical_uri collate "C"
+      """).param("r",request).query().listOfRows();}
   @Transactional public UUID adopt(UUID candidate,String semanticId,String namespace,String localName,String owner,String authority,String actor){
     UUID request=db.sql("select request_id from ouf_sem.discovery_candidate where candidate_id=:c")
         .param("c",candidate).query(UUID.class).optional().orElseThrow(()->new NoSuchElementException("SEMANTIC_CANDIDATE_NOT_FOUND"));
@@ -60,10 +64,11 @@ public class DiscoveryService {
     try {
       var metadata=CandidateAdoptionService.metadata(model.getResource((String)row.get("canonical_uri")),
           (byte[])row.get("ontology_rdf"),(String)row.get("ontology_sha256"));
-      return db.sql("select ouf_sem.adopt_candidate(:c,:s,:n,:l,:o,:u,:a,:publisher,:license,'{}'::jsonb)")
+      return db.sql("select ouf_sem.adopt_candidate(:c,:s,:n,:l,:o,:u,:a,:publisher,:license,'{}'::jsonb,cast(:description as jsonb))")
           .param("c",candidate).param("s",semanticId).param("n",namespace).param("l",localName)
           .param("o",owner).param("u",authority).param("a",actor)
-          .param("publisher",metadata.publisher()).param("license",metadata.license()).query(UUID.class).single();
+          .param("publisher",metadata.publisher()).param("license",metadata.license())
+          .param("description",write(metadata.descriptions())).query(UUID.class).single();
     } finally {model.close();}
   }
   /** Remote I/O is outside a DB transaction. Only the final generation CAS publishes bytes. */
@@ -103,9 +108,11 @@ public class DiscoveryService {
         var query=new SemanticDiscoveryProvider.Query(job.get("requested_artifact_type").toString(),job.get("intent").toString(),
             languages(job.get("preferred_languages")),started.plusMillis(remaining.get()));
         var result=p.searchWithExclusions(query);
-        long attempted=(long)result.candidates().size()+result.fetchDenied();
+        long attempted=(long)result.candidates().size()+result.fetchDenied()+result.rdfInvalid()+result.rdfBound();
         if(attempted>64 || candidates.size()+invalid+bound+fetchDenied+attempted>256)throw new IllegalArgumentException("candidate bound");
         fetchDenied+=result.fetchDenied();
+        invalid+=result.rdfInvalid();
+        bound+=result.rdfBound();
         for(var c:result.candidates()){
           SafeRdfParser.Parsed parsed;
           try{parsed=parser.parse(c.content(),c.mediaType());}
