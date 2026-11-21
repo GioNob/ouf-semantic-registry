@@ -281,7 +281,7 @@ class DiscoveryDurableRecoveryRuntimeTest {
     assertThat(service.executeOne()).isOne();
     var status=new DiscoveryJobService(db,service,List.of(provider),json).status(id,actor);
     assertThat(status).containsEntry("state","SUCCEEDED").containsEntry("candidateCount",includeValid?1L:0L)
-        .containsEntry("excludedCandidates",Map.of("CANDIDATE_RDF_INVALID",1,"CANDIDATE_RDF_BOUND",1)).doesNotContainKey("errorCode");
+        .containsEntry("excludedCandidates",Map.of("CANDIDATE_RDF_INVALID",1,"CANDIDATE_RDF_BOUND",1,"CANDIDATE_FETCH_DENIED",0)).doesNotContainKey("errorCode");
     var uris=service.candidates(id).stream().map(row->row.get("canonical_uri")).toList();
     if(includeValid)assertThat(uris).containsExactly("urn:good");else assertThat(uris).isEmpty();
     assertThat(dependency("RDF_TEST")).containsEntry("state","HEALTHY");

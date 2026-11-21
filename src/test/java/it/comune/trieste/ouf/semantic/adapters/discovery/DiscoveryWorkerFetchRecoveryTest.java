@@ -1,21 +1,27 @@
 package it.comune.trieste.ouf.semantic.adapters.discovery;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static it.comune.trieste.ouf.semantic.adapters.discovery.SchemaGovFetchFixture.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.comune.trieste.ouf.semantic.application.DiscoveryJobService;
 import it.comune.trieste.ouf.semantic.application.DiscoveryService;
 import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
+import it.comune.trieste.ouf.semantic.ports.SemanticDiscoveryProvider;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
@@ -27,6 +33,58 @@ class DiscoveryWorkerFetchRecoveryTest {
   @Autowired JdbcClient db;
   @Autowired ObjectMapper json;
   @Autowired SafeRdfParser parser;
+  @Autowired BuildProperties release;
+
+  @Test void releaseProbeResolvesThe102IncidentAndSubsequentPropertyDiscoverySucceeds(){
+    // Reproduce the 1.0.2 adapter outcome at the provider boundary.
+    var legacyProvider=new SemanticDiscoveryProvider(){
+      public String providerId(){return "SCHEMA_GOV_IT";}
+      public List<Candidate> search(Query query){throw new BoundedGatewayClient.ProviderFailure("PROVIDER_HTTP_400");}
+    };
+    var oldBuild=new Properties();
+    oldBuild.setProperty("version","1.0.2");
+    var old=new DiscoveryService(db,List.of(legacyProvider),parser,json,new BuildProperties(oldBuild));
+    UUID failed=queueProperty(old);
+    assertThat(old.executeOne()).isOne();
+    assertThat(db.sql("select state,last_error_code from ouf_sem.discovery_request where request_id=?")
+        .param(failed).query().singleRow()).containsEntry("state","FAILED").containsEntry("last_error_code","PROVIDER_HTTP_400");
+    UUID incident=db.sql("""
+        select incident_id from ouf_sem.discovery_incident where scope_subject=? and provider_id='SCHEMA_GOV_IT'
+          and state='OPEN' and code='PROVIDER_HTTP_400' and opened_worker_version='1.0.2'
+        """).param(actor).query(UUID.class).single();
+    db.sql("update ouf_sem.discovery_dependency set next_attempt_at=clock_timestamp() where incident_id=?")
+        .param(incident).update();
+
+    assertThat(release.getVersion()).isEqualTo("1.0.3");
+    var gateway=new SchemaGovFetchFixture(2,DENIED,VALID);
+    gateway.reject(DENIED,"PROVIDER_HTTP_400");
+    gateway.describe(VALID,"<"+VALID+"> a <http://www.w3.org/2002/07/owl#DatatypeProperty> .");
+    var worker=new DiscoveryService(db,List.of(gateway.provider),parser,json,release);
+    var jobs=new DiscoveryJobService(db,worker,List.of(gateway.provider),json);
+    // A fresh request can exercise the V15 probe even after the original job expires.
+    for(boolean probe:List.of(true,false)){
+      UUID request=queueProperty(worker);
+      assertThat(worker.executeOne()).isOne();
+      assertThat(jobs.status(request,actor)).containsEntry("state","SUCCEEDED").containsEntry("candidateCount",1L)
+          .containsEntry("excludedCandidates",Map.of("CANDIDATE_FETCH_DENIED",1,"CANDIDATE_RDF_INVALID",0,"CANDIDATE_RDF_BOUND",0))
+          .doesNotContainKey("errorCode");
+      assertThat(worker.candidates(request)).singleElement().satisfies(row->
+          assertThat(row).containsEntry("canonical_uri",VALID).containsEntry("artifact_type","PROPERTY"));
+      assertThat(db.sql("select outcome,version_probe,worker_version,incident_id from ouf_sem.discovery_attempt where request_id=?")
+          .param(request).query().singleRow()).containsEntry("outcome","SUCCESS").containsEntry("version_probe",probe)
+          .containsEntry("worker_version",release.getVersion()).containsEntry("incident_id",probe?incident:null);
+      assertThat(jobs.providerStatus("SCHEMA_GOV_IT",true,actor)).containsEntry("recoveryState","HEALTHY");
+      assertThat(db.sql("select state from ouf_sem.discovery_incident where scope_subject=? and provider_id='SCHEMA_GOV_IT'")
+          .param(actor).query(String.class).list()).containsExactly("RESOLVED");
+    }
+  }
+
+  private UUID queueProperty(DiscoveryService worker){
+    UUID id=worker.request("PROPERTY","latitudine",List.of("it"),actor);
+    db.sql("update ouf_sem.discovery_request set created_at=timestamp '1800-01-01' where request_id=?")
+        .param(id).update();
+    return id;
+  }
 
   private SchemaGovProvider provider(String uri) {
     Duration timeout = Duration.ofSeconds(2);

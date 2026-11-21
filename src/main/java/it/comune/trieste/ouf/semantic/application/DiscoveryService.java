@@ -78,7 +78,7 @@ public class DiscoveryService {
     if(jobs.isEmpty())return 0;
     var job=jobs.getFirst();UUID id=(UUID)job.get("request_id");long generation=((Number)job.get("worker_generation")).longValue();
     var candidates=new ArrayList<Map<String,Object>>();
-    int invalid=0, bound=0;
+    int invalid=0, bound=0, fetchDenied=0;
     if(enabled.isEmpty()){finish(id,generation,"BLOCKED","SEM_DISCOVERY_NO_ENABLED_PROVIDER",List.of(),null);return 1;}
     // Provider identity must be unique: sharing tokens between adapters is unsafe.
     if(enabled.stream().map(SemanticDiscoveryProvider::providerId).distinct().count()!=enabled.size()){
@@ -102,9 +102,11 @@ public class DiscoveryService {
         if(remaining.isEmpty())return 1;
         var query=new SemanticDiscoveryProvider.Query(job.get("requested_artifact_type").toString(),job.get("intent").toString(),
             languages(job.get("preferred_languages")),started.plusMillis(remaining.get()));
-        var result=p.search(query);
-        if(result.size()>64 || candidates.size()+invalid+bound+result.size()>256)throw new IllegalArgumentException("candidate bound");
-        for(var c:result){
+        var result=p.searchWithExclusions(query);
+        long attempted=(long)result.candidates().size()+result.fetchDenied();
+        if(attempted>64 || candidates.size()+invalid+bound+fetchDenied+attempted>256)throw new IllegalArgumentException("candidate bound");
+        fetchDenied+=result.fetchDenied();
+        for(var c:result.candidates()){
           SafeRdfParser.Parsed parsed;
           try{parsed=parser.parse(c.content(),c.mediaType());}
           catch(SafeRdfParser.UnsafeRdf rejected){
@@ -132,9 +134,9 @@ public class DiscoveryService {
       }
       if(!providerFinished(id,generation,p.providerId(),token,"SUCCESS",null,0))return 1;
     }
-    db.sql("select ouf_sem.publish_discovery_candidates(:r,:g,cast(:b as jsonb),:invalid,:bound)")
+    db.sql("select ouf_sem.publish_discovery_candidates(:r,:g,cast(:b as jsonb),:invalid,:bound,:denied)")
       .param("r",id).param("g",generation).param("b",write(candidates)).param("invalid",invalid).param("bound",bound)
-      .query(Boolean.class).single();
+      .param("denied",fetchDenied).query(Boolean.class).single();
     return 1;
   }
   private static void logUnknown(Throwable error){
