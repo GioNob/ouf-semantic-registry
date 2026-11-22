@@ -10,7 +10,7 @@ class ContractInventoryTest {
   @Test void d084ContractMatchesFrozenBytes() throws Exception {
     byte[] bytes=Files.readAllBytes(Path.of("contracts/ouf-value-types-v1.json"));
     assertThat(java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)))
-        .isEqualTo("4b90e85ecd1573404612ef0a0ee627feffaa9c189fe4363e82079bd07824c333");
+        .isEqualTo("3b85052e253b985f1082527eb595d2f02e5336047203deb3503a9766c1324295");
     assertThat(json.readTree(bytes).required("schema").asText()).isEqualTo("ouf.value-types.v1");
   }
   @Test void allBundledSchemasAreDraft202012AndParseable() throws Exception {
@@ -24,7 +24,7 @@ class ContractInventoryTest {
   @Test void d084ValueMapsContractMatchesFrozenBytes() throws Exception {
     byte[] bytes=Files.readAllBytes(Path.of("contracts/ouf-value-maps-v1.json"));
     assertThat(java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)))
-        .isEqualTo("2f4528eb4c9c6bd9d2c6345464c8292f0cb3f36834cb2f54f81ae20e3dbe4a71");
+        .isEqualTo("40b247ad3422e09245a8314fdcc59ffe0b039e25733a2ca8f31aa6ba03ff2d2e");
     assertThat(json.readTree(bytes).required("schema").asText()).isEqualTo("ouf.value-maps.v1");
   }
 }

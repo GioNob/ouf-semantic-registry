@@ -1,43 +1,49 @@
 package it.comune.trieste.ouf.semantic.application;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
+import it.comune.trieste.ouf.semantic.api.ProposalCommandApi.SourceColumn;
 import java.util.*;
 
 final class ValueMapReviewCard {
-  record Term(String identificativo, String etichetta) {}
-  record Entry(String codice, Term concetto) {}
-  record Change(String codice, String modifica, Term prima, Term dopo) {}
-  record Review(String nome, Term vocabolario, int numeroVoci, List<Entry> voci,
-      String versionePrecedente, List<Change> differenze) {}
+  record Vocabulary(String label, String semanticId, UUID publicationSetId) {}
+  record Entry(String code, String concept, String conceptLabel) {}
+  record Change(String code, String from, String to) {}
+  record Changes(List<String> added, List<String> removed, List<Change> changed) {}
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  record Review(String name, Vocabulary targetVocabulary, int entryCount, List<Entry> entries,
+      SourceColumn sourceColumn, Changes changes) {}
 
   private ValueMapReviewCard() {}
 
-  static Review build(String name, JsonNode definition, Map<String,Term> terms,
-      JsonNode previous, Map<String,Term> previousTerms) {
-    var entries = entries(definition, terms);
-    var differences = new ArrayList<Change>();
-    if (previous != null) {
-      var before = entries(previous.path("definition_json"), previousTerms);
-      var codes = new TreeSet<>(before.keySet());
-      codes.addAll(entries.keySet());
-      for (String code : codes) {
-        Term oldTerm = before.get(code);
-        Term newTerm = entries.get(code);
-        if (oldTerm == null) differences.add(new Change(code, "Aggiunto", null, newTerm));
-        else if (newTerm == null) differences.add(new Change(code, "Rimosso", oldTerm, null));
-        else if (!oldTerm.identificativo().equals(newTerm.identificativo()))
-          differences.add(new Change(code, "Modificato", oldTerm, newTerm));
-      }
-    }
-    String vocabulary = vocabularyId(definition);
-    return new Review(name, term(terms, vocabulary), entries.size(),
-        entries.entrySet().stream().map(entry -> new Entry(entry.getKey(), entry.getValue())).toList(),
-        previous == null ? "Prima pubblicazione" : previous.path("semantic_version").asText(), differences);
+  static Review build(String name, JsonNode definition, Map<String,String> labels,
+      SourceColumn sourceColumn, JsonNode previous) {
+    var current = conceptsByCode(definition);
+    String id = vocabularyId(definition);
+    var vocabulary = new Vocabulary(label(labels,id),id,publicationSetId(definition));
+    var entries = current.entrySet().stream()
+        .map(entry -> new Entry(entry.getKey(),entry.getValue(),label(labels,entry.getValue()))).toList();
+    var changes = previous==null?null:changes(conceptsByCode(previous),current);
+    return new Review(name,vocabulary,entries.size(),entries,sourceColumn,changes);
   }
 
-  static String vocabularyId(JsonNode definition) {
+  private static Changes changes(SortedMap<String,String> before, SortedMap<String,String> current) {
+    var added = current.keySet().stream().filter(code -> !before.containsKey(code)).toList();
+    var removed = before.keySet().stream().filter(code -> !current.containsKey(code)).toList();
+    var changed = current.entrySet().stream().filter(entry -> before.containsKey(entry.getKey())
+        && !before.get(entry.getKey()).equals(entry.getValue()))
+        .map(entry -> new Change(entry.getKey(),before.get(entry.getKey()),entry.getValue())).toList();
+    return new Changes(added,removed,changed);
+  }
+
+  private static String vocabularyId(JsonNode definition) {
     String pin = definition.path("targetVocabulary").asText();
     return pin.substring(0, pin.lastIndexOf('@'));
+  }
+
+  static UUID publicationSetId(JsonNode definition) {
+    String pin = definition.path("targetVocabulary").asText();
+    return UUID.fromString(pin.substring(pin.lastIndexOf('@')+1));
   }
 
   static Set<String> memberIds(JsonNode definition) {
@@ -47,15 +53,15 @@ final class ValueMapReviewCard {
     return ids;
   }
 
-  private static SortedMap<String,Term> entries(JsonNode definition, Map<String,Term> terms) {
-    var entries = new TreeMap<String,Term>();
+  private static SortedMap<String,String> conceptsByCode(JsonNode definition) {
+    var entries = new TreeMap<String,String>();
     definition.path("entries").forEach(entry ->
-        entries.put(entry.path("code").asText(), term(terms, entry.path("concept").asText())));
+        entries.put(entry.path("code").asText(),entry.path("concept").asText()));
     return entries;
   }
 
-  private static Term term(Map<String,Term> terms, String id) {
-    Term result = terms.get(id);
+  private static String label(Map<String,String> labels, String id) {
+    String result = labels.get(id);
     if (result == null) throw new IllegalStateException("SEMANTIC_CARD_PIN_MISSING");
     return result;
   }

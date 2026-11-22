@@ -121,5 +121,6 @@ exercise "$previous" "$old_id" return
 [[ "$(history)" == "$new_history" && "$(db_identity)" == "$database" ]]
 [[ "$(sql "select count(*) from ouf_sem.approval_challenge where created_by_subject='agent'")" == 7 ]]
 [[ "$(sql "select count(*) from ouf_sem.semantic_artifact a join ouf_sem.artifact_active_revision r using (artifact_id) where a.artifact_type='VALUE_MAP'")" == 1 ]]
+[[ "$(sql "select count(*) from ouf_sem.value_map_proposal_source s join ouf_sem.artifact_active_revision r using (revision_id) where s.field_name='codice_servizio' and s.source_id='source-1'")" == 1 ]]
 [[ "$(sql "select count(*) from ouf_sem.proposal_command_receipt where tenant_id='tenant-a' and principal_id='agent' and operation='ADOPT'")" == 3 ]]
 note "D-080 passed through $(tail -1 <<<"$new_history") with three adoptions, four native publications and seven review challenges."

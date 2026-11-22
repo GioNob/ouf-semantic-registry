@@ -3,6 +3,13 @@ ALTER TABLE ouf_sem.semantic_artifact DROP CONSTRAINT semantic_artifact_artifact
 ALTER TABLE ouf_sem.semantic_artifact ADD CONSTRAINT semantic_artifact_artifact_type_check CHECK
  (artifact_type IN ('CLASS','PROPERTY','RELATIONSHIP','VOCABULARY','CONCEPT','ONTOLOGY','DATATYPE','VALUE_MAP'));
 
+-- Proposal metadata is kept outside the governed definition and its digest.
+CREATE TABLE ouf_sem.value_map_proposal_source (
+ revision_id uuid PRIMARY KEY REFERENCES ouf_sem.artifact_revision ON DELETE CASCADE,
+ field_name text NOT NULL CHECK (char_length(field_name) BETWEEN 1 AND 256),
+ source_id text
+);
+
 -- UTF-16 orders supplementary code points between U+D7FF and U+E000.
 -- Ranking each scalar this way gives the same lexicographic order as String.compareTo.
 CREATE FUNCTION ouf_sem.value_map_code_order(code text) RETURNS integer[]
@@ -19,9 +26,11 @@ LANGUAGE plpgsql AS $$
 DECLARE
  pin text[];
  canonical_entries jsonb;
+ entry_count integer;
+ separator_spaces integer;
  invalid constant text := 'SEMANTIC_VALUE_MAP_INVALID';
- -- Character.isWhitespace at the ends, as in the VALUE_MAP_V1 reader's String.strip.
- edge_space constant text := U&'[\0009-\000D\001C-\0020\1680\2000-\2006\2008-\200A\2028\2029\205F\3000]';
+ -- Unicode White_Space from ouf.value-types.v1 r2. PostgreSQL jsonb already rejects U+0000.
+ edge_space constant text := U&'[\0009-\000D\0020\0085\00A0\1680\2000-\200A\2028\2029\202F\205F\3000]';
 BEGIN
  IF jsonb_typeof(definition) IS DISTINCT FROM 'object' THEN
   RAISE EXCEPTION USING ERRCODE='P0842', MESSAGE=invalid;
@@ -40,7 +49,8 @@ BEGIN
   THEN RAISE EXCEPTION USING ERRCODE='P0842', MESSAGE=invalid; END IF;
  END IF;
 
- IF jsonb_array_length(definition->'entries') NOT BETWEEN 1 AND 2000 THEN
+ entry_count := jsonb_array_length(definition->'entries');
+ IF entry_count NOT BETWEEN 1 AND 2000 THEN
   RAISE EXCEPTION USING ERRCODE='P0842', MESSAGE=invalid;
  END IF;
  IF EXISTS (
@@ -50,13 +60,25 @@ BEGIN
     OR jsonb_typeof(entry->'code') IS DISTINCT FROM 'string'
     OR jsonb_typeof(entry->'concept') IS DISTINCT FROM 'string'
     OR char_length(entry->>'code') NOT BETWEEN 1 AND 128
-    OR (entry->>'code') ~ U&'[\0001-\001F\007F]'
-    OR (entry->>'code') ~ ('^'||edge_space||'|'||edge_space||'$')
+    OR char_length(entry->>'concept') NOT BETWEEN 1 AND 512
+    OR (entry->>'code') COLLATE "C" ~ U&'[\0001-\001F\007F-\009F]'
+    OR (entry->>'code') COLLATE "C" ~ ('^'||edge_space||'|'||edge_space||'$')
   END
  ) OR EXISTS (
   SELECT FROM jsonb_array_elements(definition->'entries') e(entry)
   GROUP BY (entry->>'code') COLLATE "C" HAVING count(*)>1
  ) THEN RAISE EXCEPTION USING ERRCODE='P0842', MESSAGE=invalid; END IF;
+
+ -- For this closed shape, jsonb adds one space after each object colon and each
+ -- comma. Count those separators without touching whitespace inside JSON strings.
+ -- Sorting entries and keys does not change the compact UTF-8 size.
+ separator_spaces := 3 + 3 * entry_count + (entry_count - 1);
+ IF definition ? 'labels' THEN
+  separator_spaces := separator_spaces + 2 +
+   (SELECT greatest(0, 2 * count(*) - 1) FROM jsonb_object_keys(definition->'labels'));
+ END IF;
+ IF octet_length(convert_to(definition::text,'UTF8')) - separator_spaces > 786432
+ THEN RAISE EXCEPTION USING ERRCODE='P0842', MESSAGE=invalid; END IF;
 
  pin := regexp_match(definition->>'targetVocabulary',
    '^(.+)@([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})$');

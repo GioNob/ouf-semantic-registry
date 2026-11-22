@@ -2,6 +2,7 @@ package it.comune.trieste.ouf.semantic.api;
 
 import static org.assertj.core.api.Assertions.*;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.time.*;
@@ -48,25 +49,48 @@ class SemanticProposalReceiptVerifierTest {
     assertThatThrownBy(()->verifier().verify(bad,path,body)).hasMessage("SEM_PROPOSAL_RECEIPT_INVALID");
   }
   @Test void largeSignedProposalBudgetAppliesOnlyToValueMaps()throws Exception{
-    var envelope=(com.fasterxml.jackson.databind.node.ObjectNode)json.readTree(body);
-    var args=(com.fasterxml.jackson.databind.node.ObjectNode)envelope.required("Arguments");
+    var envelope=(ObjectNode)json.readTree(body);
+    var args=(ObjectNode)envelope.required("Arguments");
     var definition=args.putObject("definition");
     var entries=definition.putArray("entries");
     for(int i=0;i<2000;i++)
       entries.addObject().put("code","a".repeat(124)+String.format(Locale.ROOT,"%04d",i)).put("concept","urn:concept:1");
     args.put("artifactType","VALUE_MAP");
     byte[] valueMap=json.writeValueAsBytes(envelope);
-    var valueMapReceipt=receipt();
-    valueMapReceipt.put("bodyHash",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(valueMap)));
-    var verified=verifier().verify(sign(valueMapReceipt),path,valueMap);
+    var verified=verifySigned(valueMap);
     assertThat(json.readTree(verified.arguments()).at("/definition/entries").size()).isEqualTo(2000);
 
     args.put("artifactType","DATATYPE");
     byte[] datatype=json.writeValueAsBytes(envelope);
-    var datatypeReceipt=receipt();
-    datatypeReceipt.put("bodyHash",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(datatype)));
-    String proof=sign(datatypeReceipt);
-    assertThatThrownBy(()->verifier().verify(proof,path,datatype)).hasMessage("SEM_PROPOSAL_RECEIPT_INVALID");
+    assertThatThrownBy(()->verifySigned(datatype)).hasMessage("SEM_PROPOSAL_RECEIPT_INVALID");
+    args.put("artifactType","VALUE_MAP");
+    entries.forEach(entry -> ((ObjectNode)entry).put("concept","urn:concept:"+"c".repeat(500)));
+    byte[] allFieldsAtMaximum=json.writeValueAsBytes(envelope);
+    assertThat(allFieldsAtMaximum.length).isGreaterThan(1048576);
+    assertThatThrownBy(()->verifySigned(allFieldsAtMaximum)).hasMessage("SEM_PROPOSAL_RECEIPT_INVALID");
+
+  }
+  @Test void signedProposalLimitsAreInclusiveAndScopedByArtifactType()throws Exception{
+    var envelope=(ObjectNode)json.readTree(body);
+    var args=(ObjectNode)envelope.required("Arguments");
+    for(var limit:Map.of("CLASS",65536,"DATATYPE",65536,"VALUE_MAP",1048576).entrySet()){
+      args.put("artifactType",limit.getKey());
+      var labels=args.putObject("labels").put("it","");
+      int padding=limit.getValue()-json.writeValueAsBytes(envelope).length;
+      labels.put("it","x".repeat(padding));
+      byte[] atLimit=json.writeValueAsBytes(envelope);
+      assertThat(atLimit).hasSize(limit.getValue());
+      assertThat(verifySigned(atLimit).idempotencyKey()).isEqualTo("intent-1");
+      labels.put("it","x".repeat(padding+1));
+      byte[] oversized=json.writeValueAsBytes(envelope);
+      assertThatThrownBy(()->verifySigned(oversized)).hasMessage("SEM_PROPOSAL_RECEIPT_INVALID");
+    }
+    assertThat(SemanticProposalReceiptVerifier.maxBodyBytes("/api/semantic/v1/proposal-commands/review")).isEqualTo(65536);
+  }
+  private SemanticProposalReceiptVerifier.Verified verifySigned(byte[] raw)throws Exception{
+    var r=receipt();
+    r.put("bodyHash",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(raw)));
+    return verifier().verify(sign(r),path,raw);
   }
   @Test void expiredFutureAndUnboundedLifetimeAreRejected()throws Exception{
     for(var change:List.of(Map.of("exp",1000),Map.of("iat",1001),Map.of("exp",1031))){

@@ -1,6 +1,8 @@
 package it.comune.trieste.ouf.semantic.application;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.comune.trieste.ouf.semantic.api.ProposalCommandApi.SourceColumn;
 import java.time.Duration;
 import java.util.*;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -122,10 +124,15 @@ public class GovernanceService {
       try {
         var previous=prior.isEmpty()?null:json.readTree(prior.get());
         if (valueMap) {
-          com.fasterxml.jackson.databind.JsonNode definition=json.valueToTree(out.get("definition_json"));
+          JsonNode definition=json.valueToTree(out.get("definition_json"));
           String name=ValueMapReviewCard.name(definition,json.valueToTree(out.get("label_json")),row.get("local_name").toString());
-          out.put("valueMapReview",ValueMapReviewCard.build(name,definition,valueMapTerms(definition),
-              previous,previous==null?Map.of():valueMapTerms(previous.path("definition_json"))));
+          var sourceColumn=db.sql("""
+              select field_name,source_id from ouf_sem.value_map_proposal_source where revision_id=:r
+              """).param("r",row.get("revision_id"))
+              .query((rs,n) -> new SourceColumn(rs.getString("field_name"),rs.getString("source_id")))
+              .optional().orElse(null);
+          out.put("valueMapReview",ValueMapReviewCard.build(name,definition,valueMapLabels(definition),
+              sourceColumn,previous==null?null:previous.path("definition_json")));
         } else {
           var review=DatatypeReviewCard.build(json.valueToTree(out),previous);
           out.put("datatypeReview",review);
@@ -150,19 +157,18 @@ public class GovernanceService {
     if(!thsOrigin.isBlank())out.put("reviewUrl",thsOrigin+"/trusted-human/semantic/?challenge="+challenge);
     out.put("humanAuthorityRequired",true);return out;
   }
-  private Map<String,ValueMapReviewCard.Term> valueMapTerms(com.fasterxml.jackson.databind.JsonNode definition) {
-    String pin=definition.path("targetVocabulary").asText();
-    UUID publication=UUID.fromString(pin.substring(pin.lastIndexOf('@')+1));
-    var terms=new HashMap<String,ValueMapReviewCard.Term>();
+  private Map<String,String> valueMapLabels(JsonNode definition) {
+    var labels=new HashMap<String,String>();
     db.sql("""
         select m.semantic_id, coalesce(nullif(r.label_json->>'it',''),nullif(r.label_json->>'en',''),a.local_name) label
         from ouf_sem.semantic_publication_member m join ouf_sem.artifact_revision r using (revision_id)
         join ouf_sem.semantic_artifact a using (artifact_id)
         where m.publication_set_id=:publication and m.semantic_id in (:ids)
-        """).param("publication",publication).param("ids",ValueMapReviewCard.memberIds(definition))
-        .query((rs,n) -> new ValueMapReviewCard.Term(rs.getString("semantic_id"),rs.getString("label")))
-        .list().forEach(term -> terms.put(term.identificativo(),term));
-    return terms;
+        """).param("publication",ValueMapReviewCard.publicationSetId(definition))
+        .param("ids",ValueMapReviewCard.memberIds(definition))
+        .query((rs,n) -> Map.entry(rs.getString("semantic_id"),rs.getString("label")))
+        .list().forEach(term -> labels.put(term.getKey(),term.getValue()));
+    return labels;
   }
   private void audit(String event,String actor,String type,String resourceType,String resourceId,String correlation,Object detail){try{Map<String,Object> payload=new LinkedHashMap<>();payload.put("actorType",type);payload.put("detail",detail);db.sql("insert into ouf_sem.audit_event(event_id,event_type,subject_ref,resource_type,resource_id,correlation_id,detail_json) values(:i,:e,:a,:t,:r,:c,cast(:d as jsonb))").param("i",UUID.randomUUID()).param("e",event).param("a",actor).param("t",resourceType).param("r",resourceId).param("c",correlation).param("d",json.writeValueAsString(payload)).update();}catch(RuntimeException e){throw e;}catch(Exception e){throw new IllegalStateException(e);}}
   public static class Forbidden extends RuntimeException{public Forbidden(String m){super(m);}}

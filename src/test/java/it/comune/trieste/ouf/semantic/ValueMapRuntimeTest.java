@@ -10,6 +10,7 @@ import it.comune.trieste.ouf.semantic.api.ArtifactApi.CreateArtifact;
 import it.comune.trieste.ouf.semantic.api.ArtifactApi.PatchRevision;
 import it.comune.trieste.ouf.semantic.application.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -105,6 +106,9 @@ class ValueMapRuntimeTest {
         definition(pin,List.of()), definition(pin,List.of(valid,valid)),
         definition(pin,List.of(entry(" ",member))), definition(pin,List.of(entry(marker+" ",member))),
         definition(pin,List.of(entry("\u2003"+marker,member))), definition(pin,List.of(entry(marker+"\u007f",member))),
+        definition(pin,List.of(entry("A\u001c"+marker,member))), definition(pin,List.of(entry("A\u0085"+marker,member))),
+        definition(pin,List.of(entry("A\u009f"+marker,member))), definition(pin,List.of(entry(marker+"\u202f",member))),
+        definition(pin,List.of(entry(marker+"\u2007",member))),
         definition(pin,List.of(entry(marker+(char)0,member))), definition(pin,List.of(entry("A".repeat(129),member))),
         definition(pin,List.of(Map.of("code",marker,"concept",member.id(),"extra",true))),
         definition(pin,List.of(Map.of("code",10,"concept",member.id()))),
@@ -121,6 +125,48 @@ class ValueMapRuntimeTest {
     governance.lifecycle(vacant.revision(),"DEPRECATED","reviewer","HUMAN","fixture",key());
     assertThat(createHttp(iri(),definition(vacant.pin(),List.of(valid)),400).required("code").asText())
         .isEqualTo("SEMANTIC_VALUE_MAP_INVALID");
+  }
+
+  @Test void valueMapUsesTheContractWhitespaceVectorAndKeepsExactCodes() throws Exception {
+    var vocab=vocabulary("Servizi");
+    var member=concept(vocab,"Biblioteca");
+    var vectors=json.readTree(Path.of("contracts/ouf-value-types-v1.json").toFile()).at("/whitespace/vectors");
+    var vector=java.util.stream.StreamSupport.stream(vectors.spliterator(),false)
+        .filter(v -> "VALUE_MAP_V1".equals(v.path("reader").asText())).findFirst().orElseThrow();
+    assertThat(vector.required("result").asText()).isEqualTo("concept mapped from code 'A1'");
+    String pin=vocab.id()+"@"+member.set();
+    assertThat(createHttp(iri(),definition(pin,List.of(entry(vector.required("cell").asText(),member))),400)
+        .required("code").asText()).isEqualTo("SEMANTIC_VALUE_MAP_INVALID");
+    var entries=List.of(entry("A1",member),entry("A\u00a01",member),entry("\ufeffA1",member));
+    var published=publish(command(iri(),"VALUE_MAP","1.0.0","Mappa",definition(pin,entries)));
+    assertThat(published.card().at("/valueMapReview/entries/0/concept").asText()).isEqualTo(member.id());
+    assertThat(published.card().at("/valueMapReview/entries/1/code").asText()).isEqualTo("A\u00a01");
+    assertThat(published.card().at("/valueMapReview/entries/2/code").asText()).isEqualTo("\ufeffA1");
+  }
+
+  @Test void valueMapEnforcesConceptLengthAndCompactUtf8DefinitionSize() throws Exception {
+    var vocab=vocabulary("Servizi");
+    String memberPrefix=iri();
+    String longMember=memberPrefix+"a".repeat(513-memberPrefix.length());
+    var outOfBounds=publish(command(longMember,"CONCEPT","1.0.0","Archivio",Map.of("vocabularyRef",vocab.id())));
+    var member=concept(vocab,"Biblioteca");
+    String pin=vocab.id()+"@"+member.set();
+    assertThat(createHttp(iri(),definition(pin,List.of(entry("A",outOfBounds))),400).required("code").asText())
+        .isEqualTo("SEMANTIC_VALUE_MAP_INVALID");
+
+    var definition=new LinkedHashMap<String,Object>();
+    definition.put("targetVocabulary",pin);
+    definition.put("entries",List.of(entry("A",member),entry("B",member)));
+    var labels=new LinkedHashMap<>(Map.of("it","Spazi , : \" \\ \t","en","Label"));
+    definition.put("labels",labels);
+    int remaining=786432-json.writeValueAsString(definition).getBytes(StandardCharsets.UTF_8).length;
+    labels.compute("it",(language,label) -> label+"é".repeat(remaining/2)+"a".repeat(remaining%2));
+    assertThat(json.writeValueAsString(definition).getBytes(StandardCharsets.UTF_8)).hasSize(786432);
+    UUID draft=UUID.fromString(createHttp(iri(),definition,200).required("revisionId").asText());
+    labels.compute("it",(language,label) -> label+"a");
+    assertThat(createHttp(iri(),definition,400).required("code").asText()).isEqualTo("SEMANTIC_VALUE_MAP_INVALID");
+    assertThatThrownBy(()->artifacts.patch(draft,"\"0\"",new PatchRevision(null,definition,null),
+        "agent","AI_AGENT","test")).hasMessage("SEMANTIC_VALUE_MAP_INVALID");
   }
 
   @Test void valueMapNativePublicationUsesCanonicalHashAndHistoricalPins() throws Exception {
@@ -146,6 +192,7 @@ class ValueMapRuntimeTest {
     assertThat(resolved.required("status").asText()).isEqualTo("ACTIVE");
     assertThat(resolved.required("definition").toString()).isEqualTo(canonical);
     assertThat(resolved.required("definitionSha256").asText()).isEqualTo(expected);
+    assertThat(v1.card().required("valueMapReview").has("changes")).isFalse();
     assertThat(reads.resolve(vocab.id(),vocab.revision(),second.set())).containsEntry("artifact_type","VOCABULARY")
         .doesNotContainKey("definitionSha256");
     assertThat(reads.resolve(second.id(),second.revision(),second.set())).containsEntry("artifact_type","CONCEPT")
@@ -155,15 +202,14 @@ class ValueMapRuntimeTest {
     assertThatThrownBy(()->create(command(id,"VALUE_MAP","1.0.0","Mappa",changed))).hasMessage("SEMANTIC_VERSION_CONFLICT");
     var v2=publish(command(id,"VALUE_MAP","2.0.0","Mappa",changed));
     var card=v2.card().required("valueMapReview");
-    assertThat(card.required("nome").asText()).isEqualTo("Codici servizio");
-    assertThat(card.at("/vocabolario/etichetta").asText()).isEqualTo("Servizi");
-    assertThat(card.at("/voci/0/concetto/etichetta").asText()).isEqualTo("Archivio");
-    assertThat(card.required("numeroVoci").asInt()).isEqualTo(2);
-    assertThat(card.required("versionePrecedente").asText()).isEqualTo("1.0.0");
-    assertThat(card.at("/differenze/0/modifica").asText()).isEqualTo("Modificato");
-    assertThat(card.at("/differenze/0/prima/etichetta").asText()).isEqualTo("Biblioteca");
-    assertThat(card.at("/differenze/1/modifica").asText()).isEqualTo("Aggiunto");
-    assertThat(card.at("/differenze/2/modifica").asText()).isEqualTo("Rimosso");
+    assertThat(card.required("name").asText()).isEqualTo("Codici servizio");
+    assertThat(card.required("targetVocabulary")).isEqualTo(json.valueToTree(Map.of("label","Servizi",
+        "semanticId",vocab.id(),"publicationSetId",second.set().toString())));
+    assertThat(card.at("/entries/0/conceptLabel").asText()).isEqualTo("Archivio");
+    assertThat(card.required("entryCount").asInt()).isEqualTo(2);
+    assertThat(card.required("changes")).isEqualTo(json.valueToTree(Map.of("added",List.of("Z"),
+        "removed",List.of("a","\uD800\uDC00","\uDBFF\uDFFF","\uE000"),
+        "changed",List.of(Map.of("code","A","from",first.id(),"to",second.id())))));
 
     assertThatThrownBy(()->db.sql("update ouf_sem.artifact_revision set definition_json='{}' where revision_id=:r")
         .param("r",v1.revision()).update()).hasMessageContaining("published revision immutable");

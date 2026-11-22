@@ -24,14 +24,28 @@ paths:
     post:
       operationId: createSemanticProposal
       x-ouf-mcp-capability: ouf.semantic.propose
+      description: The signed owner envelope is limited to 1048576 bytes for VALUE_MAP and 65536 bytes for other proposals.
       requestBody:
         required: true
         content:
           application/json:
-            schema: {$ref: '#/components/schemas/ValueMapProposal'}
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ValueMapProposal'
+                - if: {required: [artifactType], properties: {artifactType: {const: VALUE_MAP}}}
+                  then:
+                    properties:
+                      rationale:
+                        description: Proposal metadata outside the definition and its digest.
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          sourceColumn: {$ref: './semantic-ths-v1.yaml#/components/schemas/ValueMapSourceColumn'}
+                  else:
+                    not: {required: [rationale]}
       responses:
         '200': {description: Draft proposal receipt}
-        '400': {description: SEMANTIC_VALUE_MAP_INVALID for an invalid value map definition}
+        '400': {description: SEMANTIC_VALUE_MAP_INVALID for an invalid value map definition or rationale}
   /api/semantic/v1/artifacts/{id}:
     get: {operationId: getSemanticArtifact, responses: {'200': {description: Artifact detail}}}
   /api/semantic/v1/search:

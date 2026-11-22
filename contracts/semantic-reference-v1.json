@@ -87,6 +87,7 @@
   "$defs": {
     "ValueMapDefinition": {
       "type": "object",
+      "description": "The compact canonical JSON definition is limited to 786432 UTF-8 bytes.",
       "required": ["targetVocabulary", "entries"],
       "additionalProperties": false,
       "properties": {
@@ -108,9 +109,9 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 128,
-                "pattern": "^[^\\u0000-\\u001f\\u007f\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000](?:[^\\u0000-\\u001f\\u007f]*[^\\u0000-\\u001f\\u007f\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000])?(?![\\s\\S])"
+                "pattern": "^[^\\u0000-\\u0020\\u007f-\\u009f\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000](?:[^\\u0000-\\u001f\\u007f-\\u009f]*[^\\u0000-\\u0020\\u007f-\\u009f\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000])?(?![\\s\\S])"
               },
-              "concept": {"type": "string", "minLength": 1}
+              "concept": {"type": "string", "minLength": 1, "maxLength": 512}
             }
           }
         },

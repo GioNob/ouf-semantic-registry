@@ -1,10 +1,13 @@
 package it.comune.trieste.ouf.semantic.api;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
 import it.comune.trieste.ouf.authorization.OwnerAuthorization;
 import it.comune.trieste.ouf.semantic.application.ProposalCommandService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +21,7 @@ public class ProposalCommandApi {
       @NotNull @Pattern(regexp="CLASS|PROPERTY|RELATIONSHIP|VOCABULARY|CONCEPT|ONTOLOGY|DATATYPE|VALUE_MAP") String artifactType,
       @NotBlank String namespace,@NotBlank String localName,@NotBlank String ownerRef,
       @NotBlank String authorityRef,@NotBlank String semanticVersion,Map<String,Object> labels,
-      Object definition,@Size(max=49152) String rdfTurtle,String mediaType) {
+      Object definition,@Size(max=49152) String rdfTurtle,String mediaType,JsonNode rationale) {
     @SuppressWarnings("unchecked")
     ArtifactApi.CreateArtifact artifact(){
       if ("VALUE_MAP".equals(artifactType)) {
@@ -30,7 +33,29 @@ public class ProposalCommandApi {
       return new ArtifactApi.CreateArtifact(semanticId,artifactType,namespace,localName,ownerRef,authorityRef,
           semanticVersion,labels,(Map<String,Object>)definition);
     }
+    SourceColumn sourceColumn(){
+      if(rationale==null) return null;
+      if(!"VALUE_MAP".equals(artifactType)) throw new IllegalArgumentException("SEM_REQUEST_INVALID");
+      if(!rationale.isObject()) throw invalidValueMap();
+      if(rationale.isEmpty()) return null;
+      JsonNode column=rationale.get("sourceColumn");
+      if(rationale.size()!=1 || column==null || !column.isObject()) throw invalidValueMap();
+      String fieldName=column.path("fieldName").textValue();
+      JsonNode source=column.get("sourceId");
+      if(!validText(fieldName) || fieldName.isEmpty() || fieldName.codePointCount(0,fieldName.length())>256
+          || column.size()!=(source==null?1:2) || (source!=null && !validText(source.textValue())))
+        throw invalidValueMap();
+      return new SourceColumn(fieldName,source==null?null:source.textValue());
+    }
+    private static boolean validText(String value){
+      return value!=null && value.indexOf(0)<0 && StandardCharsets.UTF_8.newEncoder().canEncode(value);
+    }
+    private static IllegalArgumentException invalidValueMap(){
+      return new IllegalArgumentException("SEMANTIC_VALUE_MAP_INVALID");
+    }
   }
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public record SourceColumn(String fieldName,String sourceId){}
   public record Adopt(@NotNull UUID requestId,@NotNull UUID candidateId){}
   @SemanticCapability("ouf.semantic.discovery.adopt") @PostMapping("/adopt")
   public Map<String,Object> adopt(@Valid @RequestBody Adopt body,
@@ -46,9 +71,11 @@ public class ProposalCommandApi {
   public Map<String,Object> create(@Valid @RequestBody Create body,
       @RequestHeader("Idempotency-Key") String key,HttpServletRequest request,@RequestHeader HttpHeaders headers){
     var actor=actors.actor(request);
+    var artifact=body.artifact();
+    var sourceColumn=body.sourceColumn();
     if(body.rdfTurtle()!=null||body.mediaType()!=null)
-      return service.createImported(tenant(request),actor.subject(),actor.type(),key,body.artifact(),body.rdfTurtle(),body.mediaType(),correlation(headers));
-    return service.create(tenant(request),actor.subject(),actor.type(),key,body.artifact(),correlation(headers));
+      return service.createImported(tenant(request),actor.subject(),actor.type(),key,artifact,body.rdfTurtle(),body.mediaType(),correlation(headers));
+    return service.create(tenant(request),actor.subject(),actor.type(),key,artifact,sourceColumn,correlation(headers));
   }
   @SemanticCapability("ouf.semantic.review.prepare") @PostMapping("/validate")
   public Map<String,Object> validate(@Valid @RequestBody Validate body,

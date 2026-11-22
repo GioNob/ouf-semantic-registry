@@ -165,11 +165,11 @@ async function publishDatatype() {
   writeFileSync('/state/datatype.json', JSON.stringify({ref, definition, rdfHash: result.rdf_snapshot.content_hash}));
 }
 
-async function publishNative({semanticId, artifactType, labels, definition}, inspectCard = () => {}) {
+async function publishNative({semanticId, artifactType, labels, definition, rationale}, inspectCard = () => {}) {
   const namespace = semanticId.slice(0, semanticId.lastIndexOf('/') + 1);
   const draft = await proposal('create', {semanticId, artifactType, namespace,
     localName: semanticId.slice(namespace.length), ownerRef: 'owner', authorityRef: 'authority',
-    semanticVersion: '1.0.0', labels, definition});
+    semanticVersion: '1.0.0', labels, definition, rationale});
   const {revisionId} = draft;
   const args = {revisionId, expectedRowVersion: 0};
   const validation = await proposal('validate', args);
@@ -193,13 +193,16 @@ async function publishValueMap() {
   const targetVocabulary = vocabularyId + '@' + term.publicationSetId;
   const entries = [{code: 'b', concept}, {code: 'B', concept}];
   const labels = {it: 'Codici servizio'};
+  const sourceColumn = {fieldName: 'codice_servizio', sourceId: 'source-1'};
   const ref = await publishNative({semanticId: 'https://example.org/mappe/CodiciServizio', artifactType: 'VALUE_MAP',
-    definition: {targetVocabulary, entries, labels}}, card => {
+    definition: {targetVocabulary, entries, labels}, rationale: {sourceColumn}}, card => {
     const review = card.valueMapReview;
-    assert.equal(review.nome, labels.it);
-    assert.equal(review.numeroVoci, 2);
-    assert.deepEqual(review.vocabolario, {identificativo: vocabularyId, etichetta: 'Servizi'});
-    assert.deepEqual(review.voci[0], {codice: 'B', concetto: {identificativo: concept, etichetta: 'Biblioteca'}});
+    assert.equal(review.name, labels.it);
+    assert.equal(review.entryCount, 2);
+    assert.deepEqual(review.targetVocabulary, {semanticId: vocabularyId, publicationSetId: term.publicationSetId, label: 'Servizi'});
+    assert.deepEqual(review.entries[0], {code: 'B', concept, conceptLabel: 'Biblioteca'});
+    assert.deepEqual(review.sourceColumn, sourceColumn);
+    assert.equal(Object.hasOwn(review, 'changes'), false);
   });
   const result = await delegated('read', 'consultation/get', 'consultation.read', cap('read'),
     {semanticId: ref.semanticId, publicationSetId: ref.publicationSetId});

@@ -57,9 +57,10 @@ public class SemanticProposalReceiptVerifier {
     }catch(Exception e){throw new IllegalStateException("SEM_PROPOSAL_KEY_CUSTODY_INVALID");}
   }
   private static final int STANDARD_BODY_BYTES = 65536;
+  private static final int VALUE_MAP_BODY_BYTES = 1048576;
   private static final String CREATE_PATH = "/api/semantic/v1/proposal-commands/create";
   static int maxBodyBytes(String path) {
-    return CREATE_PATH.equals(path) ? 32 * 1024 * 1024 : STANDARD_BODY_BYTES;
+    return CREATE_PATH.equals(path) ? VALUE_MAP_BODY_BYTES : STANDARD_BODY_BYTES;
   }
   public Verified verify(String proof,String path,byte[] raw){
     try{
@@ -90,9 +91,10 @@ public class SemanticProposalReceiptVerifier {
         if(!role.matches("[A-Za-z0-9_:./-]{1,128}")||!roles.add(role)||roles.size()>32)throw new SecurityException();
       }
       JsonNode envelope=json.readTree(raw);JsonNode args=envelope.required("Arguments");
-      if(raw.length>STANDARD_BODY_BYTES && !"VALUE_MAP".equals(args.path("artifactType").textValue()))
+      boolean valueMap=CREATE_PATH.equals(path) && "VALUE_MAP".equals(args.path("artifactType").textValue());
+      if(raw.length>STANDARD_BODY_BYTES && !valueMap)
         throw new SecurityException();
-      if(CREATE_PATH.equals(path) && "VALUE_MAP".equals(args.path("artifactType").textValue())) {
+      if(valueMap) {
         // Preserve numeric token types until the proposal validator can reject them.
         args=json.reader().with(com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
             .readTree(raw).required("Arguments");

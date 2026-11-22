@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.comune.trieste.ouf.authorization.PrincipalContext;
 import it.comune.trieste.ouf.semantic.api.SemanticDiscoveryDelegation;
 import it.comune.trieste.ouf.semantic.api.ArtifactApi.CreateArtifact;
+import it.comune.trieste.ouf.semantic.api.ProposalCommandApi.SourceColumn;
 import java.time.Duration;
 import java.util.*;
 import java.util.function.Supplier;
@@ -64,11 +65,24 @@ public class ProposalCommandService {
   }
   @Transactional(timeout=10) public Map<String,Object> create(String tenant,String principal,String type,String key,
       CreateArtifact command,String correlation) {
+    return create(tenant,principal,type,key,command,null,correlation);
+  }
+  @Transactional(timeout=10) public Map<String,Object> create(String tenant,String principal,String type,String key,
+      CreateArtifact command,SourceColumn sourceColumn,String correlation) {
+    boolean valueMap="VALUE_MAP".equals(command.artifactType());
+    if(sourceColumn!=null && !valueMap) throw new IllegalArgumentException("SEM_REQUEST_INVALID");
+    Object payload=sourceColumn==null?command:Map.of("artifact",command,"sourceColumn",sourceColumn);
     try {
-      return execute(tenant,principal,key,"CREATE",command,
-          ()->artifacts.create(command,principal,type,correlation));
+      return execute(tenant,principal,key,"CREATE",payload,()->{
+        var result=artifacts.create(command,principal,type,correlation);
+        if(sourceColumn!=null) db.sql("""
+            insert into ouf_sem.value_map_proposal_source(revision_id,field_name,source_id) values(:r,:f,:s)
+            """).param("r",result.get("revisionId")).param("f",sourceColumn.fieldName())
+            .param("s",sourceColumn.sourceId()).update();
+        return result;
+      });
     } catch (DataAccessException error) {
-      throw "VALUE_MAP".equals(command.artifactType())?ArtifactService.valueMapError(error):error;
+      throw valueMap?ArtifactService.valueMapError(error):error;
     }
   }
   @Transactional(timeout=10) public Map<String,Object> validate(String tenant,String principal,String key,
