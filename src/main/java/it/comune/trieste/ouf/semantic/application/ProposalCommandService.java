@@ -126,6 +126,26 @@ public class ProposalCommandService {
     if(rows.size()!=1)throw new NoSuchElementException("PROPOSAL_RECEIPT_NOT_FOUND");
     return Map.of("operation",rows.get(0).get("operation"),"result",decode(rows.get(0).get("result")),"historicalSnapshot",true,"ownerStateMustBeRechecked",true);
   }
+  public record ReceiptIdentity(String operation,UUID revisionId) {}
+  public ReceiptIdentity receiptIdentity(String tenant,String principal,String key) {
+    validKey(key);
+    return db.sql("""
+        select operation,coalesce(result_json->>'revisionId',result_json->>'revision_id') revision
+        from ouf_sem.proposal_command_receipt
+        where tenant_id=:t and principal_id=:p and idempotency_key=:k and result_json is not null
+        """).param("t",tenant).param("p",principal).param("k",key)
+        .query((rs,n)->new ReceiptIdentity(rs.getString("operation"),receiptRevision(rs.getString("revision"))))
+        .optional().orElseThrow(()->new NoSuchElementException("PROPOSAL_RECEIPT_NOT_FOUND"));
+  }
+
+  public static UUID receiptRevision(Object value) {
+    if(value instanceof UUID id)return id;
+    if(value instanceof String id && id.length()==36) {
+      try { return UUID.fromString(id); }
+      catch(IllegalArgumentException historical) { return null; }
+    }
+    return null;
+  }
   private Map<String,Object> lockDraft(UUID revision,long expected,String actor) {
     var rows=db.sql("select row_version,lifecycle_status,encode(public.digest("+
         "convert_to(label_json::text||description_json::text||definition_json::text,'UTF8'),'sha256'),'hex') current_hash "

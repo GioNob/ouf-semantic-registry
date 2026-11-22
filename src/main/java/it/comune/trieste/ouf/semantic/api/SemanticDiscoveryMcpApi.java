@@ -47,8 +47,12 @@ public class SemanticDiscoveryMcpApi {
     return jobs.status(id(in.arguments()),in.actor());
   }
   @PostMapping("/candidates") public Object candidates(@RequestBody byte[] raw,HttpServletRequest request) {
-    var in=input(raw,request,"ouf.semantic.discovery.candidates","READ",Set.of("requestId"));
-    return jobs.candidates(id(in.arguments()),in.actor());
+    var in=input(raw,request,"ouf.semantic.discovery.candidates","READ",Set.of("requestId","includeState"));
+    var includeState=in.arguments().get("includeState");
+    if(includeState!=null && !includeState.isBoolean())throw invalid();
+    var id=id(in.arguments());
+    return includeState!=null && includeState.booleanValue()
+        ?jobs.candidatesWithState(id,in.actor()):jobs.candidates(id,in.actor());
   }
   private static UUID id(JsonNode a){String value=text(a,"requestId");if(!value.matches("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"))throw invalid();return UUID.fromString(value);}
   private static String text(JsonNode a,String key){if(!a.hasNonNull(key)||!a.get(key).isTextual())throw invalid();return a.get(key).textValue();}

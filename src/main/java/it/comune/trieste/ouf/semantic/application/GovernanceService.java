@@ -154,8 +154,11 @@ public class GovernanceService {
         .param("r",row.get("revision_id")).query().listOfRows();
     if(!publications.isEmpty()){out.put("publicationSetId",publications.get(0).get("publication_set_id"));out.put("manifestHash",publications.get(0).get("checksum"));}
     out.put("revisionStatus",row.get("revision_status"));out.put("lifecycleStatus",row.get("revision_status"));out.put("trustedApprovalRef","ths://semantic-approval-challenges/"+challenge);
-    if(!thsOrigin.isBlank())out.put("reviewUrl",thsOrigin+"/trusted-human/semantic/?challenge="+challenge);
+    reviewUrl(challenge).ifPresent(url->out.put("reviewUrl",url));
     out.put("humanAuthorityRequired",true);return out;
+  }
+  Optional<String> reviewUrl(UUID challenge) {
+    return thsOrigin.isBlank()?Optional.empty():Optional.of(thsOrigin+"/trusted-human/semantic/?challenge="+challenge);
   }
   private Map<String,String> valueMapLabels(JsonNode definition) {
     var labels=new HashMap<String,String>();

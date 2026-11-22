@@ -118,6 +118,25 @@ class SemanticDiscoveryMcpTest {
     assertThatThrownBy(()->api.status(shortId,badId)).isInstanceOf(IllegalArgumentException.class);
     verifyNoInteractions(jobs);
   }
+  @Test void signedCandidatesCanOptIntoJobStateWithoutChangingLegacyArray() throws Exception {
+    var jobs=mock(DiscoveryJobService.class);
+    var api=new SemanticDiscoveryMcpApi(verifier(),jobs,json);
+    String cap="ouf.semantic.discovery.candidates";
+    UUID id=UUID.randomUUID();
+    var stateful=Map.<String,Object>of("state","PENDING","allowedActions",List.of("POLL_DISCOVERY"),
+        "pollAfterSeconds",5,"candidates",List.of(),"adoptableCandidateIds",List.of());
+    when(jobs.candidatesWithState(eq(id),anyString())).thenReturn(stateful);
+    when(jobs.candidates(eq(id),anyString())).thenReturn(List.of());
+    byte[] legacy=body(cap,"READ",Map.of("requestId",id.toString()));
+    assertThat(api.candidates(legacy,request(legacy,cap,"candidates",Set.of(cap)))).isEqualTo(List.of());
+    byte[] opted=body(cap,"READ",Map.of("requestId",id.toString(),"includeState",true));
+    assertThat(api.candidates(opted,request(opted,cap,"candidates",Set.of(cap)))).isEqualTo(stateful);
+    byte[] invalid=body(cap,"READ",Map.of("requestId",id.toString(),"includeState","true"));
+    assertThatThrownBy(()->api.candidates(invalid,request(invalid,cap,"candidates",Set.of(cap))))
+        .hasMessage("SEM_DISCOVERY_ARGUMENTS_INVALID");
+    verify(jobs).candidates(eq(id),anyString());
+    verify(jobs).candidatesWithState(eq(id),anyString());
+  }
   @Test void readReceiptCannotAuthorizeDiscoveryAndReceiptCannotAuthorizePublication() throws Exception {
     var v=verifier();String cap="ouf.semantic.discovery";byte[] raw=body(cap,"COMMAND",Map.of());
     var r=receipt(raw,cap,prefix+"request");
