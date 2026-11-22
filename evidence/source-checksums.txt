@@ -78,7 +78,7 @@ d3b77edfaf079b9ede8ecabf96ddda87c6de7fba6a1b44825b878f1e6fff3e01  src/main/java/
 756a9c9b1572086c5d4d1ea5e2d75634ecf83b84f53cfc8f58ec63301461655e  src/main/java/it/comune/trieste/ouf/semantic/application/GovernanceService.java
 af244a337e248824e7db8d324a8ef3426a0f7c7daa2e7190a45efdf50a8bbb48  src/main/java/it/comune/trieste/ouf/semantic/application/InterchangeService.java
 2de40ac04d8dcfaf7a0c48d943aee72d70f8a1e587dd851af6d5fe7dc48ade0d  src/main/java/it/comune/trieste/ouf/semantic/application/ProposalCommandService.java
-ad94e372a7753360f79579b89a55f05826514b9c11a1fd94c13702cae4ac7d04  src/main/java/it/comune/trieste/ouf/semantic/application/ProposalObservation.java
+a2a14446189359ea12f6d8eba9e597f1241787968e6edf170ae7f85513969335  src/main/java/it/comune/trieste/ouf/semantic/application/ProposalObservation.java
 67efcc5116233c20219e7314f4a786359bda4f9d2842b0016ec6d90f2cf59084  src/main/java/it/comune/trieste/ouf/semantic/application/PublishedRdfSnapshot.java
 1f4d2d43b4d33175aaa1de5e7a10d8b95904512a2590b6adf6be2ce699c4a64d  src/main/java/it/comune/trieste/ouf/semantic/application/SemanticReadService.java
 b41684cb8f3bdadc8fd0d53839a18ece1dfcf1c57acea57d471bab9748ba4b54  src/main/java/it/comune/trieste/ouf/semantic/application/ValidationService.java
