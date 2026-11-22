@@ -64,7 +64,7 @@ public class ProposalObservation {
             order by created_at desc,challenge_id desc limit 1
           ) h on true
           where r.revision_id=:r
-          """).param("r",revision).query().optionalRow().orElse(Map.of());
+          """).param("r",revision).query().listOfRows().stream().findFirst().orElse(Map.of());
       if(!row.isEmpty()) {
         state=state(row);
         out.put("revisionId",revision);
