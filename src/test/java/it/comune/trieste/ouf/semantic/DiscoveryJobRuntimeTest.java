@@ -33,6 +33,7 @@ class DiscoveryJobRuntimeTest {
   @Autowired SafeRdfParser parser;
   @Autowired MockMvc http;
   @Autowired PlatformTransactionManager transactions;
+  @Autowired ArtifactService artifacts;
   private DiscoveryJobService service(boolean enabled){
     SemanticDiscoveryProvider provider=new SemanticDiscoveryProvider(){
       public String providerId(){return "JOBS_TEST";}
@@ -60,6 +61,54 @@ class DiscoveryJobRuntimeTest {
     String actor=unique(),key=unique();UUID request=id(service(true).request("CLASS","teatro",List.of(),actor,key));
     db.sql("update ouf_sem.discovery_request set state='SUCCEEDED',completed_at=transaction_timestamp() where request_id=:id").param("id",request).update();
     assertThat(service(false).request("CLASS","teatro",List.of(),actor,key)).containsEntry("requestId",request).containsEntry("state","SUCCEEDED");
+  }
+  @Test void workflowActionsFollowDurableJobAndCandidateState() {
+    String actor=unique();
+    var jobs=service(true);
+    var requested=jobs.request("CLASS","teatro",List.of(),actor,unique());
+    UUID request=id(requested);
+    assertThat(requested).containsEntry("state","PENDING")
+        .containsEntry("allowedActions",List.of(WorkflowAction.POLL_DISCOVERY)).containsEntry("pollAfterSeconds",5L);
+    assertThat(jobs.candidatesWithState(request,actor)).containsEntry("candidates",List.of())
+        .containsEntry("allowedActions",List.of(WorkflowAction.POLL_DISCOVERY));
+
+    db.sql("""
+        update ouf_sem.discovery_request set recovery_state='RETRY_WAIT',next_attempt_at=now()+interval '3 minutes'
+        where request_id=:id
+        """).param("id",request).update();
+    assertThat(((Number)jobs.status(request,actor).get("pollAfterSeconds")).longValue()).isBetween(160L,180L);
+    db.sql("update ouf_sem.discovery_request set recovery_state='PAUSED_EXHAUSTED' where request_id=:id")
+        .param("id",request).update();
+    assertThat(jobs.status(request,actor)).containsEntry("allowedActions",List.of(WorkflowAction.NONE))
+        .doesNotContainKey("pollAfterSeconds");
+
+    db.sql("update ouf_sem.discovery_request set state='SUCCEEDED',recovery_state='ACTIVE' where request_id=:id")
+        .param("id",request).update();
+    assertThat(jobs.candidatesWithState(request,actor)).containsEntry("allowedActions",List.of(WorkflowAction.NONE));
+    UUID live=UUID.randomUUID(),expired=UUID.randomUUID();
+    db.sql("""
+        insert into ouf_sem.discovery_candidate(candidate_id,request_id,provider_id,canonical_uri,source_location,
+          artifact_type,provider_trust,score,normalized_payload,content_hash,media_type,content_bytes,expires_at)
+        values(:live,:id,'JOBS_TEST','urn:live','urn:live','CLASS','HIGH',1,'{}',repeat('a',64),
+          'text/turtle',decode('00','hex'),now()+interval '1 hour'),
+          (:expired,:id,'JOBS_TEST','urn:expired','urn:expired','CLASS','HIGH',1,'{}',repeat('a',64),
+          'text/turtle',decode('00','hex'),now()-interval '1 hour')
+        """).param("live",live).param("expired",expired).param("id",request).update();
+    assertThat(jobs.status(request,actor)).containsEntry("allowedActions",List.of(WorkflowAction.LIST_CANDIDATES));
+    assertThat(jobs.candidatesWithState(request,actor))
+        .containsEntry("candidates",jobs.candidates(request,actor))
+        .containsEntry("allowedActions",List.of(WorkflowAction.ADOPT_CANDIDATE))
+        .containsEntry("adoptableCandidateIds",List.of(live));
+
+    var artifact=artifacts.create(new it.comune.trieste.ouf.semantic.api.ArtifactApi.CreateArtifact(
+        "urn:adopted:"+live,"CLASS","ouf","Adopted"+live,"owner","authority","1.0.0",Map.of(),Map.of()),
+        actor,"HUMAN","test");
+    db.sql("update ouf_sem.discovery_candidate set adopted_at=now(),adopted_artifact_id=:a where candidate_id=:id")
+        .param("a",artifact.get("artifactId")).param("id",live).update();
+    assertThat(jobs.candidatesWithState(request,actor)).containsEntry("adoptableCandidateIds",List.of())
+        .containsEntry("allowedActions",List.of(WorkflowAction.NONE));
+    assertThat(jobs.candidates(request,actor)).hasSize(1);
+    assertThatThrownBy(()->jobs.candidatesWithState(request,unique())).isInstanceOf(NoSuchElementException.class);
   }
   @Test void concurrentRetriesCreateExactlyOneJob() throws Exception {
     String actor=unique(),key=unique();var jobs=service(true);var ready=new CountDownLatch(2);var start=new CountDownLatch(1);

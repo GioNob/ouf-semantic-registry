@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import it.comune.trieste.ouf.authorization.OwnerAuthorization;
 import it.comune.trieste.ouf.semantic.application.ProposalCommandService;
+import it.comune.trieste.ouf.semantic.application.ProposalObservation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -16,7 +17,10 @@ import org.springframework.web.bind.annotation.*;
 public class ProposalCommandApi {
   private final ProposalCommandService service;
   private final TrustedActorResolver actors;
-  public ProposalCommandApi(ProposalCommandService service,TrustedActorResolver actors){this.service=service;this.actors=actors;}
+  private final ProposalObservation observations;
+  public ProposalCommandApi(ProposalCommandService service,TrustedActorResolver actors,ProposalObservation observations){
+    this.service=service;this.actors=actors;this.observations=observations;
+  }
   public record Create(@NotBlank String semanticId,
       @NotNull @Pattern(regexp="CLASS|PROPERTY|RELATIONSHIP|VOCABULARY|CONCEPT|ONTOLOGY|DATATYPE|VALUE_MAP") String artifactType,
       @NotBlank String namespace,@NotBlank String localName,@NotBlank String ownerRef,
@@ -66,7 +70,8 @@ public class ProposalCommandApi {
   }
   public record Validate(@NotNull UUID revisionId,@NotNull @Min(0) Long expectedRowVersion){}
   public record Review(@NotNull UUID revisionId,@NotNull @Min(0) Long expectedRowVersion,@NotNull UUID validationRunId){}
-  public record Read(@NotBlank @Pattern(regexp="[A-Za-z0-9_:.-]{1,128}") String commandKey){}
+  public record Read(@NotBlank @Pattern(regexp="[A-Za-z0-9_:.-]{1,128}") String commandKey,
+      @Pattern(regexp="[a-f0-9]{64}") String expectedVersion){}
   @SemanticCapability("ouf.semantic.propose") @PostMapping("/create")
   public Map<String,Object> create(@Valid @RequestBody Create body,
       @RequestHeader("Idempotency-Key") String key,HttpServletRequest request,@RequestHeader HttpHeaders headers){
@@ -74,29 +79,48 @@ public class ProposalCommandApi {
     var artifact=body.artifact();
     var sourceColumn=body.sourceColumn();
     if(body.rdfTurtle()!=null||body.mediaType()!=null)
-      return service.createImported(tenant(request),actor.subject(),actor.type(),key,artifact,body.rdfTurtle(),body.mediaType(),correlation(headers));
-    return service.create(tenant(request),actor.subject(),actor.type(),key,artifact,sourceColumn,correlation(headers));
+      return withObservation(service.createImported(tenant(request),actor.subject(),actor.type(),key,artifact,body.rdfTurtle(),body.mediaType(),correlation(headers)));
+    return withObservation(service.create(tenant(request),actor.subject(),actor.type(),key,artifact,sourceColumn,correlation(headers)));
   }
   @SemanticCapability("ouf.semantic.review.prepare") @PostMapping("/validate")
   public Map<String,Object> validate(@Valid @RequestBody Validate body,
       @RequestHeader("Idempotency-Key") String key,HttpServletRequest request){
     var actor=actors.actor(request);
-    return service.validate(tenant(request),actor.subject(),key,body.revisionId(),body.expectedRowVersion());
+    return withObservation(service.validate(tenant(request),actor.subject(),key,body.revisionId(),body.expectedRowVersion()));
   }
   @SemanticCapability("ouf.semantic.approval.request") @PostMapping("/review")
   public Map<String,Object> review(@Valid @RequestBody Review body,
       @RequestHeader("Idempotency-Key") String key,HttpServletRequest request,@RequestHeader HttpHeaders headers){
     var actor=actors.actor(request);actors.require(actor,"ouf.semantic.review.prepare");
-    return service.review(tenant(request),actor.subject(),actor.type(),key,body.revisionId(),
-        body.expectedRowVersion(),body.validationRunId(),correlation(headers));
+    var response=withObservation(service.review(tenant(request),actor.subject(),actor.type(),key,body.revisionId(),
+        body.expectedRowVersion(),body.validationRunId(),correlation(headers)));
+    response.put("expiresAt",response.get("expires_at"));
+    return response;
   }
   @SemanticCapability("ouf.semantic.proposal.read") @PostMapping("/read")
   public Map<String,Object> read(@Valid @RequestBody Read body,HttpServletRequest request){
     var actor=actors.actor(request);
     if(!"HUMAN".equals(actor.type()))throw new it.comune.trieste.ouf.semantic.application.GovernanceService.Forbidden("SEM_HUMAN_REQUIRED");
-    var result=service.receipt(tenant(request),actor.subject(),body.commandKey());
-    String op=String.valueOf(result.get("operation"));
-    actors.require(actor,switch(op){case "ADOPT"->"ouf.semantic.discovery.adopt";case "VALIDATE"->"ouf.semantic.review.prepare";case "REVIEW"->"ouf.semantic.approval.request";default->"ouf.semantic.propose";});
+    String tenant=tenant(request);
+    var receipt=service.receiptIdentity(tenant,actor.subject(),body.commandKey());
+    actors.require(actor,switch(receipt.operation()){case "ADOPT"->"ouf.semantic.discovery.adopt";case "VALIDATE"->"ouf.semantic.review.prepare";case "REVIEW"->"ouf.semantic.approval.request";default->"ouf.semantic.propose";});
+    var current=observations.current(receipt.revisionId());
+    if(current.get("version").equals(body.expectedVersion())) {
+      var unchanged=new LinkedHashMap<String,Object>();
+      for(String field:List.of("version","state","allowedActions","pollAfterSeconds"))
+        if(current.containsKey(field))unchanged.put(field,current.get(field));
+      unchanged.put("changed",false);
+      return unchanged;
+    }
+    var result=new LinkedHashMap<>(service.receipt(tenant,actor.subject(),body.commandKey()));
+    result.putAll(current);
+    result.put("changed",true);
+    return result;
+  }
+  private Map<String,Object> withObservation(Map<String,Object> receipt) {
+    var revision=ProposalCommandService.receiptRevision(receipt.getOrDefault("revisionId",receipt.get("revision_id")));
+    var result=new LinkedHashMap<>(receipt);
+    result.putAll(observations.current(revision));
     return result;
   }
   private static String tenant(HttpServletRequest request){return OwnerAuthorization.bind(request).principal().tenantId();}

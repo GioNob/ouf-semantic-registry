@@ -37,11 +37,12 @@ public class DiscoveryService {
     if(providers.stream().noneMatch(SemanticDiscoveryProvider::enabled))throw new ProviderUnavailable();
     UUID id=UUID.randomUUID();db.sql("insert into ouf_sem.discovery_request(request_id,requested_artifact_type,intent,preferred_languages,state,created_by_subject) values(:i,:t,:n,:l,'PENDING',:a)").param("i",id).param("t",type).param("n",intent).param("l",languages.toArray(String[]::new)).param("a",actor).update();return id;
   }
-  public List<Map<String,Object>> candidates(UUID request){return db.sql("""
-      select candidate_id,provider_id,canonical_uri,artifact_type,provider_trust,score,match_reasons,gaps,expires_at
+  public List<Map<String,Object>> candidates(UUID request){return candidates(request,false);}
+  List<Map<String,Object>> candidates(UUID request,boolean includeAdoption){return db.sql("""
+      select candidate_id,provider_id,canonical_uri,artifact_type,provider_trust,score,match_reasons,gaps,expires_at%s
       from ouf_sem.discovery_candidate where request_id=:r and expires_at>transaction_timestamp()
       order by score desc,canonical_uri collate "C"
-      """).param("r",request).query().listOfRows();}
+      """.formatted(includeAdoption?",adopted_artifact_id":"")).param("r",request).query().listOfRows();}
   @Transactional public UUID adopt(UUID candidate,String semanticId,String namespace,String localName,String owner,String authority,String actor){
     UUID request=db.sql("select request_id from ouf_sem.discovery_candidate where candidate_id=:c")
         .param("c",candidate).query(UUID.class).optional().orElseThrow(()->new NoSuchElementException("SEMANTIC_CANDIDATE_NOT_FOUND"));

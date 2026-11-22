@@ -20,7 +20,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 
-@SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false"})
+@SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false",
+    "ouf.authorization.ths.public-origin=https://ths.example.test"})
 @AutoConfigureMockMvc
 @Import(SignedProposalFixture.Fixture.class)
 class SemanticProposalReceiptHttpTest extends SignedProposalFixture {
@@ -97,6 +98,7 @@ class SemanticProposalReceiptHttpTest extends SignedProposalFixture {
     var c=new LinkedHashMap<String,Object>();c.put("semanticId",semantic);c.put("artifactType","CLASS");c.put("namespace","ouf");c.put("localName","SignedPlace"+UUID.randomUUID().toString().replace("-",""));
     c.put("ownerRef","owner");c.put("authorityRef","authority");c.put("semanticVersion","1.0.0");c.put("labels",Map.of("it","Luogo"));c.put("definition",Map.of());c.put("commandKey",k);
     var created=send("create","ouf.semantic.propose","ouf.semantic.propose",k,c,CAPS,200);
+    assertWorkflow(created,"DRAFT","PREPARE_REVIEW");
     var read=send("read","ouf.semantic.proposal.read","ouf.semantic.proposal.read",UUID.randomUUID().toString(),Map.of("commandKey",k),CAPS,200);
     assertThat(read.get("result").get("revisionId").asText()).isEqualTo(created.get("revisionId").asText());
     send("read","ouf.semantic.proposal.read","ouf.semantic.proposal.read",UUID.randomUUID().toString(),Map.of("commandKey",k),Set.of("ouf.semantic.read","ouf.semantic.propose"),403);
@@ -105,10 +107,45 @@ class SemanticProposalReceiptHttpTest extends SignedProposalFixture {
     send("create","ouf.semantic.propose","ouf.semantic.propose",k,c,Set.of(),403);
     String revision=created.get("revisionId").asText();String vk=UUID.randomUUID().toString();
     var validation=send("validate","ouf.semantic.review.prepare","ouf.semantic.review.prepare",vk,Map.of("commandKey",vk,"revisionId",revision,"expectedRowVersion",0),CAPS,200);
+    assertWorkflow(validation,"VALIDATED","REQUEST_APPROVAL");
+    assertThat(validation.required("currentValidationRunId")).isEqualTo(validation.required("validation_run_id"));
     String rk=UUID.randomUUID().toString();var review=send("review","ouf.semantic.approval.request","ouf.semantic.approval.request",rk,
         Map.of("commandKey",rk,"revisionId",revision,"expectedRowVersion",0,"validationRunId",validation.get("validation_run_id").asText()),CAPS,200);
     assertThat(review.get("trustedApprovalRef").asText()).startsWith("ths://semantic-approval-challenges/");
     assertThat(review.get("humanAuthorityRequired").asBoolean()).isTrue();
+    assertWorkflow(review,"UNDER_REVIEW","WAIT_HUMAN_DECISION");
+    String challenge=review.required("challengeId").asText();
+    assertThat(review.at("/currentChallenge/reviewUrl").asText())
+        .isEqualTo("https://ths.example.test/trusted-human/semantic/?challenge="+challenge);
+    assertThat(review.at("/currentChallenge/expiresAt")).isEqualTo(review.required("expiresAt"));
+    String readCap="ouf.semantic.proposal.read";
+    var expected=Map.<String,Object>of("commandKey",rk,"expectedVersion",review.required("version").asText());
+    var unchanged=send("read",readCap,readCap,UUID.randomUUID().toString(),expected,CAPS,200);
+    assertWorkflow(unchanged,"UNDER_REVIEW","WAIT_HUMAN_DECISION");
+    assertThat(unchanged.required("changed").asBoolean()).isFalse();
+    assertThat(unchanged.required("version")).isEqualTo(review.required("version"));
+    assertThat(unchanged.required("pollAfterSeconds").asInt()).isEqualTo(5);
+    assertThat(unchanged.size()).isEqualTo(5);
+    send("read",readCap,readCap,UUID.randomUUID().toString(),expected,Set.of(readCap),403);
+    send("read",readCap,readCap,UUID.randomUUID().toString(),Map.of("commandKey",rk,"expectedVersion","0"),CAPS,400);
+
+    var decision=governance.decide(UUID.fromString(challenge),"APPROVED","reviewer","HUMAN","fixture","test");
+    var approved=send("read",readCap,readCap,UUID.randomUUID().toString(),expected,CAPS,200);
+    assertWorkflow(approved,"APPROVED","NONE");
+    assertThat(approved.required("rowVersion")).isEqualTo(review.required("rowVersion"));
+    assertThat(approved.required("changed").asBoolean()).isTrue();
+    assertThat(approved.required("version")).isNotEqualTo(review.required("version"));
+    assertThat(approved.at("/result/status").asText()).isEqualTo("OPEN");
+    assertThat(approved.at("/currentChallenge/challengeStatus").asText()).isEqualTo("APPROVED");
+    governance.publish(UUID.fromString(revision),(UUID)decision.get("decisionId"),UUID.randomUUID().toString(),
+        review.required("targetContentHash").asText(),"reviewer","HUMAN","test");
+    var published=send("read",readCap,readCap,UUID.randomUUID().toString(),expected,CAPS,200);
+    assertWorkflow(published,"ACTIVE","NONE");
+    assertThat(published.required("version")).isNotEqualTo(approved.required("version"));
+  }
+  private void assertWorkflow(JsonNode result,String state,String action) {
+    assertThat(result.required("state").asText()).isEqualTo(state);
+    assertThat(result.required("allowedActions")).isEqualTo(json.createArrayNode().add(action));
   }
   @Test void adoptionRequiresProposalProofDiscoveryScopeHumanDescriptorAndClosedArguments()throws Exception {
     String path="/api/semantic/v1/proposal-commands/adopt";
