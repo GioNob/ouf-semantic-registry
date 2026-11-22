@@ -48,15 +48,78 @@
     },
     "status": {
       "type": "string",
+      "description": "Current lifecycle of the revision in the requested publication set.",
       "enum": [
-        "DRAFT",
-        "UNDER_REVIEW",
         "ACTIVE",
         "DEPRECATED",
         "RETIRED"
       ]
     },
-    "definition": {"type": "object", "required": ["components"]},
+    "definition": {
+      "type": "object",
+      "required": ["components"],
+      "properties": {
+        "components": {
+          "type": "array", "minItems": 1, "maxItems": 32,
+          "items": {
+            "type": "object",
+            "required": ["name", "type", "cardinality", "required"],
+            "properties": {
+              "name": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]{0,63}$"},
+              "type": {"type": "string", "description": "Base type id or published DATATYPE IRI@publicationSetId."},
+              "cardinality": {"enum": ["ONE", "MANY"]},
+              "required": {"type": "boolean"},
+              "labels": {"type": "object", "additionalProperties": {"type": "string"}},
+              "constraints": {
+                "type": "object", "additionalProperties": false,
+                "description": "Inclusive bounds are canonical strings for integer, decimal, date or datetime components. maxLength applies to string and vocabularyRef to concept.",
+                "properties": {
+                  "minInclusive": {"type": "string"},
+                  "maxInclusive": {"type": "string"},
+                  "maxLength": {"type": "integer", "minimum": 0},
+                  "vocabularyRef": {"type": "string", "format": "iri", "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:", "description": "Absolute IRI of a published VOCABULARY."}
+                }
+              }
+            },
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {"properties": {"type": {"enum": ["integer", "decimal", "date", "datetime"]}}},
+                "then": {"properties": {"constraints": {"propertyNames": {"enum": ["minInclusive", "maxInclusive"]}}}}
+              },
+              {
+                "if": {"properties": {"type": {"const": "integer"}}},
+                "then": {"properties": {"constraints": {"additionalProperties": {"pattern": "^(0|-?[1-9][0-9]*)$"}}}}
+              },
+              {
+                "if": {"properties": {"type": {"const": "decimal"}}},
+                "then": {"properties": {"constraints": {"additionalProperties": {"pattern": "^-?(0|[1-9][0-9]*)([.][0-9]*[1-9])?$", "not": {"const": "-0"}}}}}
+              },
+              {
+                "if": {"properties": {"type": {"const": "date"}}},
+                "then": {"properties": {"constraints": {"additionalProperties": {"pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}}}}
+              },
+              {
+                "if": {"properties": {"type": {"const": "datetime"}}},
+                "then": {"properties": {"constraints": {"additionalProperties": {"pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,9})?Z$"}}}}
+              },
+              {
+                "if": {"properties": {"type": {"const": "string"}}},
+                "then": {"properties": {"constraints": {"propertyNames": {"const": "maxLength"}}}}
+              },
+              {
+                "if": {"properties": {"type": {"const": "concept"}}},
+                "then": {"properties": {"constraints": {"propertyNames": {"const": "vocabularyRef"}}}}
+              },
+              {
+                "if": {"properties": {"type": {"not": {"enum": ["integer", "decimal", "date", "datetime", "string", "concept"]}}}},
+                "then": {"properties": {"constraints": {"maxProperties": 0}}}
+              }
+            ]
+          }
+        }
+      }
+    },
     "definitionSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "canonicalUri": {
       "type": "string",

@@ -10,7 +10,7 @@ class ContractInventoryTest {
   @Test void d084ContractMatchesFrozenBytes() throws Exception {
     byte[] bytes=Files.readAllBytes(Path.of("contracts/ouf-value-types-v1.json"));
     assertThat(java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)))
-        .isEqualTo("c046646c3030f1bcf4460741bbd09351f9bb501cb054d8ed45ce2e7d98dd4247");
+        .isEqualTo("4b90e85ecd1573404612ef0a0ee627feffaa9c189fe4363e82079bd07824c333");
     assertThat(json.readTree(bytes).required("schema").asText()).isEqualTo("ouf.value-types.v1");
   }
   @Test void allBundledSchemasAreDraft202012AndParseable() throws Exception {

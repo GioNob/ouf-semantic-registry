@@ -4,7 +4,20 @@ info:
   version: 1.0.0
 paths:
   /api/semantic/v1/artifacts:
-    post: {operationId: createSemanticArtifact, responses: {'201': {description: Draft created}}}
+    post:
+      operationId: createSemanticArtifact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              if: {required: [artifactType], properties: {artifactType: {const: DATATYPE}}}
+              then:
+                required: [definition]
+                properties:
+                  definition: {$ref: '../contracts/semantic-reference-v1.json#/properties/definition'}
+      responses: {'201': {description: Draft created}}
   /api/semantic/v1/artifacts/{id}:
     get: {operationId: getSemanticArtifact, responses: {'200': {description: Artifact detail}}}
   /api/semantic/v1/search:
@@ -42,7 +55,25 @@ paths:
         - {name: publicationSetId, in: query, required: true, schema: {type: string, format: uuid}}
         - {name: revisionId, in: query, description: Optional only for a pinned DATATYPE, schema: {type: string, format: uuid}}
       responses:
-        '200': {description: 'Exact publication member. DATATYPE includes the sorted definition object and lowercase hexadecimal definitionSha256. Resolve each nested type with its own semanticId and publicationSetId.'}
+        '200':
+          description: Exact publication member with the current status of its pinned revision. Onboarding requires ACTIVE for every DATATYPE during preparation and resolves each nested pin separately. Historical replay accepts all three published states.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [semantic_id, revision_id, publication_set_id, artifact_type, status]
+                properties:
+                  semantic_id: {type: string}
+                  revision_id: {type: string, format: uuid}
+                  publication_set_id: {type: string, format: uuid}
+                  artifact_type: {type: string}
+                  status: {$ref: '../contracts/semantic-reference-v1.json#/properties/status'}
+                if: {properties: {artifact_type: {const: DATATYPE}}}
+                then:
+                  required: [definition, definitionSha256]
+                  properties:
+                    definition: {$ref: '../contracts/semantic-reference-v1.json#/properties/definition'}
+                    definitionSha256: {$ref: '../contracts/semantic-reference-v1.json#/properties/definitionSha256'}
   /api/semantic/v1/consumer-references:
     put: {operationId: registerSemanticConsumerReference, responses: {'204': {description: Registered}}}
   /api/semantic/v1/discovery:

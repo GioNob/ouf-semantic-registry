@@ -140,6 +140,7 @@ public class SemanticReadService {
         where m.publication_set_id=:p and m.semantic_id=:s
           and (m.revision_id=cast(:r as uuid) or (cast(:r as uuid) is null and a.artifact_type='DATATYPE'))
           and a.semantic_id=m.semantic_id and s.status='PUBLISHED'
+          and r.lifecycle_status in ('ACTIVE','DEPRECATED','RETIRED')
         """).param("p",publicationSet).param("r",revision).param("s",semanticId).query().listOfRows();
     if(rows.size()!=1)throw new NoSuchElementException("SEMANTIC_REFERENCE_NOT_FOUND");
     var row=rows.get(0);

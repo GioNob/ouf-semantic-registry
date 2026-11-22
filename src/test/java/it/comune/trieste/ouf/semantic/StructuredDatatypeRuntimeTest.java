@@ -1,6 +1,8 @@
 package it.comune.trieste.ouf.semantic;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.fasterxml.jackson.databind.*;
 import it.comune.trieste.ouf.semantic.api.ArtifactApi.CreateArtifact;
 import it.comune.trieste.ouf.semantic.api.ArtifactApi.PatchRevision;
@@ -12,9 +14,13 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false"})
+@AutoConfigureMockMvc
 class StructuredDatatypeRuntimeTest {
+  @Autowired MockMvc http;
   @Autowired ProposalCommandService commands;
   @Autowired ArtifactService artifacts;
   @Autowired GovernanceService governance;
@@ -103,11 +109,39 @@ class StructuredDatatypeRuntimeTest {
     var v2=publish(next);
     assertThat(v2.card().path("versionePrecedente").asText()).isEqualTo("1.0.0");
     assertThat(v2.card().required("differenze").toString()).contains("via","prima","80","dopo","40","numero","Aggiunto");
-    JsonNode parentDefinition=json.valueToTree(reads.resolve(parent.draft().iri(),null,v2.set()).get("definition"));
+    var parentPin=reads.resolve(parent.draft().iri(),null,v2.set());
+    assertThat(parentPin).containsEntry("status","ACTIVE");
+    JsonNode parentDefinition=json.valueToTree(parentPin.get("definition"));
     assertThat(parentDefinition.at("/components/0/type").asText()).isEqualTo(child.ref());
-    assertThat(reads.resolve(id,null,child.set())).containsEntry("definitionSha256",first.get("definitionSha256"));
+    assertThat(reads.resolve(id,null,child.set())).containsEntry("status","DEPRECATED")
+        .containsEntry("revision_id",child.draft().revision()).containsEntry("definitionSha256",first.get("definitionSha256"));
     assertThat(reads.resolve(id,null,v2.set()).get("definitionSha256")).isNotEqualTo(first.get("definitionSha256"));
     assertThatThrownBy(()->reads.resolve(id,next.revision(),child.set())).hasMessage("SEMANTIC_REFERENCE_NOT_FOUND");
+  }
+
+  @Test void resolveReturnsCurrentPinStatusAndExactTypedBoundsThroughRetirement() throws Exception {
+    var component=field("misura","decimal");
+    component.put("constraints",Map.of("minInclusive","-0.125","maxInclusive","9007199254740993.123456789"));
+    var definition=Map.of("components",List.of(component));
+    var published=publish(create(iri(),"1.0.0",definition));
+    String activeHash=null;
+    for (String state:List.of("ACTIVE","DEPRECATED","RETIRED")) {
+      if (!state.equals("ACTIVE"))
+        governance.lifecycle(published.draft().revision(),state,"reviewer","HUMAN","fixture:decision",key());
+      var response=http.perform(get("/api/semantic/v1/references:resolve")
+          .param("semanticId",published.draft().iri()).param("publicationSetId",published.set().toString())
+          .with(request -> {
+            it.comune.trieste.ouf.authorization.TestAuthorization.bind(request,"reader","SERVICE",Set.of("ouf.semantic.read"));
+            return request;
+          })).andExpect(status().isOk()).andReturn().getResponse();
+      var pin=json.readTree(response.getContentAsByteArray());
+      assertThat(pin.required("status").asText()).isEqualTo(state);
+      assertThat(pin.required("revision_id").asText()).isEqualTo(published.draft().revision().toString());
+      assertThat(pin.required("definition")).isEqualTo(json.valueToTree(definition));
+      String hash=pin.required("definitionSha256").asText();
+      if (activeHash==null) activeHash=hash;
+      assertThat(hash).matches("[0-9a-f]{64}").isEqualTo(activeHash);
+    }
   }
 
   @Test void rejectsCyclesMissingMembersAndWrongArtifactType() {
@@ -148,7 +182,6 @@ class StructuredDatatypeRuntimeTest {
         case "date" -> Map.of("minInclusive","2024-02-29");
         case "datetime" -> Map.of("minInclusive","2024-02-29T00:00:00Z","maxInclusive","2024-02-29T00:00:00.000000001Z");
         case "string" -> Map.of("maxLength",0);
-        case "concept" -> Map.of("vocabularyRef","urn:ouf:vocabulary");
         default -> Map.of();
       });
       good.add(c);
@@ -169,5 +202,32 @@ class StructuredDatatypeRuntimeTest {
       var bad=field("nome",example.get(0)); bad.put("constraints",Map.of(example.get(1),example.get(2)));
       invalid(create(iri(),"1.0.0",Map.of("components",List.of(bad))),"DT-CONSTRAINT");
     }
+  }
+
+  @Test void rejectsWrongJsonTypesAndNoncanonicalBounds() {
+    record Example(String type,String constraint,Object value) {}
+    for (var example:List.of(new Example("integer","minInclusive",-90),new Example("decimal","maxInclusive",45.5),
+        new Example("date","maxInclusive",20260101),new Example("datetime","minInclusive",true),
+        new Example("integer","minInclusive","01"),new Example("decimal","maxInclusive","45.50"),
+        new Example("datetime","minInclusive","2026-01-01T01:00:00+01:00"),
+        new Example("string","maxLength","80"),new Example("string","maxLength",1.5),
+        new Example("concept","vocabularyRef",42),new Example("concept","vocabularyRef","relative/path"))) {
+      var c=field("valore",example.type());
+      c.put("constraints",Map.of(example.constraint(),example.value()));
+      invalid(create(iri(),"1.0.0",Map.of("components",List.of(c))),"DT-CONSTRAINT");
+    }
+  }
+
+  @Test void conceptConstraintRequiresPublishedVocabularyIri() {
+    var vocabulary=new CreateArtifact(iri(),"VOCABULARY","ns",key(),"owner","authority","1.0.0",Map.of("it","Stati"),Map.of());
+    var created=artifacts.create(vocabulary,"agent","AI_AGENT","test");
+    var concept=field("stato","concept");
+    concept.put("constraints",Map.of("vocabularyRef",vocabulary.semanticId()));
+    var draft=create(iri(),"1.0.0",Map.of("components",List.of(concept)));
+    invalid(draft,"DT-CONSTRAINT");
+    publish(new Draft(vocabulary.semanticId(),(UUID)created.get("revisionId")));
+    var published=publish(draft);
+    concept.put("constraints",Map.of("vocabularyRef",published.draft().iri()));
+    invalid(create(iri(),"1.0.0",Map.of("components",List.of(concept))),"DT-CONSTRAINT");
   }
 }

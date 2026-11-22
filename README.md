@@ -18,6 +18,10 @@ Per risolvere un tipo, inviare `semanticId` e `publicationSetId` a `GET /api/sem
 
 Lo snapshot N-Triples dichiara l’IRI come `rdfs:Datatype` e usa `rdf:value` con un letterale `rdf:JSON` per conservare nomi, cardinalità, vincoli e riferimenti esatti. Questa forma rappresenta i valori strutturati anche quando i componenti non hanno un predicato RDF proprio. La pubblicazione registra i byte e il loro hash nella stessa transazione del set. Il digest per Onboarding, Ingestion e UDP è quello della definizione JSON.
 
+Il campo `status` di `references:resolve` indica lo stato corrente della revisione fissata. In preparazione Onboarding richiede `ACTIVE` per il tipo e per ciascun pin annidato. La rilettura storica accetta anche `DEPRECATED` e `RETIRED`, con la stessa definizione e lo stesso hash.
+
+Nei vincoli dei componenti, `minInclusive` e `maxInclusive` sono stringhe JSON canoniche del tipo integer, decimal, date o datetime. Per esempio, un limite intero si scrive `"9007199254740993"`. Per string, `maxLength` è un intero JSON non negativo. Per concept, `vocabularyRef` è l’IRI assoluto di un vocabolario pubblicato. La validazione segnala un vincolo non valido con il codice `DT-CONSTRAINT`.
+
 ## CI gates
 
 `.github/workflows/module-ci.yml` is the authoritative single-module gate. It

@@ -138,7 +138,10 @@ async function readPublished(record, latestSet) {
 
 async function publishDatatype() {
   const semanticId = 'https://example.org/datatypes/Recapito';
-  const definition = {components: [{cardinality: 'ONE', name: 'via', required: true, type: 'string'}]};
+  const definition = {components: [
+    {cardinality: 'ONE', constraints: {maxLength: 80}, name: 'via', required: true, type: 'string'},
+    {cardinality: 'ONE', constraints: {maxInclusive: '9007199254740993', minInclusive: '1'}, name: 'civico', required: false, type: 'integer'},
+  ]};
   const draft = await proposal('create', {semanticId, artifactType: 'DATATYPE', namespace: 'https://example.org/datatypes/',
     localName: 'Recapito', ownerRef: 'owner', authorityRef: 'authority', semanticVersion: '1.0.0',
     labels: {it: 'Recapito'}, definition: {...definition, description: {it: 'Indirizzo del servizio'}}});
@@ -155,8 +158,10 @@ async function publishDatatype() {
     contentHash: review.targetContentHash}, {'Idempotency-Key': randomUUID()});
   const ref = {semanticId, revisionId, publicationSetId};
   const result = await delegated('read', 'consultation/get', 'consultation.read', cap('read'), ref);
+  assert.equal(result.status, 'ACTIVE');
   assert.deepEqual(result.definition, definition);
   assert.equal(result.definitionSha256, sha256(JSON.stringify(definition)));
+  assert.match(result.rdf_snapshot.content_hash, /^[a-f0-9]{64}$/);
   writeFileSync('/state/datatype.json', JSON.stringify({ref, definition, rdfHash: result.rdf_snapshot.content_hash}));
 }
 
@@ -199,12 +204,17 @@ if (phase === 'baseline' || phase === 'candidate') {
   const load = name => JSON.parse(readFileSync('/state/' + name + '.json'));
   const candidate = load('candidate');
   const datatype = load('datatype');
+  assert.notEqual(datatype.ref.publicationSetId, candidate.publicationSetId);
   for (const publicationSetId of [datatype.ref.publicationSetId, candidate.publicationSetId]) {
     const result = await delegated('read', 'consultation/get', 'consultation.read', cap('read'), {...datatype.ref, publicationSetId});
     assert.equal(result.artifact_type, 'DATATYPE');
+    assert.equal(result.status, 'ACTIVE');
+    assert.equal(result.revision_id, datatype.ref.revisionId);
+    assert.equal(result.publication_set_id, publicationSetId);
     assert.deepEqual(result.definition, datatype.definition);
     assert.equal(result.rdf_snapshot.content_hash, datatype.rdfHash);
   }
+  console.log('return: DATATYPE revision ' + datatype.ref.revisionId + ' resolved in both publication sets');
   await readPublished(load('baseline'), candidate.publicationSetId);
   await readPublished(candidate, candidate.publicationSetId);
   const retry = await proposal('adopt', candidate.selection, candidate.adoptionKey);

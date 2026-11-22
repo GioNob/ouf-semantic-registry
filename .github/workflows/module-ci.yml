@@ -232,8 +232,8 @@ jobs:
       actions: read
     env:
       PREDECESSOR_COMMIT: ${{ inputs.predecessor || vars.SEMANTIC_PREDECESSOR_COMMIT || '528881d59a018d5fd3ad4ff62b2b3b95a2b62cd3' }}
-      PREDECESSOR_RUN: ${{ inputs.predecessor_run || vars.SEMANTIC_PREDECESSOR_RUN }}
-      PREDECESSOR_IMAGE_ID: ${{ inputs.predecessor_image_id || vars.SEMANTIC_PREDECESSOR_IMAGE_ID }}
+      PREDECESSOR_RUN: ${{ inputs.predecessor_run || vars.SEMANTIC_PREDECESSOR_RUN || '44955419430' }}
+      PREDECESSOR_IMAGE_ID: ${{ inputs.predecessor_image_id || vars.SEMANTIC_PREDECESSOR_IMAGE_ID || 'sha256:f082d5ea0ccb0548d4db7bcd5a1d79b443a80fb78bd30a25676b3b78c72e7205' }}
     steps:
       - uses: actions/checkout@v4
         with:

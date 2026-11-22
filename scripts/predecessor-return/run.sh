@@ -110,6 +110,7 @@ new_history="$(history)"
 [[ "$new_history" == "$old_history"* ]]
 grep -Eq '^19:V19__adoption_description.sql:-?[0-9]+:true$' <<<"$new_history"
 grep -Eq '^20:V20__structured_datatypes.sql:-?[0-9]+:true$' <<<"$new_history"
+grep -Eq '^21:V21__published_component_vocabulary.sql:-?[0-9]+:true$' <<<"$new_history"
 exercise "$candidate" "$new_id" candidate
 docker stop "$candidate" >/dev/null
 [[ "$(history)" == "$new_history" ]]
