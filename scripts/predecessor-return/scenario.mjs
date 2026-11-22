@@ -165,6 +165,52 @@ async function publishDatatype() {
   writeFileSync('/state/datatype.json', JSON.stringify({ref, definition, rdfHash: result.rdf_snapshot.content_hash}));
 }
 
+async function publishNative({semanticId, artifactType, labels, definition}, inspectCard = () => {}) {
+  const namespace = semanticId.slice(0, semanticId.lastIndexOf('/') + 1);
+  const draft = await proposal('create', {semanticId, artifactType, namespace,
+    localName: semanticId.slice(namespace.length), ownerRef: 'owner', authorityRef: 'authority',
+    semanticVersion: '1.0.0', labels, definition});
+  const {revisionId} = draft;
+  const args = {revisionId, expectedRowVersion: 0};
+  const validation = await proposal('validate', args);
+  assert.equal(validation.status, 'PASS');
+  const review = await proposal('review', {...args, validationRunId: validation.validation_run_id});
+  const path = '/api/trusted-human/v1/semantic-approval-challenges/' + review.challengeId;
+  inspectCard(await ths(path));
+  const decision = await ths(path + '/decision', {decision: 'APPROVED'});
+  const {publicationSetId} = await ths(path + '/publish', {approvalDecisionId: decision.decisionId,
+    contentHash: review.targetContentHash}, {'Idempotency-Key': randomUUID()});
+  return {semanticId, revisionId, publicationSetId};
+}
+
+async function publishValueMap() {
+  const vocabularyId = 'https://example.org/termini/Servizi';
+  const concept = 'https://example.org/termini/Biblioteca';
+  const vocabulary = await publishNative({semanticId: vocabularyId, artifactType: 'VOCABULARY',
+    labels: {it: 'Servizi'}, definition: {}});
+  const term = await publishNative({semanticId: concept, artifactType: 'CONCEPT', labels: {it: 'Biblioteca'},
+    definition: {vocabularyRef: vocabularyId}});
+  const targetVocabulary = vocabularyId + '@' + term.publicationSetId;
+  const entries = [{code: 'b', concept}, {code: 'B', concept}];
+  const labels = {it: 'Codici servizio'};
+  const ref = await publishNative({semanticId: 'https://example.org/mappe/CodiciServizio', artifactType: 'VALUE_MAP',
+    definition: {targetVocabulary, entries, labels}}, card => {
+    const review = card.valueMapReview;
+    assert.equal(review.nome, labels.it);
+    assert.equal(review.numeroVoci, 2);
+    assert.deepEqual(review.vocabolario, {identificativo: vocabularyId, etichetta: 'Servizi'});
+    assert.deepEqual(review.voci[0], {codice: 'B', concetto: {identificativo: concept, etichetta: 'Biblioteca'}});
+  });
+  const result = await delegated('read', 'consultation/get', 'consultation.read', cap('read'),
+    {semanticId: ref.semanticId, publicationSetId: ref.publicationSetId});
+  const definition = {entries: entries.toReversed(), labels, targetVocabulary};
+  assert.deepEqual(result.definition, definition);
+  assert.equal(result.status, 'ACTIVE');
+  assert.equal(result.revision_id, ref.revisionId);
+  assert.equal(result.definitionSha256, sha256(JSON.stringify(definition)));
+  writeFileSync('/state/value-map.json', JSON.stringify({ref, definition, term, vocabulary}));
+}
+
 async function readiness() {
   let last = 'connection refused';
   for (let i = 0; i < 90; i++) {
@@ -195,7 +241,10 @@ try {
 }
 console.log(phase + ': release readiness and cutover UP');
 if (phase === 'baseline' || phase === 'candidate') {
-  if (phase === 'candidate') await publishDatatype();
+  if (phase === 'candidate') {
+    await publishDatatype();
+    await publishValueMap();
+  }
   const record = await adoptAndReview(classes[phase === 'baseline' ? 0 : 1], true);
   await readPublished(record, record.publicationSetId);
   writeFileSync('/state/' + phase + '.json', JSON.stringify(record));
@@ -215,6 +264,22 @@ if (phase === 'baseline' || phase === 'candidate') {
     assert.equal(result.rdf_snapshot.content_hash, datatype.rdfHash);
   }
   console.log('return: DATATYPE revision ' + datatype.ref.revisionId + ' resolved in both publication sets');
+  const valueMap = load('value-map');
+  for (const publicationSetId of [valueMap.ref.publicationSetId, candidate.publicationSetId]) {
+    const result = await delegated('read', 'consultation/get', 'consultation.read', cap('read'),
+      {...valueMap.ref, publicationSetId});
+    assert.equal(result.artifact_type, 'VALUE_MAP');
+    assert.equal(result.status, 'ACTIVE');
+    assert.equal(result.revision_id, valueMap.ref.revisionId);
+    assert.equal(result.publication_set_id, publicationSetId);
+    assert.deepEqual(result.definition, valueMap.definition);
+  }
+  const term = await delegated('read', 'consultation/get', 'consultation.read', cap('read'), valueMap.term);
+  const vocabulary = await delegated('read', 'consultation/get', 'consultation.read', cap('read'), valueMap.vocabulary);
+  assert.equal(term.artifact_type, 'CONCEPT');
+  assert.equal(vocabulary.artifact_type, 'VOCABULARY');
+  assert.equal(term.definition.vocabularyRef, valueMap.vocabulary.semanticId);
+  console.log('return: published value map, vocabulary and concept reads succeeded');
   await readPublished(load('baseline'), candidate.publicationSetId);
   await readPublished(candidate, candidate.publicationSetId);
   const retry = await proposal('adopt', candidate.selection, candidate.adoptionKey);

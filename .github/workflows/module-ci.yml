@@ -81,6 +81,8 @@ jobs:
           python3 scripts/check-file-first-source-continuity.py
       - name: Validate cross-module evidence register
         run: python3 scripts/validate-pet-register.py
+      - name: Verify the value map review component at 375 px
+        run: node scripts/test-value-map-review-browser.mjs
       - name: Compile, test and package with bounded Maven execution
         run: |
           bash scripts/install-authorization-sdk.sh

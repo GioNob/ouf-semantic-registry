@@ -39,7 +39,7 @@ public class GovernanceService {
         """).param("i",id).param("r",revision).param("h",hash).param("ttl",ttl.toSeconds()+" seconds").param("a",actor).update();
     audit("SEMANTIC_APPROVAL_CHALLENGE_CREATED",actor,type,"APPROVAL_CHALLENGE",id.toString(),correlation,
         Map.of("revisionId",revision,"contentHash",hash));
-    var out=new LinkedHashMap<>(card(id));
+    var out=new LinkedHashMap<>(card(id,false));
     out.put("challengeId",id);
     out.put("revisionId",revision);
     out.put("targetContentHash",hash);
@@ -98,6 +98,9 @@ public class GovernanceService {
   @Transactional public Map<String,Object> lifecycle(UUID revision,String target,String actor,String type,String authorizationDecisionRef,String correlation){human(type);String state=db.sql("select ouf_sem.govern_revision_lifecycle(:r,:s,:a,:x,:c)").param("r",revision).param("s",target).param("a",actor).param("x",authorizationDecisionRef).param("c",correlation).query(String.class).single();return Map.of("revisionId",revision,"status",state);}
   public UUID retiredRevision(UUID artifact){return db.sql("select revision_id from ouf_sem.artifact_revision where artifact_id=:a and lifecycle_status='DEPRECATED' order by revision_no desc limit 1").param("a",artifact).query(UUID.class).list().stream().findFirst().orElseThrow(()->new Conflict("DEPRECATED_REVISION_NOT_FOUND"));}
   public Map<String,Object> card(UUID challenge) {
+    return card(challenge,true);
+  }
+  private Map<String,Object> card(UUID challenge,boolean includeValueMapDetails) {
     Map<String,Object> row=db.sql("select c.challenge_id,c.revision_id,c.target_content_hash,case when c.status='OPEN' and c.expires_at<=clock_timestamp() then 'EXPIRED' else c.status end status,c.expires_at,c.created_at,a.artifact_id,a.semantic_id,a.artifact_type,a.namespace,a.local_name,a.owner_ref,a.authority_ref,r.revision_no,r.semantic_version,r.row_version,r.lifecycle_status revision_status,r.label_json::text label_json,r.description_json::text description_json,r.definition_json::text definition_json from ouf_sem.approval_challenge c join ouf_sem.artifact_revision r on r.revision_id=c.revision_id join ouf_sem.semantic_artifact a on a.artifact_id=r.artifact_id where c.challenge_id=:i")
         .param("i",challenge).query().listOfRows().stream().findFirst().orElseThrow(()->new NoSuchElementException("APPROVAL_CHALLENGE_NOT_FOUND"));
     Map<String,Object> out=new LinkedHashMap<>(row);
@@ -107,7 +110,9 @@ public class GovernanceService {
         .param("r",row.get("revision_id")).query(Boolean.class).single()) {
       out.put("adoptionProvenance",definition.get("adoptionProvenance"));
     }
-    if ("DATATYPE".equals(row.get("artifact_type"))) {
+    boolean valueMap="VALUE_MAP".equals(row.get("artifact_type"));
+    if (valueMap && !includeValueMapDetails) out.remove("definition_json");
+    if ("DATATYPE".equals(row.get("artifact_type")) || (valueMap && includeValueMapDetails)) {
       var prior=db.sql("""
           select jsonb_build_object('semantic_version',semantic_version,'definition_json',definition_json,
             'label_json',label_json,'description_json',description_json)::text
@@ -115,9 +120,17 @@ public class GovernanceService {
           order by revision_no desc limit 1
           """).param("a",row.get("artifact_id")).param("n",row.get("revision_no")).query(String.class).optional();
       try {
-        var review=DatatypeReviewCard.build(json.valueToTree(out),prior.isEmpty()?null:json.readTree(prior.get()));
-        out.put("datatypeReview",review);
-        out.put("validationFindings",review.get("avvisi"));
+        var previous=prior.isEmpty()?null:json.readTree(prior.get());
+        if (valueMap) {
+          com.fasterxml.jackson.databind.JsonNode definition=json.valueToTree(out.get("definition_json"));
+          String name=ValueMapReviewCard.name(definition,json.valueToTree(out.get("label_json")),row.get("local_name").toString());
+          out.put("valueMapReview",ValueMapReviewCard.build(name,definition,valueMapTerms(definition),
+              previous,previous==null?Map.of():valueMapTerms(previous.path("definition_json"))));
+        } else {
+          var review=DatatypeReviewCard.build(json.valueToTree(out),previous);
+          out.put("datatypeReview",review);
+          out.put("validationFindings",review.get("avvisi"));
+        }
       } catch(com.fasterxml.jackson.core.JsonProcessingException invalid) {throw new IllegalStateException("SEMANTIC_CARD_DECODE_FAILED",invalid);}
     }
     var snapshots=db.sql("select media_type,content_hash,content_bytes,statement_count from ouf_sem.revision_interchange_snapshot where revision_id=:r").param("r",row.get("revision_id")).query().listOfRows();
@@ -136,6 +149,20 @@ public class GovernanceService {
     out.put("revisionStatus",row.get("revision_status"));out.put("lifecycleStatus",row.get("revision_status"));out.put("trustedApprovalRef","ths://semantic-approval-challenges/"+challenge);
     if(!thsOrigin.isBlank())out.put("reviewUrl",thsOrigin+"/trusted-human/semantic/?challenge="+challenge);
     out.put("humanAuthorityRequired",true);return out;
+  }
+  private Map<String,ValueMapReviewCard.Term> valueMapTerms(com.fasterxml.jackson.databind.JsonNode definition) {
+    String pin=definition.path("targetVocabulary").asText();
+    UUID publication=UUID.fromString(pin.substring(pin.lastIndexOf('@')+1));
+    var terms=new HashMap<String,ValueMapReviewCard.Term>();
+    db.sql("""
+        select m.semantic_id, coalesce(nullif(r.label_json->>'it',''),nullif(r.label_json->>'en',''),a.local_name) label
+        from ouf_sem.semantic_publication_member m join ouf_sem.artifact_revision r using (revision_id)
+        join ouf_sem.semantic_artifact a using (artifact_id)
+        where m.publication_set_id=:publication and m.semantic_id in (:ids)
+        """).param("publication",publication).param("ids",ValueMapReviewCard.memberIds(definition))
+        .query((rs,n) -> new ValueMapReviewCard.Term(rs.getString("semantic_id"),rs.getString("label")))
+        .list().forEach(term -> terms.put(term.identificativo(),term));
+    return terms;
   }
   private void audit(String event,String actor,String type,String resourceType,String resourceId,String correlation,Object detail){try{Map<String,Object> payload=new LinkedHashMap<>();payload.put("actorType",type);payload.put("detail",detail);db.sql("insert into ouf_sem.audit_event(event_id,event_type,subject_ref,resource_type,resource_id,correlation_id,detail_json) values(:i,:e,:a,:t,:r,:c,cast(:d as jsonb))").param("i",UUID.randomUUID()).param("e",event).param("a",actor).param("t",resourceType).param("r",resourceId).param("c",correlation).param("d",json.writeValueAsString(payload)).update();}catch(RuntimeException e){throw e;}catch(Exception e){throw new IllegalStateException(e);}}
   public static class Forbidden extends RuntimeException{public Forbidden(String m){super(m);}}

@@ -47,6 +47,27 @@ class SemanticProposalReceiptVerifierTest {
     var r=receipt();r.put("purpose","authorization-proposal-owner");String bad=sign(r);
     assertThatThrownBy(()->verifier().verify(bad,path,body)).hasMessage("SEM_PROPOSAL_RECEIPT_INVALID");
   }
+  @Test void largeSignedProposalBudgetAppliesOnlyToValueMaps()throws Exception{
+    var envelope=(com.fasterxml.jackson.databind.node.ObjectNode)json.readTree(body);
+    var args=(com.fasterxml.jackson.databind.node.ObjectNode)envelope.required("Arguments");
+    var definition=args.putObject("definition");
+    var entries=definition.putArray("entries");
+    for(int i=0;i<2000;i++)
+      entries.addObject().put("code","a".repeat(124)+String.format(Locale.ROOT,"%04d",i)).put("concept","urn:concept:1");
+    args.put("artifactType","VALUE_MAP");
+    byte[] valueMap=json.writeValueAsBytes(envelope);
+    var valueMapReceipt=receipt();
+    valueMapReceipt.put("bodyHash",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(valueMap)));
+    var verified=verifier().verify(sign(valueMapReceipt),path,valueMap);
+    assertThat(json.readTree(verified.arguments()).at("/definition/entries").size()).isEqualTo(2000);
+
+    args.put("artifactType","DATATYPE");
+    byte[] datatype=json.writeValueAsBytes(envelope);
+    var datatypeReceipt=receipt();
+    datatypeReceipt.put("bodyHash",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(datatype)));
+    String proof=sign(datatypeReceipt);
+    assertThatThrownBy(()->verifier().verify(proof,path,datatype)).hasMessage("SEM_PROPOSAL_RECEIPT_INVALID");
+  }
   @Test void expiredFutureAndUnboundedLifetimeAreRejected()throws Exception{
     for(var change:List.of(Map.of("exp",1000),Map.of("iat",1001),Map.of("exp",1031))){
       var r=receipt();r.putAll(change);String proof=sign(r);

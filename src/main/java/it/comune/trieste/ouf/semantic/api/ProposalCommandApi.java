@@ -15,11 +15,21 @@ public class ProposalCommandApi {
   private final TrustedActorResolver actors;
   public ProposalCommandApi(ProposalCommandService service,TrustedActorResolver actors){this.service=service;this.actors=actors;}
   public record Create(@NotBlank String semanticId,
-      @NotNull @Pattern(regexp="CLASS|PROPERTY|RELATIONSHIP|VOCABULARY|CONCEPT|ONTOLOGY|DATATYPE") String artifactType,
+      @NotNull @Pattern(regexp="CLASS|PROPERTY|RELATIONSHIP|VOCABULARY|CONCEPT|ONTOLOGY|DATATYPE|VALUE_MAP") String artifactType,
       @NotBlank String namespace,@NotBlank String localName,@NotBlank String ownerRef,
       @NotBlank String authorityRef,@NotBlank String semanticVersion,Map<String,Object> labels,
-      Map<String,Object> definition,@Size(max=49152) String rdfTurtle,String mediaType) {
-    ArtifactApi.CreateArtifact artifact(){return new ArtifactApi.CreateArtifact(semanticId,artifactType,namespace,localName,ownerRef,authorityRef,semanticVersion,labels,definition);}
+      Object definition,@Size(max=49152) String rdfTurtle,String mediaType) {
+    @SuppressWarnings("unchecked")
+    ArtifactApi.CreateArtifact artifact(){
+      if ("VALUE_MAP".equals(artifactType)) {
+        if (!(definition instanceof Map<?,?>) || rdfTurtle!=null || mediaType!=null)
+          throw new IllegalArgumentException("SEMANTIC_VALUE_MAP_INVALID");
+      } else if (definition!=null && !(definition instanceof Map<?,?>)) {
+        throw new IllegalArgumentException("SEM_REQUEST_INVALID");
+      }
+      return new ArtifactApi.CreateArtifact(semanticId,artifactType,namespace,localName,ownerRef,authorityRef,
+          semanticVersion,labels,(Map<String,Object>)definition);
+    }
   }
   public record Adopt(@NotNull UUID requestId,@NotNull UUID candidateId){}
   @SemanticCapability("ouf.semantic.discovery.adopt") @PostMapping("/adopt")

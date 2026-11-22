@@ -56,6 +56,7 @@ paths:
                 type: object
                 properties:
                   datatypeReview: {$ref: '#/components/schemas/DatatypeReview'}
+                  valueMapReview: {$ref: '#/components/schemas/ValueMapReview'}
   /api/trusted-human/v1/semantic-approval-challenges/{id}/decision:
     post:
       operationId: decideSemanticApproval
@@ -110,6 +111,38 @@ components:
   securitySchemes:
     thsBearer: {type: http, scheme: bearer, bearerFormat: JWT}
   schemas:
+    ValueMapTerm:
+      type: object
+      required: [identificativo, etichetta]
+      properties:
+        identificativo: {type: string}
+        etichetta: {type: string}
+    ValueMapReview:
+      type: object
+      required: [nome, vocabolario, numeroVoci, voci, versionePrecedente, differenze]
+      properties:
+        nome: {type: string}
+        vocabolario: {$ref: '#/components/schemas/ValueMapTerm'}
+        numeroVoci: {type: integer, minimum: 1, maximum: 2000}
+        voci:
+          type: array
+          items:
+            type: object
+            required: [codice, concetto]
+            properties:
+              codice: {type: string}
+              concetto: {$ref: '#/components/schemas/ValueMapTerm'}
+        versionePrecedente: {type: string}
+        differenze:
+          type: array
+          items:
+            type: object
+            required: [codice, modifica]
+            properties:
+              codice: {type: string}
+              modifica: {enum: [Aggiunto, Rimosso, Modificato]}
+              prima: {anyOf: [{type: 'null'}, {$ref: '#/components/schemas/ValueMapTerm'}]}
+              dopo: {anyOf: [{type: 'null'}, {$ref: '#/components/schemas/ValueMapTerm'}]}
     DatatypeReview:
       type: object
       required: [etichetta, descrizione, componenti, avvisi, versionePrecedente, differenze]
@@ -149,7 +182,7 @@ components:
       properties:
         revisionId: {type: string, format: uuid}
         semanticId: {type: string}
-        artifactType: {type: string, enum: [CLASS, PROPERTY, RELATIONSHIP, VOCABULARY, CONCEPT, ONTOLOGY, DATATYPE]}
+        artifactType: {type: string, enum: [CLASS, PROPERTY, RELATIONSHIP, VOCABULARY, CONCEPT, ONTOLOGY, DATATYPE, VALUE_MAP]}
         semanticVersion: {type: [string, 'null']}
         label: {$ref: '#/components/schemas/LocalizedText'}
         description: {$ref: '#/components/schemas/LocalizedText'}

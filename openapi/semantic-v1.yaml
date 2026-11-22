@@ -12,12 +12,26 @@ paths:
           application/json:
             schema:
               type: object
-              if: {required: [artifactType], properties: {artifactType: {const: DATATYPE}}}
-              then:
-                required: [definition]
-                properties:
-                  definition: {$ref: '../contracts/semantic-reference-v1.json#/properties/definition'}
+              allOf:
+                - if: {required: [artifactType], properties: {artifactType: {const: DATATYPE}}}
+                  then:
+                    required: [definition]
+                    properties:
+                      definition: {$ref: '../contracts/semantic-reference-v1.json#/$defs/DatatypeDefinition'}
+                - $ref: '#/components/schemas/ValueMapProposal'
       responses: {'201': {description: Draft created}}
+  /api/semantic/v1/proposal-commands/create:
+    post:
+      operationId: createSemanticProposal
+      x-ouf-mcp-capability: ouf.semantic.propose
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ValueMapProposal'}
+      responses:
+        '200': {description: Draft proposal receipt}
+        '400': {description: SEMANTIC_VALUE_MAP_INVALID for an invalid value map definition}
   /api/semantic/v1/artifacts/{id}:
     get: {operationId: getSemanticArtifact, responses: {'200': {description: Artifact detail}}}
   /api/semantic/v1/search:
@@ -53,10 +67,10 @@ paths:
       parameters:
         - {name: semanticId, in: query, required: true, schema: {type: string, format: uri}}
         - {name: publicationSetId, in: query, required: true, schema: {type: string, format: uuid}}
-        - {name: revisionId, in: query, description: Optional only for a pinned DATATYPE, schema: {type: string, format: uuid}}
+        - {name: revisionId, in: query, description: Optional only for a pinned DATATYPE or VALUE_MAP, schema: {type: string, format: uuid}}
       responses:
         '200':
-          description: Exact publication member with the current status of its pinned revision. Onboarding requires ACTIVE for every DATATYPE during preparation and resolves each nested pin separately. Historical replay accepts all three published states.
+          description: Exact publication member with the current status of its pinned revision. Onboarding requires ACTIVE for every DATATYPE and VALUE_MAP during preparation and resolves each nested pin separately. Historical replay accepts all three published states.
           content:
             application/json:
               schema:
@@ -68,12 +82,20 @@ paths:
                   publication_set_id: {type: string, format: uuid}
                   artifact_type: {type: string}
                   status: {$ref: '../contracts/semantic-reference-v1.json#/properties/status'}
-                if: {properties: {artifact_type: {const: DATATYPE}}}
-                then:
-                  required: [definition, definitionSha256]
-                  properties:
-                    definition: {$ref: '../contracts/semantic-reference-v1.json#/properties/definition'}
-                    definitionSha256: {$ref: '../contracts/semantic-reference-v1.json#/properties/definitionSha256'}
+                allOf:
+                  - if: {properties: {artifact_type: {enum: [DATATYPE, VALUE_MAP]}}}
+                    then:
+                      required: [definition, definitionSha256]
+                      properties:
+                        definitionSha256: {$ref: '../contracts/semantic-reference-v1.json#/properties/definitionSha256'}
+                  - if: {properties: {artifact_type: {const: DATATYPE}}}
+                    then:
+                      properties:
+                        definition: {$ref: '../contracts/semantic-reference-v1.json#/$defs/DatatypeDefinition'}
+                  - if: {properties: {artifact_type: {const: VALUE_MAP}}}
+                    then:
+                      properties:
+                        definition: {$ref: '../contracts/semantic-reference-v1.json#/$defs/ValueMapDefinition'}
   /api/semantic/v1/consumer-references:
     put: {operationId: registerSemanticConsumerReference, responses: {'204': {description: Registered}}}
   /api/semantic/v1/discovery:
@@ -132,6 +154,17 @@ components:
         application/problem+json:
           schema: {$ref: '#/components/schemas/Problem'}
   schemas:
+    ValueMapProposal:
+      type: object
+      if: {required: [artifactType], properties: {artifactType: {const: VALUE_MAP}}}
+      then:
+        required: [definition]
+        properties:
+          definition: {$ref: '../contracts/semantic-reference-v1.json#/$defs/ValueMapDefinition'}
+        not:
+          anyOf:
+            - required: [rdfTurtle]
+            - required: [mediaType]
     Problem:
       type: object
       required: [status, detail, code, correlationId]

@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,8 +64,12 @@ public class ProposalCommandService {
   }
   @Transactional(timeout=10) public Map<String,Object> create(String tenant,String principal,String type,String key,
       CreateArtifact command,String correlation) {
-    return execute(tenant,principal,key,"CREATE",command,
-        ()->artifacts.create(command,principal,type,correlation));
+    try {
+      return execute(tenant,principal,key,"CREATE",command,
+          ()->artifacts.create(command,principal,type,correlation));
+    } catch (DataAccessException error) {
+      throw "VALUE_MAP".equals(command.artifactType())?ArtifactService.valueMapError(error):error;
+    }
   }
   @Transactional(timeout=10) public Map<String,Object> validate(String tenant,String principal,String key,
       UUID revision,long expectedVersion) {

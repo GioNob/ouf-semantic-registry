@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 /** Internal search and exact historical reads; no discovery or lifecycle mutation. */
 @Service
 public class SemanticReadService {
+  private static final int MAX_VALUE_MAP_RESULT_BYTES = 32 * 1024 * 1024;
   private final JdbcClient db;
   private final ObjectMapper json;
   private final int maxResultBytes;
@@ -81,7 +82,7 @@ public class SemanticReadService {
     if (limit<1 || limit>100) throw new IllegalArgumentException("SEM_SEARCH_LIMIT_INVALID");
     if (!Set.of("ACTIVE","DEPRECATED","RETIRED","DRAFT","UNDER_REVIEW").contains(status))
       throw new IllegalArgumentException("SEM_SEARCH_STATUS_INVALID");
-    if (type!=null && !Set.of("CLASS","PROPERTY","RELATIONSHIP","VOCABULARY","CONCEPT","ONTOLOGY","DATATYPE").contains(type))
+    if (type!=null && !Set.of("CLASS","PROPERTY","RELATIONSHIP","VOCABULARY","CONCEPT","ONTOLOGY","DATATYPE","VALUE_MAP").contains(type))
       throw new IllegalArgumentException("SEM_SEARCH_TYPE_INVALID");
     String sql="""
         select %s,p.publication_set_id,p.checksum publication_checksum,
@@ -138,14 +139,15 @@ public class SemanticReadService {
         left join lateral (select canonical_uri from ouf_sem.external_semantic_origin x
           where x.artifact_id=a.artifact_id order by canonical_uri limit 1) o on true
         where m.publication_set_id=:p and m.semantic_id=:s
-          and (m.revision_id=cast(:r as uuid) or (cast(:r as uuid) is null and a.artifact_type='DATATYPE'))
+          and (m.revision_id=cast(:r as uuid) or (cast(:r as uuid) is null and a.artifact_type in ('DATATYPE','VALUE_MAP')))
           and a.semantic_id=m.semantic_id and s.status='PUBLISHED'
           and r.lifecycle_status in ('ACTIVE','DEPRECATED','RETIRED')
         """).param("p",publicationSet).param("r",revision).param("s",semanticId).query().listOfRows();
     if(rows.size()!=1)throw new NoSuchElementException("SEMANTIC_REFERENCE_NOT_FOUND");
     var row=rows.get(0);
     decode(row);
-    if ("DATATYPE".equals(row.get("artifact_type"))) {
+    boolean valueMap="VALUE_MAP".equals(row.get("artifact_type"));
+    if (valueMap || "DATATYPE".equals(row.get("artifact_type"))) {
       try {
         String canonical=json.writer(com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
             .without(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT).writeValueAsString(row.get("definition"));
@@ -197,7 +199,7 @@ public class SemanticReadService {
           projection.put("content_base64",Base64.getEncoder().encodeToString(bytes));
       }
     }
-    return boundedResult(row);
+    return boundedResult(row,valueMap?MAX_VALUE_MAP_RESULT_BYTES:maxResultBytes);
   }
 
   private static void bounded(String value,String name,int max,boolean required) {
@@ -216,7 +218,10 @@ public class SemanticReadService {
     catch(JsonProcessingException e){throw new IllegalStateException("SEM_READ_JSON_INVALID",e);}
   }
   private <T> T boundedResult(T result) {
-    if(encodedSize(result)>maxResultBytes)throw new IllegalArgumentException("SEM_READ_RESULT_TOO_LARGE");
+    return boundedResult(result,maxResultBytes);
+  }
+  private <T> T boundedResult(T result,int maxBytes) {
+    if(encodedSize(result)>maxBytes)throw new IllegalArgumentException("SEM_READ_RESULT_TOO_LARGE");
     return result;
   }
 }
