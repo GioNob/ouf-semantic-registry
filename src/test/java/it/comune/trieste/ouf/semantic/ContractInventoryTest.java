@@ -17,7 +17,7 @@ class ContractInventoryTest {
     try(var files=Files.list(Path.of("contracts"))){
       var frozen=java.util.Set.of("ouf-value-types-v1.json","ouf-value-maps-v1.json");
       var schemas=files.filter(p->p.toString().endsWith(".json") && !frozen.contains(p.getFileName().toString())).toList();
-      assertThat(schemas).hasSize(12);
+      assertThat(schemas).hasSize(13).contains(Path.of("contracts/semantic-reference-batch-v1.json"));
       for(var file:schemas){var root=json.readTree(file.toFile());assertThat(root.path("$schema").asText()).isEqualTo("https://json-schema.org/draft/2020-12/schema");assertThat(root.path("$id").asText()).startsWith("https://ouf.trieste.it/contracts/semantic/");}
     }
   }

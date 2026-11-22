@@ -231,6 +231,66 @@ paths:
                     then:
                       properties:
                         definition: {$ref: '../contracts/semantic-reference-v1.json#/$defs/ValueMapDefinition'}
+  /api/semantic/v1/references:resolve-batch:
+    post:
+      operationId: resolveSemanticReferenceBatch
+      summary: Resolve exact published pins in request order
+      description: >-
+        Idempotent M2M read using the same ouf.semantic.read capability, tenant context
+        and publication visibility as the single-reference GET. Each pin has one outcome.
+        The default limits are 262144 request bytes and 1024 pins, configurable with
+        OUF_SEM_REFERENCE_BATCH_MAX_REQUEST_BYTES and OUF_SEM_REFERENCE_BATCH_MAX_ITEMS.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [references]
+              properties:
+                references:
+                  type: array
+                  minItems: 1
+                  uniqueItems: true
+                  description: The installation limits the number of pins. UUID equality is case-insensitive.
+                  items:
+                    $ref: '../contracts/semantic-reference-batch-v1.json#/$defs/pin'
+                    unevaluatedProperties: false
+      responses:
+        '200':
+          description: >-
+            Zero-based indices preserve request order. An absent or invisible pin produces
+            NOT_RESOLVABLE. RESOLVED projects the compact GET fields and the D-084 hash for
+            DATATYPE and VALUE_MAP. All chunks at the same registry state share registryVersion.
+            The query fingerprints each revision ID and lifecycle state and each publication
+            set ID, state and checksum, XORs the fixed-width fingerprints per table, and hashes
+            the two aggregates in the same PostgreSQL snapshot as the result rows.
+          content:
+            application/json:
+              schema: {$ref: '../contracts/semantic-reference-batch-v1.json'}
+        '400':
+          description: Invalid request. Index identifies the first invalid pin or is zero for envelope errors.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [code, index, reason]
+                properties:
+                  code: {const: SEM_REFERENCE_BATCH_INVALID}
+                  index: {type: integer, minimum: 0}
+                  reason: {enum: [INVALID_ENVELOPE, INVALID_JSON, EMPTY_REFERENCES, INVALID_ELEMENT, MISSING_FIELD, INVALID_FIELD_TYPE, INVALID_SEMANTIC_ID, INVALID_UUID, UNKNOWN_FIELD, DUPLICATE_REFERENCE]}
+        '401': {description: Authentication required by IAM}
+        '403': {description: Caller lacks the required read capability in the current context}
+        '413':
+          description: The byte or item limit was exceeded. Reduce the chunk size.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [code]
+                properties:
+                  code: {const: SEM_REFERENCE_BATCH_TOO_LARGE}
   /api/semantic/v1/consumer-references:
     put: {operationId: registerSemanticConsumerReference, responses: {'204': {description: Registered}}}
   /api/semantic/v1/discovery:
