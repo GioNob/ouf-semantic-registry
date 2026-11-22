@@ -170,7 +170,7 @@ class DiscoveryFileMigrationContinuityTest {
         // Reopening the fully upgraded database must preserve the history and all claims.
         var reopened=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
             .defaultSchema("ouf_sem").locations("classpath:db/migration").load();
-        assertThat(reopened.migrate().migrationsExecuted).isEqualTo(3);
+        assertThat(reopened.migrate().migrationsExecuted).isEqualTo(4); // V19 through V22
         assertThat(reopened.migrate().migrationsExecuted).isZero();
         reopened.validate();
         try(var connection=DriverManager.getConnection(dbUrl,user,password)) {

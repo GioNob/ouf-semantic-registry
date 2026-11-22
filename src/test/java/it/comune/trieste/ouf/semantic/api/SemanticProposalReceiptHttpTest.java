@@ -3,6 +3,7 @@ package it.comune.trieste.ouf.semantic.api;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.fasterxml.jackson.databind.JsonNode;
 import it.comune.trieste.ouf.authorization.*;
 import it.comune.trieste.ouf.authorization.AuthorizationPolicy.*;
 import it.comune.trieste.ouf.semantic.application.GovernanceService;
@@ -68,7 +69,8 @@ class SemanticProposalReceiptHttpTest extends SignedProposalFixture {
     assertThat(projected.at("/entries/0/concept").asText()).isEqualTo(longConcept);
     assertThat(projected.required("sourceColumn")).isEqualTo(json.valueToTree(source));
     assertThat(projected.has("changes")).isFalse();
-    assertThat(json.valueToTree(card.get("definition_json"))).isEqualTo(json.valueToTree(definition));
+    JsonNode storedDefinition=json.valueToTree(card.get("definition_json"));
+    assertThat(storedDefinition).isEqualTo(json.valueToTree(definition));
   }
 
   private UUID publishTerm(String id,String type,Map<String,Object> definition) {

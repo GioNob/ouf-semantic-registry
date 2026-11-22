@@ -23,7 +23,7 @@ public class ProposalCommandApi {
       @NotBlank String authorityRef,@NotBlank String semanticVersion,Map<String,Object> labels,
       Object definition,@Size(max=49152) String rdfTurtle,String mediaType,JsonNode rationale) {
     @SuppressWarnings("unchecked")
-    ArtifactApi.CreateArtifact artifact(){
+    public ArtifactApi.CreateArtifact artifact(){
       if ("VALUE_MAP".equals(artifactType)) {
         if (!(definition instanceof Map<?,?>) || rdfTurtle!=null || mediaType!=null)
           throw new IllegalArgumentException("SEMANTIC_VALUE_MAP_INVALID");
