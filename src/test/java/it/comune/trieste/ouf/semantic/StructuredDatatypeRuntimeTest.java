@@ -122,7 +122,7 @@ class StructuredDatatypeRuntimeTest {
   @Test void resolveReturnsCurrentPinStatusAndExactTypedBoundsThroughRetirement() throws Exception {
     var component=field("misura","decimal");
     component.put("constraints",Map.of("minInclusive","-0.125","maxInclusive","9007199254740993.123456789"));
-    var definition=Map.of("components",List.of(component));
+    Map<String,Object> definition=Map.of("components",List.of(component));
     var published=publish(create(iri(),"1.0.0",definition));
     String activeHash=null;
     for (String state:List.of("ACTIVE","DEPRECATED","RETIRED")) {
