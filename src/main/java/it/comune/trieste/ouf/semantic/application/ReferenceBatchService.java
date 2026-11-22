@@ -27,7 +27,7 @@ public class ReferenceBatchService {
         pins(semantic_id, revision_id, publication_set_id, ordinality)
       left join (
         select %s, %s,
-          case when a.artifact_type in ('DATATYPE','VALUE_MAP') then r.definition_json::text end definition
+          case when a.artifact_type in ('DATATYPE','VALUE_MAP','CONCEPT') then r.definition_json::text end definition
         %s where %s
       ) visible using (semantic_id, revision_id, publication_set_id)
       """.formatted(SemanticReadService.REFERENCE_DETAIL, SemanticReadService.PUBLICATION_FIELDS,
@@ -86,8 +86,15 @@ public class ReferenceBatchService {
     String definition=rs.getString("definition");
     if (definition!=null) {
       try {
-        String canonical=SemanticReadService.canonicalDefinition(json,json.readValue(definition,Object.class));
-        fields.put("definitionSha256",SemanticReadService.definitionSha256(canonical));
+        Object decoded=json.readValue(definition,Object.class);
+        if ("CONCEPT".equals(rs.getString("artifact_type"))) {
+          // Same value as the GET: the concept definition carries the vocabulary membership
+          // (vocabularyRef) that Ingestion and UDP check for structured types.
+          fields.put("definition",decoded);
+        } else {
+          String canonical=SemanticReadService.canonicalDefinition(json,decoded);
+          fields.put("definitionSha256",SemanticReadService.definitionSha256(canonical));
+        }
       } catch (JsonProcessingException invalidStoredDefinition) {
         throw new IllegalStateException("SEM_READ_JSON_INVALID",invalidStoredDefinition);
       }

@@ -46,11 +46,17 @@
         "status": {"enum": ["ACTIVE", "DEPRECATED", "RETIRED"]},
         "artifact_type": {"type": "string"},
         "content_hash": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
-        "definitionSha256": {"$ref": "semantic-reference-v1.json#/properties/definitionSha256"}
+        "definitionSha256": {"$ref": "semantic-reference-v1.json#/properties/definitionSha256"},
+        "definition": {"type": "object", "description": "Only for CONCEPT: the same definition as the GET, including vocabularyRef (vocabulary membership)."}
       },
-      "if": {"properties": {"artifact_type": {"enum": ["DATATYPE", "VALUE_MAP"]}}},
-      "then": {"required": ["definitionSha256"]},
-      "else": {"not": {"required": ["definitionSha256"]}}
+      "allOf": [
+        {"if": {"properties": {"artifact_type": {"enum": ["DATATYPE", "VALUE_MAP"]}}},
+         "then": {"required": ["definitionSha256"]},
+         "else": {"not": {"required": ["definitionSha256"]}}},
+        {"if": {"properties": {"artifact_type": {"const": "CONCEPT"}}},
+         "then": {"required": ["definition"], "properties": {"definition": {"required": ["vocabularyRef"]}}},
+         "else": {"not": {"required": ["definition"]}}}
+      ]
     }
   }
 }

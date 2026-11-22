@@ -262,7 +262,8 @@ paths:
           description: >-
             Zero-based indices preserve request order. An absent or invisible pin produces
             NOT_RESOLVABLE. RESOLVED projects the compact GET fields and the D-084 hash for
-            DATATYPE and VALUE_MAP. All chunks at the same registry state share registryVersion.
+            DATATYPE and VALUE_MAP, and for CONCEPT the same definition as the GET (with vocabularyRef,
+            the vocabulary membership checked by Ingestion and UDP). All chunks at the same registry state share registryVersion.
             The query fingerprints each revision ID and lifecycle state and each publication
             set ID, state and checksum, XORs the fixed-width fingerprints per table, and hashes
             the two aggregates in the same PostgreSQL snapshot as the result rows.

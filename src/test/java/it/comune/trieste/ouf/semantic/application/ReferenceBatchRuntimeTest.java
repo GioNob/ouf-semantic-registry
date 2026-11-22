@@ -96,6 +96,11 @@ class ReferenceBatchRuntimeTest {
         assertThat(single.required("definitionSha256").asText()).matches("[0-9a-f]{64}");
         expected.set("definitionSha256",single.required("definitionSha256"));
       }
+      if ("CONCEPT".equals(TYPES.get(i))) {
+        // Vocabulary membership proof used by Ingestion and UDP instead of a per-element GET.
+        assertThat(single.required("definition").required("vocabularyRef").asText()).isNotBlank();
+        expected.set("definition",single.required("definition"));
+      }
       assertThat(results.get(i).required("resolved")).isEqualTo(expected);
     }
   }
