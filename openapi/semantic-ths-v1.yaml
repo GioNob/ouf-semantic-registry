@@ -47,7 +47,15 @@ paths:
       operationId: getSemanticApprovalCard
       x-ouf-mcp-exposed: false
       parameters: [$ref: '#/components/parameters/Id']
-      responses: {'200': {description: Immutable decision card}}
+      responses:
+        '200':
+          description: Scheda della revisione in approvazione
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  datatypeReview: {$ref: '#/components/schemas/DatatypeReview'}
   /api/trusted-human/v1/semantic-approval-challenges/{id}/decision:
     post:
       operationId: decideSemanticApproval
@@ -102,6 +110,30 @@ components:
   securitySchemes:
     thsBearer: {type: http, scheme: bearer, bearerFormat: JWT}
   schemas:
+    DatatypeReview:
+      type: object
+      required: [etichetta, descrizione, componenti, avvisi, versionePrecedente, differenze]
+      properties:
+        etichetta: {type: string}
+        descrizione: {type: string}
+        versionePrecedente: {type: string}
+        avvisi: {type: array, items: {type: string}}
+        componenti:
+          type: array
+          items:
+            type: object
+            required: [nome, etichetta, tipo, cardinalità, obbligatorio, vincoli]
+            additionalProperties: {type: string}
+        differenze:
+          type: array
+          items:
+            type: object
+            required: [campo, modifica]
+            properties:
+              campo: {type: string}
+              modifica: {enum: [Aggiunto, Rimosso, Modificato]}
+              prima: {}
+              dopo: {}
     LocalizedText:
       type: object
       additionalProperties: false
@@ -117,7 +149,7 @@ components:
       properties:
         revisionId: {type: string, format: uuid}
         semanticId: {type: string}
-        artifactType: {type: string, enum: [CLASS, PROPERTY, RELATIONSHIP, VOCABULARY, CONCEPT, ONTOLOGY]}
+        artifactType: {type: string, enum: [CLASS, PROPERTY, RELATIONSHIP, VOCABULARY, CONCEPT, ONTOLOGY, DATATYPE]}
         semanticVersion: {type: [string, 'null']}
         label: {$ref: '#/components/schemas/LocalizedText'}
         description: {$ref: '#/components/schemas/LocalizedText'}

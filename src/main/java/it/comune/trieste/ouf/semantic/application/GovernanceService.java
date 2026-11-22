@@ -20,7 +20,32 @@ public class GovernanceService {
   }
   private static void human(String type){if(!"HUMAN".equals(type))throw new Forbidden("HUMAN_IDENTITY_REQUIRED");}
 
-  @Transactional public Map<String,Object> challenge(UUID revision,String hash,Duration ttl,String actor,String type,String correlation){UUID id=UUID.randomUUID();int n=db.sql("update ouf_sem.artifact_revision set lifecycle_status='UNDER_REVIEW',content_hash=:h where revision_id=:r and lifecycle_status='DRAFT'").param("h",hash).param("r",revision).update();if(n!=1)throw new Conflict("REVISION_NOT_DRAFT");db.sql("insert into ouf_sem.approval_challenge(challenge_id,revision_id,target_content_hash,status,expires_at,created_by_subject) values(:i,:r,:h,'OPEN',transaction_timestamp()+cast(:ttl as interval),:a)").param("i",id).param("r",revision).param("h",hash).param("ttl",ttl.toSeconds()+" seconds").param("a",actor).update();audit("SEMANTIC_APPROVAL_CHALLENGE_CREATED",actor,type,"APPROVAL_CHALLENGE",id.toString(),correlation,Map.of("revisionId",revision,"contentHash",hash));Map<String,Object> out=new LinkedHashMap<>(card(id));out.put("challengeId",id);out.put("revisionId",revision);out.put("targetContentHash",hash);out.put("trustedApprovalRef","ths://semantic-approval-challenges/"+id);return out;}
+  @Transactional public Map<String,Object> challenge(UUID revision,String hash,Duration ttl,String actor,String type,String correlation) {
+    UUID id=UUID.randomUUID();
+    try {
+      int changed=db.sql("""
+          update ouf_sem.artifact_revision set lifecycle_status='UNDER_REVIEW',content_hash=:h
+          where revision_id=:r and lifecycle_status='DRAFT'
+          """).param("h",hash).param("r",revision).update();
+      if(changed!=1) throw new Conflict("REVISION_NOT_DRAFT");
+    } catch(org.springframework.dao.DataAccessException e) {
+      if(e.getMostSpecificCause() instanceof java.sql.SQLException sql && "P0841".equals(sql.getSQLState()))
+        throw new Conflict("CURRENT_GREEN_VALIDATION_REQUIRED");
+      throw e;
+    }
+    db.sql("""
+        insert into ouf_sem.approval_challenge(challenge_id,revision_id,target_content_hash,status,expires_at,created_by_subject)
+        values(:i,:r,:h,'OPEN',transaction_timestamp()+cast(:ttl as interval),:a)
+        """).param("i",id).param("r",revision).param("h",hash).param("ttl",ttl.toSeconds()+" seconds").param("a",actor).update();
+    audit("SEMANTIC_APPROVAL_CHALLENGE_CREATED",actor,type,"APPROVAL_CHALLENGE",id.toString(),correlation,
+        Map.of("revisionId",revision,"contentHash",hash));
+    var out=new LinkedHashMap<>(card(id));
+    out.put("challengeId",id);
+    out.put("revisionId",revision);
+    out.put("targetContentHash",hash);
+    out.put("trustedApprovalRef","ths://semantic-approval-challenges/"+id);
+    return out;
+  }
   boolean expireReview(UUID revision,long expectedVersion,String actor) {
     return db.sql("select ouf_sem.expire_review(:r,:v,:a)").param("r",revision)
         .param("v",expectedVersion).param("a",actor).query(Boolean.class).single();
@@ -81,6 +106,19 @@ public class GovernanceService {
         "select exists(select 1 from ouf_sem.revision_adoption where revision_id=:r)")
         .param("r",row.get("revision_id")).query(Boolean.class).single()) {
       out.put("adoptionProvenance",definition.get("adoptionProvenance"));
+    }
+    if ("DATATYPE".equals(row.get("artifact_type"))) {
+      var prior=db.sql("""
+          select jsonb_build_object('semantic_version',semantic_version,'definition_json',definition_json,
+            'label_json',label_json,'description_json',description_json)::text
+          from ouf_sem.artifact_revision where artifact_id=:a and revision_no<:n and published_at is not null
+          order by revision_no desc limit 1
+          """).param("a",row.get("artifact_id")).param("n",row.get("revision_no")).query(String.class).optional();
+      try {
+        var review=DatatypeReviewCard.build(json.valueToTree(out),prior.isEmpty()?null:json.readTree(prior.get()));
+        out.put("datatypeReview",review);
+        out.put("validationFindings",review.get("avvisi"));
+      } catch(com.fasterxml.jackson.core.JsonProcessingException invalid) {throw new IllegalStateException("SEMANTIC_CARD_DECODE_FAILED",invalid);}
     }
     var snapshots=db.sql("select media_type,content_hash,content_bytes,statement_count from ouf_sem.revision_interchange_snapshot where revision_id=:r").param("r",row.get("revision_id")).query().listOfRows();
     if(!snapshots.isEmpty()) {

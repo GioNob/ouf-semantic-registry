@@ -25,6 +25,7 @@
       "type": "string",
       "enum": [
         "ONTOLOGY",
+        "DATATYPE",
         "CLASS",
         "PROPERTY",
         "RELATIONSHIP",

@@ -20,11 +20,38 @@ public class ArtifactService {
   public Map<String,Object> create(CreateArtifact c,String actor,String actorType,String correlation){
     UUID a=UUID.randomUUID(),r=UUID.randomUUID();
     try {
-      db.sql("insert into ouf_sem.semantic_artifact(artifact_id,semantic_id,artifact_type,namespace,local_name,owner_ref,authority_ref,origin_kind) values(:a,:s,:t,:n,:l,:o,:u,'OUF')")
+      int revisionNo=1;
+      if ("DATATYPE".equals(c.artifactType())) {
+        try {
+          if (!new java.net.URI(c.semanticId()).isAbsolute()) throw new IllegalArgumentException("DT-IRI");
+        } catch (java.net.URISyntaxException invalid) { throw new IllegalArgumentException("DT-IRI"); }
+        if (c.semanticVersion()==null || !c.semanticVersion().matches("[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?(?:\\+[A-Za-z0-9.-]+)?"))
+          throw new IllegalArgumentException("SEMANTIC_VERSION_INVALID");
+        var existing=db.sql("""
+            select artifact_id, artifact_type, namespace, local_name, owner_ref, authority_ref, retired_at
+            from ouf_sem.semantic_artifact where semantic_id=:s for update
+            """).param("s",c.semanticId()).query().listOfRows();
+        if (!existing.isEmpty()) {
+          var identity=existing.getFirst();
+          if (!"DATATYPE".equals(identity.get("artifact_type")) || identity.get("retired_at")!=null ||
+              !c.namespace().equals(identity.get("namespace")) || !c.localName().equals(identity.get("local_name")) ||
+              !c.ownerRef().equals(identity.get("owner_ref")) || !c.authorityRef().equals(identity.get("authority_ref")))
+            throw new Conflict("SEMANTIC_ID_CONFLICT");
+          a=(UUID)identity.get("artifact_id");
+          var revisions=db.sql("""
+              select max(revision_no)+1 next_no, bool_or(published_at is null or semantic_version=:v) blocked
+              from ouf_sem.artifact_revision where artifact_id=:a
+              """).param("v",c.semanticVersion()).param("a",a).query().singleRow();
+          if (!Boolean.FALSE.equals(revisions.get("blocked"))) throw new Conflict("DT-VERSION");
+          revisionNo=((Number)revisions.get("next_no")).intValue();
+        }
+      }
+      if (revisionNo==1) db.sql("insert into ouf_sem.semantic_artifact(artifact_id,semantic_id,artifact_type,namespace,local_name,owner_ref,authority_ref,origin_kind) values(:a,:s,:t,:n,:l,:o,:u,'OUF')")
         .param("a",a).param("s",c.semanticId()).param("t",c.artifactType()).param("n",c.namespace()).param("l",c.localName()).param("o",c.ownerRef()).param("u",c.authorityRef()).update();
-      db.sql("insert into ouf_sem.artifact_revision(revision_id,artifact_id,revision_no,lifecycle_status,semantic_version,label_json,definition_json,created_by_subject) values(:r,:a,1,'DRAFT',:v,cast(:l as jsonb),cast(:d as jsonb),:x)")
+      db.sql("insert into ouf_sem.artifact_revision(revision_id,artifact_id,revision_no,lifecycle_status,semantic_version,label_json,definition_json,created_by_subject) values(:r,:a,:no,'DRAFT',:v,cast(:l as jsonb),cast(:d as jsonb),:x)")
+        .param("no",revisionNo)
         .param("r",r).param("a",a).param("v",c.semanticVersion()).param("l",j(c.labels())).param("d",j(c.definition())).param("x",actor).update();
-      audit("SEMANTIC_ARTIFACT_CREATED",actor,actorType,"ARTIFACT",a.toString(),correlation,Map.of("revisionId",r,"semanticId",c.semanticId()));
+      audit(revisionNo==1?"SEMANTIC_ARTIFACT_CREATED":"SEMANTIC_REVISION_CREATED",actor,actorType,"ARTIFACT",a.toString(),correlation,Map.of("revisionId",r,"semanticId",c.semanticId()));
     } catch(DuplicateKeyException e){throw new Conflict("SEMANTIC_ID_CONFLICT");}
     return Map.of("artifactId",a,"revisionId",r,"semanticId",c.semanticId(),"status","DRAFT","etag","\"0\"");
   }

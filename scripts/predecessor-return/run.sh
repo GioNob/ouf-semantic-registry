@@ -97,6 +97,8 @@ old_history="$(history)"
 [[ -n "$old_history" ]]
 if [[ "$(git rev-parse "$PREDECESSOR_COMMIT^{commit}")" == d9f0bf9cc3ed074371a8e337ac6f833e91c2f51b ]]; then
   [[ "$(tail -1 <<<"$old_history")" == 18:V18__* ]]
+elif [[ "$(git rev-parse "$PREDECESSOR_COMMIT^{commit}")" == 528881d59a018d5fd3ad4ff62b2b3b95a2b62cd3 ]]; then
+  [[ "$(tail -1 <<<"$old_history")" == 19:V19__* ]]
 fi
 exercise "$previous" "$old_id" baseline
 docker stop "$previous" >/dev/null
@@ -107,6 +109,7 @@ migrate "$tmp/new-sql" "$new_id"
 new_history="$(history)"
 [[ "$new_history" == "$old_history"* ]]
 grep -Eq '^19:V19__adoption_description.sql:-?[0-9]+:true$' <<<"$new_history"
+grep -Eq '^20:V20__structured_datatypes.sql:-?[0-9]+:true$' <<<"$new_history"
 exercise "$candidate" "$new_id" candidate
 docker stop "$candidate" >/dev/null
 [[ "$(history)" == "$new_history" ]]
@@ -114,6 +117,6 @@ docker stop "$candidate" >/dev/null
 # Restart the same container. No migration, clean, snapshot restore or SQL repair.
 exercise "$previous" "$old_id" return
 [[ "$(history)" == "$new_history" && "$(db_identity)" == "$database" ]]
-[[ "$(sql "select count(*) from ouf_sem.approval_challenge where created_by_subject='agent'")" == 3 ]]
+[[ "$(sql "select count(*) from ouf_sem.approval_challenge where created_by_subject='agent'")" == 4 ]]
 [[ "$(sql "select count(*) from ouf_sem.proposal_command_receipt where tenant_id='tenant-a' and principal_id='agent' and operation='ADOPT'")" == 3 ]]
-note "D-080 passed through $(tail -1 <<<"$new_history") with three distinct adoptions and review challenges."
+note "D-080 passed through $(tail -1 <<<"$new_history") with three adoptions, one native DATATYPE and four review challenges."

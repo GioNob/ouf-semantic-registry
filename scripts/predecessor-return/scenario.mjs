@@ -44,9 +44,9 @@ function delegated(domain, route, capability, scope, args, {actor = 'HUMAN', com
 }
 
 function proposal(route, args, commandKey = randomUUID()) {
-  const capability = {adopt: 'discovery.adopt', validate: 'review.prepare', review: 'approval.request'}[route];
+  const capability = {create: 'propose', adopt: 'discovery.adopt', validate: 'review.prepare', review: 'approval.request'}[route];
   const adoption = route === 'adopt';
-  const scope = adoption ? cap('discovery') : cap('review.prepare') + ' ' + cap('approval.request');
+  const scope = route === 'create' ? cap('propose') : adoption ? cap('discovery') : cap('review.prepare') + ' ' + cap('approval.request');
   return delegated('proposal', route, capability, scope, {...args, commandKey},
     {actor: adoption ? 'HUMAN' : 'AI_AGENT', commandKey, operation: 'COMMAND'});
 }
@@ -136,6 +136,30 @@ async function readPublished(record, latestSet) {
   }
 }
 
+async function publishDatatype() {
+  const semanticId = 'https://example.org/datatypes/Recapito';
+  const definition = {components: [{cardinality: 'ONE', name: 'via', required: true, type: 'string'}]};
+  const draft = await proposal('create', {semanticId, artifactType: 'DATATYPE', namespace: 'https://example.org/datatypes/',
+    localName: 'Recapito', ownerRef: 'owner', authorityRef: 'authority', semanticVersion: '1.0.0',
+    labels: {it: 'Recapito'}, definition: {...definition, description: {it: 'Indirizzo del servizio'}}});
+  const {revisionId} = draft;
+  const args = {revisionId, expectedRowVersion: 0};
+  const validation = await proposal('validate', args);
+  assert.equal(validation.status, 'PASS');
+  const review = await proposal('review', {...args, validationRunId: validation.validation_run_id});
+  const path = '/api/trusted-human/v1/semantic-approval-challenges/' + review.challengeId;
+  const card = await ths(path);
+  assert.equal(card.datatypeReview.componenti[0].tipo, 'Testo');
+  const decision = await ths(path + '/decision', {decision: 'APPROVED'});
+  const {publicationSetId} = await ths(path + '/publish', {approvalDecisionId: decision.decisionId,
+    contentHash: review.targetContentHash}, {'Idempotency-Key': randomUUID()});
+  const ref = {semanticId, revisionId, publicationSetId};
+  const result = await delegated('read', 'consultation/get', 'consultation.read', cap('read'), ref);
+  assert.deepEqual(result.definition, definition);
+  assert.equal(result.definitionSha256, sha256(JSON.stringify(definition)));
+  writeFileSync('/state/datatype.json', JSON.stringify({ref, definition, rdfHash: result.rdf_snapshot.content_hash}));
+}
+
 async function readiness() {
   let last = 'connection refused';
   for (let i = 0; i < 90; i++) {
@@ -166,6 +190,7 @@ try {
 }
 console.log(phase + ': release readiness and cutover UP');
 if (phase === 'baseline' || phase === 'candidate') {
+  if (phase === 'candidate') await publishDatatype();
   const record = await adoptAndReview(classes[phase === 'baseline' ? 0 : 1], true);
   await readPublished(record, record.publicationSetId);
   writeFileSync('/state/' + phase + '.json', JSON.stringify(record));
@@ -173,6 +198,13 @@ if (phase === 'baseline' || phase === 'candidate') {
 } else if (phase === 'return') {
   const load = name => JSON.parse(readFileSync('/state/' + name + '.json'));
   const candidate = load('candidate');
+  const datatype = load('datatype');
+  for (const publicationSetId of [datatype.ref.publicationSetId, candidate.publicationSetId]) {
+    const result = await delegated('read', 'consultation/get', 'consultation.read', cap('read'), {...datatype.ref, publicationSetId});
+    assert.equal(result.artifact_type, 'DATATYPE');
+    assert.deepEqual(result.definition, datatype.definition);
+    assert.equal(result.rdf_snapshot.content_hash, datatype.rdfHash);
+  }
   await readPublished(load('baseline'), candidate.publicationSetId);
   await readPublished(candidate, candidate.publicationSetId);
   const retry = await proposal('adopt', candidate.selection, candidate.adoptionKey);

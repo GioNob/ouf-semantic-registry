@@ -31,6 +31,7 @@ expected.add('src/main/resources/db/migration/V16__semantic_repeatability.sql')
 expected.add('src/main/resources/db/migration/V17__ontology_provenance.sql')
 expected.add('src/main/resources/db/migration/V18__discovery_candidate_fetch_denied.sql')
 expected.add('src/main/resources/db/migration/V19__adoption_description.sql')
+expected.add('src/main/resources/db/migration/V20__structured_datatypes.sql')
 actual = {p.relative_to(root).as_posix() for p in (root / 'src/main/resources/db/migration').glob('*.sql')}
 if actual != expected:
     raise SystemExit('file-first migration set changed; target compatibility review required')

@@ -35,7 +35,14 @@ paths:
   /api/semantic/v1/impact-reports/{id}:
     get: {operationId: getSemanticImpactReport, responses: {'200': {description: Impact report}}}
   /api/semantic/v1/references:resolve:
-    get: {operationId: resolveSemanticReference, responses: {'200': {description: Exact resolution}}}
+    get:
+      operationId: resolveSemanticReference
+      parameters:
+        - {name: semanticId, in: query, required: true, schema: {type: string, format: uri}}
+        - {name: publicationSetId, in: query, required: true, schema: {type: string, format: uuid}}
+        - {name: revisionId, in: query, description: Optional only for a pinned DATATYPE, schema: {type: string, format: uuid}}
+      responses:
+        '200': {description: 'Exact publication member. DATATYPE includes the sorted definition object and lowercase hexadecimal definitionSha256. Resolve each nested type with its own semanticId and publicationSetId.'}
   /api/semantic/v1/consumer-references:
     put: {operationId: registerSemanticConsumerReference, responses: {'204': {description: Registered}}}
   /api/semantic/v1/discovery:

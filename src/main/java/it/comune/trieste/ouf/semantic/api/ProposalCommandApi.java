@@ -15,7 +15,7 @@ public class ProposalCommandApi {
   private final TrustedActorResolver actors;
   public ProposalCommandApi(ProposalCommandService service,TrustedActorResolver actors){this.service=service;this.actors=actors;}
   public record Create(@NotBlank String semanticId,
-      @NotNull @Pattern(regexp="CLASS|PROPERTY|RELATIONSHIP|VOCABULARY|CONCEPT|ONTOLOGY") String artifactType,
+      @NotNull @Pattern(regexp="CLASS|PROPERTY|RELATIONSHIP|VOCABULARY|CONCEPT|ONTOLOGY|DATATYPE") String artifactType,
       @NotBlank String namespace,@NotBlank String localName,@NotBlank String ownerRef,
       @NotBlank String authorityRef,@NotBlank String semanticVersion,Map<String,Object> labels,
       Map<String,Object> definition,@Size(max=49152) String rdfTurtle,String mediaType) {
