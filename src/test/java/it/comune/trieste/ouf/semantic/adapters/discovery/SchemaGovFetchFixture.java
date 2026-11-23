@@ -5,12 +5,15 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.net.URI;
+import java.util.List;
 import java.net.URLEncoder;
 import java.time.*;
 
 /** Synthetic Gateway responses for the required description and optional ontology GETs. */
 final class SchemaGovFetchFixture {
   static final String DENIED="https://w3id.org/italia/env/onto/place/lat";
+  static final String TEST_NAMESPACE="https://terms.example.test/";
+  static final String REMOTE_DENIAL=TEST_NAMESPACE+"absent";
   static final String VALID="https://w3id.org/italia/onto/CLV/lat";
   private final URI base=URI.create("https://gateway.invalid");
   private final BoundedGatewayClient client=mock(BoundedGatewayClient.class);
@@ -27,7 +30,7 @@ final class SchemaGovFetchFixture {
   SchemaGovFetchFixture(int maxCandidates,ArrayNode rows){
     var json=new ObjectMapper();
     var cfg=new SchemaGovProperties(true,base,"/search","/fetch",Duration.ofSeconds(1),Duration.ofSeconds(2),
-        8192,maxCandidates,1,Duration.ofSeconds(1),3,Duration.ofSeconds(30));
+        8192,maxCandidates,1,Duration.ofSeconds(1),3,Duration.ofSeconds(30),List.of("https://w3id.org/italia/onto/",TEST_NAMESPACE));
     provider=new SchemaGovProvider(cfg,client,json,Clock.systemUTC());
     var result=json.createObjectNode();
     result.putObject("results").set("bindings",rows);

@@ -36,5 +36,5 @@ class SchemaGovProviderIntegrationTest {
     assertThat(calls).hasValue(1);
     assertThat(provider.search(new Query("CLASS","x",List.of()))).isEmpty();assertThat(calls).hasValue(2);
   }
-  private SchemaGovProperties config(int attempts,int threshold){return new SchemaGovProperties(true,base,"/sparql","/fetch",Duration.ofSeconds(1),Duration.ofSeconds(2),1024*1024,1,attempts,Duration.ofMillis(1),threshold,Duration.ofSeconds(30));}
+  private SchemaGovProperties config(int attempts,int threshold){return new SchemaGovProperties(true,base,"/sparql","/fetch",Duration.ofSeconds(1),Duration.ofSeconds(2),1024*1024,1,attempts,Duration.ofMillis(1),threshold,Duration.ofSeconds(30),List.of("https://w3id.org/italia/onto/"));}
 }

@@ -19,7 +19,11 @@ final class BoundedResponseBody implements HttpResponse.BodySubscriber<byte[]> {
     return info->new BoundedResponseBody(limit);
   }
   static HttpResponse<byte[]> send(java.net.http.HttpClient client,java.net.http.HttpRequest request,int limit) throws Exception {
-    var future=client.sendAsync(request,handler(limit));
+    return send(client,request,handler(limit));
+  }
+  static HttpResponse<byte[]> send(java.net.http.HttpClient client,java.net.http.HttpRequest request,
+      HttpResponse.BodyHandler<byte[]> handler) throws Exception {
+    var future=client.sendAsync(request,handler);
     try{return future.get(request.timeout().orElseThrow().toMillis(),TimeUnit.MILLISECONDS);}
     catch(ExecutionException e){if(e.getCause() instanceof BoundedGatewayClient.ProviderFailure failure)throw failure;throw e;}
     finally{if(!future.isDone())future.cancel(true);}

@@ -13,6 +13,8 @@ import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.support.JdbcTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /** Disposable CI database only: exercise upgrades through V22 using populated schemas. */
 class DiscoveryFileMigrationContinuityTest {
@@ -189,8 +191,10 @@ class DiscoveryFileMigrationContinuityTest {
             public List<Candidate> search(Query query){return List.of();}
           };
           var release=new Properties();release.setProperty("version","new");
-          var worker=new DiscoveryService(JdbcClient.create(reopened.getConfiguration().getDataSource()),List.of(provider),
-              new SafeRdfParser(),new ObjectMapper(),new BuildProperties(release));
+          var source=reopened.getConfiguration().getDataSource();
+          var publicationTx=new TransactionTemplate(new JdbcTransactionManager(source));
+          var worker=new DiscoveryService(JdbcClient.create(source),List.of(provider),
+              new SafeRdfParser(),new ObjectMapper(),publicationTx,new BuildProperties(release));
           assertThat(worker.executeOne()).isOne();
           assertThat(worker.executeOne()).isZero();
           assertThat(value(connection,"select state||':'||attempt_count from ouf_sem.discovery_request where created_by_subject='D078'")).isEqualTo("SUCCEEDED:2");
@@ -199,7 +203,7 @@ class DiscoveryFileMigrationContinuityTest {
           assertThat(history(connection).subList(0,10)).isEqualTo(oldHistory);
           assertThat(value(connection,"select attempt_count::text||':'||recovery_state from ouf_sem.discovery_request where idempotency_key_hash=repeat('b',64)")).isEqualTo("128:PAUSED_EXHAUSTED");
           assertThat(value(connection,"select cumulative_attempts::text||':'||state from ouf_sem.discovery_dependency where scope_subject='composed-caller'")).isEqualTo("128:PAUSED_EXHAUSTED");
-          verifyFreshRequestAfterExpiry(JdbcClient.create(reopened.getConfiguration().getDataSource()));
+          verifyFreshRequestAfterExpiry(JdbcClient.create(source),publicationTx);
           assertThat(value(connection,"select count(*) from ouf_sem.immutable_semantic_snapshot where ontology_rdf is not null")).isEqualTo("0");
           assertThat(legacyPublish(connection,"v13-bound")).isEqualTo(legacySet);
           assertThatThrownBy(()->legacyPublish(connection,"v13-incomplete"))
@@ -223,7 +227,7 @@ class DiscoveryFileMigrationContinuityTest {
       }
     }
   }
-  private static void verifyFreshRequestAfterExpiry(JdbcClient db) {
+  private static void verifyFreshRequestAfterExpiry(JdbcClient db,TransactionTemplate publicationTx) {
     var calls=new AtomicInteger();
     String actor="mcp-discovery-v1:"+"d".repeat(64);
     SemanticDiscoveryProvider provider=new SemanticDiscoveryProvider(){
@@ -246,7 +250,7 @@ class DiscoveryFileMigrationContinuityTest {
     var json=new ObjectMapper();
     var release=new Properties();
     release.setProperty("version","v1");
-    var original=new DiscoveryService(db,List.of(provider),new SafeRdfParser(),json,new BuildProperties(release));
+    var original=new DiscoveryService(db,List.of(provider),new SafeRdfParser(),json,publicationTx,new BuildProperties(release));
     var jobs=new DiscoveryJobService(db,original,List.of(provider),json);
     UUID old=(UUID)jobs.request("CLASS","poi",List.of("it"),actor,"discovery-request-01").get("requestId");
     assertThat(original.executeOne()).isOne();
@@ -260,7 +264,7 @@ class DiscoveryFileMigrationContinuityTest {
     assertThat(jobs.status(same,actor)).containsEntry("state","FAILED");
     assertThat(calls).hasValue(1);
     release.setProperty("version","v2");
-    var upgraded=new DiscoveryService(db,List.of(provider),new SafeRdfParser(),json,new BuildProperties(release));
+    var upgraded=new DiscoveryService(db,List.of(provider),new SafeRdfParser(),json,publicationTx,new BuildProperties(release));
     assertThat(upgraded.executeOne()).isZero();
     var newJobs=new DiscoveryJobService(db,upgraded,List.of(provider),json);
     UUID fresh=(UUID)newJobs.request("CLASS","poi",List.of("it"),actor,"discovery-request-03").get("requestId");

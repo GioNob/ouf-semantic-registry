@@ -2,7 +2,7 @@ package it.comune.trieste.ouf.semantic.adapters.discovery;
 
 import com.fasterxml.jackson.databind.*;
 import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
-import it.comune.trieste.ouf.semantic.ports.SemanticDiscoveryProvider;
+import it.comune.trieste.ouf.semantic.application.NamespaceFilteredDiscoveryProvider;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @EnableConfigurationProperties({SchemaGovProperties.class,GatewayOAuthProperties.class})
-public class SchemaGovProvider implements SemanticDiscoveryProvider {
+public class SchemaGovProvider implements NamespaceFilteredDiscoveryProvider {
   private static final Set<String> JSON=Set.of("application/json","application/sparql-results+json");
   private static final Set<String> RDF=Set.of("text/turtle","application/ld+json","application/rdf+xml");
   // During a required GET these statuses can describe the supplied resource or URI.
@@ -36,11 +36,8 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
   SchemaGovProvider(SchemaGovProperties cfg,BoundedGatewayClient client,ObjectMapper json,Clock clock){this.cfg=cfg;this.client=client;this.json=json;this.clock=clock;}
   public String providerId(){return "SCHEMA_GOV_IT";}
   @Override public boolean enabled(){return cfg.enabled();}
-  public List<Candidate> search(Query q){
-    return searchWithExclusions(q).candidates();
-  }
-  @Override public SearchResult searchWithExclusions(Query q){
-    if(!cfg.enabled())return new SearchResult(List.of(),0);
+  @Override public FilteredResult searchWithNamespaceFilter(Query q){
+    if(!cfg.enabled())return new FilteredResult(new SearchResult(List.of(),0),0);
     URI endpoint=underGateway(cfg.searchPath());
     String form="query="+enc(query(q))+"&format="+enc("application/sparql-results+json");
     var response=client.postForm(cfg.gatewayBaseUrl(),endpoint,form,timeout(q.deadline()),cfg.maxResponseBytes(),JSON);
@@ -53,13 +50,18 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
     // Fetch required descriptions first so optional metadata cannot starve a later candidate.
     record Fetched(SchemaGovRanking.Match match,BoundedGatewayClient.Response body,OntologyProvenance.Description description){}
     var descriptions=new ArrayList<Fetched>();
-    var evidence=new OntologyProvenance(Math.min(cfg.maxResponseBytes(),65536));
-    var attempted=new HashSet<String>();
-    int denied=0,invalid=0,bound=0;
+    var evidence=new OntologyProvenance(Math.min(cfg.maxResponseBytes(),65536),cfg::admits);
+    var seen=new HashSet<String>();
+    int attempted=0,namespaceExcluded=0,denied=0,invalid=0,bound=0;
     for(var match:SchemaGovRanking.rank(rows,q)){
-      if(descriptions.size()>=cfg.maxCandidates() || attempted.size()>=cfg.maxCandidates()*MAX_ATTEMPT_FACTOR)break;
+      if(descriptions.size()>=cfg.maxCandidates() || attempted>=cfg.maxCandidates()*MAX_ATTEMPT_FACTOR)break;
       String uri=match.uri();
-      if(!attempted.add(uri))continue;
+      if(!seen.add(uri))continue;
+      if(!cfg.admits(uri)){
+        namespaceExcluded++;
+        continue;
+      }
+      attempted++;
       try {
         var body=fetch(uri,q.deadline());
         descriptions.add(new Fetched(match,body,evidence.inspect(uri,body)));
@@ -84,7 +86,7 @@ public class SchemaGovProvider implements SemanticDiscoveryProvider {
       candidates.add(new Candidate(match.uri(),match.uri(),q.artifactType(),"HIGH",match.score(),match.reasons(),metadata.gaps(),
           body.body(),body.mediaType(),metadata.triples(),metadata.labels()));
     }
-    return new SearchResult(candidates,denied,invalid,bound);
+    return new FilteredResult(new SearchResult(candidates,denied,invalid,bound),namespaceExcluded+evidence.namespaceExcluded());
   }
   private BoundedGatewayClient.Response fetch(String resource,Instant deadline){
     return client.get(cfg.gatewayBaseUrl(),underGateway(cfg.fetchPath()+"?uri="+enc(resource)),

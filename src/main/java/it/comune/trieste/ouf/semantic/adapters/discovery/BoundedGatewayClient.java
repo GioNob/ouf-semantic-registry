@@ -20,7 +20,13 @@ public class BoundedGatewayClient {
     URI uri=req.uri();
     requireSameOrigin(base,uri);
     try{
-      var res=BoundedResponseBody.send(http,req,maxBytes);
+      var boundedBody=BoundedResponseBody.handler(maxBytes);
+      var res=BoundedResponseBody.send(http,req,headers->{
+        // Once the 429 headers arrive, an oversized or slow error body cannot mask the limit.
+        if(headers.statusCode()==429)throw new ProviderFailure(ProviderFailurePolicy.http(
+            429,headers.headers().firstValue("Retry-After").orElse(null),java.time.Clock.systemUTC()));
+        return boundedBody.apply(headers);
+      });
       if(res.statusCode()/100==3)throw new ProviderFailure("PROVIDER_REDIRECT_FORBIDDEN");
       if(res.statusCode()!=200)throw new ProviderFailure(ProviderFailurePolicy.http(res.statusCode(),res.headers().firstValue("retry-after").orElse(null),java.time.Clock.systemUTC()));
       var type=res.headers().firstValue("content-type").orElse("").split(";",2)[0].trim().toLowerCase(java.util.Locale.ROOT);

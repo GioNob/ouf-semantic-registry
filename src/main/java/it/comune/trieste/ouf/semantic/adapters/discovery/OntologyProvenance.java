@@ -4,6 +4,7 @@ import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.out.NodeFmtLib;
 import org.apache.jena.vocabulary.*;
@@ -17,8 +18,11 @@ final class OntologyProvenance {
   private final SafeRdfParser parser=new SafeRdfParser();
   private final Map<String,Optional<byte[]>> projections=new HashMap<>();
   private final int limit;
+  private final Predicate<String> admitted;
+  private int namespaceExcluded;
   private boolean gatewayUnavailable;
-  OntologyProvenance(int limit){this.limit=limit;}
+  OntologyProvenance(int limit, Predicate<String> admitted){this.limit=limit;this.admitted=admitted;}
+  int namespaceExcluded(){return namespaceExcluded;}
 
   Description inspect(String uri,BoundedGatewayClient.Response description){
     Model model=parser.model(description.body(),description.mediaType());
@@ -63,6 +67,10 @@ final class OntologyProvenance {
 
   private Optional<byte[]> projection(String uri,Function<String,BoundedGatewayClient.Response> fetch){
     if(gatewayUnavailable)return Optional.empty();
+    if(!admitted.test(uri)){
+      namespaceExcluded++;
+      return Optional.empty();
+    }
     try {
       var response=fetch.apply(uri);
       Model model=parser.model(response.body(),response.mediaType());

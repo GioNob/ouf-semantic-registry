@@ -27,7 +27,7 @@ public final class OntopiaGatewayFixture {
   public OntopiaGatewayFixture(ObjectMapper json) throws IOException {
     Duration timeout=Duration.ofSeconds(5);
     var cfg=new SchemaGovProperties(true,base,"/search","/fetch",timeout,timeout,maxBytes,5,1,
-        Duration.ofSeconds(1),1,Duration.ofSeconds(30));
+        Duration.ofSeconds(1),1,Duration.ofSeconds(30),List.of("https://w3id.org/italia/onto/"));
     provider=new SchemaGovProvider(cfg,gateway,json,Clock.systemUTC());
     Model ontology=ModelFactory.createDefaultModel();
     try(var original=resource("POI-AP_IT.ttl");var fetched=resource("fetched/PointOfInterest.ttl")){

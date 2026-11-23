@@ -58,6 +58,7 @@ public class DiscoveryJobService {
     var rows=db.sql("""
         select r.request_id,r.state,r.attempt_count,r.recovery_state,r.next_attempt_at,r.budget_deadline,
           r.created_at,r.completed_at,r.last_error_code,r.rdf_invalid_count,r.rdf_bound_count,r.fetch_denied_count,
+          coalesce((r.provider_policy->>'namespaceExcluded')::integer,0) as namespace_excluded_count,
           (select count(*) from ouf_sem.discovery_candidate c
            where c.request_id=r.request_id and c.expires_at>transaction_timestamp()) as candidate_count,
           ceil(extract(epoch from r.next_attempt_at-transaction_timestamp()))::bigint as seconds_until_retry
@@ -70,9 +71,14 @@ public class DiscoveryJobService {
     out.put("recoveryState",row.get("recovery_state"));out.put("nextAttemptAt",row.get("next_attempt_at"));out.put("budgetDeadline",row.get("budget_deadline"));
     out.put("createdAt",row.get("created_at"));out.put("completedAt",row.get("completed_at"));out.put("candidateCount",row.get("candidate_count"));
     out.put("excludedCandidates",Map.of("CANDIDATE_RDF_INVALID",row.get("rdf_invalid_count"),
-        "CANDIDATE_RDF_BOUND",row.get("rdf_bound_count"),"CANDIDATE_FETCH_DENIED",row.get("fetch_denied_count")));
+        "CANDIDATE_RDF_BOUND",row.get("rdf_bound_count"),"CANDIDATE_FETCH_DENIED",row.get("fetch_denied_count"),
+        "CANDIDATE_NAMESPACE_EXCLUDED",row.get("namespace_excluded_count")));
     // Provider exception text may contain endpoint/credential details; never expose it.
-    if(row.get("last_error_code")!=null)out.put("errorCode","SEM_DISCOVERY_NO_ENABLED_PROVIDER".equals(row.get("last_error_code"))?"SEM_DISCOVERY_NO_ENABLED_PROVIDER":"SEM_DISCOVERY_PROVIDER_FAILED");
+    if(row.get("last_error_code") instanceof String code)out.put("errorCode",switch(code){
+      case "SEM_DISCOVERY_NO_ENABLED_PROVIDER" -> code;
+      case "PROVIDER_HTTP_429","PROVIDER_HTTP_429_RETRY_AFTER_INVALID" -> "SEM_DISCOVERY_RATE_LIMITED";
+      default -> "SEM_DISCOVERY_PROVIDER_FAILED";
+    });
     var state=State.valueOf((String)row.get("state"));
     var recovery=RecoveryState.valueOf((String)row.get("recovery_state"));
     WorkflowAction action=switch(state) {

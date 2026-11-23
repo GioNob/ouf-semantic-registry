@@ -10,12 +10,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.transaction.support.TransactionTemplate;
 @SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false"})
 class GovernedDiscoveryRuntimeTest {
- @Autowired JdbcClient db; @Autowired ObjectMapper json; @Autowired SafeRdfParser parser;
+ @Autowired TransactionTemplate publicationTx;
+  @Autowired JdbcClient db; @Autowired ObjectMapper json; @Autowired SafeRdfParser parser;
  @Autowired ArtifactService artifacts; @Autowired ValidationService validation; @Autowired GovernanceService governance;
  @Test void adoptedDraftCanBeVersionedAndPublishedWithoutLosingHistoricalIdentity(){
-  var discovery=new DiscoveryService(db,List.of(GovernedPublicationFixture.provider()),parser,json);
+  var discovery=new DiscoveryService(db,List.of(GovernedPublicationFixture.provider()),parser,json,publicationTx);
   var result=GovernedPublicationFixture.run(discovery,artifacts,validation,governance);
   var binding=(Map<String,Object>)result.get("binding");UUID revision=(UUID)binding.get("revisionId"),set=(UUID)binding.get("publicationSetId");
   assertThatThrownBy(()->artifacts.patch(revision,"\"1\"",new PatchRevision(Map.of(),Map.of(),"2.0.0"),"service","SERVICE","r2c")).isInstanceOf(ArtifactService.Conflict.class);

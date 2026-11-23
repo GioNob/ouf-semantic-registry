@@ -13,9 +13,11 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false"})
 class DiscoveryDurableRecoveryRuntimeTest {
+  @Autowired TransactionTemplate publicationTx;
   @Autowired JdbcClient db; @Autowired ObjectMapper json; @Autowired SafeRdfParser parser;
   final String actor="recovery-test-"+UUID.randomUUID();
   @AfterEach void leaveNoRunnableFixture(){db.sql("update ouf_sem.discovery_request set state='CANCELLED',lease_until=null where created_by_subject=:a and state in ('PENDING','RUNNING')").param("a",actor).update();}
@@ -71,7 +73,7 @@ class DiscoveryDurableRecoveryRuntimeTest {
     UUID b=request(true);assertThat(reserve(b,1,"TEST")).containsEntry("state","PAUSED_EXHAUSTED");
     assertThat(reserve(b,"TEST","new-image")).containsEntry("state","PAUSED_EXHAUSTED").containsEntry("admitted",false);
     assertThat(reserve(b,1,"INDEPENDENT")).containsEntry("admitted",true);
-    var jobs=new DiscoveryJobService(db,new DiscoveryService(db,List.of(),parser,json),List.of(),json);
+    var jobs=new DiscoveryJobService(db,new DiscoveryService(db,List.of(),parser,json,publicationTx),List.of(),json);
     assertThat(jobs.providerStatus("TEST",true,actor)).containsEntry("recoveryState","PAUSED_EXHAUSTED");
     assertThat(jobs.providerStatus("TEST",true,"other-"+actor)).containsEntry("recoveryState","NOT_OBSERVED");
   }
@@ -111,12 +113,12 @@ class DiscoveryDurableRecoveryRuntimeTest {
       public String providerId(){return "SERVICE_TEST";}
       public List<Candidate> search(Query q){if(calls.incrementAndGet()==1)throw new BoundedGatewayClient.ProviderFailure("PROVIDER_UNAVAILABLE");return List.of(new Candidate("urn:theatre","urn:fixture","CLASS","HIGH",1,List.of(),List.of(),"<urn:theatre> a <http://www.w3.org/2002/07/owl#Class> .".getBytes(java.nio.charset.StandardCharsets.UTF_8),"text/turtle"));}
     };
-    var service=new DiscoveryService(db,List.of(provider),parser,json);service.executeOne();
+    var service=new DiscoveryService(db,List.of(provider),parser,json,publicationTx);service.executeOne();
     assertThat(service.candidates(id)).isEmpty();
     assertThat(db.sql("select recovery_state from ouf_sem.discovery_request where request_id=:r").param("r",id).query(String.class).single()).isEqualTo("RETRY_WAIT");
     ready("SERVICE_TEST");db.sql("update ouf_sem.discovery_request set next_attempt_at=clock_timestamp()-interval '1 second' where request_id=:r").param("r",id).update();
     // New service instance models losing all Java process state.
-    new DiscoveryService(db,List.of(provider),parser,json).executeOne();assertThat(service.candidates(id)).hasSize(1);assertThat(calls).hasValue(2);
+    new DiscoveryService(db,List.of(provider),parser,json,publicationTx).executeOne();assertThat(service.candidates(id)).hasSize(1);assertThat(calls).hasValue(2);
   }
   @Test void actualLateWorkerCannotPublishAfterAnotherProcessRecovers() throws Exception {
     var entered=new CountDownLatch(1);var release=new CountDownLatch(1);var calls=new AtomicInteger();UUID id=request(false);
@@ -127,13 +129,13 @@ class DiscoveryDurableRecoveryRuntimeTest {
         return List.of(new Candidate("urn:theatre","urn:fixture","CLASS","HIGH",1,List.of(),List.of(),"<urn:theatre> a <http://www.w3.org/2002/07/owl#Class> .".getBytes(java.nio.charset.StandardCharsets.UTF_8),"text/turtle"));
       }
     };
-    var service=new DiscoveryService(db,List.of(provider),parser,json);
+    var service=new DiscoveryService(db,List.of(provider),parser,json,publicationTx);
     try(var pool=Executors.newFixedThreadPool(1)){
       var late=pool.submit(service::executeOne);assertThat(entered.await(3,TimeUnit.SECONDS)).isTrue();
       // Native database time controls both leases; no Java singleton coordinates recovery.
       db.sql("update ouf_sem.discovery_request set lease_until=clock_timestamp()-interval '1 second' where request_id=:r").param("r",id).update();
       db.sql("update ouf_sem.discovery_dependency set busy_until=clock_timestamp()-interval '1 second' where scope_subject=:a and provider_id='LATE_TEST'").param("a",actor).update();
-      new DiscoveryService(db,List.of(provider),parser,json).executeOne();
+      new DiscoveryService(db,List.of(provider),parser,json,publicationTx).executeOne();
       release.countDown();assertThat(late.get(3,TimeUnit.SECONDS)).isEqualTo(1);
       assertThat(service.candidates(id)).hasSize(1);assertThat(calls).hasValue(2);
       assertThat(db.sql("select count(*) from ouf_sem.discovery_attempt where scope_subject=:a and outcome='SUCCESS'").param("a",actor).query(Long.class).single()).isEqualTo(1);
@@ -248,7 +250,7 @@ class DiscoveryDurableRecoveryRuntimeTest {
       public String providerId(){return "UNKNOWN_TEST";}
       public List<Candidate> search(Query q){throw new IllegalStateException("private-wrapper",cause);}
     };
-    var service=new DiscoveryService(db,List.of(provider),parser,json);
+    var service=new DiscoveryService(db,List.of(provider),parser,json,publicationTx);
     var logger=(ch.qos.logback.classic.Logger)org.slf4j.LoggerFactory.getLogger(DiscoveryService.class);
     var logs=new ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent>();
     logs.start();logger.addAppender(logs);
@@ -277,11 +279,11 @@ class DiscoveryDurableRecoveryRuntimeTest {
         return new Candidate(uri,uri,"CLASS","HIGH",1,List.of(),List.of(),bytes,"text/turtle");
       }
     };
-    var service=new DiscoveryService(db,List.of(provider),parser,json);
+    var service=new DiscoveryService(db,List.of(provider),parser,json,publicationTx);
     assertThat(service.executeOne()).isOne();
     var status=new DiscoveryJobService(db,service,List.of(provider),json).status(id,actor);
     assertThat(status).containsEntry("state","SUCCEEDED").containsEntry("candidateCount",includeValid?1L:0L)
-        .containsEntry("excludedCandidates",Map.of("CANDIDATE_RDF_INVALID",1,"CANDIDATE_RDF_BOUND",1,"CANDIDATE_FETCH_DENIED",0)).doesNotContainKey("errorCode");
+        .containsEntry("excludedCandidates",Map.of("CANDIDATE_RDF_INVALID",1,"CANDIDATE_RDF_BOUND",1,"CANDIDATE_FETCH_DENIED",0,"CANDIDATE_NAMESPACE_EXCLUDED",0)).doesNotContainKey("errorCode");
     var uris=service.candidates(id).stream().map(row->row.get("canonical_uri")).toList();
     if(includeValid)assertThat(uris).containsExactly("urn:good");else assertThat(uris).isEmpty();
     assertThat(dependency("RDF_TEST")).containsEntry("state","HEALTHY");
