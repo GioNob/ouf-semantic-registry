@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-/** Disposable CI database only: exercise upgrades through V22 using populated schemas. */
+/** Disposable CI database only: exercise upgrades through V23 using populated schemas. */
 class DiscoveryFileMigrationContinuityTest {
   @Test void fileReceiptsHistoryAndDiscoveryBudgetsSurviveAdditiveUpgradeAndReconnect() throws Exception {
     String url=Objects.requireNonNull(System.getenv("OUF_SEM_DB_URL"),"isolated PostgreSQL fixture required");
@@ -170,11 +170,11 @@ class DiscoveryFileMigrationContinuityTest {
         // Reopening the fully upgraded database must preserve the history and all claims.
         var reopened=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
             .defaultSchema("ouf_sem").locations("classpath:db/migration").load();
-        assertThat(reopened.migrate().migrationsExecuted).isEqualTo(4); // V19 through V22
+        assertThat(reopened.migrate().migrationsExecuted).isEqualTo(5); // V19 through V23
         assertThat(reopened.migrate().migrationsExecuted).isZero();
         reopened.validate();
         try(var connection=DriverManager.getConnection(dbUrl,user,password)) {
-          assertThat(history(connection)).hasSize(22);
+          assertThat(history(connection)).hasSize(23);
           assertThat(value(connection,published)).isEqualTo(beforeDescriptionUpgrade);
           assertThat(value(connection,"select count(*) from ouf_sem.discovery_request where fetch_denied_count<>0")).isEqualTo("0");
           // Exercise the running 1.0.2 publication signature on the upgraded schema.

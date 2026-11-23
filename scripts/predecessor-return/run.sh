@@ -112,6 +112,7 @@ grep -Eq '^19:V19__adoption_description.sql:-?[0-9]+:true$' <<<"$new_history"
 grep -Eq '^20:V20__structured_datatypes.sql:-?[0-9]+:true$' <<<"$new_history"
 grep -Eq '^21:V21__published_component_vocabulary.sql:-?[0-9]+:true$' <<<"$new_history"
 grep -Eq '^22:V22__published_value_maps.sql:-?[0-9]+:true$' <<<"$new_history"
+grep -Eq '^23:V23__published_batch_terms.sql:-?[0-9]+:true$' <<<"$new_history"
 exercise "$candidate" "$new_id" candidate
 docker stop "$candidate" >/dev/null
 [[ "$(history)" == "$new_history" ]]
@@ -123,4 +124,10 @@ exercise "$previous" "$old_id" return
 [[ "$(sql "select count(*) from ouf_sem.semantic_artifact a join ouf_sem.artifact_active_revision r using (artifact_id) where a.artifact_type='VALUE_MAP'")" == 1 ]]
 [[ "$(sql "select count(*) from ouf_sem.value_map_proposal_source s join ouf_sem.artifact_active_revision r using (revision_id) where s.field_name='codice_servizio' and s.source_id='source-1'")" == 1 ]]
 [[ "$(sql "select count(*) from ouf_sem.proposal_command_receipt where tenant_id='tenant-a' and principal_id='agent' and operation='ADOPT'")" == 3 ]]
+# The returned predecessor created and reviewed POIState on the candidate schema.
+[[ "$(sql "select count(distinct r.revision_id) from ouf_sem.artifact_revision r
+  join ouf_sem.semantic_artifact a using (artifact_id)
+  join ouf_sem.revision_batch_term t using (revision_id)
+  where a.local_name='POIState' and r.lifecycle_status='UNDER_REVIEW'
+    and t.kind='LOCAL' and t.term=convert_to('poistate','UTF8')")" == 1 ]]
 note "D-080 passed through $(tail -1 <<<"$new_history") with three adoptions, four native publications and seven review challenges."

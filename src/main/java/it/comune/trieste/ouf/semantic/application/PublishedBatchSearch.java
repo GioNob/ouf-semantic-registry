@@ -58,18 +58,38 @@ public class PublishedBatchSearch {
     return out.toString();
   }
 
-  private static final String SQL = """
-      select f.idx,a.artifact_id,a.semantic_id,a.local_name,r.semantic_version,r.revision_id,
-             p.publication_set_id,r.label_json::text as label_json
-      %s
-      join jsonb_array_elements(cast(? as jsonb)) with ordinality f(data,idx)
-        on a.artifact_type=f.data->>'type'
-       and (f.data->>'namespace' is null or a.namespace=f.data->>'namespace')
-       and (f.data->>'domain' is null or %s)
-       and (f.data->>'range' is null or %s)
-      where r.lifecycle_status='ACTIVE' and %s
-      """.formatted(SemanticReadService.SEARCH_JOINS, SemanticReadService.referenceFilter("DOMAIN","f.data->>'domain'"),
-          SemanticReadService.referenceFilter("RANGE","f.data->>'range'"), SemanticReadService.CURRENT_PUBLISHED);
+  static final String SQL = """
+      select f.idx, pin.*, evidence.score, evidence.preference
+      from jsonb_array_elements(cast(? as jsonb)) with ordinality f(data,idx)
+      cross join lateral (select convert_to(f.data->>'term','UTF8') as term, f.data->'filter' as filter) q
+      cross join lateral (
+        select distinct on (t.revision_id) t.revision_id,
+               case when k.kind='LOCAL' then 95 when t.term=q.term then 100 else 60 end as score,
+               l.preference
+        from jsonb_array_elements_text(f.data->'languages') with ordinality l(language,preference)
+        -- 0xff sorts after every valid UTF-8 suffix. LOCAL uses a closed singleton range.
+        cross join lateral (values ('LABEL',q.term || decode('ff','hex')), ('LOCAL',q.term)) k(kind,upper_bound)
+        cross join lateral (
+          select revision_id, term from ouf_sem.revision_batch_term
+          where artifact_type=q.filter->>'type' and language=l.language and kind=k.kind
+            and term between q.term and k.upper_bound
+          offset 0
+        ) t
+        order by t.revision_id,score desc,l.preference
+      ) evidence
+      cross join lateral (
+        select a.artifact_id,a.semantic_id,r.semantic_version,r.revision_id,p.publication_set_id
+        %s
+        where r.revision_id=evidence.revision_id and r.lifecycle_status='ACTIVE' and %s
+          and a.artifact_type=q.filter->>'type'
+          and (q.filter->>'namespace' is null or a.namespace=q.filter->>'namespace')
+          and (q.filter->>'domain' is null or %s)
+          and (q.filter->>'range' is null or %s)
+        offset 0
+      ) pin
+      """.formatted(SemanticReadService.SEARCH_JOINS, SemanticReadService.CURRENT_PUBLISHED,
+          SemanticReadService.referenceFilter("DOMAIN","q.filter->>'domain'"),
+          SemanticReadService.referenceFilter("RANGE","q.filter->>'range'"));
 
   private final JdbcTemplate db;
   private final ObjectMapper json;
@@ -81,35 +101,19 @@ public class PublishedBatchSearch {
   @Transactional(readOnly=true)
   public Response search(List<Intent> intents, int limit, Predicate<UUID> visible) {
     var ordered = intents.stream().map(intent -> new Ranking(intent, limit)).toList();
-    var groups = new LinkedHashMap<Filter,List<Ranking>>();
-    for (var ranking : ordered) {
-      var filter = ranking.intent.filter();
-      if (filter.representable()) groups.computeIfAbsent(filter, ignored -> new ArrayList<>()).add(ranking);
-    }
-    var byIndex = List.copyOf(groups.values());
+    // PostgreSQL text cannot contain NUL, so these intents can only return NONE.
+    var byIndex = ordered.stream().filter(r -> r.intent.filter().representable()
+        && r.intent.term().indexOf(0) < 0).toList();
     try {
-      String filters = json.writeValueAsString(groups.keySet());
+      String arguments = json.writeValueAsString(byIndex.stream().map(r -> r.intent).toList());
       db.query(connection -> {
         var query = connection.prepareStatement(SQL);
-        query.setString(1, filters);
+        query.setString(1, arguments);
         query.setFetchSize(128);
         return query;
       }, (RowCallbackHandler) row -> {
-        if (!visible.test(row.getObject("artifact_id", UUID.class))) return;
-        var labels = new HashMap<String,List<String>>();
-        try {
-          json.readTree(row.getString("label_json")).fields().forEachRemaining(entry -> {
-            if (entry.getValue().isTextual() && isLanguage(entry.getKey())) {
-              var text = normalize(entry.getValue().textValue());
-              if (!text.isEmpty()) labels.computeIfAbsent(entry.getKey().toLowerCase(Locale.ROOT),
-                  ignored -> new ArrayList<>()).add(text);
-            }
-          });
-        } catch (JsonProcessingException invalid) {
-          throw new IllegalStateException("SEM_BATCH_CATALOG_INVALID", invalid);
-        }
-        String name = normalize(row.getString("local_name"));
-        for (var ranking : byIndex.get(row.getInt("idx") - 1)) ranking.consider(row, name, labels);
+        if (visible.test(row.getObject("artifact_id", UUID.class)))
+          byIndex.get(row.getInt("idx") - 1).consider(row);
       });
     } catch (JsonProcessingException impossible) {
       throw new IllegalStateException(impossible);
@@ -132,19 +136,8 @@ public class PublishedBatchSearch {
     boolean more;
     Ranking(Intent intent, int limit) { this.intent = intent; this.limit = limit; }
 
-    void consider(ResultSet row, String name, Map<String,List<String>> labels) throws SQLException {
-      int score = 0, language = -1;
-      for (int i = 0; i < intent.languages().size(); i++) {
-        var texts = labels.get(intent.languages().get(i));
-        if (texts == null) continue;
-        int candidate = 0;
-        if (texts.contains(intent.term())) candidate = 100;
-        else if (name.equals(intent.term())) candidate = 95;
-        else if (texts.stream().anyMatch(text -> text.startsWith(intent.term()))) candidate = 60;
-        if (candidate > score) { score = candidate; language = i; }
-        if (score == 100) break;
-      }
-      if (score == 0) return;
+    void consider(ResultSet row) throws SQLException {
+      int score = row.getInt("score"), language = row.getInt("preference");
       if (score >= 95 && strong < 2) strong++;
       String id = row.getString("semantic_id"), version = row.getString("semantic_version");
       if (!boundedText(id,2048) || !boundedText(version,128))

@@ -441,14 +441,23 @@ Per il bundle IAM registrare il descrittore batch con operazione `READ`, attore 
 l'UUID dell'artefatto su `semantic.artifact`. Riutilizza issuer, audience, workload e riferimento alla chiave
 della delega di lettura singola. Confrontare i limiti effettivi dei tre moduli prima di attivare la rotta.
 
-Il ranking v1 usa ICU4J 75.1 (Unicode 15.1) per NFC, case folding completo e White_Space.
-Una singola SELECT legge le revisioni correnti, raggruppando gli intenti per tipo e contesto. Il numero
-di righe da valutare dipende dal catalogo visibile e dai contesti distinti.
+Da V23 la SELECT del lotto cerca per tipo, lingua e termine nella tabella derivata
+`ouf_sem.revision_batch_term`. Semantic mantiene i termini nella transazione della revisione.
+Le richieste usano ICU4J 75.1 e il database PostgreSQL 17 UTF-8 usa NFC, i mapping di case folding
+e i caratteri White_Space di `norm-v1`. La regola di ranking e i limiti della rotta restano quelli di T1.
+
+**Registro archivi D-065 · SEM-51O-01.** Il backup del database Semantic comprende
+`ouf_sem.norm_v1_fold` (dati Unicode versionati dalla migrazione) e `ouf_sem.revision_batch_term`
+(proiezione di etichette e nomi locali). Le fonti sono `artifact_revision` e `semantic_artifact`.
+Il ripristino usa lo stesso snapshot per schema e dati. V23 popola la proiezione per le revisioni
+preesistenti. Per ripopolare righe mancanti dopo un ripristino, in manutenzione eseguire
+`CALL ouf_sem.backfill_batch_terms()` e `ANALYZE ouf_sem.revision_batch_term`. Il backfill blocca
+le scritture alle due tabelle sorgente per la durata della transazione. La sua ripetizione è idempotente.
 
 Il worker registra il conteggio di successo in `ouf_sem.audit_event` con tipo `DISCOVERY_COMPLETED`.
 L'identificatore dell'evento coincide con quello del job. Status e candidates con `includeState=true`
 leggono questa evidenza per chiave primaria. I job completati dal predecessore possono quindi omettere
-`completedCandidateCount`. Le strutture SQL restano alla versione V22 di `f6ed9f1`.
+`completedCandidateCount`.
 
 ## 15. Esempio laboratorio — lifecycle InstallationConfiguration
 

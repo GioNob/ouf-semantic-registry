@@ -195,4 +195,75 @@ class PublishedBatchRuntimeTest {
     assertThat(normalize("Σςİı")).isEqualTo("σσi\u0307ı");
     assertThat(normalize("a\u200bb")).isEqualTo("a\u200bb");
   }
+
+  @Test void oneStrongRevisionInTwoPublishedSetsKeepsLatestPinAndCountsOnce() {
+    var pin = term("twice","Straße","{\"IT\":\"Straße\",\"it\":\"STRASSE\",\"en\":\"strasse lungo\"}",
+        ArtifactType.PROPERTY,"ACTIVE");
+    membership(pin,pin.id(),"PUBLISHED");
+    var latest = membership(pin,pin.id(),"PUBLISHED");
+    membership(pin,pin.id(),"BUILDING");
+    var query = intent("s","strasse",List.of("en","it"),ArtifactType.PROPERTY);
+    var hit = new Hit(pin.id(),"1.0.0",pin.revision(),latest,100,
+        List.of("EXACT_LABEL","PREFERRED_LANGUAGE","CONTEXT_MATCH"));
+    for (int limit : List.of(1,8)) {
+      assertThat(reads.search(List.of(query),limit,id -> true).results())
+          .containsExactly(new Result("s",State.MATCH,false,List.of(hit)));
+    }
+  }
+
+  @Test void indexTreatsLongLabelsAndPrefixCharactersLiterally() throws Exception {
+    String prefix = "𠀀".repeat(256);
+    var pin = term("long","other",json.writeValueAsString(Map.of(
+        "it", prefix + "𠀀".repeat(900), "en","A%_\\B", "fr"," \t", "de",123)),ArtifactType.CLASS,"ACTIVE");
+    membership(pin,pin.id(),"PUBLISHED");
+    var queries = List.of(intent("long",prefix,List.of("it"),ArtifactType.CLASS),
+        intent("literal","a%_\\",List.of("en"),ArtifactType.CLASS),
+        intent("wildcard","a___",List.of("en"),ArtifactType.CLASS),
+        intent("empty","other",List.of("fr","de"),ArtifactType.CLASS),
+        intent("nul","a\0",List.of("en"),ArtifactType.CLASS));
+    var results = reads.search(queries,1,id -> true).results();
+    assertThat(results).extracting(Result::state)
+        .containsExactly(State.AMBIGUOUS,State.AMBIGUOUS,State.NONE,State.NONE,State.NONE);
+    assertThat(results.getFirst().hits().getFirst().score()).isEqualTo(60);
+  }
+
+  @Test void draftEditsAndLocalNameChangesUpdateTermsInTheWritersTransaction() throws Exception {
+    var pin = term("draft-index","Prima","{\"it\":\"Via\"}",ArtifactType.CLASS,"DRAFT");
+    var connection = DataSourceUtils.getConnection(dataSource);
+    var checkpoint = connection.setSavepoint();
+    assertThat(indexTerms(pin)).containsExactly("it:LABEL:via","it:LOCAL:prima");
+    db.sql("update ouf_sem.artifact_revision set label_json='{\"en\":\"Piazza\"}' where revision_id=:r")
+        .param("r",pin.revision()).update();
+    db.sql("update ouf_sem.semantic_artifact set local_name='Nuova' where artifact_id=:a")
+        .param("a",pin.artifact()).update();
+    assertThat(indexTerms(pin)).containsExactly("en:LABEL:piazza","en:LOCAL:nuova");
+    connection.rollback(checkpoint);
+    assertThat(indexTerms(pin)).containsExactly("it:LABEL:via","it:LOCAL:prima");
+  }
+
+  private List<String> indexTerms(Pin pin) {
+    return db.sql("""
+        select language||':'||kind||':'||convert_from(term,'UTF8') from ouf_sem.revision_batch_term
+        where revision_id=:r order by language,kind,term
+        """).param("r",pin.revision()).query(String.class).list();
+  }
+
+  @Test void databaseNormV1MatchesPinnedIcu() {
+    var expected = new HashMap<Integer,String>();
+    for (int cp=0; cp<=Character.MAX_CODE_POINT; cp++) {
+      if (cp>=Character.MIN_SURROGATE && cp<=Character.MAX_SURROGATE) continue;
+      String scalar = Character.toString(cp);
+      String folded = com.ibm.icu.lang.UCharacter.foldCase(scalar,true);
+      if (!scalar.equals(folded)) expected.put(cp,folded);
+    }
+    var stored = new HashMap<Integer,String>();
+    db.sql("select codepoint,folded from ouf_sem.norm_v1_fold").query((row,n) ->
+        Map.entry(row.getInt(1),row.getString(2))).list().forEach(e -> stored.put(e.getKey(),e.getValue()));
+    assertThat(stored).isEqualTo(expected);
+    for (String value : List.of("\u00a0Straße\u0085\u202fCAFE\u0301-01.\t","Σςİı","a\u200bb",
+        "\u1100\u1161","\u0345\u0300","𐐀","A\r\n \t B","\u2002")) {
+      assertThat(db.sql("select ouf_sem.norm_v1(:v)").param("v",value).query(String.class).single())
+          .isEqualTo(normalize(value));
+    }
+  }
 }
