@@ -1,0 +1,9 @@
+# Development profile only. Installations supply all four limits before enabling T1.
+ouf:
+  semantic:
+    published-batch:
+      enabled: true
+      max-intents: 64
+      max-hits: 3
+      max-request-bytes: 65536
+      max-response-bytes: 262144

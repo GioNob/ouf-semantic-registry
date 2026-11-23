@@ -60,7 +60,8 @@ class DiscoveryJobRuntimeTest {
   @Test void replayReturnsActualStateEvenIfProviderIsNowDisabled(){
     String actor=unique(),key=unique();UUID request=id(service(true).request("CLASS","teatro",List.of(),actor,key));
     db.sql("update ouf_sem.discovery_request set state='SUCCEEDED',completed_at=transaction_timestamp() where request_id=:id").param("id",request).update();
-    assertThat(service(false).request("CLASS","teatro",List.of(),actor,key)).containsEntry("requestId",request).containsEntry("state","SUCCEEDED");
+    assertThat(service(false).request("CLASS","teatro",List.of(),actor,key)).containsEntry("requestId",request)
+        .containsEntry("state","SUCCEEDED").doesNotContainKey("completedCandidateCount");
   }
   @Test void workflowActionsFollowDurableJobAndCandidateState() {
     String actor=unique();
@@ -130,6 +131,8 @@ class DiscoveryJobRuntimeTest {
   }
   @Test void invalidRequestsDoNotCreateJobs(){
     String actor=unique();var jobs=service(true);
+    assertThatThrownBy(()->jobs.request("DATATYPE","misura",List.of("it"),actor,unique()))
+        .hasMessage("SEM_DISCOVERY_REQUEST_INVALID");
     assertThatThrownBy(()->jobs.request("CLASS","teatro",List.of(),actor,"short")).isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(()->jobs.request("CLASS"," ",List.of(),actor,unique())).isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(()->jobs.request("CLASS","teatro",List.of("secret?"),actor,unique())).isInstanceOf(IllegalArgumentException.class);

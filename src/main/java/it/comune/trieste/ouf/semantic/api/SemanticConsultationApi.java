@@ -1,7 +1,6 @@
 package it.comune.trieste.ouf.semantic.api;
 
 import com.fasterxml.jackson.databind.*;
-import it.comune.trieste.ouf.authorization.*;
 import it.comune.trieste.ouf.semantic.application.SemanticReadService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -20,13 +19,10 @@ public class SemanticConsultationApi {
     this.json=json.copy().enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
   }
   private JsonNode arguments(byte[] raw,HttpServletRequest request,String capability,String operation,String resourceType,Set<String> keys) {
-    var principal=receipts.verify(request.getHeader("X-OUF-Semantic-Read-Receipt"),request.getRequestURI(),capability,raw);
-    request.setAttribute(ServletAuthorization.TRUSTED_PRINCIPAL,new TrustedPrincipal(principal));
-    OwnerAuthorization.bind(request).require(capability,new ResourceContext(resourceType,null,principal.tenantId(),null,Map.of("module","SEMANTIC")));
+    receipts.authorize(request,raw,capability,resourceType);
     try {
       JsonNode e=json.readTree(raw),a=e.required("Arguments");
-      if(!capability.equals(e.required("CapabilityID").asText())||!("capability://"+capability).equals(e.required("GatewayBindingRef").asText())
-          ||!"semantic".equals(e.required("Owner").asText())||!operation.equals(e.required("OperationClass").asText())||!a.isObject())throw new IllegalArgumentException();
+      if(!SemanticReadDelegation.matchesDispatch(e,capability,operation)||!a.isObject())throw new IllegalArgumentException();
       for(var fields=a.fieldNames();fields.hasNext();)if(!keys.contains(fields.next()))throw new IllegalArgumentException();
       return a;
     }catch(Exception e){throw new IllegalArgumentException("SEM_CONSULTATION_ARGUMENTS_INVALID");}

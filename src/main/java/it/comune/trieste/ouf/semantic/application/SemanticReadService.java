@@ -39,6 +39,24 @@ public class SemanticReadService {
       a.semantic_id=m.semantic_id and s.status='PUBLISHED'
       and r.lifecycle_status in ('ACTIVE','DEPRECATED','RETIRED')
       """;
+  static final String SEARCH_JOINS = """
+      from ouf_sem.semantic_artifact a
+      join ouf_sem.artifact_revision r on r.artifact_id=a.artifact_id
+      left join ouf_sem.artifact_active_revision ar on ar.artifact_id=a.artifact_id
+      left join lateral (
+        select m.publication_set_id,s.checksum
+        from ouf_sem.semantic_publication_member m
+        join ouf_sem.semantic_publication_set s using(publication_set_id)
+        where m.revision_id=r.revision_id and m.semantic_id=a.semantic_id and s.status='PUBLISHED'
+        order by s.publication_no desc,m.publication_set_id limit 1
+      ) p on true
+      """;
+  static final String CURRENT_PUBLISHED =
+      "a.retired_at is null and ar.revision_id=r.revision_id and p.publication_set_id is not null";
+  static String referenceFilter(String role,String parameter) {
+    String key=role.toLowerCase(Locale.ROOT);
+    return "(jsonb_exists(r.definition_json->'"+key+"Refs',"+parameter+") or exists(select 1 from ouf_sem.semantic_dependency d where d.source_revision_id=r.revision_id and d.dependency_role='"+role+"' and d.target_semantic_id="+parameter+"))";
+  }
 
   public record LocalizedText(String it, String en) {}
   public record PublishedTerm(UUID revisionId, String semanticId, String artifactType, String semanticVersion,
@@ -103,24 +121,15 @@ public class SemanticReadService {
                else 0 end + greatest(similarity(a.semantic_id,:q),similarity(a.local_name,:q)) +
           ts_rank(jsonb_to_tsvector('simple',jsonb_build_array(r.label_json,r.description_json,r.definition_json),'["string"]'),
                   plainto_tsquery('simple',:q)) score
-        from ouf_sem.semantic_artifact a
-        join ouf_sem.artifact_revision r on r.artifact_id=a.artifact_id
-        left join ouf_sem.artifact_active_revision ar on ar.artifact_id=a.artifact_id
-        left join lateral (
-          select m.publication_set_id,s.checksum
-          from ouf_sem.semantic_publication_member m
-          join ouf_sem.semantic_publication_set s using(publication_set_id)
-          where m.revision_id=r.revision_id and m.semantic_id=a.semantic_id and s.status='PUBLISHED'
-          order by s.publication_no desc limit 1
-        ) p on true
+        %s
         where r.lifecycle_status=:status
-          and (:status<>'ACTIVE' or (ar.revision_id=r.revision_id and p.publication_set_id is not null))
+          and (:status<>'ACTIVE' or (%s))
           and (a.semantic_id %% :q or a.local_name %% :q or
                strpos(lower(a.semantic_id),lower(:q))>0 or
                exists(select 1 from jsonb_each_text(r.label_json) l where starts_with(lower(l.value),lower(:q))) or
                jsonb_to_tsvector('simple',jsonb_build_array(r.label_json,r.description_json,r.definition_json),'["string"]')
                    @@ plainto_tsquery('simple',:q))
-        """.formatted(DETAIL);
+        """.formatted(DETAIL,SEARCH_JOINS,CURRENT_PUBLISHED);
     var params=new LinkedHashMap<String,Object>();
     params.put("q",q.strip()); params.put("status",status); params.put("n",limit);
     if(type!=null){sql+=" and a.artifact_type=:type";params.put("type",type);}
@@ -128,7 +137,7 @@ public class SemanticReadService {
     for(var filter:Map.of("DOMAIN",domain==null?"":domain,"RANGE",range==null?"":range).entrySet()) {
       if(!filter.getValue().isEmpty()) {
         String key=filter.getKey().toLowerCase(Locale.ROOT);
-        sql+=" and (jsonb_exists(r.definition_json->'"+key+"Refs',:"+key+") or exists(select 1 from ouf_sem.semantic_dependency d where d.source_revision_id=r.revision_id and d.dependency_role='"+filter.getKey()+"' and d.target_semantic_id=:"+key+"))";
+        sql+=" and "+referenceFilter(filter.getKey(),":"+key);
         params.put(key,filter.getValue());
       }
     }

@@ -4,6 +4,11 @@ import static org.assertj.core.api.Assertions.*;
 import com.fasterxml.jackson.databind.*;
 import it.comune.trieste.ouf.semantic.api.*;
 import it.comune.trieste.ouf.semantic.application.SemanticReadService;
+import it.comune.trieste.ouf.semantic.application.PublishedBatchSearch;
+import it.comune.trieste.ouf.semantic.application.PublishedBatchSearch.*;
+import it.comune.trieste.ouf.authorization.*;
+import it.comune.trieste.ouf.authorization.AuthorizationPolicy.*;
+import static org.mockito.Mockito.*;
 import it.comune.trieste.ouf.authorization.TestAuthorization;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -21,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false"})
 class SemanticConsultationTest {
   @Autowired SemanticReadService reads;
+  @Autowired PublishedBatchSearch published;
   final ObjectMapper json=new ObjectMapper();
   @TempDir Path tmp;
   final String key="ab".repeat(32),cap="ouf.semantic.search",path="/api/internal/v1/semantic/consultation/search";
@@ -78,6 +84,191 @@ class SemanticConsultationTest {
     byte[] fractional=body(Map.of("q","x","limit",1.5));String fracProof=sign(receipt(fractional));
     assertThatThrownBy(()->api.search(fractional,request(fracProof,Set.of(cap)))).isInstanceOf(IllegalArgumentException.class);
   }
+  @org.junit.jupiter.api.Nested
+  class Batch {
+    final String batchCap=cap+".batch", batchPath=path+"-batch";
+    final PublishedBatchSearch service=mock(PublishedBatchSearch.class);
+    final UUID hidden=UUID.randomUUID();
+    LocalAuthorization owner;
+    org.springframework.test.web.servlet.MockMvc http;
+
+    @org.junit.jupiter.api.BeforeEach void setup() throws Exception {
+      owner=new LocalAuthorization(java.time.Clock.systemUTC(),java.time.Duration.ofHours(1));
+      var caps=List.of(descriptor(cap),descriptor(batchCap));
+      var now=Instant.now();
+      var denyOne=new GrantConstraints("DENY",null,"semantic.artifact",hidden.toString(),Map.of(),Set.of(),Set.of(),null,Set.of(),null);
+      TestAuthorization.install(owner,new PolicyBundle("fixture",1,now,caps,List.of(
+          grant(cap,null),grant(batchCap,null),grant(cap,denyOne))));
+      when(service.search(anyList(),anyInt(),any())).thenAnswer(call -> {
+        java.util.function.Predicate<UUID> visible=call.getArgument(2);
+        assertThat(visible.test(hidden)).isFalse();
+        assertThat(visible.test(new UUID(0,0))).isTrue();
+        List<Intent> intents=call.getArgument(0);
+        return new Response(PublishedBatchSearch.CONTRACT,intents.stream()
+            .map(intent -> new Result(intent.id(),State.NONE,false,List.of())).toList());
+      });
+      configure(64,8,65536,262144);
+    }
+    Grant grant(String capability,GrantConstraints constraints) {
+      var now=Instant.now();
+      return new Grant(UUID.randomUUID().toString(),capability,"tenant-a","reader",null,null,
+          now.minusSeconds(60),now.plusSeconds(3600),constraints);
+    }
+    CapabilityDescriptor descriptor(String capability) {
+      return new CapabilityDescriptor(capability,"READ",cap,Set.of(PrincipalContext.ActorType.HUMAN));
+    }
+    void configure(int intents,int hits,int input,int output) throws Exception {
+      configure(service,intents,hits,input,output);
+    }
+    void configure(PublishedBatchSearch backend,int intents,int hits,int input,int output) throws Exception {
+      http=org.springframework.test.web.servlet.setup.MockMvcBuilders
+          .standaloneSetup(new PublishedBatchApi(verifier(),backend,json,intents,hits,input,output))
+          .setControllerAdvice(new ProblemHandler()).build();
+    }
+    com.fasterxml.jackson.databind.node.ObjectNode envelope() {
+      var root=json.createObjectNode();
+      root.put("Owner","semantic").put("CapabilityID",batchCap).put("GatewayBindingRef","capability://"+batchCap)
+          .put("OperationClass","READ");
+      var args=root.putObject("Arguments");
+      args.put("contract",PublishedBatchSearch.CONTRACT).put("limitPerIntent",1);
+      var item=args.putArray("intents").addObject().put("intentId","i0").put("intent"," Straße ").put("requestedArtifactType","CLASS");
+      item.putArray("preferredLanguages").add("IT");
+      item.putObject("context");
+      return root;
+    }
+    String proof(byte[] body) throws Exception {
+      var claims=receipt(body);claims.put("capability",batchCap);claims.put("path",batchPath);
+      return sign(claims);
+    }
+    org.springframework.test.web.servlet.ResultActions post(byte[] bytes,String proof) throws Exception {
+      return post(bytes,proof,"identity");
+    }
+    org.springframework.test.web.servlet.ResultActions post(byte[] bytes,String proof,String encoding) throws Exception {
+      return http.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(batchPath)
+          .header("Content-Encoding",encoding)
+          .contentType("application/json").content(bytes).header("X-OUF-Semantic-Read-Receipt",proof)
+          .with(req->{req.getServletContext().setAttribute(ServletAuthorization.RUNTIME,owner);return req;}));
+    }
+    byte[] expect(byte[] raw,int status,String code) throws Exception {
+      var result=post(raw,proof(raw)).andReturn().getResponse();
+      assertThat(result.getStatus()).isEqualTo(status);
+      if(code!=null)assertThat(json.readTree(result.getContentAsByteArray()).path("code").textValue()).isEqualTo(code);
+      return result.getContentAsByteArray();
+    }
+    @Test void verifiesWireBytesBindingSearchRightAndTenantPolicy() throws Exception {
+      byte[] raw=json.writeValueAsBytes(envelope());
+      assertThat(json.readTree(expect(raw,200,null)).path("results").size()).isOne();
+      byte[] changed=Arrays.copyOf(raw,raw.length+1);changed[raw.length]=' ';
+      var denied=post(changed,proof(raw)).andReturn().getResponse();
+      assertThat(denied.getStatus()).isEqualTo(403);
+      assertThat(json.readTree(denied.getContentAsByteArray()).path("code").textValue()).isEqualTo("SEM_READ_RECEIPT_OR_POLICY_DENIED");
+      assertThat(post(raw,sign(receipt(raw))).andReturn().getResponse().getStatus()).isEqualTo(403);
+      var claims=receipt(raw);claims.put("capability",batchCap);claims.put("path",batchPath);claims.put("scope",batchCap);
+      assertThat(post(raw,sign(claims)).andReturn().getResponse().getStatus()).isEqualTo(403);
+      claims.put("scope",cap);claims.put("tenant","other");
+      assertThat(post(raw,sign(claims)).andReturn().getResponse().getStatus()).isEqualTo(403);
+      TestAuthorization.install(owner,new PolicyBundle("fixture",2,Instant.now(),List.of(descriptor(cap),descriptor(batchCap)),
+          List.of(grant(batchCap,null))));
+      expect(raw,403,"SEM_READ_RECEIPT_OR_POLICY_DENIED");
+      verify(service,times(1)).search(anyList(),anyInt(),any());
+    }
+    @Test void signedThreeTypeBatchTraversesTheOwnerRouteAndCatalog() throws Exception {
+      configure(published,64,3,65536,262144);
+      var envelope=envelope();
+      var items=(com.fasterxml.jackson.databind.node.ArrayNode)envelope.at("/Arguments/intents");
+      var original=(com.fasterxml.jackson.databind.node.ObjectNode)items.get(0);
+      original.put("intent","😀".repeat(256));
+      original.putObject("context").put("namespace","fixture-"+UUID.randomUUID());
+      items.removeAll();
+      for (var type:ArtifactType.values())
+        items.add(original.deepCopy().put("intentId",type.name()).put("requestedArtifactType",type.name()));
+      var response=json.readTree(expect(json.writeValueAsBytes(envelope),200,null));
+      assertThat(response.size()).isEqualTo(2);
+      assertThat(response.required("contract").textValue()).isEqualTo(PublishedBatchSearch.CONTRACT);
+      var results=response.required("results");
+      assertThat(results.size()).isEqualTo(3);
+      for (int i=0;i<3;i++) {
+        var expected=json.createObjectNode().put("intentId",ArtifactType.values()[i].name()).put("state","NONE").put("hasMore",false);
+        expected.putArray("hits");
+        assertThat(results.get(i)).isEqualTo(expected);
+      }
+    }
+    @Test void rejectsClosedShapeViolationsBeforeCatalogAccess() throws Exception {
+      String raw=json.writeValueAsString(envelope());
+      String item=json.writeValueAsString(envelope().at("/Arguments/intents/0"));
+      for(String invalid:List.of(raw+"{}",raw.replace("\"Arguments\":{","\"Arguments\":{\"extra\":true,"),
+          raw.replace("\"intentId\":","\"intentId\":\"other\",\"intentId\":"),
+          raw.replace("\"i0\"","\"bad id\""),raw.replace("\"i0\"","null"),
+          raw.replace(item,item+","+item),raw.replace(item,""),
+          raw.replace("\"CLASS\"","\"ONTOLOGY\""),raw.replace("\"CLASS\"","null"),
+          raw.replace("\"context\":{}","\"other\":{}"),raw.replace("\"context\":{}","\"context\":{\"range\":null}"),
+          raw.replace("\"context\":{}","\"context\":{\"namespace\":\"\"}"),
+          raw.replace("\"context\":{}","\"context\":{\"source\":\"x\"}"),
+          raw.replace("\"IT\"","\"it\",\"IT\""),raw.replace("\"IT\"","\"it_IT\""),raw.replace("\"IT\"",""),
+          raw.replace("\"IT\"","\"it\",\"en\",\"fr\",\"de\",\"es\",\"pt\""),
+          raw.replace(" Straße ","\u00a0"),raw.replace(" Straße ","a".repeat(257)),raw.replace(" Straße ","ß".repeat(129)),
+          raw.replace("\"limitPerIntent\":1","\"limitPerIntent\":1.0"),raw.replace("\"limitPerIntent\":1","\"limitPerIntent\":\"1\""),
+          raw.replace("\"limitPerIntent\":1","\"limitPerIntent\":9"),raw.replace("published-batch.v1","published-batch.v2"),
+          raw.replace("\"Owner\":\"semantic\"","\"Owner\":\"other\""),
+          raw.replace("\"Arguments\":","\"MaxResultBytes\":0,\"Arguments\":"))) {
+        expect(invalid.getBytes(StandardCharsets.UTF_8),400,"SEM_BATCH_ARGUMENTS_INVALID");
+      }
+      expect(raw.getBytes(StandardCharsets.UTF_16LE),400,"SEM_BATCH_ARGUMENTS_INVALID");
+      verifyNoInteractions(service);
+    }
+    @Test void boundsBothWireBodiesAndHonorsNegotiationAtTheExactBoundary() throws Exception {
+      var envelope=envelope();
+      byte[] raw=json.writeValueAsBytes(envelope);
+      byte[] response=expect(raw,200,null);
+      configure(1,1,raw.length,response.length);
+      assertThat(expect(raw,200,null)).isEqualTo(response);
+      configure(1,1,raw.length-1,response.length);
+      expect(raw,413,"SEM_BATCH_REQUEST_TOO_LARGE");
+      configure(1,1,65536,response.length-1);
+      expect(raw,422,"SEM_BATCH_RESULT_TOO_LARGE");
+      configure(1,1,65536,262144);
+      envelope.put("MaxResultBytes",response.length-1);
+      expect(json.writeValueAsBytes(envelope),422,"SEM_BATCH_RESULT_TOO_LARGE");
+      envelope.put("MaxResultBytes",response.length);
+      assertThat(expect(json.writeValueAsBytes(envelope),200,null)).isEqualTo(response);
+      var items=(com.fasterxml.jackson.databind.node.ArrayNode)envelope.at("/Arguments/intents");
+      items.add((JsonNode)items.get(0).deepCopy());
+      ((com.fasterxml.jackson.databind.node.ObjectNode)items.get(1)).put("intentId","i1");
+      expect(json.writeValueAsBytes(envelope),400,"SEM_BATCH_ARGUMENTS_INVALID");
+      for(int[] limits:List.of(new int[]{65,1,1,1},new int[]{1,0,1,1},new int[]{1,9,1,1},
+          new int[]{1,1,65537,1},new int[]{1,1,1,262145}))
+        assertThatThrownBy(()->configure(limits[0],limits[1],limits[2],limits[3])).hasMessage("SEM_BATCH_CONFIG_INVALID");
+    }
+    @Test void onlyExplicitDatabasePressureAndOutageReturnTransientCodes() throws Exception {
+      byte[] raw=json.writeValueAsBytes(envelope());
+      for(String state:List.of("53300","57P03")) {
+        doThrow(new org.springframework.jdbc.CannotGetJdbcConnectionException("fixture",new java.sql.SQLException("fixture",state)))
+            .when(service).search(anyList(),anyInt(),any());
+        boolean limited=state.equals("53300");
+        expect(raw,limited?429:503,limited?"SEM_BATCH_RATE_LIMITED":"SEM_BATCH_UNAVAILABLE");
+      }
+    }
+    @Test void gzipUsesDecodedEnvelopeSizeAndAuthenticatesExactForwardedBytes() throws Exception {
+      String padded=json.writeValueAsString(envelope())+" ".repeat(2048);
+      byte[] decoded=padded.getBytes(StandardCharsets.UTF_8);
+      var buffer=new java.io.ByteArrayOutputStream();
+      try(var gzip=new java.util.zip.GZIPOutputStream(buffer)){gzip.write(decoded);}
+      byte[] wire=buffer.toByteArray();
+      assertThat(wire.length).isLessThan(decoded.length-1);
+      configure(1,1,decoded.length,262144);
+      var signature=proof(wire);
+      var result=post(wire,signature,"gzip").andReturn().getResponse();
+      assertThat(result.getStatus()).isEqualTo(200);
+      assertThat(post(wire,proof(decoded),"gzip").andReturn().getResponse().getStatus()).isEqualTo(403);
+      byte[] altered=wire.clone();altered[4]^=1; // modification time changes only the gzip representation
+      assertThat(post(altered,signature,"gzip").andReturn().getResponse().getStatus()).isEqualTo(403);
+      configure(1,1,decoded.length-1,262144);
+      var overflow=post(wire,signature,"gzip").andReturn().getResponse();
+      assertThat(overflow.getStatus()).isEqualTo(413);
+      assertThat(json.readTree(overflow.getContentAsByteArray()).path("code").textValue()).isEqualTo("SEM_BATCH_REQUEST_TOO_LARGE");
+    }
+  }
+
   @Test void humanGetUsesSeparateCapabilityAndExistingReadScope() throws Exception {
     String humanCap="ouf.semantic.consultation.read",nativeCap="ouf.semantic.read";
     String getPath="/api/internal/v1/semantic/consultation/get";

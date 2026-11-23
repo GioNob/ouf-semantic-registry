@@ -112,11 +112,17 @@ class DiscoveryDurableRecoveryRuntimeTest {
       public List<Candidate> search(Query q){if(calls.incrementAndGet()==1)throw new BoundedGatewayClient.ProviderFailure("PROVIDER_UNAVAILABLE");return List.of(new Candidate("urn:theatre","urn:fixture","CLASS","HIGH",1,List.of(),List.of(),"<urn:theatre> a <http://www.w3.org/2002/07/owl#Class> .".getBytes(java.nio.charset.StandardCharsets.UTF_8),"text/turtle"));}
     };
     var service=new DiscoveryService(db,List.of(provider),parser,json);service.executeOne();
+    var jobs=new DiscoveryJobService(db,service,List.of(provider),json);
+    assertThat(jobs.status(id,actor)).doesNotContainKey("completedCandidateCount");
     assertThat(service.candidates(id)).isEmpty();
     assertThat(db.sql("select recovery_state from ouf_sem.discovery_request where request_id=:r").param("r",id).query(String.class).single()).isEqualTo("RETRY_WAIT");
     ready("SERVICE_TEST");db.sql("update ouf_sem.discovery_request set next_attempt_at=clock_timestamp()-interval '1 second' where request_id=:r").param("r",id).update();
     // New service instance models losing all Java process state.
     new DiscoveryService(db,List.of(provider),parser,json).executeOne();assertThat(service.candidates(id)).hasSize(1);assertThat(calls).hasValue(2);
+    assertThat(jobs.status(id,actor)).containsEntry("completedCandidateCount",1).containsEntry("candidateCount",1L);
+    db.sql("update ouf_sem.discovery_candidate set expires_at=now()-interval '1 second' where request_id=:r").param("r",id).update();
+    assertThat(jobs.candidatesWithState(id,actor)).containsEntry("candidateCount",0L)
+        .containsEntry("completedCandidateCount",1).containsEntry("candidates",List.of());
   }
   @Test void actualLateWorkerCannotPublishAfterAnotherProcessRecovers() throws Exception {
     var entered=new CountDownLatch(1);var release=new CountDownLatch(1);var calls=new AtomicInteger();UUID id=request(false);

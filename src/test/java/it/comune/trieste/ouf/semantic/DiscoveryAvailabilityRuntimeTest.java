@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false"})
 @AutoConfigureMockMvc
 class DiscoveryAvailabilityRuntimeTest {
+  @Autowired it.comune.trieste.ouf.semantic.application.DiscoveryJobService jobs;
   @Autowired JdbcClient db;
   @Autowired ObjectMapper json;
   @Autowired SafeRdfParser parser;
@@ -51,6 +52,7 @@ class DiscoveryAvailabilityRuntimeTest {
     var calls=new AtomicInteger();UUID id=oldPendingRequest();
     assertThat(service(provider(false,calls,false)).executeOne()).isEqualTo(1);
     assertThat(row(id)).containsEntry("state","FAILED").containsEntry("last_error_code","SEM_DISCOVERY_NO_ENABLED_PROVIDER");
+    assertThat(jobs.status(id,"availability-test")).doesNotContainKey("completedCandidateCount");
     assertThat(calls).hasValue(0);
   }
   @Test void previouslyQueuedRequestDoesNotReportSuccessWithAnEmptyProviderList(){
@@ -59,8 +61,14 @@ class DiscoveryAvailabilityRuntimeTest {
   }
   @Test void realEmptyProviderResultRemainsDistinctFromDisabledProvider(){
     var calls=new AtomicInteger();UUID id=oldPendingRequest();
+    assertThat(jobs.candidatesWithState(id,"availability-test")).doesNotContainKey("completedCandidateCount");
     assertThat(service(provider(true,calls,false)).executeOne()).isEqualTo(1);
     assertThat(row(id)).containsEntry("state","SUCCEEDED").containsEntry("last_error_code",null);
+    assertThat(jobs.status(id,"availability-test")).containsEntry("completedCandidateCount",0);
+    assertThat(jobs.candidatesWithState(id,"availability-test")).containsEntry("completedCandidateCount",0)
+        .containsEntry("candidates",List.of());
+    assertThatThrownBy(()->db.sql("update ouf_sem.audit_event set detail_json='{}' where event_id=:id")
+        .param("id",id).update()).isInstanceOf(org.springframework.dao.DataAccessException.class);
     assertThat(calls).hasValue(1);
   }
   @Test void failedProviderDoesNotPublishAnIncompleteCandidateSet(){
@@ -69,6 +77,22 @@ class DiscoveryAvailabilityRuntimeTest {
     service(provider(false,disabled,false),provider(true,failed,true),provider(true,successful,false)).executeOne();
     assertThat(row(id)).containsEntry("state","FAILED").containsEntry("last_error_code","SEM_DISCOVERY_PROVIDER_IDENTITY_INVALID");
     assertThat(disabled).hasValue(0);assertThat(failed).hasValue(0);assertThat(successful).hasValue(0);
+  }
+  @Test void failureToPersistCompletionEvidenceRollsBackTheSuccessTransition(){
+    UUID id=oldPendingRequest();
+    db.sql("""
+        insert into ouf_sem.audit_event(event_id,event_type,subject_ref,resource_type,resource_id)
+        values(:id,'FIXTURE','fixture','FIXTURE','fixture')
+        """).param("id",id).update();
+    try {
+      assertThatThrownBy(()->service(provider(true,new AtomicInteger(),false)).executeOne())
+          .isInstanceOf(org.springframework.dao.DataAccessException.class);
+      assertThat(jobs.status(id,"availability-test")).containsEntry("state","RUNNING")
+          .doesNotContainKey("completedCandidateCount");
+    } finally {
+      db.sql("update ouf_sem.discovery_request set state='CANCELLED',lease_until=null where request_id=:id")
+          .param("id",id).update();
+    }
   }
   @Test void authorizedNativeRequestReturns503ForDisabledProvider() throws Exception {
     http.perform(post("/api/semantic/v1/discovery-requests").contentType("application/json")

@@ -108,6 +108,114 @@ paths:
                   - $ref: '#/components/schemas/UnchangedProposal'
         '403': {$ref: '#/components/responses/Problem'}
         '404': {$ref: '#/components/responses/Problem'}
+  /api/internal/v1/semantic/consultation/search-batch:
+    post:
+      operationId: searchPublishedSemanticBatch
+      description: The receipt binds the forwarded bytes. The request limit applies to the UTF-8 envelope after optional gzip decoding.
+      x-ouf-mcp-capability: ouf.semantic.search.batch
+      x-ouf-tool-eligible: false
+      parameters:
+        - {in: header, name: X-OUF-Semantic-Read-Receipt, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [Owner, CapabilityID, GatewayBindingRef, OperationClass, Arguments]
+              additionalProperties: false
+              properties:
+                Owner: {const: semantic}
+                CapabilityID: {const: ouf.semantic.search.batch}
+                GatewayBindingRef: {const: 'capability://ouf.semantic.search.batch'}
+                OperationClass: {const: READ}
+                MaxResultBytes: {type: integer, minimum: 1}
+                Identity: {}
+                AuthorizationDecisionRef: {}
+                CorrelationID: {}
+                IdempotencyKey: {}
+                AttemptID: {}
+                RequestHash: {}
+                Arguments:
+                  type: object
+                  additionalProperties: false
+                  required: [contract, limitPerIntent, intents]
+                  properties:
+                    contract: {const: ouf.semantic.published-batch.v1}
+                    limitPerIntent: {type: integer, minimum: 1, maximum: 8}
+                    intents:
+                      type: array
+                      minItems: 1
+                      maxItems: 64
+                      items:
+                        type: object
+                        additionalProperties: false
+                        required: [intentId, intent, preferredLanguages, requestedArtifactType, context]
+                        properties:
+                          intentId: {type: string, pattern: '^[A-Za-z0-9_-]{1,64}$'}
+                          intent: {type: string, minLength: 1, maxLength: 256}
+                          requestedArtifactType: {type: string, enum: [PROPERTY, CLASS, DATATYPE]}
+                          preferredLanguages:
+                            type: array
+                            minItems: 1
+                            maxItems: 5
+                            uniqueItems: true
+                            items: {type: string, pattern: '^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8}){0,3}$'}
+                          context:
+                            type: object
+                            additionalProperties: false
+                            properties:
+                              namespace: {type: string, minLength: 1, maxLength: 512}
+                              domain: {type: string, minLength: 1, maxLength: 2048}
+                              range: {type: string, minLength: 1, maxLength: 2048}
+      responses:
+        '200':
+          description: Results in request order. Uniqueness is evaluated across all visible matches before limiting.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [contract, results]
+                properties:
+                  contract: {const: ouf.semantic.published-batch.v1}
+                  results:
+                    type: array
+                    minItems: 1
+                    maxItems: 64
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [intentId, state, hasMore, hits]
+                      properties:
+                        intentId: {type: string, pattern: '^[A-Za-z0-9_-]{1,64}$'}
+                        state: {type: string, enum: [MATCH, AMBIGUOUS, NONE]}
+                        hasMore: {type: boolean}
+                        hits:
+                          type: array
+                          maxItems: 8
+                          items:
+                            type: object
+                            additionalProperties: false
+                            required: [semanticId, semanticVersion, revisionId, publicationSetId, score, reasons]
+                            properties:
+                              semanticId: {type: string, minLength: 1, maxLength: 2048}
+                              semanticVersion: {type: string, minLength: 1, maxLength: 128}
+                              revisionId: {type: string, format: uuid}
+                              publicationSetId: {type: string, format: uuid}
+                              score: {type: integer, enum: [60, 95, 100]}
+                              reasons:
+                                type: array
+                                minItems: 1
+                                maxItems: 4
+                                uniqueItems: true
+                                items: {type: string, enum: [EXACT_LABEL, EXACT_LOCAL_NAME, LABEL_PREFIX, PREFERRED_LANGUAGE, CONTEXT_MATCH]}
+        '400': {description: SEM_BATCH_ARGUMENTS_INVALID}
+        '403': {description: SEM_READ_RECEIPT_OR_POLICY_DENIED}
+        '413': {description: SEM_BATCH_REQUEST_TOO_LARGE}
+        '422': {description: SEM_BATCH_RESULT_TOO_LARGE}
+        '429': {description: SEM_BATCH_RATE_LIMITED}
+        '503': {description: SEM_BATCH_UNAVAILABLE}
   /api/internal/v1/semantic/discovery/request:
     post:
       operationId: requestDelegatedSemanticDiscovery
@@ -367,6 +475,10 @@ components:
       properties:
         requestId: {type: string, format: uuid}
         state: {type: string, enum: [PENDING, RUNNING, SUCCEEDED, FAILED, CANCELLED]}
+        completedCandidateCount:
+          type: integer
+          minimum: 0
+          description: Immutable count attested at successful publication. Absent for jobs without owner evidence.
         recoveryState: {type: string, enum: [ACTIVE, RETRY_WAIT, PAUSED_EXHAUSTED, BLOCKED, CANCELLED]}
         allowedActions:
           type: array

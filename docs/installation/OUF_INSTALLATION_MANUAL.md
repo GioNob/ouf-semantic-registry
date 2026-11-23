@@ -419,6 +419,37 @@ Checklist obbligatoria:
 - cambia rollback? aggiornare §11.
 
 
+### 14.1 Registro D-065 per la consultazione Semantic a lotti (D-090 T1)
+
+Per attivare la capability interna `ouf.semantic.search.batch`, valorizzare nella revisione di installazione
+le proprietà Spring sotto `ouf.semantic.published-batch`. I quattro limiti sono obbligatori all'attivazione.
+Il profilo `dev` fornisce i valori della colonna sviluppo.
+
+| Parametro del contratto | Proprietà sotto il prefisso | Intervallo | Sviluppo |
+|---|---|---|---|
+| Attivazione della rotta | `enabled` | booleano | `true` |
+| `batchMaxIntents` | `max-intents` | 1–64 | 64 |
+| `batchMaxHits` | `max-hits` | 1–8 | 3 |
+| `batchMaxRequestBytes` | `max-request-bytes` | 1–65.536 | 65.536 |
+| `batchMaxResponseBytes` | `max-response-bytes` | 1–262.144 | 262.144 |
+
+La rotta riceve la busta JSON UTF-8 inoltrata dal Gateway. Il limite di ingresso comprende i metadati di dispatch.
+Con `Content-Encoding: gzip` il limite si applica al JSON decompresso e la ricevuta autentica i byte gzip inoltrati.
+La risposta usa il minore fra il limite locale e il `MaxResultBytes` ricevuto nella busta firmata.
+Per il bundle IAM registrare il descrittore batch con operazione `READ`, attore `HUMAN` e scope richiesto
+`ouf.semantic.search`. L'owner verifica entrambi i grant, batch e ricerca pubblicata, per il tenant e per
+l'UUID dell'artefatto su `semantic.artifact`. Riutilizza issuer, audience, workload e riferimento alla chiave
+della delega di lettura singola. Confrontare i limiti effettivi dei tre moduli prima di attivare la rotta.
+
+Il ranking v1 usa ICU4J 75.1 (Unicode 15.1) per NFC, case folding completo e White_Space.
+Una singola SELECT legge le revisioni correnti, raggruppando gli intenti per tipo e contesto. Il numero
+di righe da valutare dipende dal catalogo visibile e dai contesti distinti.
+
+Il worker registra il conteggio di successo in `ouf_sem.audit_event` con tipo `DISCOVERY_COMPLETED`.
+L'identificatore dell'evento coincide con quello del job. Status e candidates con `includeState=true`
+leggono questa evidenza per chiave primaria. I job completati dal predecessore possono quindi omettere
+`completedCandidateCount`. Le strutture SQL restano alla versione V22 di `f6ed9f1`.
+
 ## 15. Esempio laboratorio — lifecycle InstallationConfiguration
 
 Nel laboratorio Netcup la futura revisione di installazione deve rappresentare, come esempio concreto e non come default di prodotto:

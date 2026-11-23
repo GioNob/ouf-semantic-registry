@@ -142,9 +142,16 @@ public class DiscoveryService {
       }
       if(!providerFinished(id,generation,p.providerId(),token,"SUCCESS",null,0))return 1;
     }
-    db.sql("select ouf_sem.publish_discovery_candidates(:r,:g,cast(:b as jsonb),:invalid,:bound,:denied)")
+    // V17 inserts every supplied candidate or rolls back. A failed generation CAS emits no evidence.
+    db.sql("""
+        insert into ouf_sem.audit_event(event_id,event_type,subject_ref,resource_type,resource_id,detail_json)
+        select :r,'DISCOVERY_COMPLETED',:actor,'DISCOVERY_REQUEST',cast(:r as text),
+               jsonb_build_object('completedCandidateCount',cast(:count as integer))
+        from ouf_sem.publish_discovery_candidates(:r,:g,cast(:b as jsonb),:invalid,:bound,:denied) as p(succeeded)
+        where p.succeeded
+        """)
       .param("r",id).param("g",generation).param("b",write(candidates)).param("invalid",invalid).param("bound",bound)
-      .param("denied",fetchDenied).query(Boolean.class).single();
+      .param("denied",fetchDenied).param("actor",job.get("created_by_subject")).param("count",candidates.size()).update();
     return 1;
   }
   private static void logUnknown(Throwable error){
