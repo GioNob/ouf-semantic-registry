@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 })
 @AutoConfigureMockMvc
 class HttpApiRuntimeTest {
+  private static final String PUBLISHED_TERMS = "/api/trusted-human/v1/semantic-published-terms";
   @Autowired MockMvc http;
   @Autowired ObjectMapper json;
 
@@ -41,6 +42,12 @@ class HttpApiRuntimeTest {
         .andReturn());
     UUID artifact=UUID.fromString(created.get("artifactId").asText());
     UUID revision=UUID.fromString(created.get("revisionId").asText());
+    UUID unknown=UUID.randomUUID();
+    var reviewer=actor("reviewer","OUF_HUMAN_USER",Set.of("ouf.semantic.review"));
+    var draftRead=body(http.perform(get(PUBLISHED_TERMS).with(reviewer)
+        .param("revisionIds",revision+","+unknown)).andExpect(status().isOk()).andReturn());
+    org.assertj.core.api.Assertions.assertThat(draftRead).isEqualTo(json.valueToTree(java.util.Map.of(
+        "terms", java.util.List.of(), "missing", java.util.List.of(revision,unknown))));
 
     http.perform(get("/api/semantic/v1/artifacts/{id}",artifact).with(actor("reader","OUF_SERVICE",Set.of("ouf.semantic.read"))))
         .andExpect(status().isForbidden()).andExpect(jsonPath("$.detail").value("SEM_DRAFT_READ_REQUIRED"));
@@ -86,7 +93,23 @@ class HttpApiRuntimeTest {
             "approvalDecisionId",decisionId,"contentHash",hash))))
         .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("PUBLISHED"))
         .andReturn());
+    http.perform(post("/api/trusted-human/v1/semantic-approval-challenges/{id}/publish",challengeId)
+        .with(actor("reviewer","OUF_HUMAN_USER",Set.of("ouf.semantic.publish")))
+        .header("Idempotency-Key","http-"+revision).contentType(MediaType.APPLICATION_JSON)
+        .content(json.writeValueAsBytes(java.util.Map.of("approvalDecisionId",decisionId,"contentHash","f".repeat(64)))))
+        .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("PUBLICATION_IDEMPOTENCY_CONFLICT"))
+        .andExpect(jsonPath("$.publicationSetId").doesNotExist());
     UUID publication=UUID.fromString(published.get("publicationSetId").asText());
+    var verified=body(http.perform(get(PUBLISHED_TERMS).with(reviewer)
+        .param("revisionIds",unknown+","+revision+","+revision))
+        .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store")).andReturn());
+    org.assertj.core.api.Assertions.assertThat(verified.required("missing")).isEqualTo(json.valueToTree(java.util.List.of(unknown)));
+    org.assertj.core.api.Assertions.assertThat(verified.required("terms").size()).isOne();
+    var term=verified.required("terms").required(0);
+    org.assertj.core.api.Assertions.assertThat(term.required("publisher").asText()).isEqualTo("authority");
+    org.assertj.core.api.Assertions.assertThat(term.required("label").required("it").asText()).isEqualTo("Luogo aggiornato");
+    org.assertj.core.api.Assertions.assertThat(term.required("label").required("en").isNull()).isTrue();
+    org.assertj.core.api.Assertions.assertThat(term.required("publicationSetId").asText()).isEqualTo(publication.toString());
     org.assertj.core.api.Assertions.assertThat(published.get("manifestHash").asText())
         .hasSize(64).isNotEqualTo(hash);
 
@@ -94,6 +117,28 @@ class HttpApiRuntimeTest {
         .header("Accept","text/turtle"))
         .andExpect(status().isOk()).andExpect(content().contentType("text/turtle"))
         .andExpect(content().string(org.hamcrest.Matchers.containsString(semanticId)));
+  }
+
+  @Test
+  void publishedTermsChecksReviewerAndBatchBounds() throws Exception {
+    String id=UUID.randomUUID().toString();
+    for (String role : java.util.List.of("OUF_AI_AGENT","OUF_SERVICE"))
+      http.perform(get(PUBLISHED_TERMS).param("revisionIds",id).with(actor("reader",role,Set.of("ouf.semantic.review"))))
+          .andExpect(status().isForbidden()).andExpect(jsonPath("$.detail").value("HUMAN_IDENTITY_REQUIRED"));
+    http.perform(get(PUBLISHED_TERMS).param("revisionIds",id)
+        .with(actor("reader","OUF_HUMAN_USER",Set.of("ouf.semantic.read"))))
+        .andExpect(status().isForbidden()).andExpect(jsonPath("$.detail").value("SEM_CAPABILITY_REQUIRED:ouf.semantic.review"));
+    http.perform(get(PUBLISHED_TERMS).param("revisionIds",id)).andExpect(status().isForbidden());
+
+    var reviewer=actor("reviewer","OUF_HUMAN_USER",Set.of("ouf.semantic.review"));
+    String full=String.join(",",java.util.Collections.nCopies(64,id));
+    http.perform(get(PUBLISHED_TERMS).param("revisionIds",full).with(reviewer))
+        .andExpect(status().isOk()).andExpect(jsonPath("$.missing.length()").value(1));
+    for (String invalid : java.util.List.of(full+","+id, "", "1-2-3-4-5", id+","))
+      http.perform(get(PUBLISHED_TERMS).param("revisionIds",invalid).with(reviewer))
+          .andExpect(status().isBadRequest()).andExpect(jsonPath("$.detail").value("SEM_REVISION_IDS_INVALID"));
+    http.perform(get(PUBLISHED_TERMS).with(reviewer)).andExpect(status().isBadRequest());
+    http.perform(get(PUBLISHED_TERMS).param("revisionIds",id,id).with(reviewer)).andExpect(status().isBadRequest());
   }
 
   @Test

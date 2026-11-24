@@ -180,5 +180,24 @@ class DatabaseConcurrencyRuntimeTest {
     return new PublicationFixture(revision,decision,"concurrent-publish-"+revision,hash);
   }
 
+  @Autowired it.comune.trieste.ouf.semantic.application.GovernanceService governance;
+
+  @Test void publicationKeyBindsRevisionDecisionAndHashEvenForIdenticalPayloads() {
+    var first=publicationFixture();
+    var second=publicationFixture();
+    assertThat(second.hash()).isEqualTo(first.hash());
+    var published=governance.publish(first.revision(),first.decision(),first.key(),first.hash(),"human","HUMAN","one");
+    assertThatThrownBy(()->governance.publish(second.revision(),second.decision(),first.key(),second.hash(),"human","HUMAN","two"))
+        .hasMessage("PUBLICATION_IDEMPOTENCY_CONFLICT");
+    assertThatThrownBy(()->governance.publish(first.revision(),second.decision(),first.key(),first.hash(),"human","HUMAN","two"))
+        .hasMessage("PUBLICATION_IDEMPOTENCY_CONFLICT");
+    assertThatThrownBy(()->governance.publish(second.revision(),first.decision(),first.key(),first.hash(),"human","HUMAN","two"))
+        .hasMessage("PUBLICATION_IDEMPOTENCY_CONFLICT");
+    assertThat(governance.publish(first.revision(),first.decision(),first.key(),first.hash(),"human","HUMAN","replay"))
+        .isEqualTo(published);
+    assertThat(governance.publish(second.revision(),second.decision(),second.key(),second.hash(),"human","HUMAN","two"))
+        .containsEntry("status","PUBLISHED").doesNotContainEntry("publicationSetId",published.get("publicationSetId"));
+  }
+
   private record PublicationFixture(UUID revision,UUID decision,String key,String hash){}
 }

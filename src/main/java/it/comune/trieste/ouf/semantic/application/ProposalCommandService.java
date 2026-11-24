@@ -1,10 +1,13 @@
 package it.comune.trieste.ouf.semantic.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.comune.trieste.ouf.authorization.PrincipalContext;
+import it.comune.trieste.ouf.semantic.api.SemanticDiscoveryDelegation;
 import it.comune.trieste.ouf.semantic.api.ArtifactApi.CreateArtifact;
 import java.time.Duration;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +21,28 @@ public class ProposalCommandService {
   private final ValidationService validation;
   private final GovernanceService governance;
   private final InterchangeService interchange;
+  private final CandidateAdoptionService adoption;
   public ProposalCommandService(JdbcClient db,ObjectMapper json,ArtifactService artifacts,
-      ValidationService validation,GovernanceService governance,InterchangeService interchange) {
+      ValidationService validation,GovernanceService governance,InterchangeService interchange,CandidateAdoptionService adoption) {
+    this.adoption=adoption;
     this.db=db;this.json=json;this.artifacts=artifacts;this.validation=validation;this.governance=governance;this.interchange=interchange;
+  }
+  @Transactional(timeout=10)
+  public Map<String,Object> adopt(PrincipalContext principal,String key,UUID requestId,UUID candidateId) {
+    if(principal.actorType()!=PrincipalContext.ActorType.HUMAN)
+      throw new GovernanceService.Forbidden("SEM_HUMAN_REQUIRED");
+    String jobSubject=SemanticDiscoveryDelegation.jobSubject(principal,json);
+    return execute(principal.tenantId(),principal.subjectId(),key,"ADOPT",
+        Map.of("requestId",requestId,"candidateId",candidateId,"jobSubject",jobSubject),
+        ()->adoption.adopt(requestId,candidateId,jobSubject,principal.subjectId()),stored->{
+          var current=adoption.reference(requestId,candidateId,jobSubject,UUID.fromString((String)stored.get("artifactId")),true);
+          current.put("receiptSemantics",stored.get("receiptSemantics"));
+          current.put("runtimeAuthorityIssued",false);
+          current.put("notReleaseAcceptance",true);
+          var projection=decode(encode(current));
+          if(!projection.equals(stored))projection.put("receiptSemantics","CURRENT_ADOPTION_REFERENCE");
+          return projection;
+        });
   }
   @Transactional(timeout=10) public Map<String,Object> createImported(String tenant,String principal,String type,String key,
       CreateArtifact command,String turtle,String mediaType,String correlation) {
@@ -47,7 +69,7 @@ public class ProposalCommandService {
   @Transactional(timeout=10) public Map<String,Object> validate(String tenant,String principal,String key,
       UUID revision,long expectedVersion) {
     return execute(tenant,principal,key,"VALIDATE",Map.of("revisionId",revision,"expectedRowVersion",expectedVersion),()->{
-      lockDraft(revision,expectedVersion);
+      lockDraft(revision,expectedVersion,principal);
       return validation.validate(revision,principal);
     });
   }
@@ -55,17 +77,24 @@ public class ProposalCommandService {
       UUID revision,long expectedVersion,UUID validationRun,String correlation) {
     return execute(tenant,principal,key,"REVIEW",Map.of("revisionId",revision,
         "expectedRowVersion",expectedVersion,"validationRunId",validationRun),()->{
-      Map<String,Object> current=lockDraft(revision,expectedVersion);
+      Map<String,Object> current=lockDraft(revision,expectedVersion,principal);
       var rows=db.sql("select validated_content_hash from ouf_sem.validation_run where validation_run_id=:v "
           +"and revision_id=:r and validated_row_version=:version and status='PASS' and error_count=0 "
           +"and validated_content_hash=:hash")
           .param("v",validationRun).param("r",revision).param("version",expectedVersion)
           .param("hash",current.get("current_hash")).query().listOfRows();
       if(rows.size()!=1)throw new GovernanceService.Conflict("CURRENT_GREEN_VALIDATION_REQUIRED");
+      long version=((Number)current.get("row_version")).longValue();
+      UUID currentRun=validationRun;
+      if(version!=expectedVersion) {
+        var refreshed=validation.validate(revision,principal);
+        if(!"PASS".equals(refreshed.get("status")))throw new GovernanceService.Conflict("CURRENT_GREEN_VALIDATION_REQUIRED");
+        currentRun=(UUID)refreshed.get("validation_run_id");
+      }
       Map<String,Object> out=new LinkedHashMap<>(governance.challenge(revision,
           String.valueOf(current.get("current_hash")),Duration.ofMinutes(15),principal,type,correlation));
-      out.put("validationRunId",validationRun);
-      out.put("expectedRowVersion",expectedVersion);
+      out.put("validationRunId",currentRun);
+      out.put("expectedRowVersion",version);
       out.put("humanAuthorityRequired",true);
       return out;
     });
@@ -78,19 +107,29 @@ public class ProposalCommandService {
     if(rows.size()!=1)throw new NoSuchElementException("PROPOSAL_RECEIPT_NOT_FOUND");
     return Map.of("operation",rows.get(0).get("operation"),"result",decode(rows.get(0).get("result")),"historicalSnapshot",true,"ownerStateMustBeRechecked",true);
   }
-  private Map<String,Object> lockDraft(UUID revision,long expected) {
+  private Map<String,Object> lockDraft(UUID revision,long expected,String actor) {
     var rows=db.sql("select row_version,lifecycle_status,encode(public.digest("+
-        "(label_json::text||description_json::text||definition_json::text)::bytea,'sha256'),'hex') current_hash "
+        "convert_to(label_json::text||description_json::text||definition_json::text,'UTF8'),'sha256'),'hex') current_hash "
         +"from ouf_sem.artifact_revision where revision_id=:r for update")
         .param("r",revision).query().listOfRows();
     if(rows.size()!=1)throw new NoSuchElementException("REVISION_NOT_FOUND");
     var row=rows.get(0);
-    if(!"DRAFT".equals(row.get("lifecycle_status"))||((Number)row.get("row_version")).longValue()!=expected)
-      throw new GovernanceService.Conflict("DRAFT_VERSION_CONFLICT");
-    return row;
+    if(((Number)row.get("row_version")).longValue()!=expected)throw new GovernanceService.Conflict("DRAFT_VERSION_CONFLICT");
+    if("DRAFT".equals(row.get("lifecycle_status")))return row;
+    if("UNDER_REVIEW".equals(row.get("lifecycle_status"))
+        && governance.expireReview(revision,expected,actor)) {
+      row.put("row_version",expected+1);
+      row.put("lifecycle_status","DRAFT");
+      return row;
+    }
+    throw new GovernanceService.Conflict("DRAFT_VERSION_CONFLICT");
   }
   private Map<String,Object> execute(String tenant,String principal,String key,String operation,Object payload,
       Supplier<Map<String,Object>> effects) {
+    return execute(tenant,principal,key,operation,payload,effects,UnaryOperator.identity());
+  }
+  private Map<String,Object> execute(String tenant,String principal,String key,String operation,Object payload,
+      Supplier<Map<String,Object>> effects,UnaryOperator<Map<String,Object>> replay) {
     validKey(key);
     // Unique insert fences concurrent callers; all I/O here is local and transactional.
     String hash=db.sql("select encode(public.digest(convert_to(cast(:p as jsonb)::text,'UTF8'),'sha256'),'hex')")
@@ -105,7 +144,7 @@ public class ProposalCommandService {
       if(!operation.equals(row.get("operation"))||!hash.equals(row.get("request_hash")))
         throw new GovernanceService.Conflict("IDEMPOTENCY_KEY_REUSE");
       if(row.get("result")==null)throw new GovernanceService.Conflict("PROPOSAL_RECONCILE_REQUIRED");
-      return decode(row.get("result"));
+      return replay.apply(decode(row.get("result")));
     }
     Map<String,Object> result=new LinkedHashMap<>(effects.get());
     result.put("receiptSemantics","DURABLE_COMMAND_RESULT_NOT_CURRENT_STATE");

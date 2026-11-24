@@ -1,7 +1,5 @@
 package it.comune.trieste.ouf.semantic.application;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
 import java.util.*;
 import org.apache.jena.rdf.model.*;
@@ -10,42 +8,69 @@ import org.apache.jena.rdf.model.*;
 public final class PublishedRdfSnapshot {
   public static final int MAX_STATEMENTS=1000;
   private final SafeRdfParser parser=new SafeRdfParser();
-  private final ObjectMapper json=new ObjectMapper();
 
-  public Map<String,Object> project(byte[] bytes,String mediaType,String hash,long count) {
+  private void checkInput(byte[] bytes,String mediaType) {
     if(bytes==null || bytes.length==0 || bytes.length>SafeRdfParser.MAX_BYTES)
       throw new IllegalArgumentException("SEM_READ_RDF_SIZE_LIMIT");
     // Remote JSON-LD contexts/imports must not create an ungoverned fetch path.
     if("application/ld+json".equals(mediaType)) {
-      try {rejectRemoteContexts(json.readTree(bytes));}
-      catch(java.io.IOException e){throw new IllegalArgumentException("SEM_READ_RDF_JSON_INVALID",e);}
+      try {SafeRdfParser.checkLocalContexts(bytes);}
+      catch(SafeRdfParser.UnsafeRdf rejected){throw new IllegalArgumentException(rejected.getMessage(),rejected);}
     }
-    var parsed=parser.parse(bytes,mediaType);
-    if(!parsed.contentHash().equals(hash) || parsed.statementCount()!=count)
-      throw new IllegalStateException("SEM_READ_RDF_SNAPSHOT_MISMATCH");
+  }
+
+  Model verifiedModel(byte[] bytes,String mediaType,String hash) {
+    checkInput(bytes,mediaType);
+    verifyHash(bytes,hash);
+    return parser.model(bytes,mediaType);
+  }
+
+  static void verifyHash(byte[] bytes,String hash) {
+    try {
+      byte[] digest=java.security.MessageDigest.getInstance("SHA-256").digest(bytes);
+      if(!HexFormat.of().formatHex(digest).equals(hash))
+        throw new IllegalStateException("SEM_READ_RDF_SNAPSHOT_MISMATCH");
+    } catch(java.security.NoSuchAlgorithmException e){throw new IllegalStateException(e);}
+  }
+
+  public Map<String,Object> project(byte[] bytes,String mediaType,String hash,long expectedCount) {
+    checkInput(bytes,mediaType);
     Model model=parser.model(bytes,mediaType);
     try {
-      Comparator<Statement> order=Comparator
-        .comparing((Statement s)->org.apache.jena.riot.out.NodeFmtLib.strNT(s.getSubject().asNode()))
-        .thenComparing(s->s.getPredicate().getURI())
-        .thenComparing(s->org.apache.jena.riot.out.NodeFmtLib.strNT(s.getObject().asNode()));
-      var selected=new TreeSet<Statement>(order);
-      var iterator=model.listStatements();
-      try {
-        while(iterator.hasNext()) {
-          selected.add(iterator.nextStatement());
-          if(selected.size()>MAX_STATEMENTS)selected.pollLast();
-        }
-      } finally {iterator.close();}
-      List<Map<String,Object>> statements=new ArrayList<>();
-      for(var s:selected)statements.add(Map.of("subject",node(s.getSubject()),
-        "predicate",s.getPredicate().getURI(),"object",node(s.getObject())));
-      return Map.of("content_hash",hash,"media_type",mediaType,"statement_count",count,
-        "statements",statements,"partial",count>statements.size(),
-        "interpretation","ASSERTED_RDF_NO_INFERENCE",
-        "blank_node_scope","THIS_SNAPSHOT_RESPONSE",
-        "term_reference_scope","CONTAINING_REVISION_AND_PUBLICATION_SET");
+      verifyHash(bytes,hash);
+      if(model.size()!=expectedCount)throw new IllegalStateException("SEM_READ_RDF_SNAPSHOT_MISMATCH");
+      return project(model,mediaType,hash);
     } finally {model.close();}
+  }
+
+  Map<String,Object> projectAdopted(byte[] bytes,String mediaType,String hash) {
+    Model model=verifiedModel(bytes,mediaType,hash);
+    try {return project(model,mediaType,hash);}
+    finally {model.close();}
+  }
+
+  private Map<String,Object> project(Model model,String mediaType,String hash) {
+    long count=model.size();
+    Comparator<Statement> order=Comparator
+      .comparing((Statement s)->org.apache.jena.riot.out.NodeFmtLib.strNT(s.getSubject().asNode()))
+      .thenComparing(s->s.getPredicate().getURI())
+      .thenComparing(s->org.apache.jena.riot.out.NodeFmtLib.strNT(s.getObject().asNode()));
+    var selected=new TreeSet<Statement>(order);
+    var iterator=model.listStatements();
+    try {
+      while(iterator.hasNext()) {
+        selected.add(iterator.nextStatement());
+        if(selected.size()>MAX_STATEMENTS)selected.pollLast();
+      }
+    } finally {iterator.close();}
+    List<Map<String,Object>> statements=new ArrayList<>();
+    for(var s:selected)statements.add(Map.of("subject",node(s.getSubject()),
+      "predicate",s.getPredicate().getURI(),"object",node(s.getObject())));
+    return Map.of("content_hash",hash,"media_type",mediaType,"statement_count",count,
+      "statements",statements,"partial",count>statements.size(),
+      "interpretation","ASSERTED_RDF_NO_INFERENCE",
+      "blank_node_scope","THIS_SNAPSHOT_RESPONSE",
+      "term_reference_scope","CONTAINING_REVISION_AND_PUBLICATION_SET");
   }
   private static Map<String,Object> node(RDFNode node) {
     if(node.isURIResource())return Map.of("kind","IRI","value",node.asResource().getURI());
@@ -59,16 +84,5 @@ public final class PublishedRdfSnapshot {
       return out;
     }
     throw new IllegalArgumentException("SEM_READ_RDF_NODE_UNSUPPORTED");
-  }
-  private static void rejectRemoteContexts(JsonNode node) {
-    if(node==null)return;
-    if(node.isObject()) {
-      if(node.has("@import"))throw new IllegalArgumentException("SEM_READ_RDF_REMOTE_CONTEXT_FORBIDDEN");
-      JsonNode context=node.get("@context");
-      if(context!=null && (context.isTextual() || (context.isArray() &&
-          java.util.stream.StreamSupport.stream(context.spliterator(),false).anyMatch(JsonNode::isTextual))))
-        throw new IllegalArgumentException("SEM_READ_RDF_REMOTE_CONTEXT_FORBIDDEN");
-    }
-    if(node.isContainerNode())node.forEach(PublishedRdfSnapshot::rejectRemoteContexts);
   }
 }
