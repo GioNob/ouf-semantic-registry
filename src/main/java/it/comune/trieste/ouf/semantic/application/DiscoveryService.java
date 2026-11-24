@@ -114,7 +114,7 @@ public class DiscoveryService {
             languages(job.get("preferred_languages")),started.plusMillis(remaining.get()));
         SemanticDiscoveryProvider.SearchResult result;
         if(p instanceof NamespaceFilteredDiscoveryProvider filtered){
-          var response=filtered.searchWithNamespaceFilter(query);
+          var response=filtered.searchWithNamespaceFilter(query,new JobDiscoveryTraffic(db,id));
           namespaceExcluded=Math.addExact(namespaceExcluded,response.namespaceExcluded());
           result=response.fetched();
         }else{

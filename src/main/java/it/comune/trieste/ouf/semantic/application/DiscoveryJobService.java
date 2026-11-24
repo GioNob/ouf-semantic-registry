@@ -102,6 +102,12 @@ public class DiscoveryJobService {
     if(!rows.isEmpty())out.putAll(rows.getFirst());return out;
   }
   public List<Map<String,Object>> candidates(UUID id,String actor){status(id,actor);return discovery.candidates(id);}
+  long trafficTotal(String metric,String route,String origin){
+    return db.sql("""
+        select coalesce(sum(amount),0) from ouf_sem.discovery_job_traffic
+        where metric=:metric and route=:route and origin=:origin
+        """).param("metric",metric).param("route",route).param("origin",origin).query(Long.class).single();
+  }
   @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
   public Map<String,Object> candidatesWithState(UUID id,String actor) {
     var response=status(id,actor);
@@ -118,5 +124,5 @@ public class DiscoveryJobService {
     return response;
   }
   private String write(Object value){try{return json.writeValueAsString(value);}catch(Exception e){throw new IllegalArgumentException("SEM_DISCOVERY_REQUEST_INVALID");}}
-  private static String hash(String value){try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));}catch(Exception e){throw new IllegalStateException("SEM_DISCOVERY_HASH_UNAVAILABLE");}}
+  static String hash(String value){try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));}catch(Exception e){throw new IllegalStateException("SEM_DISCOVERY_HASH_UNAVAILABLE");}}
 }

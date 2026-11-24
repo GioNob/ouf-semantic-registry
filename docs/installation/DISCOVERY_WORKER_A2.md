@@ -40,6 +40,18 @@ Dopo la search, il worker esamina gli URI distinti in ordine di ranking. I soli 
 
 Il worker prosegue con gli altri URI. Un 4xx sul GET facoltativo di un’ontologia collegata da `rdfs:isDefinedBy` può lasciare `ONTOLOGY_PROVENANCE_UNAVAILABLE` sul candidato. La richiesta può terminare `SUCCEEDED` con `candidateCount` pari a zero.
 
-Un 429 sulla search o sul GET obbligatorio produce `SEM_DISCOVERY_RATE_LIMITED`, con origine non attestata. Durante `RETRY_WAIT`, `nextAttemptAt` rispetta il massimo tra il backoff con jitter e il `Retry-After` valido, in secondi o come data HTTP. Un header malformato conserva il blocco del recupero automatico. Un 429 sulla sola provenienza facoltativa lascia un gap sul candidato. I 5xx e i timeout su operazioni obbligatorie espongono `SEM_DISCOVERY_PROVIDER_FAILED`.
+Un 429 sulla search o sul GET obbligatorio produce `SEM_DISCOVERY_RATE_LIMITED`. Durante `RETRY_WAIT`, `nextAttemptAt` rispetta il massimo tra il backoff con jitter e il `Retry-After` valido, in secondi o come data HTTP. Un header malformato conserva il blocco del recupero automatico. Un 429 sulla sola provenienza facoltativa lascia un gap sul candidato. I 5xx e i timeout su operazioni obbligatorie espongono `SEM_DISCOVERY_PROVIDER_FAILED`.
 
 Gli errori della ricerca e i guasti del canale durante i fetch obbligatori seguono la politica di recupero del provider, inclusi 401/403, errori del token, 408/429, 5xx, timeout, limiti di trasporto e risposte malformate. Per un incidente `OPEN` con codice `PROVIDER_HTTP_400` aperto dalla 1.0.2, la 1.0.3 è eleggibile al sondaggio V15. Un tentativo ammesso e concluso con successo risolve l’incidente e riporta la dipendenza a `HEALTHY`. La migrazione V18 aggiunge il contatore inizializzato a zero e conserva la funzione di pubblicazione usata dalla 1.0.2.
+
+### Misure della quota
+
+Actuator espone le misure con il prefisso `ouf.semantic.discovery.`. Ogni replica legge lo stesso totale PostgreSQL dei job conservati. Per ottenere il totale del database da più repliche, selezionare una sola serie per misura e coppia di etichette. La copertura inizia con la prima esecuzione del worker strumentato sullo schema V23.
+
+| Misura | Evento contato |
+|---|---|
+| `searchSent`, `getSent` | Il client HTTP accetta l'invio della search o del GET, comprese le richieste che terminano in timeout. |
+| `getExcluded` | Il filtro evita il GET di una descrizione o di una provenienza. Un nuovo tentativo può evitare di nuovo lo stesso GET. |
+| `getUseful` | Prima descrizione accettata dal parser o prima proiezione di provenienza utilizzabile e non vuota per la risorsa nel job. |
+| `getRepeated` | Ogni GET dopo il primo per la stessa risorsa nello stesso job. Un retry riuscito può aumentare anche `getUseful`. |
+| `http429` | Risposta 429 osservata, anche sulla provenienza facoltativa. Le etichette sono `route=search\|fetch` e `origin=APISIX\|UPSTREAM\|UNKNOWN`. In assenza di una verifica autenticata del salto produttore, l'origine è `UNKNOWN`. |

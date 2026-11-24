@@ -3,6 +3,7 @@ package it.comune.trieste.ouf.semantic.adapters.discovery;
 import com.fasterxml.jackson.databind.*;
 import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
 import it.comune.trieste.ouf.semantic.application.NamespaceFilteredDiscoveryProvider;
+import it.comune.trieste.ouf.semantic.ports.DiscoveryTraffic;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -24,8 +25,15 @@ public class SchemaGovProvider implements NamespaceFilteredDiscoveryProvider {
   // A denied URI does not use a candidate slot; total fetch attempts stay bounded.
   private static final int MAX_ATTEMPT_FACTOR=3;
   private final SchemaGovProperties cfg;private final BoundedGatewayClient client;private final ObjectMapper json;private final Clock clock;
+  public SchemaGovProvider(SchemaGovProperties cfg,ObjectMapper json,GatewayOAuthProperties auth){
+    this(cfg,json,auth,Optional.empty());
+  }
   @Autowired
-  public SchemaGovProvider(SchemaGovProperties cfg,ObjectMapper json,GatewayOAuthProperties auth){this(cfg,new BoundedGatewayClient(cfg.connectTimeout(),new ClientCredentialsTokenSource(auth,json)),json,Clock.systemUTC());}
+  public SchemaGovProvider(SchemaGovProperties cfg,ObjectMapper json,GatewayOAuthProperties auth,
+      Optional<RateLimitOriginVerifier> verifier){
+    this(cfg,new BoundedGatewayClient(cfg.connectTimeout(),new ClientCredentialsTokenSource(auth,json),
+        verifier.orElse(RateLimitOriginVerifier.UNATTESTED)),json,Clock.systemUTC());
+  }
   // Existing package-local HTTP fixtures cannot become a production anonymous provider.
   SchemaGovProvider(SchemaGovProperties cfg,ObjectMapper json){this(cfg,fixtureClient(cfg),json,Clock.systemUTC());}
   private static BoundedGatewayClient fixtureClient(SchemaGovProperties cfg){
@@ -37,10 +45,13 @@ public class SchemaGovProvider implements NamespaceFilteredDiscoveryProvider {
   public String providerId(){return "SCHEMA_GOV_IT";}
   @Override public boolean enabled(){return cfg.enabled();}
   @Override public FilteredResult searchWithNamespaceFilter(Query q){
+    return searchWithNamespaceFilter(q,DiscoveryTraffic.NONE);
+  }
+  @Override public FilteredResult searchWithNamespaceFilter(Query q,DiscoveryTraffic traffic){
     if(!cfg.enabled())return new FilteredResult(new SearchResult(List.of(),0),0);
     URI endpoint=underGateway(cfg.searchPath());
     String form="query="+enc(query(q))+"&format="+enc("application/sparql-results+json");
-    var response=client.postForm(cfg.gatewayBaseUrl(),endpoint,form,timeout(q.deadline()),cfg.maxResponseBytes(),JSON);
+    var response=client.postForm(cfg.gatewayBaseUrl(),endpoint,form,timeout(q.deadline()),cfg.maxResponseBytes(),JSON,traffic);
     JsonNode root;
     try {root=json.readTree(response.body());}
     catch(java.io.IOException e){throw new BoundedGatewayClient.ProviderFailure("SCHEMA_GOV_SPARQL_RESULT_INVALID",e);}
@@ -50,7 +61,7 @@ public class SchemaGovProvider implements NamespaceFilteredDiscoveryProvider {
     // Fetch required descriptions first so optional metadata cannot starve a later candidate.
     record Fetched(SchemaGovRanking.Match match,BoundedGatewayClient.Response body,OntologyProvenance.Description description){}
     var descriptions=new ArrayList<Fetched>();
-    var evidence=new OntologyProvenance(Math.min(cfg.maxResponseBytes(),65536),cfg::admits);
+    var evidence=new OntologyProvenance(Math.min(cfg.maxResponseBytes(),65536),cfg::admits,traffic);
     var seen=new HashSet<String>();
     int attempted=0,namespaceExcluded=0,denied=0,invalid=0,bound=0;
     for(var match:SchemaGovRanking.rank(rows,q)){
@@ -59,12 +70,14 @@ public class SchemaGovProvider implements NamespaceFilteredDiscoveryProvider {
       if(!seen.add(uri))continue;
       if(!cfg.admits(uri)){
         namespaceExcluded++;
+        traffic.excluded();
         continue;
       }
       attempted++;
       try {
-        var body=fetch(uri,q.deadline());
+        var body=fetch(uri,q.deadline(),traffic);
         descriptions.add(new Fetched(match,body,evidence.inspect(uri,body)));
+        traffic.useful(uri);
       } catch(SafeRdfParser.UnsafeRdf rejected){
         if("RDF_SIZE_LIMIT".equals(rejected.getMessage()))bound++;
         else invalid++;
@@ -81,16 +94,16 @@ public class SchemaGovProvider implements NamespaceFilteredDiscoveryProvider {
       var match=entry.match();
       var body=entry.body();
       if(Thread.currentThread().isInterrupted())throw new BoundedGatewayClient.ProviderFailure("PROVIDER_INTERRUPTED");
-      var metadata=clock.instant().isBefore(cutoff)?evidence.read(entry.description(),link->fetch(link,cutoff)):
+      var metadata=clock.instant().isBefore(cutoff)?evidence.read(entry.description(),link->fetch(link,cutoff,traffic)):
           new OntologyProvenance.Evidence(null,entry.description().labels(),List.of("ONTOLOGY_PROVENANCE_UNAVAILABLE"));
       candidates.add(new Candidate(match.uri(),match.uri(),q.artifactType(),"HIGH",match.score(),match.reasons(),metadata.gaps(),
           body.body(),body.mediaType(),metadata.triples(),metadata.labels()));
     }
     return new FilteredResult(new SearchResult(candidates,denied,invalid,bound),namespaceExcluded+evidence.namespaceExcluded());
   }
-  private BoundedGatewayClient.Response fetch(String resource,Instant deadline){
+  private BoundedGatewayClient.Response fetch(String resource,Instant deadline,DiscoveryTraffic traffic){
     return client.get(cfg.gatewayBaseUrl(),underGateway(cfg.fetchPath()+"?uri="+enc(resource)),
-        timeout(deadline),cfg.maxResponseBytes(),RDF);
+        timeout(deadline),cfg.maxResponseBytes(),RDF,traffic,resource);
   }
   private Duration timeout(Instant deadline){
     if(Thread.currentThread().isInterrupted())throw new BoundedGatewayClient.ProviderFailure("PROVIDER_INTERRUPTED");

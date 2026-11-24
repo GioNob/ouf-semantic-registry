@@ -34,23 +34,23 @@ final class SchemaGovFetchFixture {
     provider=new SchemaGovProvider(cfg,client,json,Clock.systemUTC());
     var result=json.createObjectNode();
     result.putObject("results").set("bindings",rows);
-    when(client.postForm(eq(base),eq(base.resolve("/search")),anyString(),any(Duration.class),eq(8192),anySet()))
+    when(client.postForm(eq(base),eq(base.resolve("/search")),anyString(),any(Duration.class),eq(8192),anySet(),any()))
         .thenReturn(new BoundedGatewayClient.Response(result.toString().getBytes(UTF_8),"application/sparql-results+json"));
   }
   void rejectSearch(String code){
-    when(client.postForm(eq(base),eq(base.resolve("/search")),anyString(),any(Duration.class),eq(8192),anySet()))
+    when(client.postForm(eq(base),eq(base.resolve("/search")),anyString(),any(Duration.class),eq(8192),anySet(),any()))
         .thenThrow(new BoundedGatewayClient.ProviderFailure(code));
   }
   void reject(String uri,String code){
-    when(client.get(eq(base),eq(endpoint(uri)),any(Duration.class),eq(8192),anySet()))
+    when(client.get(eq(base),eq(endpoint(uri)),any(Duration.class),eq(8192),anySet(),any(),anyString()))
         .thenThrow(new BoundedGatewayClient.ProviderFailure(code));
   }
   void describe(String uri,String rdf){
-    when(client.get(eq(base),eq(endpoint(uri)),any(Duration.class),eq(8192),anySet()))
+    when(client.get(eq(base),eq(endpoint(uri)),any(Duration.class),eq(8192),anySet(),any(),anyString()))
         .thenReturn(new BoundedGatewayClient.Response(rdf.getBytes(UTF_8),"text/turtle"));
   }
   void verifyFetches(String uri,int count){
-    verify(client,times(count)).get(eq(base),eq(endpoint(uri)),any(Duration.class),eq(8192),anySet());
+    verify(client,times(count)).get(eq(base),eq(endpoint(uri)),any(Duration.class),eq(8192),anySet(),any(),anyString());
   }
   private URI endpoint(String uri){return base.resolve("/fetch?uri="+URLEncoder.encode(uri,UTF_8));}
 }

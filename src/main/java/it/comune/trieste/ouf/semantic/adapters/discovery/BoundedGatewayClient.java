@@ -4,35 +4,67 @@ import java.net.URI;
 import java.net.http.*;
 import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import it.comune.trieste.ouf.semantic.ports.DiscoveryTraffic;
+import it.comune.trieste.ouf.semantic.ports.DiscoveryTraffic.Route;
+import it.comune.trieste.ouf.semantic.ports.DiscoveryTraffic.Origin;
 
 public class BoundedGatewayClient {
   private final HttpClient http;
   private final java.util.function.Supplier<String> tokenSource;
+  private final RateLimitOriginVerifier originVerifier;
   public BoundedGatewayClient(Duration connectTimeout){this(connectTimeout,null);}
-  public BoundedGatewayClient(Duration connectTimeout,java.util.function.Supplier<String> tokenSource){this.tokenSource=tokenSource;this.http=HttpClient.newBuilder().connectTimeout(connectTimeout).followRedirects(HttpClient.Redirect.NEVER).build();}
+  public BoundedGatewayClient(Duration connectTimeout,java.util.function.Supplier<String> tokenSource){
+    this(connectTimeout,tokenSource,RateLimitOriginVerifier.UNATTESTED);
+  }
+  BoundedGatewayClient(Duration connectTimeout,java.util.function.Supplier<String> tokenSource,RateLimitOriginVerifier originVerifier){
+    this.tokenSource=tokenSource;this.originVerifier=originVerifier;
+    this.http=HttpClient.newBuilder().connectTimeout(connectTimeout).followRedirects(HttpClient.Redirect.NEVER).build();
+  }
   public Response get(URI base,URI uri,Duration timeout,int maxBytes,Set<String> mediaTypes){
-    return send(base,request(base,uri,timeout).header("Accept",String.join(",",mediaTypes)).GET().build(),maxBytes,mediaTypes);
+    return get(base,uri,timeout,maxBytes,mediaTypes,DiscoveryTraffic.NONE,null);
+  }
+  Response get(URI base,URI uri,Duration timeout,int maxBytes,Set<String> mediaTypes,DiscoveryTraffic traffic,String resource){
+    return send(base,request(base,uri,timeout).header("Accept",String.join(",",mediaTypes)).GET().build(),
+        maxBytes,mediaTypes,traffic,Route.fetch,resource);
   }
   public Response postForm(URI base,URI uri,String form,Duration timeout,int maxBytes,Set<String> mediaTypes){
-    return send(base,request(base,uri,timeout).header("Accept",String.join(",",mediaTypes)).header("Content-Type","application/x-www-form-urlencoded; charset=UTF-8").POST(HttpRequest.BodyPublishers.ofString(form)).build(),maxBytes,mediaTypes);
+    return postForm(base,uri,form,timeout,maxBytes,mediaTypes,DiscoveryTraffic.NONE);
   }
-  private Response send(URI base,HttpRequest req,int maxBytes,Set<String> mediaTypes){
+  Response postForm(URI base,URI uri,String form,Duration timeout,int maxBytes,Set<String> mediaTypes,DiscoveryTraffic traffic){
+    var req=request(base,uri,timeout).header("Accept",String.join(",",mediaTypes))
+        .header("Content-Type","application/x-www-form-urlencoded; charset=UTF-8").POST(HttpRequest.BodyPublishers.ofString(form)).build();
+    return send(base,req,maxBytes,mediaTypes,traffic,Route.search,null);
+  }
+  private Response send(URI base,HttpRequest req,int maxBytes,Set<String> mediaTypes,DiscoveryTraffic traffic,Route route,String resource){
     URI uri=req.uri();
     requireSameOrigin(base,uri);
+    var limited=new AtomicReference<Origin>();
     try{
       var boundedBody=BoundedResponseBody.handler(maxBytes);
       var res=BoundedResponseBody.send(http,req,headers->{
         // Once the 429 headers arrive, an oversized or slow error body cannot mask the limit.
-        if(headers.statusCode()==429)throw new ProviderFailure(ProviderFailurePolicy.http(
-            429,headers.headers().firstValue("Retry-After").orElse(null),java.time.Clock.systemUTC()));
+        if(headers.statusCode()==429){
+          limited.set(origin(req,headers));
+          throw new ProviderFailure(ProviderFailurePolicy.http(
+              429,headers.headers().firstValue("Retry-After").orElse(null),java.time.Clock.systemUTC()));
+        }
         return boundedBody.apply(headers);
-      });
+      },()->traffic.sent(route,resource));
       if(res.statusCode()/100==3)throw new ProviderFailure("PROVIDER_REDIRECT_FORBIDDEN");
       if(res.statusCode()!=200)throw new ProviderFailure(ProviderFailurePolicy.http(res.statusCode(),res.headers().firstValue("retry-after").orElse(null),java.time.Clock.systemUTC()));
       var type=res.headers().firstValue("content-type").orElse("").split(";",2)[0].trim().toLowerCase(java.util.Locale.ROOT);
       if(!mediaTypes.contains(type))throw new ProviderFailure("PROVIDER_MEDIA_TYPE_REJECTED");
       return new Response(res.body(),type);
-    }catch(ProviderFailure e){throw e;}catch(Exception e){var decision=ProviderFailurePolicy.exception(e);if(decision.kind()==ProviderFailurePolicy.Kind.CANCELLED)Thread.currentThread().interrupt();throw new ProviderFailure(decision,e);}
+    }catch(RuntimeException e){throw e;}catch(Exception e){var decision=ProviderFailurePolicy.exception(e);if(decision.kind()==ProviderFailurePolicy.Kind.CANCELLED)Thread.currentThread().interrupt();throw new ProviderFailure(decision,e);}
+    finally{
+      Origin observed=limited.get();
+      if(observed!=null)traffic.http429(route,observed);
+    }
+  }
+  private Origin origin(HttpRequest request,HttpResponse.ResponseInfo response){
+    try{return java.util.Objects.requireNonNullElse(originVerifier.verifiedOrigin(request.method(),request.uri(),response),Origin.UNKNOWN);}
+    catch(RuntimeException unverifiable){return Origin.UNKNOWN;}
   }
   static Duration remaining(long deadline){
     long nanos=deadline-System.nanoTime();

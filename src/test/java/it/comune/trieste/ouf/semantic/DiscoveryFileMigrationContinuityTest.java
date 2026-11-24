@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/** Disposable CI database only: exercise upgrades through V22 using populated schemas. */
+/** Disposable CI database only: exercise upgrades through V23 using populated schemas. */
 class DiscoveryFileMigrationContinuityTest {
   @Test void fileReceiptsHistoryAndDiscoveryBudgetsSurviveAdditiveUpgradeAndReconnect() throws Exception {
     String url=Objects.requireNonNull(System.getenv("OUF_SEM_DB_URL"),"isolated PostgreSQL fixture required");
@@ -172,20 +172,23 @@ class DiscoveryFileMigrationContinuityTest {
         // Reopening the fully upgraded database must preserve the history and all claims.
         var reopened=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
             .defaultSchema("ouf_sem").locations("classpath:db/migration").load();
-        assertThat(reopened.migrate().migrationsExecuted).isEqualTo(4); // V19 through V22
+        assertThat(reopened.migrate().migrationsExecuted).isEqualTo(5); // V19 through V23
         assertThat(reopened.migrate().migrationsExecuted).isZero();
         reopened.validate();
         try(var connection=DriverManager.getConnection(dbUrl,user,password)) {
-          assertThat(history(connection)).hasSize(22);
+          assertThat(history(connection)).hasSize(23);
+          assertThat(value(connection,"select count(*) from ouf_sem.discovery_job_traffic")).isEqualTo("0");
           assertThat(value(connection,published)).isEqualTo(beforeDescriptionUpgrade);
           assertThat(value(connection,"select count(*) from ouf_sem.discovery_request where fetch_denied_count<>0")).isEqualTo("0");
           // Exercise the running 1.0.2 publication signature on the upgraded schema.
           try(var statement=connection.createStatement()){
+            statement.executeUpdate("insert into ouf_sem.discovery_traffic_count(request_id,metric,route,origin,amount) values ('"+legacy+"','searchSent','','',1)");
             statement.executeUpdate("update ouf_sem.discovery_request set state='RUNNING', worker_generation=1, lease_until=now()+interval '1 minute', budget_deadline=now()+interval '1 hour' where request_id='"+legacy+"'");
           }
           assertThat(value(connection,"select ouf_sem.publish_discovery_candidates('"+legacy+"',0,'[]',0,0,3)::text")).isEqualTo("false");
           assertThat(value(connection,"select ouf_sem.publish_discovery_candidates('"+legacy+"',1,'[]',1,2)::text")).isEqualTo("true");
           assertThat(value(connection,"select rdf_invalid_count||':'||rdf_bound_count||':'||fetch_denied_count from ouf_sem.discovery_request where request_id='"+legacy+"'")).isEqualTo("1:2:0");
+          assertThat(value(connection,"select amount from ouf_sem.discovery_job_traffic where request_id='"+legacy+"' and metric='searchSent'")).isEqualTo("1");
           SemanticDiscoveryProvider provider=new SemanticDiscoveryProvider(){
             public String providerId(){return "D078";}
             public List<Candidate> search(Query query){return List.of();}

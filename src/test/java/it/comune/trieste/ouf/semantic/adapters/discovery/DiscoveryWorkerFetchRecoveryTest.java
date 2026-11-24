@@ -163,11 +163,11 @@ class DiscoveryWorkerFetchRecoveryTest {
         {"results":{"bindings":[{"resource":{"value":"%s"}}]}}
         """.formatted(uri);
     when(transport.postForm(eq(BASE), eq(BASE.resolve("/search")), anyString(), eq(timeout),
-        eq(8192), anySet())).thenReturn(new BoundedGatewayClient.Response(
+        eq(8192), anySet(),any())).thenReturn(new BoundedGatewayClient.Response(
             bindings.getBytes(UTF_8), "application/sparql-results+json"));
     URI fetch = BASE.resolve("/fetch?uri=" + URLEncoder.encode(uri, UTF_8));
     String rdf = "<" + uri + "> a <http://www.w3.org/2002/07/owl#Class> .";
-    when(transport.get(eq(BASE), eq(fetch), eq(timeout), eq(8192), anySet()))
+    when(transport.get(eq(BASE), eq(fetch), eq(timeout), eq(8192), anySet(),any(),anyString()))
         .thenReturn(new BoundedGatewayClient.Response(rdf.getBytes(UTF_8), "text/turtle"));
     return new SchemaGovProvider(cfg, transport, json, Clock.systemUTC());
   }

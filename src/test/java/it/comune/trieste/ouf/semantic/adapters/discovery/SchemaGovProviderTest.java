@@ -219,20 +219,20 @@ class SchemaGovProviderTest {
     var cfg=new SchemaGovProperties(true,base,"/search","/fetch",Duration.ofSeconds(1),Duration.ofSeconds(5),
         4096,1,1,Duration.ofSeconds(1),1,Duration.ofSeconds(30),List.of(TEST_NAMESPACE));
     String rows="{\"results\":{\"bindings\":[{\"resource\":{\"value\":\"https://terms.example.test/poi\"}}]}}";
-    when(transport.postForm(eq(base),eq(base.resolve("/search")),anyString(),any(Duration.class),eq(4096),anySet()))
+    when(transport.postForm(eq(base),eq(base.resolve("/search")),anyString(),any(Duration.class),eq(4096),anySet(),any()))
         .thenReturn(new BoundedGatewayClient.Response(rows.getBytes(UTF_8),"application/json"));
     var poi=base.resolve("/fetch?uri=https%3A%2F%2Fterms.example.test%2Fpoi");
     var ontology=base.resolve("/fetch?uri=https%3A%2F%2Fterms.example.test%2Fontology");
-    when(transport.get(eq(base),eq(poi),any(Duration.class),eq(4096),anySet()))
+    when(transport.get(eq(base),eq(poi),any(Duration.class),eq(4096),anySet(),any(),anyString()))
         .thenReturn(turtle("<https://terms.example.test/poi> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <https://terms.example.test/ontology> ."));
-    when(transport.get(eq(base),eq(ontology),eq(Duration.ofMillis(500)),eq(4096),anySet()))
+    when(transport.get(eq(base),eq(ontology),eq(Duration.ofMillis(500)),eq(4096),anySet(),any(),anyString()))
         .thenReturn(turtle("<https://terms.example.test/ontology> <http://purl.org/dc/terms/publisher> <urn:agid> ."));
     var provider=new SchemaGovProvider(cfg,transport,new ObjectMapper(),clock);
     var allowed=provider.search(new Query("CLASS","poi",List.of(),clock.instant().plusMillis(1500)));
     assertThat(allowed.getFirst().ontologyProvenance()).isNotEmpty();
     var skipped=provider.search(new Query("CLASS","poi",List.of(),clock.instant().plusMillis(800)));
     assertThat(skipped.getFirst().ontologyProvenance()).isNull();
-    verify(transport,times(1)).get(eq(base),eq(ontology),any(Duration.class),eq(4096),anySet());
+    verify(transport,times(1)).get(eq(base),eq(ontology),any(Duration.class),eq(4096),anySet(),any(),anyString());
   }
   @Test void queryIsBoundedAndSelectsOfficialSemanticKinds(){for(var type:List.of("CLASS","PROPERTY","RELATIONSHIP","CONCEPT","VOCABULARY","ONTOLOGY")){String q=SchemaGovProvider.query(new Query(type,"luogo",List.of("it")));assertThat(q).contains("LIMIT 50").contains("SELECT DISTINCT ?resource ?label");}}
   @Test void propertyIncludesObjectAndDatatypeProperties(){assertThat(SchemaGovProvider.query(new Query("PROPERTY","nome",List.of("it")))).contains("owl:ObjectProperty owl:DatatypeProperty");}

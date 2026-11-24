@@ -41,10 +41,10 @@ public final class OntopiaGatewayFixture {
       }
       var result=json.createObjectNode();
       result.putObject("results").set("bindings",bindings);
-      when(gateway.postForm(eq(base),eq(base.resolve("/search")),contains("SELECT"),any(Duration.class),eq(maxBytes),anySet()))
+      when(gateway.postForm(eq(base),eq(base.resolve("/search")),contains("SELECT"),any(Duration.class),eq(maxBytes),anySet(),any()))
           .thenReturn(new BoundedGatewayClient.Response(json.writeValueAsBytes(result),"application/sparql-results+json"));
       var header=new BoundedGatewayClient.Response(description(ontology,ONTOLOGY),"text/turtle");
-      when(gateway.get(eq(base),eq(fetch(ONTOLOGY)),any(Duration.class),eq(maxBytes),anySet())).thenAnswer(call->{
+      when(gateway.get(eq(base),eq(fetch(ONTOLOGY)),any(Duration.class),eq(maxBytes),anySet(),any(),anyString())).thenAnswer(call->{
         if(!available)throw new BoundedGatewayClient.ProviderFailure("PROVIDER_HTTP_503");
         if(changedOntology)return new BoundedGatewayClient.Response(("<"+ONTOLOGY+"> <http://purl.org/dc/terms/publisher> "
             +"<http://spcdata.digitpa.gov.it/Amministrazione/agid> .").getBytes(UTF_8),"text/turtle");
@@ -58,7 +58,7 @@ public final class OntopiaGatewayFixture {
     changedOntology=false;
   }
   public void verifyOntologyFetches(int count){
-    verify(gateway,times(count)).get(eq(base),eq(fetch(ONTOLOGY)),any(Duration.class),eq(maxBytes),anySet());
+    verify(gateway,times(count)).get(eq(base),eq(fetch(ONTOLOGY)),any(Duration.class),eq(maxBytes),anySet(),any(),anyString());
   }
   public void serveChangedOntology(){changedOntology=true;}
   private InputStream resource(String file){
@@ -66,7 +66,7 @@ public final class OntopiaGatewayFixture {
   }
   private URI fetch(String uri){return base.resolve("/fetch?uri="+URLEncoder.encode(uri,UTF_8));}
   private void serve(String uri,byte[] bytes){
-    when(gateway.get(eq(base),eq(fetch(uri)),any(Duration.class),eq(maxBytes),anySet()))
+    when(gateway.get(eq(base),eq(fetch(uri)),any(Duration.class),eq(maxBytes),anySet(),any(),anyString()))
         .thenReturn(new BoundedGatewayClient.Response(bytes,"text/turtle"));
   }
   private static byte[] description(Model ontology,String uri){
