@@ -102,6 +102,9 @@ final class OntologyProvenance {
     catch(BoundedGatewayClient.ProviderFailure failure){
       if(failure.decision().kind()==ProviderFailurePolicy.Kind.CANCELLED || Thread.currentThread().isInterrupted())throw failure;
       String code=failure.decision().code();
+      if(failure.decision().kind()==ProviderFailurePolicy.Kind.TRANSIENT)
+        traffic.optionalBackoff(code,failure.decision().retryAfter());
+      if(code.equals("PROVIDER_HTTP_429_RETRY_AFTER_INVALID"))throw failure;
       gatewayUnavailable=failure.decision().kind()==ProviderFailurePolicy.Kind.TRANSIENT || code.startsWith("GATEWAY_")
           || code.equals("PROVIDER_TLS_UNPROVEN") || code.equals("PROVIDER_HTTP_401") || code.equals("PROVIDER_HTTP_403");
       return Optional.empty();

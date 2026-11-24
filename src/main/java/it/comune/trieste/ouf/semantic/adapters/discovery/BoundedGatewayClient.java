@@ -40,26 +40,46 @@ public class BoundedGatewayClient {
     URI uri=req.uri();
     requireSameOrigin(base,uri);
     var limited=new AtomicReference<Origin>();
+    var rejected=new AtomicReference<ProviderFailurePolicy.Decision>();
+    var boundedBody=BoundedResponseBody.handler(maxBytes);
+    var reservation=traffic.acquire();
+    var outcome=DiscoveryTraffic.Outcome.UNCERTAIN;
+    Duration retryAfter=null;
     try{
-      var boundedBody=BoundedResponseBody.handler(maxBytes);
       var res=BoundedResponseBody.send(http,req,headers->{
-        // Once the 429 headers arrive, an oversized or slow error body cannot mask the limit.
-        if(headers.statusCode()==429){
-          limited.set(origin(req,headers));
-          throw new ProviderFailure(ProviderFailurePolicy.http(
-              429,headers.headers().firstValue("Retry-After").orElse(null),java.time.Clock.systemUTC()));
+        // A slow error body cannot mask an explicitly transient status or its cooldown.
+        if(headers.statusCode()!=200){
+          var failure=ProviderFailurePolicy.http(headers.statusCode(),
+              headers.headers().firstValue("Retry-After").orElse(null),java.time.Clock.systemUTC());
+          if(headers.statusCode()==429)limited.set(origin(req,headers));
+          if(headers.statusCode()==429 || failure.kind()==ProviderFailurePolicy.Kind.TRANSIENT
+              || failure.code().equals("PROVIDER_RETRY_AFTER_INVALID")){
+            rejected.set(failure);
+            throw new ProviderFailure(failure);
+          }
         }
         return boundedBody.apply(headers);
-      },()->traffic.sent(route,resource));
+      },()->traffic.sent(route,resource),reservation);
+      outcome=DiscoveryTraffic.Outcome.KNOWN_ERROR;
       if(res.statusCode()/100==3)throw new ProviderFailure("PROVIDER_REDIRECT_FORBIDDEN");
       if(res.statusCode()!=200)throw new ProviderFailure(ProviderFailurePolicy.http(res.statusCode(),res.headers().firstValue("retry-after").orElse(null),java.time.Clock.systemUTC()));
       var type=res.headers().firstValue("content-type").orElse("").split(";",2)[0].trim().toLowerCase(java.util.Locale.ROOT);
       if(!mediaTypes.contains(type))throw new ProviderFailure("PROVIDER_MEDIA_TYPE_REJECTED");
+      outcome=DiscoveryTraffic.Outcome.SUCCESS;
       return new Response(res.body(),type);
-    }catch(RuntimeException e){throw e;}catch(Exception e){var decision=ProviderFailurePolicy.exception(e);if(decision.kind()==ProviderFailurePolicy.Kind.CANCELLED)Thread.currentThread().interrupt();throw new ProviderFailure(decision,e);}
-    finally{
-      Origin observed=limited.get();
-      if(observed!=null)traffic.http429(route,observed);
+    }catch(Exception e){
+      var decision=ProviderFailurePolicy.exception(e);
+      if(decision.kind()==ProviderFailurePolicy.Kind.TRANSIENT)retryAfter=decision.retryAfter();
+      if(rejected.get()!=null || decision.code().equals("PROVIDER_UNAVAILABLE"))
+        outcome=DiscoveryTraffic.Outcome.KNOWN_ERROR;
+      if(decision.kind()==ProviderFailurePolicy.Kind.CANCELLED)Thread.currentThread().interrupt();
+      if(e instanceof RuntimeException runtime)throw runtime;
+      throw new ProviderFailure(decision,e);
+    }finally{
+      try{
+        Origin observed=limited.get();
+        if(observed!=null)traffic.http429(route,observed);
+      }finally{reservation.finish(outcome,retryAfter);}
     }
   }
   private Origin origin(HttpRequest request,HttpResponse.ResponseInfo response){

@@ -62,7 +62,8 @@ public class DiscoveryJobService {
           coalesce((r.provider_policy->>'namespaceExcluded')::integer,0) as namespace_excluded_count,
           (select count(*) from ouf_sem.discovery_candidate c
            where c.request_id=r.request_id and c.expires_at>transaction_timestamp()) as candidate_count,
-          ceil(extract(epoch from r.next_attempt_at-transaction_timestamp()))::bigint as seconds_until_retry
+          ceil(extract(epoch from (case when isfinite(r.next_attempt_at) then r.next_attempt_at
+            else coalesce(r.budget_deadline,transaction_timestamp()) end)-transaction_timestamp()))::bigint as seconds_until_retry
         from ouf_sem.discovery_request r
         left join ouf_sem.audit_event e on e.event_id=r.request_id and r.state='SUCCEEDED'
           and e.event_type='DISCOVERY_COMPLETED' and e.resource_type='DISCOVERY_REQUEST'
@@ -81,7 +82,7 @@ public class DiscoveryJobService {
         "CANDIDATE_NAMESPACE_EXCLUDED",row.get("namespace_excluded_count")));
     // Provider exception text may contain endpoint/credential details; never expose it.
     if(row.get("last_error_code") instanceof String code)out.put("errorCode",switch(code){
-      case "SEM_DISCOVERY_NO_ENABLED_PROVIDER" -> code;
+      case "SEM_DISCOVERY_NO_ENABLED_PROVIDER","SEM_DISCOVERY_PROVIDER_SLOT_BUSY","DISCOVERY_CAPACITY_CONFIG_DRIFT" -> code;
       case "PROVIDER_HTTP_429","PROVIDER_HTTP_429_RETRY_AFTER_INVALID" -> "SEM_DISCOVERY_RATE_LIMITED";
       default -> "SEM_DISCOVERY_PROVIDER_FAILED";
     });
@@ -108,6 +109,10 @@ public class DiscoveryJobService {
     if(!rows.isEmpty())out.putAll(rows.getFirst());return out;
   }
   public List<Map<String,Object>> candidates(UUID id,String actor){status(id,actor);return discovery.candidates(id);}
+  double slotMetric(String name){
+    return db.sql("select amount from ouf_sem.discovery_slot_metrics where metric=?")
+        .param(name).query(Double.class).single();
+  }
   long trafficTotal(String metric,String route,String origin){
     return db.sql("""
         select coalesce(sum(amount),0) from ouf_sem.discovery_job_traffic
