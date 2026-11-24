@@ -39,16 +39,21 @@ class BoundedGatewayClientTest {
     assertThat(wire).containsExactlyElementsOf(observed.stream().map(nonce->List.of(nonce)).toList());
   }
 
-  @Test @DisplayName("SEM-58G-07 lost response cannot replay a GET with the same exchange ID")
+  @Test @DisplayName("SEM-58G-07 lost response: one dispatch, at most one transport repeat with the same exchange ID")
   void lostResponseDoesNotRedispatchTheRequest(){
-    var received=new java.util.concurrent.atomic.AtomicInteger();
+    // The JDK client repeats an idempotent GET once when the connection ends before any
+    // response byte (ConnectionExpiredException), and no property disables it for GET.
+    // That repeat carries the same nonce: the Gateway voids a reused nonce, so the origin
+    // stays UNKNOWN. Semantic itself never redispatches the attempt (review-58g).
+    var nonces=new java.util.concurrent.CopyOnWriteArrayList<String>();
     server.createContext("/lost",exchange->{
-      received.incrementAndGet();
+      nonces.add(exchange.getRequestHeaders().getFirst("X-OUF-Exchange-Id"));
       exchange.close();
     });
     assertThatThrownBy(()->client.get(base,base.resolve("/lost"),Duration.ofSeconds(2),64,Set.of("application/json")))
         .isInstanceOf(BoundedGatewayClient.ProviderFailure.class);
-    assertThat(received.get()).isOne();
+    assertThat(nonces).hasSizeBetween(1,2);
+    assertThat(java.util.Set.copyOf(nonces)).hasSize(1);
   }
   @Test void rateLimitKeepsRetryAfterAndIgnoresClaimedOrigin(){
     server.createContext("/limited",exchange->{
