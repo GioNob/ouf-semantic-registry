@@ -5,3 +5,4 @@
 /pairwise/evidence/
 *.log
 *.tmp
+.codex-input/

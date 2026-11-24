@@ -1,7 +1,8 @@
 package it.comune.trieste.ouf.semantic.api;
 
 import com.fasterxml.jackson.databind.*;
-import it.comune.trieste.ouf.authorization.PrincipalContext;
+import it.comune.trieste.ouf.authorization.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.security.*;
@@ -18,6 +19,8 @@ public class SemanticReadDelegation {
   private final ObjectMapper json;
   private final String issuer,audience,workload;
   private final byte[] key;
+  static final String SEARCH = "ouf.semantic.search";
+  static final String BATCH = "ouf.semantic.search.batch";
   public record Receipt(int v,String purpose,String method,String path,String bodyHash,String capability,
       long iat,long exp,String issuer,String audience,String workload,String subject,String tenant,
       String acr,String roles,String scope){}
@@ -36,9 +39,23 @@ public class SemanticReadDelegation {
     } catch(java.io.IOException e){throw new IllegalStateException("SEM_READ_DELEGATION_KEY_UNAVAILABLE",e);}
   }
   public PrincipalContext verify(String proof,String path,String capability,byte[] body) {
+    if(body==null || body.length>65536)throw new SecurityException("SEM_READ_RECEIPT_INVALID");
+    return signed(proof,path,capability).bind(digest(body));
+  }
+  record SignedRead(String capability,String bodyHash,long expires,PrincipalContext principal) {
+    PrincipalContext bind(String actualDigest) {
+      if(expires<=Instant.now().getEpochSecond() || !bodyHash.equals(actualDigest))
+        throw new SecurityException("SEM_READ_RECEIPT_INVALID");
+      return principal;
+    }
+  }
+  SignedRead signed(HttpServletRequest request,String capability) {
+    return signed(request.getHeader("X-OUF-Semantic-Read-Receipt"),request.getRequestURI(),capability);
+  }
+  private SignedRead signed(String proof,String path,String capability) {
     try {
-      if(key.length!=64 || !Set.of("ouf.semantic.search","ouf.semantic.consultation.read").contains(capability)
-          ||proof==null||proof.length()>16384||body.length>65536)throw new SecurityException();
+      if(key.length!=64 || !Set.of(SEARCH,BATCH,"ouf.semantic.consultation.read").contains(capability)
+          ||proof==null||proof.length()>16384)throw new SecurityException();
       var parts=proof.split("\\.",-1);
       if(parts.length!=2||!parts[0].matches("[A-Za-z0-9_-]+")||!parts[1].matches("[A-Za-z0-9_-]+"))throw new SecurityException();
       var mac=Mac.getInstance("HmacSHA256");mac.init(new SecretKeySpec(key,"HmacSHA256"));
@@ -49,18 +66,49 @@ public class SemanticReadDelegation {
       if(r.v()!=1||!"semantic-read-owner".equals(r.purpose())||!"POST".equals(r.method())
           ||!path.equals(r.path())||!capability.equals(r.capability())||r.iat()>now||r.exp()<=now
           ||r.exp()<=r.iat()||r.exp()-r.iat()>30||!issuer.equals(r.issuer())||!audience.equals(r.audience())
-          ||!workload.equals(r.workload())||!HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(body)).equals(r.bodyHash())
+          ||!workload.equals(r.workload())||r.bodyHash()==null||!r.bodyHash().matches("[0-9a-f]{64}")
           ||!text(r.subject(),256)||!text(r.tenant(),256)||!text(r.acr(),256)||!text(r.scope(),8192))throw new SecurityException();
       var roles=new TreeSet<String>();
       if(r.roles()!=null&&!r.roles().isEmpty())for(String role:r.roles().split(" ",-1)) {
         if(!role.matches("[A-Za-z0-9][A-Za-z0-9._:/@-]{0,127}")||!roles.add(role)||roles.size()>32)throw new SecurityException();
       }
       var scopes=new HashSet<>(Arrays.asList(r.scope().split(" +")));
-      String scope="ouf.semantic.consultation.read".equals(capability)?"ouf.semantic.read":capability;
+      String scope=switch(capability) {
+        case BATCH -> SEARCH;
+        case "ouf.semantic.consultation.read" -> "ouf.semantic.read";
+        default -> capability;
+      };
       if(!scopes.contains(scope))throw new SecurityException();
-      return new PrincipalContext(r.subject(),r.tenant(),PrincipalContext.ActorType.HUMAN,r.workload(),r.acr(),
+      var principal=new PrincipalContext(r.subject(),r.tenant(),PrincipalContext.ActorType.HUMAN,r.workload(),r.acr(),
           r.issuer(),r.audience(),scopes,new PrincipalContext.IdentityClaims(roles,r.acr(),Set.of(),null));
+      return new SignedRead(capability,r.bodyHash(),r.exp(),principal);
     }catch(Exception e){throw new SecurityException("SEM_READ_RECEIPT_INVALID");}
+  }
+  static String digest(byte[] bytes) {
+    return HexFormat.of().formatHex(sha256().digest(bytes));
+  }
+  static MessageDigest sha256() {
+    try { return MessageDigest.getInstance("SHA-256"); }
+    catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
+  }
+  static boolean matchesDispatch(JsonNode envelope,String capability,String operation) {
+    return envelope!=null && capability.equals(envelope.path("CapabilityID").textValue())
+        && ("capability://"+capability).equals(envelope.path("GatewayBindingRef").textValue())
+        && "semantic".equals(envelope.path("Owner").textValue()) && operation.equals(envelope.path("OperationClass").textValue());
+  }
+  OwnerAuthorization authorize(HttpServletRequest request,byte[] raw,String capability,String resourceType) {
+    if(raw.length>65536)throw new SecurityException("SEM_READ_RECEIPT_INVALID");
+    return authorize(request,signed(request,capability),digest(raw),resourceType);
+  }
+  OwnerAuthorization authorize(HttpServletRequest request,SignedRead signed,String actualDigest,String resourceType) {
+    var principal=signed.bind(actualDigest);
+    String capability=signed.capability();
+    request.setAttribute(ServletAuthorization.TRUSTED_PRINCIPAL,new TrustedPrincipal(principal));
+    var owner=OwnerAuthorization.bind(request);
+    var resource=new ResourceContext(resourceType,null,principal.tenantId(),null,Map.of("module","SEMANTIC"));
+    owner.require(capability,resource);
+    if(BATCH.equals(capability))owner.require(SEARCH,resource);
+    return owner;
   }
   private static boolean text(String s,int max){return s!=null&&!s.isBlank()&&s.length()<=max&&s.chars().noneMatch(Character::isISOControl);}
 }

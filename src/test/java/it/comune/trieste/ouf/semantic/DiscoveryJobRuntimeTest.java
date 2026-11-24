@@ -17,7 +17,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.transaction.PlatformTransactionManager;
 
 @SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false"})
 @AutoConfigureMockMvc
@@ -32,7 +31,7 @@ class DiscoveryJobRuntimeTest {
   @Autowired ObjectMapper json;
   @Autowired SafeRdfParser parser;
   @Autowired MockMvc http;
-  @Autowired PlatformTransactionManager transactions;
+  @Autowired TransactionTemplate transactions;
   @Autowired ArtifactService artifacts;
   private DiscoveryJobService service(boolean enabled){
     SemanticDiscoveryProvider provider=new SemanticDiscoveryProvider(){
@@ -41,7 +40,7 @@ class DiscoveryJobRuntimeTest {
       public List<Candidate> search(Query q){throw new AssertionError("No provider call in request/status");}
     };
     var providers=List.of(provider);
-    return new DiscoveryJobService(db,new DiscoveryService(db,providers,parser,json),providers,json);
+    return new DiscoveryJobService(db,new DiscoveryService(db,providers,parser,json,transactions),providers,json);
   }
   private String unique(){String value=UUID.randomUUID().toString();fixtureIdentities.add(value);return value;}
   private UUID id(Map<String,Object> result){return (UUID)result.get("requestId");}
@@ -60,7 +59,8 @@ class DiscoveryJobRuntimeTest {
   @Test void replayReturnsActualStateEvenIfProviderIsNowDisabled(){
     String actor=unique(),key=unique();UUID request=id(service(true).request("CLASS","teatro",List.of(),actor,key));
     db.sql("update ouf_sem.discovery_request set state='SUCCEEDED',completed_at=transaction_timestamp() where request_id=:id").param("id",request).update();
-    assertThat(service(false).request("CLASS","teatro",List.of(),actor,key)).containsEntry("requestId",request).containsEntry("state","SUCCEEDED");
+    assertThat(service(false).request("CLASS","teatro",List.of(),actor,key)).containsEntry("requestId",request)
+        .containsEntry("state","SUCCEEDED").doesNotContainKey("completedCandidateCount");
   }
   @Test void workflowActionsFollowDurableJobAndCandidateState() {
     String actor=unique();
@@ -113,7 +113,7 @@ class DiscoveryJobRuntimeTest {
   @Test void concurrentRetriesCreateExactlyOneJob() throws Exception {
     String actor=unique(),key=unique();var jobs=service(true);var ready=new CountDownLatch(2);var start=new CountDownLatch(1);
     try(var pool=Executors.newFixedThreadPool(2)){
-      Callable<UUID> call=()->{ready.countDown();if(!start.await(5,TimeUnit.SECONDS))throw new AssertionError("Start timeout");return new TransactionTemplate(transactions).execute(tx->id(jobs.request("CLASS","teatro",List.of("it"),actor,key)));};
+      Callable<UUID> call=()->{ready.countDown();if(!start.await(5,TimeUnit.SECONDS))throw new AssertionError("Start timeout");return transactions.execute(tx->id(jobs.request("CLASS","teatro",List.of("it"),actor,key)));};
       var one=pool.submit(call);var two=pool.submit(call);assertThat(ready.await(5,TimeUnit.SECONDS)).isTrue();start.countDown();
       assertThat(one.get(10,TimeUnit.SECONDS)).isEqualTo(two.get(10,TimeUnit.SECONDS));
     }
@@ -130,6 +130,8 @@ class DiscoveryJobRuntimeTest {
   }
   @Test void invalidRequestsDoNotCreateJobs(){
     String actor=unique();var jobs=service(true);
+    assertThatThrownBy(()->jobs.request("DATATYPE","misura",List.of("it"),actor,unique()))
+        .hasMessage("SEM_DISCOVERY_REQUEST_INVALID");
     assertThatThrownBy(()->jobs.request("CLASS","teatro",List.of(),actor,"short")).isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(()->jobs.request("CLASS"," ",List.of(),actor,unique())).isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(()->jobs.request("CLASS","teatro",List.of("secret?"),actor,unique())).isInstanceOf(IllegalArgumentException.class);

@@ -24,7 +24,7 @@ public final class ProviderFailurePolicy {
       "GATEWAY_TOKEN_INVALID", "GATEWAY_TOKEN_UNAVAILABLE", "GATEWAY_AUTH_CONFIGURATION_INVALID",
       "GATEWAY_CREDENTIAL_FILE_INVALID", "SCHEMA_GOV_CIRCUIT_OPEN",
       "SCHEMA_GOV_SPARQL_RESULT_INVALID", "PROVIDER_TLS_UNPROVEN",
-      "PROVIDER_RETRY_AFTER_INVALID", "PROVIDER_UNKNOWN");
+      "PROVIDER_RETRY_AFTER_INVALID", "PROVIDER_HTTP_429_RETRY_AFTER_INVALID", "PROVIDER_UNKNOWN");
 
   public static Decision http(int status, String retryAfter, Clock clock) {
     if(status<100 || status>599)return blocked("PROVIDER_UNKNOWN");
@@ -38,7 +38,9 @@ public final class ProviderFailurePolicy {
         else delay=Duration.between(clock.instant(),
             ZonedDateTime.parse(value,DateTimeFormatter.RFC_1123_DATE_TIME).toInstant());
         if(delay.isNegative())delay=Duration.ZERO;
-      }catch(RuntimeException invalid){return blocked("PROVIDER_RETRY_AFTER_INVALID");}
+      }catch(RuntimeException invalid){
+        return blocked(status==429?"PROVIDER_HTTP_429_RETRY_AFTER_INVALID":"PROVIDER_RETRY_AFTER_INVALID");
+      }
     }
     // Do not shorten a valid delay to fit a budget. The persistent scheduler decides exhaustion.
     return new Decision(transientStatus?Kind.TRANSIENT:Kind.BLOCKED,"PROVIDER_HTTP_"+status,delay);
@@ -52,7 +54,9 @@ public final class ProviderFailurePolicy {
       if(nested instanceof InterruptedException)return new Decision(Kind.CANCELLED,"PROVIDER_INTERRUPTED",Duration.ZERO);
     }
     Throwable cause=error;
-    for(int depth=0;depth<8 && cause instanceof ExecutionException && cause.getCause()!=null;depth++)
+    for(int depth=0;depth<8 && cause.getCause()!=null && (cause instanceof ExecutionException
+        || cause instanceof java.util.concurrent.CompletionException
+        || cause instanceof java.io.IOException && cause.getCause() instanceof BoundedGatewayClient.ProviderFailure);depth++)
       cause=cause.getCause();
     if(cause instanceof BoundedGatewayClient.ProviderFailure failure)return failure.decision();
     if(cause instanceof InterruptedException)return new Decision(Kind.CANCELLED,"PROVIDER_INTERRUPTED",Duration.ZERO);

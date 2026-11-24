@@ -58,10 +58,16 @@ public class DiscoveryJobService {
     var rows=db.sql("""
         select r.request_id,r.state,r.attempt_count,r.recovery_state,r.next_attempt_at,r.budget_deadline,
           r.created_at,r.completed_at,r.last_error_code,r.rdf_invalid_count,r.rdf_bound_count,r.fetch_denied_count,
+          (e.detail_json->>'completedCandidateCount')::integer as completed_candidate_count,
+          coalesce((r.provider_policy->>'namespaceExcluded')::integer,0) as namespace_excluded_count,
           (select count(*) from ouf_sem.discovery_candidate c
            where c.request_id=r.request_id and c.expires_at>transaction_timestamp()) as candidate_count,
           ceil(extract(epoch from r.next_attempt_at-transaction_timestamp()))::bigint as seconds_until_retry
-        from ouf_sem.discovery_request r where r.request_id=:id and r.created_by_subject=:actor
+        from ouf_sem.discovery_request r
+        left join ouf_sem.audit_event e on e.event_id=r.request_id and r.state='SUCCEEDED'
+          and e.event_type='DISCOVERY_COMPLETED' and e.resource_type='DISCOVERY_REQUEST'
+          and e.resource_id=r.request_id::text and e.subject_ref=r.created_by_subject
+        where r.request_id=:id and r.created_by_subject=:actor
         """)
       .param("id",id).param("actor",actor).query().listOfRows();
     if(rows.isEmpty())throw new NoSuchElementException("SEM_DISCOVERY_REQUEST_NOT_FOUND");
@@ -69,10 +75,16 @@ public class DiscoveryJobService {
     out.put("requestId",row.get("request_id"));out.put("state",row.get("state"));out.put("attemptCount",row.get("attempt_count"));
     out.put("recoveryState",row.get("recovery_state"));out.put("nextAttemptAt",row.get("next_attempt_at"));out.put("budgetDeadline",row.get("budget_deadline"));
     out.put("createdAt",row.get("created_at"));out.put("completedAt",row.get("completed_at"));out.put("candidateCount",row.get("candidate_count"));
+    if(row.get("completed_candidate_count")!=null)out.put("completedCandidateCount",row.get("completed_candidate_count"));
     out.put("excludedCandidates",Map.of("CANDIDATE_RDF_INVALID",row.get("rdf_invalid_count"),
-        "CANDIDATE_RDF_BOUND",row.get("rdf_bound_count"),"CANDIDATE_FETCH_DENIED",row.get("fetch_denied_count")));
+        "CANDIDATE_RDF_BOUND",row.get("rdf_bound_count"),"CANDIDATE_FETCH_DENIED",row.get("fetch_denied_count"),
+        "CANDIDATE_NAMESPACE_EXCLUDED",row.get("namespace_excluded_count")));
     // Provider exception text may contain endpoint/credential details; never expose it.
-    if(row.get("last_error_code")!=null)out.put("errorCode","SEM_DISCOVERY_NO_ENABLED_PROVIDER".equals(row.get("last_error_code"))?"SEM_DISCOVERY_NO_ENABLED_PROVIDER":"SEM_DISCOVERY_PROVIDER_FAILED");
+    if(row.get("last_error_code") instanceof String code)out.put("errorCode",switch(code){
+      case "SEM_DISCOVERY_NO_ENABLED_PROVIDER" -> code;
+      case "PROVIDER_HTTP_429","PROVIDER_HTTP_429_RETRY_AFTER_INVALID" -> "SEM_DISCOVERY_RATE_LIMITED";
+      default -> "SEM_DISCOVERY_PROVIDER_FAILED";
+    });
     var state=State.valueOf((String)row.get("state"));
     var recovery=RecoveryState.valueOf((String)row.get("recovery_state"));
     WorkflowAction action=switch(state) {
@@ -96,6 +108,12 @@ public class DiscoveryJobService {
     if(!rows.isEmpty())out.putAll(rows.getFirst());return out;
   }
   public List<Map<String,Object>> candidates(UUID id,String actor){status(id,actor);return discovery.candidates(id);}
+  long trafficTotal(String metric,String route,String origin){
+    return db.sql("""
+        select coalesce(sum(amount),0) from ouf_sem.discovery_job_traffic
+        where metric=:metric and route=:route and origin=:origin
+        """).param("metric",metric).param("route",route).param("origin",origin).query(Long.class).single();
+  }
   @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
   public Map<String,Object> candidatesWithState(UUID id,String actor) {
     var response=status(id,actor);
@@ -112,5 +130,5 @@ public class DiscoveryJobService {
     return response;
   }
   private String write(Object value){try{return json.writeValueAsString(value);}catch(Exception e){throw new IllegalArgumentException("SEM_DISCOVERY_REQUEST_INVALID");}}
-  private static String hash(String value){try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));}catch(Exception e){throw new IllegalStateException("SEM_DISCOVERY_HASH_UNAVAILABLE");}}
+  static String hash(String value){try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));}catch(Exception e){throw new IllegalStateException("SEM_DISCOVERY_HASH_UNAVAILABLE");}}
 }

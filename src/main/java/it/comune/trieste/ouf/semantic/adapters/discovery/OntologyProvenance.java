@@ -1,9 +1,11 @@
 package it.comune.trieste.ouf.semantic.adapters.discovery;
 
 import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
+import it.comune.trieste.ouf.semantic.ports.DiscoveryTraffic;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.out.NodeFmtLib;
 import org.apache.jena.vocabulary.*;
@@ -17,8 +19,15 @@ final class OntologyProvenance {
   private final SafeRdfParser parser=new SafeRdfParser();
   private final Map<String,Optional<byte[]>> projections=new HashMap<>();
   private final int limit;
+  private final Predicate<String> admitted;
+  private int namespaceExcluded;
   private boolean gatewayUnavailable;
-  OntologyProvenance(int limit){this.limit=limit;}
+  private final DiscoveryTraffic traffic;
+  OntologyProvenance(int limit, Predicate<String> admitted){this(limit,admitted,DiscoveryTraffic.NONE);}
+  OntologyProvenance(int limit, Predicate<String> admitted,DiscoveryTraffic traffic){
+    this.limit=limit;this.admitted=admitted;this.traffic=traffic;
+  }
+  int namespaceExcluded(){return namespaceExcluded;}
 
   Description inspect(String uri,BoundedGatewayClient.Response description){
     Model model=parser.model(description.body(),description.mediaType());
@@ -63,6 +72,11 @@ final class OntologyProvenance {
 
   private Optional<byte[]> projection(String uri,Function<String,BoundedGatewayClient.Response> fetch){
     if(gatewayUnavailable)return Optional.empty();
+    if(!admitted.test(uri)){
+      namespaceExcluded++;
+      traffic.excluded();
+      return Optional.empty();
+    }
     try {
       var response=fetch.apply(uri);
       Model model=parser.model(response.body(),response.mediaType());
@@ -81,6 +95,7 @@ final class OntologyProvenance {
           if(count>limit)return Optional.empty();
           lines.add(line);
         }
+        if(!lines.isEmpty())traffic.useful(uri);
         return Optional.of(String.join("",lines).getBytes(StandardCharsets.UTF_8));
       } finally {model.close();}
     } catch(SafeRdfParser.UnsafeRdf rejected){return Optional.empty();}

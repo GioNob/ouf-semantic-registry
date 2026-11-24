@@ -18,3 +18,12 @@ R1a evidence and current integration limits: [shared SDK traceability](R1A_AUTHO
 Policy evaluation executes locally through Authorization-owned SDK 1.0.0.
 Authentication adapters, governed ACTIVE refresh and full policy/route acceptance
 remain explicit R1b/R2/R6 obligations; existing CI does not certify those gates.
+
+## Sprint 03 · Ricerca a lotti del pubblicato
+
+| ID PET | Requisito | Prova e criterio |
+|---|---|---|
+| SEM-51O-01 | Indice per revisione e lingua, normalizzazione A.2, aggiornamento atomico e ricostruzione | V23, confronto dei mapping con ICU4J 75.1, prove di rollback e dei prefissi letterali in `PublishedBatchRuntimeTest`. Il manuale di installazione §14.1 registra backup e ripristino. |
+| SEM-51O-02 | Una revisione, un riscontro, con il set A.1 | `oneStrongRevisionInTwoPublishedSetsKeepsLatestPinAndCountsOnce` richiede MATCH, un solo hit e hasMore falso con limiti 1 e 8. |
+| SEM-51O-03 | Costo della consultazione selettiva | `PublishedBatchIndexMeasureTest` usa gli stessi 5.000 artefatti e 64 intenti prima e dopo V23. Il test richiede 5.000 righe SQL sul predecessore (320.000 valutazioni in Java) e 64 sul candidato. Verifica l’indice nel piano e il lavoro dei nodi di scansione. I report Surefire della run registrano righe, blocchi e millisecondi di esecuzione PostgreSQL dopo un riscaldamento per versione. |
+| SEM-51O-04 | D-080, ritorno del predecessore sullo schema candidato | `predecessor-return` verifica la storia fino a V24, ripete le letture e le scritture del predecessore e controlla il termine locale di POIState creato dopo il ritorno. L’accettazione richiede la run con i pin del rilascio. |
