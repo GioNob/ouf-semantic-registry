@@ -44,6 +44,10 @@ ouf:
         # No undocumented public endpoint is hard-coded in this module.
         search-path: ${OUF_SCHEMA_GOV_SEARCH_PATH:/semantic-providers/schema-gov/sparql}
         fetch-path: ${OUF_SCHEMA_GOV_FETCH_PATH:/semantic-providers/schema-gov/fetch}
+        origin-attestation:
+          public-key: ${OUF_SCHEMA_GOV_429_PUBLIC_KEY:}
+          installation-id: ${OUF_SCHEMA_GOV_429_INSTALLATION_ID:}
+          clock-skew-seconds: ${OUF_SCHEMA_GOV_429_CLOCK_SKEW_SECONDS:0}
         gateway-auth:
           enabled: ${OUF_SCHEMA_GOV_GATEWAY_AUTH_ENABLED:false}
           token-endpoint: ${OUF_SCHEMA_GOV_TOKEN_ENDPOINT:}
