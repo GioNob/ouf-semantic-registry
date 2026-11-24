@@ -421,17 +421,21 @@ Checklist obbligatoria:
 
 ### 14.1 Registro D-065 per la consultazione Semantic a lotti (D-090 T1)
 
-Per attivare la capability interna `ouf.semantic.search.batch`, valorizzare nella revisione di installazione
-le proprietà Spring sotto `ouf.semantic.published-batch`. I quattro limiti sono obbligatori all'attivazione.
-Il profilo `dev` fornisce i valori della colonna sviluppo.
+La capability interna `ouf.semantic.search.batch` per la ricerca a lotti nel pubblicato è attiva per default
+tramite `application.yml`. Le variabili `OUF_SEM_PUBLISHED_BATCH_*` sovrascrivono i valori di produzione.
+Impostare `OUF_SEM_PUBLISHED_BATCH_ENABLED=false` per disattivare la rotta.
 
-| Parametro del contratto | Proprietà sotto il prefisso | Intervallo | Sviluppo |
-|---|---|---|---|
-| Attivazione della rotta | `enabled` | booleano | `true` |
-| `batchMaxIntents` | `max-intents` | 1–64 | 64 |
-| `batchMaxHits` | `max-hits` | 1–8 | 3 |
-| `batchMaxRequestBytes` | `max-request-bytes` | 1–65.536 | 65.536 |
-| `batchMaxResponseBytes` | `max-response-bytes` | 1–262.144 | 262.144 |
+| Parametro del contratto | Proprietà sotto `ouf.semantic.published-batch` | Variabile d'ambiente | Intervallo | Default di produzione |
+|---|---|---|---|---|
+| Attivazione della rotta | `enabled` | `OUF_SEM_PUBLISHED_BATCH_ENABLED` | booleano | `true` |
+| `batchMaxIntents` | `max-intents` | `OUF_SEM_PUBLISHED_BATCH_MAX_INTENTS` | 1–64 | 64 |
+| `batchMaxHits` | `max-hits` | `OUF_SEM_PUBLISHED_BATCH_MAX_HITS` | 1–8 | 3 |
+| `batchMaxRequestBytes` | `max-request-bytes` | `OUF_SEM_PUBLISHED_BATCH_MAX_REQUEST_BYTES` | 1–65.536 | 65.536 |
+| `batchMaxResponseBytes` | `max-response-bytes` | `OUF_SEM_PUBLISHED_BATCH_MAX_RESPONSE_BYTES` | 1–262.144 | 262.144 |
+
+Per la tracciabilità PET (D-082), la CI di modulo (`module-ci.yml`, job `java21-postgresql17`,
+`mvn clean verify`) esegue `SemanticConsultationTest` per l'attivazione di D-090 T1 senza profilo `dev`,
+la disattivazione e l'override del limite degli intenti.
 
 La rotta riceve la busta JSON UTF-8 inoltrata dal Gateway. Il limite di ingresso comprende i metadati di dispatch.
 Con `Content-Encoding: gzip` il limite si applica al JSON decompresso e la ricevuta autentica i byte gzip inoltrati.
@@ -439,7 +443,7 @@ La risposta usa il minore fra il limite locale e il `MaxResultBytes` ricevuto ne
 Per il bundle IAM registrare il descrittore batch con operazione `READ`, attore `HUMAN` e scope richiesto
 `ouf.semantic.search`. L'owner verifica entrambi i grant, batch e ricerca pubblicata, per il tenant e per
 l'UUID dell'artefatto su `semantic.artifact`. Riutilizza issuer, audience, workload e riferimento alla chiave
-della delega di lettura singola. Confrontare i limiti effettivi dei tre moduli prima di attivare la rotta.
+della delega di lettura singola. Confrontare i limiti effettivi dei tre moduli prima di usare la rotta.
 
 Da V23 la SELECT del lotto cerca per tipo, lingua e termine nella tabella derivata
 `ouf_sem.revision_batch_term`. Semantic mantiene i termini nella transazione della revisione.

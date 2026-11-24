@@ -2,6 +2,7 @@ package it.comune.trieste.ouf.semantic;
 
 import static org.assertj.core.api.Assertions.*;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import it.comune.trieste.ouf.semantic.api.*;
 import it.comune.trieste.ouf.semantic.application.SemanticReadService;
 import it.comune.trieste.ouf.semantic.application.PublishedBatchSearch;
@@ -20,8 +21,12 @@ import javax.crypto.spec.SecretKeySpec;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
 @SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false"})
 class SemanticConsultationTest {
@@ -121,9 +126,59 @@ class SemanticConsultationTest {
       configure(service,intents,hits,input,output);
     }
     void configure(PublishedBatchSearch backend,int intents,int hits,int input,int output) throws Exception {
-      http=org.springframework.test.web.servlet.setup.MockMvcBuilders
+      http=MockMvcBuilders
           .standaloneSetup(new PublishedBatchApi(verifier(),backend,json,intents,hits,input,output))
           .setControllerAdvice(new ProblemHandler()).build();
+    }
+    WebApplicationContextRunner productionBatchContext() throws Exception {
+      var delegation = verifier();
+      return new WebApplicationContextRunner()
+          .withPropertyValues("spring.config.location=classpath:/application.yml", "spring.profiles.active=")
+          .withInitializer(new ConfigDataApplicationContextInitializer())
+          .withUserConfiguration(DelegatingWebMvcConfiguration.class, PublishedBatchApi.class, ProblemHandler.class)
+          .withBean(SemanticReadDelegation.class, () -> delegation)
+          .withBean(PublishedBatchSearch.class, () -> service)
+          .withBean(ObjectMapper.class, () -> json);
+    }
+    byte[] batchWithIntents(int count, int limitPerIntent) throws Exception {
+      var root = envelope();
+      var args = (ObjectNode) root.get("Arguments");
+      args.put("limitPerIntent", limitPerIntent);
+      var items = args.withArray("intents");
+      var template = (ObjectNode) items.get(0);
+      for (int i = 1; i < count; i++) {
+        items.add(template.deepCopy().put("intentId", "i" + i));
+      }
+      return json.writeValueAsBytes(root);
+    }
+    @Test void productionDefaultsRegisterTheRouteWithoutDev() throws Exception {
+      productionBatchContext().run(context -> {
+        assertThat(context.getEnvironment().getActiveProfiles()).doesNotContain("dev");
+        assertThat(context).hasSingleBean(PublishedBatchApi.class);
+        assertThat(context.getBean(PublishedBatchApi.class))
+            .hasFieldOrPropertyWithValue("maxIntents", 64)
+            .hasFieldOrPropertyWithValue("maxHits", 3)
+            .hasFieldOrPropertyWithValue("maxRequestBytes", 65536)
+            .hasFieldOrPropertyWithValue("maxResponseBytes", 262144);
+        http = MockMvcBuilders.webAppContextSetup(context).build();
+        assertThat(json.readTree(expect(batchWithIntents(64, 3), 200, null)).path("results").size()).isEqualTo(64);
+      });
+    }
+    @Test void productionFlagOverrideRemovesTheRoute() throws Exception {
+      productionBatchContext().withPropertyValues("OUF_SEM_PUBLISHED_BATCH_ENABLED=false").run(context -> {
+        assertThat(context).doesNotHaveBean(PublishedBatchApi.class);
+        http = MockMvcBuilders.webAppContextSetup(context).build();
+        expect(batchWithIntents(1, 1), 404, null);
+      });
+    }
+    @Test void productionIntentLimitOverrideAppliesToTheRoute() throws Exception {
+      productionBatchContext().withPropertyValues("OUF_SEM_PUBLISHED_BATCH_MAX_INTENTS=8").run(context -> {
+        assertThat(context).hasSingleBean(PublishedBatchApi.class);
+        http = MockMvcBuilders.webAppContextSetup(context).build();
+        expect(batchWithIntents(8, 1), 200, null);
+        expect(batchWithIntents(9, 1), 400, null);
+        verify(service, times(1)).search(anyList(), anyInt(), any());
+      });
     }
     com.fasterxml.jackson.databind.node.ObjectNode envelope() {
       var root=json.createObjectNode();
