@@ -146,6 +146,9 @@ class DiscoveryTrafficRuntimeTest {
     assertThat(db.sql("select last_error_code from ouf_sem.discovery_request where request_id=?")
         .param(id).query(String.class).single()).isEqualTo("PROVIDER_TIMEOUT");
     unfinished.get().close();
+    // Advance the uncertainty horizon as well as the retry clock.
+    db.sql("update ouf_sem.discovery_provider_slot set expires_at=now(),reconcile_at=now() where request_id=? and outcome='UNCERTAIN'")
+        .param(id).update();
     db.sql("update ouf_sem.discovery_dependency set next_attempt_at=now() where scope_subject=?").param(actor).update();
     db.sql("update ouf_sem.discovery_request set next_attempt_at=now() where request_id=?").param(id).update();
     var successor=worker();
@@ -179,6 +182,13 @@ class DiscoveryTrafficRuntimeTest {
         http.perform(get("/actuator/metrics/"+PREFIX+name)).andExpect(status().isOk())
             .andExpect(jsonPath("$.measurements[0].value").value(expected));
       }
+    }
+    for(String name:List.of("slotOccupancy","slotWaits","slotUncertain","slotAcquisitionSeconds")){
+      var gauge=meters.get(PREFIX+name).gauge();
+      assertThat(gauge.getId().getTags()).extracting(Tag::getKey).isSubsetOf("application");
+      double value=gauge.value();
+      assertThat(value).isGreaterThanOrEqualTo(0);
+      assertThat(gauge.value()).isEqualTo(value);
     }
     counts(id,1,0,0,0,0);
     assertThat(searches.get()).isOne();
@@ -276,6 +286,10 @@ class DiscoveryTrafficRuntimeTest {
     assertThat(service.executeOne()).isOne();
     assertThat(service.candidates(id)).hasSize(1);
     counts(id,1,2,0,1,0);
+    assertThat(db.sql("""
+        select state='RETRY_WAIT' and next_attempt_at>now() and busy_until is null
+        from ouf_sem.discovery_dependency where scope_subject=?
+        """).param(actor).query(Boolean.class).single()).isTrue();
     assertThat(db.sql("select origin from ouf_sem.discovery_job_traffic where request_id=? and metric='http429' and route='fetch'")
         .param(id).query(String.class).single()).isEqualTo("UNKNOWN");
   }

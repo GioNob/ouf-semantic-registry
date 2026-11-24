@@ -61,6 +61,15 @@ ouf:
         retry-backoff: 100ms
         circuit-failure-threshold: 3
         circuit-open-duration: 30s
+    discovery-capacity:
+      installation-id: ${OUF_DISCOVERY_INSTALLATION_ID:default}
+      logical-provider-id: ${OUF_DISCOVERY_LOGICAL_PROVIDER_ID:SCHEMA_GOV_IT}
+      profile-version: ${OUF_DISCOVERY_CAPACITY_VERSION:1}
+      provider-slots: 1
+      installation-provider-in-flight: ${OUF_DISCOVERY_INSTALLATION_PROVIDER_IN_FLIGHT:1}
+      slot-max-seconds: ${OUF_DISCOVERY_SLOT_MAX_SECONDS:60}
+      slot-wait-max-seconds: ${OUF_DISCOVERY_SLOT_WAIT_MAX_SECONDS:30}
+      reconciliation-timeout-seconds: ${OUF_DISCOVERY_RECONCILIATION_TIMEOUT_SECONDS:300}
     discovery-worker:
       enabled: ${OUF_DISCOVERY_WORKER_ENABLED:true}
       fixed-delay: ${OUF_DISCOVERY_WORKER_DELAY:2s}

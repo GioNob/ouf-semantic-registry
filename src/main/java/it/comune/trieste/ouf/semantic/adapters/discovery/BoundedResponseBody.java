@@ -1,5 +1,6 @@
 package it.comune.trieste.ouf.semantic.adapters.discovery;
 
+import it.comune.trieste.ouf.semantic.ports.DiscoveryTraffic;
 import java.io.ByteArrayOutputStream;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
@@ -23,15 +24,27 @@ final class BoundedResponseBody implements HttpResponse.BodySubscriber<byte[]> {
   }
   static HttpResponse<byte[]> send(java.net.http.HttpClient client,java.net.http.HttpRequest request,
       HttpResponse.BodyHandler<byte[]> handler) throws Exception {
-    return send(client,request,handler,()->{});
+    return send(client,request,handler,()->{},DiscoveryTraffic.NONE.acquire());
   }
   static HttpResponse<byte[]> send(java.net.http.HttpClient client,java.net.http.HttpRequest request,
-      HttpResponse.BodyHandler<byte[]> handler,Runnable dispatched) throws Exception {
+      HttpResponse.BodyHandler<byte[]> handler,Runnable dispatched,
+      DiscoveryTraffic.Reservation reservation) throws Exception {
     long deadline=System.nanoTime()+request.timeout().orElseThrow().toNanos();
-    var future=client.sendAsync(request,handler);
+    record Pending(CompletableFuture<HttpResponse<byte[]>> future,long deadline){}
+    var pending=reservation.dispatch(request.timeout().orElseThrow(),allowed->{
+      var remaining=BoundedGatewayClient.remaining(deadline);
+      var timeout=remaining.compareTo(allowed)<0?remaining:allowed;
+      var bounded=java.net.http.HttpRequest.newBuilder(request,(name,value)->true).timeout(timeout).build();
+      long stop=System.nanoTime()+timeout.toNanos();
+      var accepted=client.sendAsync(bounded,handler);
+      try{
+        dispatched.run();
+        return new Pending(accepted,stop);
+      }catch(RuntimeException e){accepted.cancel(true);throw e;}
+    });
+    var future=pending.future();
     try{
-      dispatched.run();
-      return future.get(Math.max(0,deadline-System.nanoTime()),TimeUnit.NANOSECONDS);
+      return future.get(Math.max(0,pending.deadline()-System.nanoTime()),TimeUnit.NANOSECONDS);
     }
     catch(ExecutionException e){if(e.getCause() instanceof BoundedGatewayClient.ProviderFailure failure)throw failure;throw e;}
     finally{if(!future.isDone())future.cancel(true);}
