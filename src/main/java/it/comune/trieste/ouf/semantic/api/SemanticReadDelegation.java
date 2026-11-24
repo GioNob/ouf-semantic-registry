@@ -1,5 +1,7 @@
 package it.comune.trieste.ouf.semantic.api;
 
+import static it.comune.trieste.ouf.semantic.api.ReadDenial.READ;
+import it.comune.trieste.ouf.semantic.api.ReadDenial.Reason;
 import com.fasterxml.jackson.databind.*;
 import it.comune.trieste.ouf.authorization.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,13 +41,13 @@ public class SemanticReadDelegation {
     } catch(java.io.IOException e){throw new IllegalStateException("SEM_READ_DELEGATION_KEY_UNAVAILABLE",e);}
   }
   public PrincipalContext verify(String proof,String path,String capability,byte[] body) {
-    if(body==null || body.length>65536)throw new SecurityException("SEM_READ_RECEIPT_INVALID");
+    if(body==null || body.length>65536)throw READ.invalid(Reason.MALFORMED);
     return signed(proof,path,capability).bind(digest(body));
   }
   record SignedRead(String capability,String bodyHash,long expires,PrincipalContext principal) {
     PrincipalContext bind(String actualDigest) {
-      if(expires<=Instant.now().getEpochSecond() || !bodyHash.equals(actualDigest))
-        throw new SecurityException("SEM_READ_RECEIPT_INVALID");
+      if(expires<=Instant.now().getEpochSecond()) throw READ.invalid(Reason.EXPIRED);
+      if(!bodyHash.equals(actualDigest)) throw READ.invalid(Reason.BODY_HASH);
       return principal;
     }
   }
@@ -54,23 +56,29 @@ public class SemanticReadDelegation {
   }
   private SignedRead signed(String proof,String path,String capability) {
     try {
-      if(key.length!=64 || !Set.of(SEARCH,BATCH,"ouf.semantic.consultation.read").contains(capability)
-          ||proof==null||proof.length()>16384)throw new SecurityException();
+      if (!READ.capabilities.contains(capability)) throw READ.invalid(Reason.CAPABILITY);
+      if (key.length != 64 || proof == null || proof.length() > 16384)
+        throw READ.invalid(Reason.MALFORMED);
       var parts=proof.split("\\.",-1);
-      if(parts.length!=2||!parts[0].matches("[A-Za-z0-9_-]+")||!parts[1].matches("[A-Za-z0-9_-]+"))throw new SecurityException();
+      if(parts.length!=2||!parts[0].matches("[A-Za-z0-9_-]+")||!parts[1].matches("[A-Za-z0-9_-]+"))
+        throw READ.invalid(Reason.MALFORMED);
       var mac=Mac.getInstance("HmacSHA256");mac.init(new SecretKeySpec(key,"HmacSHA256"));
       if(!MessageDigest.isEqual(mac.doFinal(("ouf-semantic-read-owner-v1."+parts[0]).getBytes(StandardCharsets.US_ASCII)),
-          Base64.getUrlDecoder().decode(parts[1])))throw new SecurityException();
+          Base64.getUrlDecoder().decode(parts[1])))throw READ.invalid(Reason.SIGNATURE);
       Receipt r=json.readValue(Base64.getUrlDecoder().decode(parts[0]),Receipt.class);
       long now=Instant.now().getEpochSecond();
+      if (!path.equals(r.path())) throw READ.invalid(Reason.PATH);
+      if (!capability.equals(r.capability())) throw READ.invalid(Reason.CAPABILITY);
+      if (r.exp() <= now) throw READ.invalid(Reason.EXPIRED);
       if(r.v()!=1||!"semantic-read-owner".equals(r.purpose())||!"POST".equals(r.method())
-          ||!path.equals(r.path())||!capability.equals(r.capability())||r.iat()>now||r.exp()<=now
-          ||r.exp()<=r.iat()||r.exp()-r.iat()>30||!issuer.equals(r.issuer())||!audience.equals(r.audience())
+          ||r.iat()>now||r.iat()<r.exp()-30||!issuer.equals(r.issuer())||!audience.equals(r.audience())
           ||!workload.equals(r.workload())||r.bodyHash()==null||!r.bodyHash().matches("[0-9a-f]{64}")
-          ||!text(r.subject(),256)||!text(r.tenant(),256)||!text(r.acr(),256)||!text(r.scope(),8192))throw new SecurityException();
+          ||!text(r.subject(),256)||!text(r.tenant(),256)||!text(r.acr(),256)||!text(r.scope(),8192))
+        throw READ.invalid(Reason.CLAIMS);
       var roles=new TreeSet<String>();
       if(r.roles()!=null&&!r.roles().isEmpty())for(String role:r.roles().split(" ",-1)) {
-        if(!role.matches("[A-Za-z0-9][A-Za-z0-9._:/@-]{0,127}")||!roles.add(role)||roles.size()>32)throw new SecurityException();
+        if(!role.matches("[A-Za-z0-9][A-Za-z0-9._:/@-]{0,127}")||!roles.add(role)||roles.size()>32)
+          throw READ.invalid(Reason.CLAIMS);
       }
       var scopes=new HashSet<>(Arrays.asList(r.scope().split(" +")));
       String scope=switch(capability) {
@@ -78,11 +86,15 @@ public class SemanticReadDelegation {
         case "ouf.semantic.consultation.read" -> "ouf.semantic.read";
         default -> capability;
       };
-      if(!scopes.contains(scope))throw new SecurityException();
+      if(!scopes.contains(scope))throw READ.invalid(Reason.SCOPE);
       var principal=new PrincipalContext(r.subject(),r.tenant(),PrincipalContext.ActorType.HUMAN,r.workload(),r.acr(),
           r.issuer(),r.audience(),scopes,new PrincipalContext.IdentityClaims(roles,r.acr(),Set.of(),null));
       return new SignedRead(capability,r.bodyHash(),r.exp(),principal);
-    }catch(Exception e){throw new SecurityException("SEM_READ_RECEIPT_INVALID");}
+    } catch (ReadDenial.InvalidReceipt invalid) {
+      throw invalid;
+    } catch (Exception malformed) {
+      throw READ.invalid(Reason.MALFORMED);
+    }
   }
   static String digest(byte[] bytes) {
     return HexFormat.of().formatHex(sha256().digest(bytes));
@@ -97,7 +109,7 @@ public class SemanticReadDelegation {
         && "semantic".equals(envelope.path("Owner").textValue()) && operation.equals(envelope.path("OperationClass").textValue());
   }
   OwnerAuthorization authorize(HttpServletRequest request,byte[] raw,String capability,String resourceType) {
-    if(raw.length>65536)throw new SecurityException("SEM_READ_RECEIPT_INVALID");
+    if(raw.length>65536)throw READ.invalid(Reason.MALFORMED);
     return authorize(request,signed(request,capability),digest(raw),resourceType);
   }
   OwnerAuthorization authorize(HttpServletRequest request,SignedRead signed,String actualDigest,String resourceType) {
@@ -106,8 +118,8 @@ public class SemanticReadDelegation {
     request.setAttribute(ServletAuthorization.TRUSTED_PRINCIPAL,new TrustedPrincipal(principal));
     var owner=OwnerAuthorization.bind(request);
     var resource=new ResourceContext(resourceType,null,principal.tenantId(),null,Map.of("module","SEMANTIC"));
-    owner.require(capability,resource);
-    if(BATCH.equals(capability))owner.require(SEARCH,resource);
+    ReadDenial.require(owner,capability,resource);
+    if(BATCH.equals(capability))ReadDenial.require(owner,SEARCH,resource);
     return owner;
   }
   private static boolean text(String s,int max){return s!=null&&!s.isBlank()&&s.length()<=max&&s.chars().noneMatch(Character::isISOControl);}

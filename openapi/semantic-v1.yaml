@@ -211,7 +211,29 @@ paths:
                                 uniqueItems: true
                                 items: {type: string, enum: [EXACT_LABEL, EXACT_LOCAL_NAME, LABEL_PREFIX, PREFERRED_LANGUAGE, CONTEXT_MATCH]}
         '400': {description: SEM_BATCH_ARGUMENTS_INVALID}
-        '403': {description: SEM_READ_RECEIPT_OR_POLICY_DENIED}
+        '403':
+          description: Invalid read receipt or owner policy denial. The batch requires both search capabilities.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    additionalProperties: false
+                    required: [code, denial]
+                    properties:
+                      code: {const: SEM_READ_RECEIPT_INVALID}
+                      denial: {const: RECEIPT}
+                  - type: object
+                    additionalProperties: false
+                    required: [code, denial]
+                    properties:
+                      code:
+                        oneOf:
+                          - {$ref: '#/components/schemas/OwnerPolicyCode'}
+                          - {const: SEM_READ_POLICY_DENIED}
+                      denial: {const: POLICY}
+                      capability: {enum: [ouf.semantic.search.batch, ouf.semantic.search]}
+                      policyVersion: {type: integer, minimum: 1, description: Version of the policy bundle used by the owner decision}
         '413': {description: SEM_BATCH_REQUEST_TOO_LARGE}
         '422': {description: SEM_BATCH_RESULT_TOO_LARGE}
         '429': {description: SEM_BATCH_RATE_LIMITED}
@@ -221,6 +243,7 @@ paths:
       operationId: requestDelegatedSemanticDiscovery
       x-ouf-mcp-capability: ouf.semantic.discovery
       responses:
+        '403': {$ref: '#/components/responses/DiscoveryDenied'}
         '200':
           description: Current discovery job. An idempotent replay returns the current observation.
           content:
@@ -231,6 +254,7 @@ paths:
       operationId: readDelegatedSemanticDiscoveryStatus
       x-ouf-mcp-capability: ouf.semantic.discovery.status
       responses:
+        '403': {$ref: '#/components/responses/DiscoveryDenied'}
         '200':
           description: Current discovery job.
           content:
@@ -260,6 +284,7 @@ paths:
                     requestId: {type: string, format: uuid}
                     includeState: {type: boolean, default: false}
       responses:
+        '403': {$ref: '#/components/responses/DiscoveryDenied'}
         '200':
           description: Candidate array or job observation with eligible candidate IDs.
           content:
@@ -452,12 +477,38 @@ paths:
         '403': {$ref: '#/components/responses/Problem'}
 components:
   responses:
+    DiscoveryDenied:
+      description: Invalid discovery receipt or owner policy denial. Only the denied capability of this route may be returned.
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - type: object
+                additionalProperties: false
+                required: [code, denial]
+                properties:
+                  code: {const: SEM_DISCOVERY_RECEIPT_INVALID}
+                  denial: {const: RECEIPT}
+              - type: object
+                additionalProperties: false
+                required: [code, denial]
+                properties:
+                  code:
+                    oneOf:
+                      - {$ref: '#/components/schemas/OwnerPolicyCode'}
+                      - {const: SEM_DISCOVERY_POLICY_DENIED}
+                  denial: {const: POLICY}
+                  capability: {enum: [ouf.semantic.discovery, ouf.semantic.discovery.status, ouf.semantic.discovery.candidates]}
+                  policyVersion: {type: integer, minimum: 1, description: Version of the policy bundle used by the owner decision}
     Problem:
       description: RFC 9457 problem detail
       content:
         application/problem+json:
           schema: {$ref: '#/components/schemas/Problem'}
   schemas:
+    OwnerPolicyCode:
+      type: string
+      enum: [TENANT_MISMATCH, CAPABILITY_NOT_DECLARED, ACTOR_NOT_ALLOWED, SCOPE_MISSING, DATA_LABEL_REQUIRED, HUMAN_REQUIRED, EXPLICIT_DENY, NO_APPLICABLE_GRANT, STALE_POLICY_BUNDLE, NO_POLICY_BUNDLE]
     AllowedWorkflowAction:
       description: State-dependent action. Commands still require authorization and current owner preconditions. NONE is returned by itself.
       type: string

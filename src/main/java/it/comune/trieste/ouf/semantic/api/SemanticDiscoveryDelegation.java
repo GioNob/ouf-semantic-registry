@@ -1,5 +1,7 @@
 package it.comune.trieste.ouf.semantic.api;
 
+import static it.comune.trieste.ouf.semantic.api.ReadDenial.DISCOVERY;
+import it.comune.trieste.ouf.semantic.api.ReadDenial.Reason;
 import com.fasterxml.jackson.databind.*;
 import it.comune.trieste.ouf.authorization.PrincipalContext;
 import java.nio.charset.StandardCharsets;
@@ -45,30 +47,41 @@ public class SemanticDiscoveryDelegation {
   }
   public PrincipalContext verify(String proof,String path,String capability,byte[] body) {
     try {
-      if(key.length!=64 || !Set.of("ouf.semantic.discovery","ouf.semantic.discovery.status","ouf.semantic.discovery.candidates").contains(capability)
-          ||proof==null||proof.length()>16384||body.length>65536)throw new SecurityException();
+      if (!DISCOVERY.capabilities.contains(capability)) throw DISCOVERY.invalid(Reason.CAPABILITY);
+      if (key.length != 64 || proof == null || proof.length() > 16384 || body == null || body.length > 65536)
+        throw DISCOVERY.invalid(Reason.MALFORMED);
       var parts=proof.split("\\.",-1);
-      if(parts.length!=2||!parts[0].matches("[A-Za-z0-9_-]+")||!parts[1].matches("[A-Za-z0-9_-]+"))throw new SecurityException();
+      if(parts.length!=2||!parts[0].matches("[A-Za-z0-9_-]+")||!parts[1].matches("[A-Za-z0-9_-]+"))
+        throw DISCOVERY.invalid(Reason.MALFORMED);
       var mac=Mac.getInstance("HmacSHA256");mac.init(new SecretKeySpec(key,"HmacSHA256"));
       if(!MessageDigest.isEqual(mac.doFinal(("ouf-semantic-discovery-owner-v1."+parts[0]).getBytes(StandardCharsets.US_ASCII)),
-          Base64.getUrlDecoder().decode(parts[1])))throw new SecurityException();
+          Base64.getUrlDecoder().decode(parts[1])))throw DISCOVERY.invalid(Reason.SIGNATURE);
       Receipt r=json.readValue(Base64.getUrlDecoder().decode(parts[0]),Receipt.class);
       long now=Instant.now().getEpochSecond();
+      if (!path.equals(r.path())) throw DISCOVERY.invalid(Reason.PATH);
+      if (!capability.equals(r.capability())) throw DISCOVERY.invalid(Reason.CAPABILITY);
+      if (r.exp() <= now) throw DISCOVERY.invalid(Reason.EXPIRED);
       if(r.v()!=1||!"semantic-discovery-owner".equals(r.purpose())||!"POST".equals(r.method())
-          ||!path.equals(r.path())||!capability.equals(r.capability())||r.iat()>now||r.exp()<=now
-          ||r.exp()<=r.iat()||r.exp()-r.iat()>30||!issuer.equals(r.issuer())||!audience.equals(r.audience())
-          ||!workload.equals(r.workload())||!HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(body)).equals(r.bodyHash())
-          ||!text(r.subject(),256)||!text(r.tenant(),256)||!text(r.acr(),256)||!text(r.scope(),8192))throw new SecurityException();
+          ||r.iat()>now||r.iat()<r.exp()-30||!issuer.equals(r.issuer())||!audience.equals(r.audience())
+          ||!workload.equals(r.workload())
+          ||!text(r.subject(),256)||!text(r.tenant(),256)||!text(r.acr(),256)||!text(r.scope(),8192))
+        throw DISCOVERY.invalid(Reason.CLAIMS);
+      if (!SemanticReadDelegation.digest(body).equals(r.bodyHash())) throw DISCOVERY.invalid(Reason.BODY_HASH);
       var roles=new TreeSet<String>();
       if(r.roles()!=null&&!r.roles().isEmpty())for(String role:r.roles().split(" ",-1)) {
-        if(!role.matches("[A-Za-z0-9][A-Za-z0-9._:/@-]{0,127}")||!roles.add(role)||roles.size()>32)throw new SecurityException();
+        if(!role.matches("[A-Za-z0-9][A-Za-z0-9._:/@-]{0,127}")||!roles.add(role)||roles.size()>32)
+          throw DISCOVERY.invalid(Reason.CLAIMS);
       }
       var scopes=new HashSet<>(Arrays.asList(r.scope().split(" +")));
       String scope="ouf.semantic.discovery";
-      if(!scopes.contains(scope))throw new SecurityException();
+      if(!scopes.contains(scope))throw DISCOVERY.invalid(Reason.SCOPE);
       return new PrincipalContext(r.subject(),r.tenant(),PrincipalContext.ActorType.HUMAN,r.workload(),r.acr(),
           r.issuer(),r.audience(),scopes,new PrincipalContext.IdentityClaims(roles,r.acr(),Set.of(),null));
-    }catch(Exception e){throw new SecurityException("SEM_DISCOVERY_RECEIPT_INVALID");}
+    } catch (ReadDenial.InvalidReceipt invalid) {
+      throw invalid;
+    } catch (Exception malformed) {
+      throw DISCOVERY.invalid(Reason.MALFORMED);
+    }
   }
   private static boolean text(String s,int max){return s!=null&&!s.isBlank()&&s.length()<=max&&s.chars().noneMatch(Character::isISOControl);}
 }

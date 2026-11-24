@@ -111,8 +111,8 @@ public class PublishedBatchApi {
       if (oversized) return error(422,"SEM_BATCH_RESULT_TOO_LARGE");
       return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(bytes);
     } catch (SecurityException denied) {
-      log.info("decision=DENY capability={} scope={} ranking={} batch={}",CAP,scope,PublishedBatchSearch.CONTRACT,digest);
-      return error(403,"SEM_READ_RECEIPT_OR_POLICY_DENIED");
+      return ReadDenial.READ.respond(log, denied, CAP,
+          " scope=" + scope + " ranking=" + PublishedBatchSearch.CONTRACT + " batch=" + digest);
     }
   }
 

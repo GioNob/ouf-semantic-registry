@@ -445,6 +445,24 @@ Per il bundle IAM registrare il descrittore batch con operazione `READ`, attore 
 l'UUID dell'artefatto su `semantic.artifact`. Riutilizza issuer, audience, workload e riferimento alla chiave
 della delega di lettura singola. Confrontare i limiti effettivi dei tre moduli prima di usare la rotta.
 
+Le rotte interne di consultazione (`search`, `get`, `search-batch`) e di discovery MCP
+(`request`, `status`, `candidates`) restituiscono i dinieghi con HTTP 403 e `application/json`.
+Il primo campo, `code`, è il codice di diniego per il MCP.
+
+| Corpo del 403 (esempio) | Passo successivo |
+|---|---|
+| `{"code":"SEM_READ_RECEIPT_INVALID","denial":"RECEIPT"}` | Verificare nel log dell’owner il campo `reason` e correggere il passaggio Gateway–owner prima di presentare una nuova ricevuta. In discovery il codice è `SEM_DISCOVERY_RECEIPT_INVALID`. |
+| `{"code":"NO_APPLICABLE_GRANT","denial":"POLICY","capability":"ouf.semantic.search.batch","policyVersion":77}` | Verificare il codice di policy sulla capability indicata. Per `NO_APPLICABLE_GRANT`, confrontare i vincoli dei grant con gli attributi della risorsa. |
+
+I codici ammessi sono elencati in `OwnerPolicyCode` nel contratto OpenAPI. Per un messaggio
+non riconosciuto l’owner restituisce `SEM_READ_POLICY_DENIED` o `SEM_DISCOVERY_POLICY_DENIED`.
+La capability compare solo se il messaggio identifica una capability verificata dalla rotta.
+`policyVersion` è la versione del bundle di policy con cui l'owner ha deciso: il MCP la confronta
+con la propria, così un owner che non ha ancora caricato una policy appena pubblicata (aggiornamento
+ogni `ouf.authorization.refresh-seconds`) produce un'attesa breve e non un diniego stabile.
+Il lotto può indicare anche `ouf.semantic.search`. Il filtro sui singoli artefatti esclude
+i risultati inaccessibili dalla risposta autorizzata.
+
 Da V23 la SELECT del lotto cerca per tipo, lingua e termine nella tabella derivata
 `ouf_sem.revision_batch_term`. Semantic mantiene i termini nella transazione della revisione.
 Le richieste usano ICU4J 75.1 e il database PostgreSQL 17 UTF-8 usa NFC, i mapping di case folding
