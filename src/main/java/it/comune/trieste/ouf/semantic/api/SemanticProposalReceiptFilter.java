@@ -24,7 +24,9 @@ public class SemanticProposalReceiptFilter extends OncePerRequestFilter {
     final SemanticProposalReceiptVerifier.Verified verified;
     try{
       if(!"POST".equals(request.getMethod()))throw new SecurityException();
-      byte[] body=request.getInputStream().readNBytes(65537);
+      int limit=SemanticProposalReceiptVerifier.maxBodyBytes(request.getRequestURI());
+      if(request.getContentLengthLong()>limit)throw new SecurityException();
+      byte[] body=request.getInputStream().readNBytes(limit+1);
       verified=verifier.verify(request.getHeader("X-OUF-Semantic-Proposal-Receipt"),request.getRequestURI(),body);
     }catch(SecurityException e){response.setStatus(403);response.setContentType("application/problem+json");response.getWriter().write("{\"code\":\"SEM_PROPOSAL_RECEIPT_INVALID\",\"status\":403}");return;}
     request.setAttribute(it.comune.trieste.ouf.authorization.ServletAuthorization.TRUSTED_PRINCIPAL,verified.principal());

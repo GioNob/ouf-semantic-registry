@@ -17,6 +17,7 @@ const policy = [
   ['discovery.status', 'READ', 'discovery', 'HUMAN', 'agent'],
   ['discovery.candidates', 'READ', 'discovery', 'HUMAN', 'agent'],
   ['discovery.adopt', 'COMMAND', 'discovery', 'HUMAN', 'agent'],
+  ['propose', 'COMMAND', 'propose', 'AI_AGENT', 'agent'],
   ['review.prepare', 'COMMAND', 'review.prepare', 'AI_AGENT', 'agent'],
   ['approval.request', 'COMMAND', 'approval.request', 'AI_AGENT', 'agent'],
   ['consultation.read', 'READ', 'read', 'HUMAN', 'agent'],

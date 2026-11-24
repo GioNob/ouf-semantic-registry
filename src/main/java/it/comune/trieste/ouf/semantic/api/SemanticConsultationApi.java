@@ -38,7 +38,17 @@ public class SemanticConsultationApi {
   }
   @PostMapping("/get") public Object get(@RequestBody byte[] raw,HttpServletRequest request) {
     var a=arguments(raw,request,"ouf.semantic.consultation.read","READ","semantic.validation",Set.of("semanticId","revisionId","publicationSetId"));
-    return reads.resolve(text(a,"semanticId",true),UUID.fromString(text(a,"revisionId",true)),UUID.fromString(text(a,"publicationSetId",true)));
+    String revision=text(a,"revisionId",false);
+    return reads.resolve(text(a,"semanticId",true),revision==null?null:referenceUuid(revision),referenceUuid(text(a,"publicationSetId",true)));
+  }
+  private static UUID referenceUuid(String value) {
+    try {
+      UUID id=UUID.fromString(value);
+      if(id.toString().equalsIgnoreCase(value)) return id;
+    } catch(IllegalArgumentException invalid) {
+      // Return the same public code for all invalid pin identifiers.
+    }
+    throw new IllegalArgumentException("SEM_REFERENCE_INVALID");
   }
   private static String text(JsonNode node,String key,boolean required){
     if(!node.has(key)&&!required)return null;

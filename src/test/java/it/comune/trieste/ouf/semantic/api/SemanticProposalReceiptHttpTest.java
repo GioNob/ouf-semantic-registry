@@ -3,27 +3,102 @@ package it.comune.trieste.ouf.semantic.api;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.fasterxml.jackson.databind.JsonNode;
 import it.comune.trieste.ouf.authorization.*;
 import it.comune.trieste.ouf.authorization.AuthorizationPolicy.*;
+import it.comune.trieste.ouf.semantic.application.GovernanceService;
+import it.comune.trieste.ouf.semantic.application.ProposalCommandService;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.time.*;
 import java.util.*;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 
-@SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false"})
+@SpringBootTest(properties={"ouf.semantic.discovery-worker.enabled=false","ouf.semantic.providers.schema-gov.enabled=false",
+    "ouf.authorization.ths.public-origin=https://ths.example.test"})
 @AutoConfigureMockMvc
 @Import(SignedProposalFixture.Fixture.class)
 class SemanticProposalReceiptHttpTest extends SignedProposalFixture {
+  @Autowired ProposalCommandService commands;
+  @Autowired GovernanceService governance;
+
+  @Test void signedValueMapWithTwoThousandMaximumLengthCodesStoresOnlyColumnMetadata() throws Exception {
+    String root="https://example.org/signed-maps/";
+    String vocabulary=root+UUID.randomUUID();
+    String conceptPrefix=root+UUID.randomUUID();
+    String longConcept=conceptPrefix+"c".repeat(512-conceptPrefix.length());
+    String concept=root+UUID.randomUUID();
+    publishTerm(vocabulary,"VOCABULARY",Map.of());
+    publishTerm(longConcept,"CONCEPT",Map.of("vocabularyRef",vocabulary));
+    UUID publication=publishTerm(concept,"CONCEPT",Map.of("vocabularyRef",vocabulary));
+    var entries=IntStream.range(0,2000).mapToObj(i -> Map.of(
+        "code","a".repeat(124)+String.format(Locale.ROOT,"%04d",i),
+        "concept",i==0?longConcept:concept)).toList();
+    var definition=Map.of("targetVocabulary",vocabulary+"@"+publication,"entries",entries);
+    var source=Map.of("fieldName","codice_servizio","sourceId","source-1");
+    String key=UUID.randomUUID().toString();
+    String localName=UUID.randomUUID().toString();
+    String cap="ouf.semantic.propose";
+    var args=new LinkedHashMap<>(Map.<String,Object>of("semanticId",root+localName,"namespace",root,
+        "localName",localName,"artifactType","VALUE_MAP","semanticVersion","1.0.0","ownerRef","owner",
+        "authorityRef","authority","commandKey",key,"definition",definition,"rationale",Map.of("sourceColumn",source)));
+    byte[] envelope=envelope(cap,"COMMAND",key,args);
+    assertThat(envelope.length).isBetween(65537,1048576);
+    var created=send("create",cap,cap,key,args,CAPS,200);
+    assertThat(send("create",cap,cap,key,args,CAPS,200)).isEqualTo(created);
+    args.put("rationale",Map.of("sourceColumn",Map.of("fieldName","a different column")));
+    assertThat(send("create",cap,cap,key,args,CAPS,409).required("code").asText()).isEqualTo("IDEMPOTENCY_KEY_REUSE");
+    for(var column:List.of(Map.of("fieldName",""),Map.of("fieldName","a".repeat(257)),
+        Map.of("fieldName","codice_servizio","values",List.of("private-source-value")))){
+      args.put("rationale",Map.of("sourceColumn",column));
+      var problem=send("create",cap,cap,key,args,CAPS,400);
+      assertThat(problem.required("code").asText()).isEqualTo("SEMANTIC_VALUE_MAP_INVALID");
+      assertThat(problem.toString()).doesNotContain("private-source-value");
+    }
+
+    UUID revision=UUID.fromString(created.required("revisionId").asText());
+    var review=prepareReview(revision);
+    var card=governance.card(UUID.fromString(review.get("challengeId").toString()));
+    var projected=json.valueToTree(card).required("valueMapReview");
+    assertThat(projected.required("entryCount").asInt()).isEqualTo(2000);
+    assertThat(projected.at("/entries/0/concept").asText()).isEqualTo(longConcept);
+    assertThat(projected.required("sourceColumn")).isEqualTo(json.valueToTree(source));
+    assertThat(projected.has("changes")).isFalse();
+    JsonNode storedDefinition=json.valueToTree(card.get("definition_json"));
+    assertThat(storedDefinition).isEqualTo(json.valueToTree(definition));
+  }
+
+  private UUID publishTerm(String id,String type,Map<String,Object> definition) {
+    int separator=id.lastIndexOf('/')+1;
+    var proposal=new ArtifactApi.CreateArtifact(id,type,id.substring(0,separator),id.substring(separator),
+        "owner","authority","1.0.0",Map.of("it","Etichetta"),definition);
+    UUID revision=UUID.fromString(commands.create("tenant-a","agent","AI_AGENT",UUID.randomUUID().toString(),
+        proposal,"test").get("revisionId").toString());
+    var review=prepareReview(revision);
+    var decision=governance.decide(UUID.fromString(review.get("challengeId").toString()),"APPROVED","reviewer","HUMAN","fixture","test");
+    return (UUID)governance.publish(revision,(UUID)decision.get("decisionId"),UUID.randomUUID().toString(),
+        review.get("targetContentHash").toString(),"reviewer","HUMAN","test").get("publicationSetId");
+  }
+
+  private Map<String,Object> prepareReview(UUID revision) {
+    var validation=commands.validate("tenant-a","agent",UUID.randomUUID().toString(),revision,0);
+    assertThat(validation).containsEntry("status","PASS");
+    return commands.review("tenant-a","agent","AI_AGENT",UUID.randomUUID().toString(),revision,0,
+        UUID.fromString(validation.get("validation_run_id").toString()),"test");
+  }
+
   @Test void signedEnvelopeTraversesFilterCurrentOwnerPolicyPostgresqlAndReceiptRead()throws Exception{
     String k=UUID.randomUUID().toString();String semantic="ouf:signed:"+UUID.randomUUID();
     var c=new LinkedHashMap<String,Object>();c.put("semanticId",semantic);c.put("artifactType","CLASS");c.put("namespace","ouf");c.put("localName","SignedPlace"+UUID.randomUUID().toString().replace("-",""));
     c.put("ownerRef","owner");c.put("authorityRef","authority");c.put("semanticVersion","1.0.0");c.put("labels",Map.of("it","Luogo"));c.put("definition",Map.of());c.put("commandKey",k);
     var created=send("create","ouf.semantic.propose","ouf.semantic.propose",k,c,CAPS,200);
+    assertWorkflow(created,"DRAFT","PREPARE_REVIEW");
     var read=send("read","ouf.semantic.proposal.read","ouf.semantic.proposal.read",UUID.randomUUID().toString(),Map.of("commandKey",k),CAPS,200);
     assertThat(read.get("result").get("revisionId").asText()).isEqualTo(created.get("revisionId").asText());
     send("read","ouf.semantic.proposal.read","ouf.semantic.proposal.read",UUID.randomUUID().toString(),Map.of("commandKey",k),Set.of("ouf.semantic.read","ouf.semantic.propose"),403);
@@ -32,10 +107,45 @@ class SemanticProposalReceiptHttpTest extends SignedProposalFixture {
     send("create","ouf.semantic.propose","ouf.semantic.propose",k,c,Set.of(),403);
     String revision=created.get("revisionId").asText();String vk=UUID.randomUUID().toString();
     var validation=send("validate","ouf.semantic.review.prepare","ouf.semantic.review.prepare",vk,Map.of("commandKey",vk,"revisionId",revision,"expectedRowVersion",0),CAPS,200);
+    assertWorkflow(validation,"VALIDATED","REQUEST_APPROVAL");
+    assertThat(validation.required("currentValidationRunId")).isEqualTo(validation.required("validation_run_id"));
     String rk=UUID.randomUUID().toString();var review=send("review","ouf.semantic.approval.request","ouf.semantic.approval.request",rk,
         Map.of("commandKey",rk,"revisionId",revision,"expectedRowVersion",0,"validationRunId",validation.get("validation_run_id").asText()),CAPS,200);
     assertThat(review.get("trustedApprovalRef").asText()).startsWith("ths://semantic-approval-challenges/");
     assertThat(review.get("humanAuthorityRequired").asBoolean()).isTrue();
+    assertWorkflow(review,"UNDER_REVIEW","WAIT_HUMAN_DECISION");
+    String challenge=review.required("challengeId").asText();
+    assertThat(review.at("/currentChallenge/reviewUrl").asText())
+        .isEqualTo("https://ths.example.test/trusted-human/semantic/?challenge="+challenge);
+    assertThat(review.at("/currentChallenge/expiresAt")).isEqualTo(review.required("expiresAt"));
+    String readCap="ouf.semantic.proposal.read";
+    var expected=Map.<String,Object>of("commandKey",rk,"expectedVersion",review.required("version").asText());
+    var unchanged=send("read",readCap,readCap,UUID.randomUUID().toString(),expected,CAPS,200);
+    assertWorkflow(unchanged,"UNDER_REVIEW","WAIT_HUMAN_DECISION");
+    assertThat(unchanged.required("changed").asBoolean()).isFalse();
+    assertThat(unchanged.required("version")).isEqualTo(review.required("version"));
+    assertThat(unchanged.required("pollAfterSeconds").asInt()).isEqualTo(5);
+    assertThat(unchanged.size()).isEqualTo(5);
+    send("read",readCap,readCap,UUID.randomUUID().toString(),expected,Set.of(readCap),403);
+    send("read",readCap,readCap,UUID.randomUUID().toString(),Map.of("commandKey",rk,"expectedVersion","0"),CAPS,400);
+
+    var decision=governance.decide(UUID.fromString(challenge),"APPROVED","reviewer","HUMAN","fixture","test");
+    var approved=send("read",readCap,readCap,UUID.randomUUID().toString(),expected,CAPS,200);
+    assertWorkflow(approved,"APPROVED","NONE");
+    assertThat(approved.required("rowVersion")).isEqualTo(review.required("rowVersion"));
+    assertThat(approved.required("changed").asBoolean()).isTrue();
+    assertThat(approved.required("version")).isNotEqualTo(review.required("version"));
+    assertThat(approved.at("/result/status").asText()).isEqualTo("OPEN");
+    assertThat(approved.at("/currentChallenge/challengeStatus").asText()).isEqualTo("APPROVED");
+    governance.publish(UUID.fromString(revision),(UUID)decision.get("decisionId"),UUID.randomUUID().toString(),
+        review.required("targetContentHash").asText(),"reviewer","HUMAN","test");
+    var published=send("read",readCap,readCap,UUID.randomUUID().toString(),expected,CAPS,200);
+    assertWorkflow(published,"ACTIVE","NONE");
+    assertThat(published.required("version")).isNotEqualTo(approved.required("version"));
+  }
+  private void assertWorkflow(JsonNode result,String state,String action) {
+    assertThat(result.required("state").asText()).isEqualTo(state);
+    assertThat(result.required("allowedActions")).isEqualTo(json.createArrayNode().add(action));
   }
   @Test void adoptionRequiresProposalProofDiscoveryScopeHumanDescriptorAndClosedArguments()throws Exception {
     String path="/api/semantic/v1/proposal-commands/adopt";

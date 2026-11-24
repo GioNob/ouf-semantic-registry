@@ -4,7 +4,169 @@ info:
   version: 1.0.0
 paths:
   /api/semantic/v1/artifacts:
-    post: {operationId: createSemanticArtifact, responses: {'201': {description: Draft created}}}
+    post:
+      operationId: createSemanticArtifact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - if: {required: [artifactType], properties: {artifactType: {const: DATATYPE}}}
+                  then:
+                    required: [definition]
+                    properties:
+                      definition: {$ref: '../contracts/semantic-reference-v1.json#/$defs/DatatypeDefinition'}
+                - $ref: '#/components/schemas/ValueMapProposal'
+      responses: {'201': {description: Draft created}}
+  /api/semantic/v1/proposal-commands/create:
+    post:
+      operationId: createSemanticProposal
+      x-ouf-mcp-capability: ouf.semantic.propose
+      description: The signed owner envelope is limited to 1048576 bytes for VALUE_MAP and 65536 bytes for other proposals.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ValueMapProposal'
+                - if: {required: [artifactType], properties: {artifactType: {const: VALUE_MAP}}}
+                  then:
+                    properties:
+                      rationale:
+                        description: Proposal metadata outside the definition and its digest.
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          sourceColumn: {$ref: './semantic-ths-v1.yaml#/components/schemas/ValueMapSourceColumn'}
+                  else:
+                    not: {required: [rationale]}
+      responses:
+        '200':
+          description: Draft proposal receipt with current workflow metadata.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ProposalObservation'}
+        '400': {description: SEMANTIC_VALUE_MAP_INVALID for an invalid value map definition or rationale}
+  /api/semantic/v1/proposal-commands/validate:
+    post:
+      operationId: prepareSemanticProposalReview
+      x-ouf-mcp-capability: ouf.semantic.review.prepare
+      responses:
+        '200':
+          description: Validation receipt with current workflow metadata.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ProposalObservation'}
+  /api/semantic/v1/proposal-commands/review:
+    post:
+      operationId: requestSemanticProposalApproval
+      x-ouf-mcp-capability: ouf.semantic.approval.request
+      responses:
+        '200':
+          description: Challenge receipt with current workflow metadata. The original challenge expiry is also available as expiresAt alongside expires_at.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ProposalObservation'
+                  - type: object
+                    required: [expiresAt]
+                    properties:
+                      expiresAt: {type: string, format: date-time}
+  /api/semantic/v1/proposal-commands/read:
+    post:
+      operationId: readSemanticProposal
+      x-ouf-mcp-capability: ouf.semantic.proposal.read
+      description: >
+        The authenticated HUMAN must own the receipt in the same tenant and still hold
+        both the read grant and the grant for the original operation. Pass the last observed
+        opaque version to compare the current owner state, including HUMAN decisions and
+        time-driven expiry. A match returns a compact HTTP 200, without loading the
+        historical result into the response. An omitted or different version returns the
+        immutable receipt and the current observation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [commandKey]
+              properties:
+                commandKey: {type: string, pattern: '^[A-Za-z0-9_:.-]{1,128}$'}
+                expectedVersion: {$ref: '#/components/schemas/ProposalVersion'}
+      responses:
+        '200':
+          description: Changed or unchanged observation.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ChangedProposal'
+                  - $ref: '#/components/schemas/UnchangedProposal'
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+  /api/internal/v1/semantic/discovery/request:
+    post:
+      operationId: requestDelegatedSemanticDiscovery
+      x-ouf-mcp-capability: ouf.semantic.discovery
+      responses:
+        '200':
+          description: Current discovery job. An idempotent replay returns the current observation.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/DiscoveryObservation'}
+  /api/internal/v1/semantic/discovery/status:
+    post:
+      operationId: readDelegatedSemanticDiscoveryStatus
+      x-ouf-mcp-capability: ouf.semantic.discovery.status
+      responses:
+        '200':
+          description: Current discovery job.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/DiscoveryObservation'}
+  /api/internal/v1/semantic/discovery/candidates:
+    post:
+      operationId: readDelegatedSemanticDiscoveryCandidates
+      x-ouf-mcp-capability: ouf.semantic.discovery.candidates
+      description: >
+        Set Arguments.includeState to true in the signed Gateway envelope to receive
+        the job observation alongside candidates, including when the list is empty.
+        The historical array is returned when includeState is false or omitted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [Arguments]
+              properties:
+                Arguments:
+                  type: object
+                  additionalProperties: false
+                  required: [requestId]
+                  properties:
+                    requestId: {type: string, format: uuid}
+                    includeState: {type: boolean, default: false}
+      responses:
+        '200':
+          description: Candidate array or job observation with eligible candidate IDs.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items: {type: object}
+                  - allOf:
+                      - $ref: '#/components/schemas/DiscoveryObservation'
+                      - type: object
+                        required: [candidates, adoptableCandidateIds]
+                        properties:
+                          candidates: {type: array, items: {type: object}}
+                          adoptableCandidateIds: {type: array, items: {type: string, format: uuid}}
   /api/semantic/v1/artifacts/{id}:
     get: {operationId: getSemanticArtifact, responses: {'200': {description: Artifact detail}}}
   /api/semantic/v1/search:
@@ -35,7 +197,40 @@ paths:
   /api/semantic/v1/impact-reports/{id}:
     get: {operationId: getSemanticImpactReport, responses: {'200': {description: Impact report}}}
   /api/semantic/v1/references:resolve:
-    get: {operationId: resolveSemanticReference, responses: {'200': {description: Exact resolution}}}
+    get:
+      operationId: resolveSemanticReference
+      parameters:
+        - {name: semanticId, in: query, required: true, schema: {type: string, format: uri}}
+        - {name: publicationSetId, in: query, required: true, schema: {type: string, format: uuid}}
+        - {name: revisionId, in: query, description: Optional only for a pinned DATATYPE or VALUE_MAP, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: Exact publication member with the current status of its pinned revision. Onboarding requires ACTIVE for every DATATYPE and VALUE_MAP during preparation and resolves each nested pin separately. Historical replay accepts all three published states.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [semantic_id, revision_id, publication_set_id, artifact_type, status]
+                properties:
+                  semantic_id: {type: string}
+                  revision_id: {type: string, format: uuid}
+                  publication_set_id: {type: string, format: uuid}
+                  artifact_type: {type: string}
+                  status: {$ref: '../contracts/semantic-reference-v1.json#/properties/status'}
+                allOf:
+                  - if: {properties: {artifact_type: {enum: [DATATYPE, VALUE_MAP]}}}
+                    then:
+                      required: [definition, definitionSha256]
+                      properties:
+                        definitionSha256: {$ref: '../contracts/semantic-reference-v1.json#/properties/definitionSha256'}
+                  - if: {properties: {artifact_type: {const: DATATYPE}}}
+                    then:
+                      properties:
+                        definition: {$ref: '../contracts/semantic-reference-v1.json#/$defs/DatatypeDefinition'}
+                  - if: {properties: {artifact_type: {const: VALUE_MAP}}}
+                    then:
+                      properties:
+                        definition: {$ref: '../contracts/semantic-reference-v1.json#/$defs/ValueMapDefinition'}
   /api/semantic/v1/consumer-references:
     put: {operationId: registerSemanticConsumerReference, responses: {'204': {description: Registered}}}
   /api/semantic/v1/discovery:
@@ -94,6 +289,109 @@ components:
         application/problem+json:
           schema: {$ref: '#/components/schemas/Problem'}
   schemas:
+    AllowedWorkflowAction:
+      description: State-dependent action. Commands still require authorization and current owner preconditions. NONE is returned by itself.
+      type: string
+      enum: [POLL_DISCOVERY, LIST_CANDIDATES, ADOPT_CANDIDATE, PREPARE_REVIEW, REQUEST_APPROVAL, WAIT_HUMAN_DECISION, REVISE_PROPOSAL, NONE]
+    DiscoveryObservation:
+      description: >
+        PENDING and RUNNING with ACTIVE or RETRY_WAIT advertise POLL_DISCOVERY.
+        pollAfterSeconds is at least five and respects the persisted next attempt.
+        SUCCEEDED with unexpired candidates advertises LIST_CANDIDATES on request/status;
+        the stateful candidates response advertises ADOPT_CANDIDATE if there are still
+        eligible candidate IDs. Eligible IDs identify unexpired candidates not already
+        adopted from this job. All other combinations advertise NONE.
+      type: object
+      required: [requestId, state, recoveryState, allowedActions]
+      properties:
+        requestId: {type: string, format: uuid}
+        state: {type: string, enum: [PENDING, RUNNING, SUCCEEDED, FAILED, CANCELLED]}
+        recoveryState: {type: string, enum: [ACTIVE, RETRY_WAIT, PAUSED_EXHAUSTED, BLOCKED, CANCELLED]}
+        allowedActions:
+          type: array
+          minItems: 1
+          maxItems: 1
+          items:
+            allOf:
+              - $ref: '#/components/schemas/AllowedWorkflowAction'
+              - enum: [POLL_DISCOVERY, LIST_CANDIDATES, ADOPT_CANDIDATE, NONE]
+        pollAfterSeconds: {type: integer, minimum: 5}
+    ProposalVersion:
+      description: Opaque equality token for the current observation. Use rowVersion for optimistic writes.
+      type: string
+      pattern: '^[a-f0-9]{64}$'
+    ProposalProgress:
+      description: >
+        DRAFT allows PREPARE_REVIEW. VALIDATED refers to green evidence for the current
+        row and allows REQUEST_APPROVAL. VALIDATION_FAILED, REJECTED and EXPIRED allow
+        REVISE_PROPOSAL. UNDER_REVIEW allows WAIT_HUMAN_DECISION and recommends a
+        five-second poll. APPROVED denotes the HUMAN decision; publication is a
+        separate HUMAN action in THS. APPROVED, ACTIVE, DEPRECATED, RETIRED and
+        UNKNOWN advertise NONE. UNKNOWN covers legacy receipts without a verifiable
+        revision and inconsistent review metadata.
+      type: object
+      required: [version, state, allowedActions]
+      properties:
+        version: {$ref: '#/components/schemas/ProposalVersion'}
+        state: {type: string, enum: [DRAFT, VALIDATED, VALIDATION_FAILED, UNDER_REVIEW, APPROVED, REJECTED, EXPIRED, ACTIVE, DEPRECATED, RETIRED, UNKNOWN]}
+        allowedActions:
+          type: array
+          minItems: 1
+          maxItems: 1
+          items:
+            allOf:
+              - $ref: '#/components/schemas/AllowedWorkflowAction'
+              - enum: [PREPARE_REVIEW, REQUEST_APPROVAL, WAIT_HUMAN_DECISION, REVISE_PROPOSAL, NONE]
+        pollAfterSeconds: {type: integer, minimum: 5}
+    ProposalObservation:
+      allOf:
+        - $ref: '#/components/schemas/ProposalProgress'
+        - type: object
+          properties:
+            revisionId: {type: string, format: uuid}
+            rowVersion: {type: integer, minimum: 0}
+            currentValidationRunId: {type: string, format: uuid}
+            currentChallenge:
+              type: object
+              required: [challengeId, challengeStatus, expiresAt]
+              properties:
+                challengeId: {type: string, format: uuid}
+                challengeStatus: {type: string, enum: [OPEN, APPROVED, REJECTED, EXPIRED]}
+                expiresAt: {type: string, format: date-time}
+                reviewUrl:
+                  description: Owner-issued THS workflow-review URL for the semantic flow, returned for open or approved review when the public THS origin is configured.
+                  type: string
+                  format: uri
+    ChangedProposal:
+      allOf:
+        - $ref: '#/components/schemas/ProposalObservation'
+        - type: object
+          required: [changed, operation, result, historicalSnapshot, ownerStateMustBeRechecked]
+          properties:
+            changed: {const: true}
+            operation: {type: string, enum: [CREATE, VALIDATE, REVIEW, ADOPT]}
+            result: {type: object, description: Immutable command receipt. Use the top-level observation for current state.}
+            historicalSnapshot: {const: true}
+            ownerStateMustBeRechecked: {const: true}
+    UnchangedProposal:
+      allOf:
+        - $ref: '#/components/schemas/ProposalProgress'
+        - type: object
+          required: [changed]
+          properties:
+            changed: {const: false}
+      unevaluatedProperties: false
+    ValueMapProposal:
+      type: object
+      if: {required: [artifactType], properties: {artifactType: {const: VALUE_MAP}}}
+      then:
+        required: [definition]
+        properties:
+          definition: {$ref: '../contracts/semantic-reference-v1.json#/$defs/ValueMapDefinition'}
+        not:
+          anyOf:
+            - required: [rdfTurtle]
+            - required: [mediaType]
     Problem:
       type: object
       required: [status, detail, code, correlationId]

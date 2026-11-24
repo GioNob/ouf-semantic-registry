@@ -19,13 +19,44 @@ public class ArtifactService {
   @Transactional
   public Map<String,Object> create(CreateArtifact c,String actor,String actorType,String correlation){
     UUID a=UUID.randomUUID(),r=UUID.randomUUID();
+    boolean valueMap="VALUE_MAP".equals(c.artifactType());
     try {
-      db.sql("insert into ouf_sem.semantic_artifact(artifact_id,semantic_id,artifact_type,namespace,local_name,owner_ref,authority_ref,origin_kind) values(:a,:s,:t,:n,:l,:o,:u,'OUF')")
+      int revisionNo=1;
+      if (valueMap || "DATATYPE".equals(c.artifactType())) {
+        String invalidId=valueMap?"SEMANTIC_VALUE_MAP_INVALID":"DT-IRI";
+        try {
+          if (!new java.net.URI(c.semanticId()).isAbsolute()) throw new IllegalArgumentException(invalidId);
+        } catch (java.net.URISyntaxException invalid) { throw new IllegalArgumentException(invalidId); }
+        if (c.semanticVersion()==null || !c.semanticVersion().matches("[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?(?:\\+[A-Za-z0-9.-]+)?"))
+          throw new IllegalArgumentException("SEMANTIC_VERSION_INVALID");
+        var existing=db.sql("""
+            select artifact_id, artifact_type, namespace, local_name, owner_ref, authority_ref, retired_at
+            from ouf_sem.semantic_artifact where semantic_id=:s for update
+            """).param("s",c.semanticId()).query().listOfRows();
+        if (!existing.isEmpty()) {
+          var identity=existing.getFirst();
+          if (!c.artifactType().equals(identity.get("artifact_type")) || identity.get("retired_at")!=null ||
+              !c.namespace().equals(identity.get("namespace")) || !c.localName().equals(identity.get("local_name")) ||
+              !c.ownerRef().equals(identity.get("owner_ref")) || !c.authorityRef().equals(identity.get("authority_ref")))
+            throw new Conflict("SEMANTIC_ID_CONFLICT");
+          a=(UUID)identity.get("artifact_id");
+          var revisions=db.sql("""
+              select max(revision_no)+1 next_no, bool_or(published_at is null or semantic_version=:v) blocked
+              from ouf_sem.artifact_revision where artifact_id=:a
+              """).param("v",c.semanticVersion()).param("a",a).query().singleRow();
+          if (!Boolean.FALSE.equals(revisions.get("blocked"))) throw new Conflict(valueMap?"SEMANTIC_VERSION_CONFLICT":"DT-VERSION");
+          revisionNo=((Number)revisions.get("next_no")).intValue();
+        }
+      }
+      if (revisionNo==1) db.sql("insert into ouf_sem.semantic_artifact(artifact_id,semantic_id,artifact_type,namespace,local_name,owner_ref,authority_ref,origin_kind) values(:a,:s,:t,:n,:l,:o,:u,'OUF')")
         .param("a",a).param("s",c.semanticId()).param("t",c.artifactType()).param("n",c.namespace()).param("l",c.localName()).param("o",c.ownerRef()).param("u",c.authorityRef()).update();
-      db.sql("insert into ouf_sem.artifact_revision(revision_id,artifact_id,revision_no,lifecycle_status,semantic_version,label_json,definition_json,created_by_subject) values(:r,:a,1,'DRAFT',:v,cast(:l as jsonb),cast(:d as jsonb),:x)")
-        .param("r",r).param("a",a).param("v",c.semanticVersion()).param("l",j(c.labels())).param("d",j(c.definition())).param("x",actor).update();
-      audit("SEMANTIC_ARTIFACT_CREATED",actor,actorType,"ARTIFACT",a.toString(),correlation,Map.of("revisionId",r,"semanticId",c.semanticId()));
+      db.sql("insert into ouf_sem.artifact_revision(revision_id,artifact_id,revision_no,lifecycle_status,semantic_version,label_json,definition_json,created_by_subject) values(:r,:a,:no,'DRAFT',:v,cast(:l as jsonb),cast(:d as jsonb),:x)")
+        .param("no",revisionNo)
+        .param("r",r).param("a",a).param("v",c.semanticVersion()).param("l",j(c.labels()))
+        .param("d",valueMap?valueMapJson(c.definition()):j(c.definition())).param("x",actor).update();
+      audit(revisionNo==1?"SEMANTIC_ARTIFACT_CREATED":"SEMANTIC_REVISION_CREATED",actor,actorType,"ARTIFACT",a.toString(),correlation,Map.of("revisionId",r,"semanticId",c.semanticId()));
     } catch(DuplicateKeyException e){throw new Conflict("SEMANTIC_ID_CONFLICT");}
+    catch(DataAccessException e){throw valueMap?valueMapError(e):e;}
     return Map.of("artifactId",a,"revisionId",r,"semanticId",c.semanticId(),"status","DRAFT","etag","\"0\"");
   }
   public Map<String,Object> get(UUID id){return db.sql("select a.artifact_id,a.semantic_id,a.artifact_type,r.revision_id,r.lifecycle_status status,r.row_version from ouf_sem.semantic_artifact a join lateral (select * from ouf_sem.artifact_revision r where r.artifact_id=a.artifact_id order by r.revision_no desc limit 1) r on true where a.artifact_id=:id").param("id",id).query().singleRow();}
@@ -35,6 +66,10 @@ public class ArtifactService {
     final long expected;
     try{expected=Long.parseLong(etag.replace("\"",""));}
     catch(RuntimeException e){throw new IllegalArgumentException("ETAG_INVALID",e);}
+    boolean valueMap=db.sql("""
+        select exists(select from ouf_sem.artifact_revision r join ouf_sem.semantic_artifact a using (artifact_id)
+          where r.revision_id=:id and a.artifact_type='VALUE_MAP')
+        """).param("id",id).query(Boolean.class).single();
     try{
       if(p.semanticVersion()!=null){
         if(!p.semanticVersion().matches("[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?(?:\\+[A-Za-z0-9.-]+)?"))throw new IllegalArgumentException("SEMANTIC_VERSION_INVALID");
@@ -42,12 +77,35 @@ public class ArtifactService {
           .param("version",p.semanticVersion()).param("id",id).param("expected",expected).update();
         if(changed!=1)throw new Conflict("VERSION_CONFLICT");
       }
-      Long v=db.sql("select ouf_sem.edit_draft(:id,:v,cast(:l as jsonb),cast(:d as jsonb))").param("id",id).param("v",expected).param("l",j(p.labels())).param("d",j(p.definition())).query(Long.class).single();
+      Long v=db.sql("select ouf_sem.edit_draft(:id,:v,cast(:l as jsonb),cast(:d as jsonb))")
+          .param("id",id).param("v",expected).param("l",valueMap&&p.labels()==null?null:j(p.labels()))
+          .param("d",valueMap?(p.definition()==null?null:valueMapJson(p.definition())):j(p.definition())).query(Long.class).single();
       audit("SEMANTIC_DRAFT_EDITED",actor,actorType,"REVISION",id.toString(),correlation,Map.of("rowVersion",v));return Map.of("revisionId",id,"etag","\""+v+"\"");
     }catch(DataAccessException e){
       if(e.getMessage()!=null&&e.getMessage().contains("VERSION_CONFLICT"))throw new Conflict("VERSION_CONFLICT");
-      throw e;
+      throw valueMap?valueMapError(e):e;
     }
+  }
+  private String valueMapJson(Map<String,Object> definition) {
+    try {
+      // A numeric overflow in an untyped request must not turn into a quoted code.
+      String encoded=json.writer().without(com.fasterxml.jackson.core.JsonGenerator.Feature.QUOTE_NON_NUMERIC_NUMBERS)
+          .writeValueAsString(definition);
+      if (java.nio.charset.StandardCharsets.UTF_8.newEncoder().canEncode(encoded)) return encoded;
+    } catch(JsonProcessingException invalid) {
+      throw new IllegalArgumentException("SEMANTIC_VALUE_MAP_INVALID");
+    }
+    throw new IllegalArgumentException("SEMANTIC_VALUE_MAP_INVALID");
+  }
+  static RuntimeException valueMapError(DataAccessException error) {
+    if (error.getMostSpecificCause() instanceof java.sql.SQLException sql) {
+      return switch (sql.getSQLState()) {
+        case "P0842", "22003", "22P02", "22P05" -> new IllegalArgumentException("SEMANTIC_VALUE_MAP_INVALID");
+        case "P0843" -> new IllegalArgumentException("SEMANTIC_VERSION_INVALID");
+        default -> error;
+      };
+    }
+    return error;
   }
   private void audit(String event,String actor,String actorType,String resourceType,String resourceId,String correlation,Object detail){db.sql("insert into ouf_sem.audit_event(event_id,event_type,subject_ref,resource_type,resource_id,correlation_id,detail_json) values(:i,:e,:a,:t,:r,:c,cast(:d as jsonb))").param("i",UUID.randomUUID()).param("e",event).param("a",actor).param("t",resourceType).param("r",resourceId).param("c",correlation).param("d",j(Map.of("actorType",actorType,"detail",detail))).update();}
   public static class Conflict extends RuntimeException{public Conflict(String m){super(m);}}

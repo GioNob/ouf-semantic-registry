@@ -1,28 +1,28 @@
 # Ritorno al predecessore Semantic (D-080)
 
-Il job `predecessor-return` di `module-ci.yml` verifica il ritorno di R3 v31 sui dati del candidato. Su pull request, l'artefatto governato diventa disponibile solo dopo il superamento del job. Il risultato vale per la coppia di image ID registrata nel riepilogo della run.
+Il job `predecessor-return` di `module-ci.yml` verifica il ritorno del Semantic 32 sui dati del candidato. Su pull request, l'artefatto governato diventa disponibile solo dopo il superamento del job. Il risultato vale per la coppia di image ID registrata nel riepilogo della run.
 
 ## Identità delle immagini
 
 | Riferimento | Origine |
 |---|---|
-| Commit del predecessore | `d9f0bf9cc3ed074371a8e337ac6f833e91c2f51b` di default. Per cambiare baseline usare la variabile di repository `SEMANTIC_PREDECESSOR_COMMIT` oppure l'input manuale `predecessor`. |
-| `SEMANTIC_PREDECESSOR_RUN` | ID della run che ha prodotto l'archivio di rilascio `semantic-registry-governed-image-<run>`. Variabile di repository o input manuale `predecessor_run`. |
-| `SEMANTIC_PREDECESSOR_IMAGE_ID` | Docker image ID completo (`sha256:…`) registrato per il container in esercizio. Variabile di repository o input manuale `predecessor_image_id`. |
+| Commit del predecessore | `528881d59a018d5fd3ad4ff62b2b3b95a2b62cd3` di default. Per cambiare baseline usare la variabile di repository `SEMANTIC_PREDECESSOR_COMMIT` oppure l'input manuale `predecessor`. |
+| `SEMANTIC_PREDECESSOR_RUN` | Default `44955419430`, che ha prodotto l'archivio di rilascio `semantic-registry-governed-image-44955419430`. Input manuale `predecessor_run`. |
+| `SEMANTIC_PREDECESSOR_IMAGE_ID` | Default `sha256:f082d5ea0ccb0548d4db7bcd5a1d79b443a80fb78bd30a25676b3b78c72e7205`, Docker image ID del manifest di Semantic 32. Input manuale `predecessor_image_id`. |
 | Candidato | Archivio trasferito da `container-smoke` nella stessa run. La revisione OCI deve corrispondere al checkout testato, incluso il merge di prova per le PR. |
 
-Quando cambia il predecessore, aggiornare insieme commit, run e image ID con i riferimenti del rilascio. Il job verifica repository, commit revisionato, albero Git, SHA-256 dell'archivio e revisione OCI. Avvia le immagini per ID. L'assenza di un pin, un archivio scaduto o una discordanza d'identità fa fallire il gate prima delle prove applicative. La disponibilità dell'archivio va verificata per tutta la permanenza del predecessore in esercizio. La retention corrente dell'artefatto governato è di 14 giorni.
+Per ciascun pin il workflow usa, in ordine, l'input manuale, la variabile di repository e il default. Quando cambia il predecessore, aggiornare insieme commit, run e image ID con i riferimenti del rilascio. Il job verifica repository, commit revisionato, albero Git, SHA-256 dell'archivio e revisione OCI. Avvia le immagini per ID. Un pin malformato, un archivio scaduto o una discordanza d'identità fa fallire il gate prima delle prove applicative. La disponibilità dell'archivio va verificata per tutta la permanenza del predecessore in esercizio. La retention corrente dell'artefatto governato è di 14 giorni.
 
 ## Sequenza della prova
 
 | Fase | Operazioni ed evidenza richiesta |
 |---|---|
-| Predecessore su V18 | Un processo Flyway separato applica le migrazioni contenute nel JAR del predecessore a PostgreSQL 17 vuoto. Il worker effettua discovery di `MultiplePointOfInterest`. Seguono adozione, validazione, review, approvazione HUMAN tramite THS e pubblicazione. Il driver conserva i riferimenti restituiti dalle API. |
-| Candidato su V19 | Dopo lo stop del predecessore, Flyway valida la storia esistente e applica le migrazioni del candidato. Il candidato scopre, adotta e pubblica `PointOfInterest`. La scheda THS deve contenere le virgolette di `"superstructure"` e `"Entity-Entità"` nei commenti della fonte. Validazione e pubblicazione attraversano i controlli delle impronte. |
-| Ritorno su V19 | Il candidato si ferma. Riparte lo stesso container del predecessore, con lo stesso image ID e database. `semantic.get` risolve ciascuna revisione nel suo set originario e confronta i byte RDF. `semantic.search` deve restituire entrambe le revisioni attive con le descrizioni attese nel set corrente. |
-| Scritture e retry dopo il ritorno | Il predecessore ripete l'adozione del candidato con la chiave e gli argomenti originali. Deve ritrovare la pubblicazione attiva. Scopre quindi `POIState`, crea una terza adozione con review e ripete i comandi. Il risultato deve riferirsi alla stessa revisione e alla stessa challenge. Il database deve contenere tre ricevute di adozione e tre challenge per il soggetto della fixture. |
+| Predecessore su V19 | Flyway applica le migrazioni del JAR a PostgreSQL 17 vuoto. Il worker scopre `MultiplePointOfInterest`. Seguono adozione, validazione, review, approvazione HUMAN tramite THS e pubblicazione. |
+| Candidato su V22 | L’agente propone il DATATYPE `Recapito`, un vocabolario, un concetto e la VALUE_MAP `CodiciServizio` con una colonna sorgente. Il driver verifica le schede HUMAN, pubblica con l’identità HUMAN e confronta gli SHA-256 delle sole definizioni con digest calcolati in Node. La successiva pubblicazione della classe OntoPiA `PointOfInterest` crea un set cumulativo. |
+| Ritorno su V22 | Riparte lo stesso container del predecessore sullo stesso database. Il driver verifica revisione, set, stato, definizione con i tipi JSON originali e hash RDF del DATATYPE. Legge la VALUE_MAP con la revisione esplicita nei due set e verifica anche il concetto, le letture RDF e la ricerca delle due classi. |
+| Scritture e retry dopo il ritorno | Il predecessore ripete l’adozione del candidato, ritrova la pubblicazione attiva, scopre `POIState` e ripete adozione e review. I retry devono ritrovare la revisione e la challenge originarie. Il controllo finale richiede tre ricevute di adozione, sette challenge e una mappa attiva con la colonna sorgente conservata. |
 
-L'esecutore usa Flyway e il driver JDBC estratti da ciascuna immagine. Ogni migrazione e la rispettiva riga di storia sono scritte in una transazione. La prova confronta le righe versionate di `ouf_sem.flyway_schema_history` prima e dopo le fasi applicative e verifica la presenza della V19 con checksum ed esito positivo. Un solo container PostgreSQL conserva i dati per tutte le fasi.
+L'esecutore usa Flyway e il driver JDBC estratti da ciascuna immagine. Ogni migrazione e la rispettiva riga di storia sono scritte in una transazione. La prova confronta le righe versionate di `ouf_sem.flyway_schema_history` prima e dopo le fasi applicative e verifica V19–V22 con checksum ed esito positivo. Un solo container PostgreSQL conserva i dati per tutte le fasi.
 
 ## Readiness e isolamento
 

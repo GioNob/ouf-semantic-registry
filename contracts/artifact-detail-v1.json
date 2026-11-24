@@ -25,6 +25,8 @@
       "type": "string",
       "enum": [
         "ONTOLOGY",
+        "DATATYPE",
+        "VALUE_MAP",
         "CLASS",
         "PROPERTY",
         "RELATIONSHIP",

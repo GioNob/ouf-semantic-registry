@@ -47,7 +47,16 @@ paths:
       operationId: getSemanticApprovalCard
       x-ouf-mcp-exposed: false
       parameters: [$ref: '#/components/parameters/Id']
-      responses: {'200': {description: Immutable decision card}}
+      responses:
+        '200':
+          description: Scheda della revisione in approvazione
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  datatypeReview: {$ref: '#/components/schemas/DatatypeReview'}
+                  valueMapReview: {$ref: '#/components/schemas/ValueMapReview'}
   /api/trusted-human/v1/semantic-approval-challenges/{id}/decision:
     post:
       operationId: decideSemanticApproval
@@ -102,6 +111,80 @@ components:
   securitySchemes:
     thsBearer: {type: http, scheme: bearer, bearerFormat: JWT}
   schemas:
+    ValueMapSourceColumn:
+      type: object
+      additionalProperties: false
+      required: [fieldName]
+      properties:
+        fieldName: {type: string, minLength: 1, maxLength: 256}
+        sourceId: {type: string}
+    ValueMapReview:
+      type: object
+      additionalProperties: false
+      required: [name, targetVocabulary, entryCount, entries]
+      properties:
+        name: {type: string}
+        targetVocabulary:
+          type: object
+          additionalProperties: false
+          required: [label, semanticId, publicationSetId]
+          properties:
+            label: {type: string}
+            semanticId: {type: string}
+            publicationSetId: {type: string, format: uuid}
+        entryCount: {type: integer, minimum: 1, maximum: 2000}
+        entries:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [code, concept, conceptLabel]
+            properties:
+              code: {type: string}
+              concept: {type: string}
+              conceptLabel: {type: string}
+        sourceColumn: {$ref: '#/components/schemas/ValueMapSourceColumn'}
+        changes:
+          type: object
+          additionalProperties: false
+          required: [added, removed, changed]
+          properties:
+            added: {type: array, items: {type: string}}
+            removed: {type: array, items: {type: string}}
+            changed:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [code, from, to]
+                properties:
+                  code: {type: string}
+                  from: {type: string}
+                  to: {type: string}
+    DatatypeReview:
+      type: object
+      required: [etichetta, descrizione, componenti, avvisi, versionePrecedente, differenze]
+      properties:
+        etichetta: {type: string}
+        descrizione: {type: string}
+        versionePrecedente: {type: string}
+        avvisi: {type: array, items: {type: string}}
+        componenti:
+          type: array
+          items:
+            type: object
+            required: [nome, etichetta, tipo, cardinalità, obbligatorio, vincoli]
+            additionalProperties: {type: string}
+        differenze:
+          type: array
+          items:
+            type: object
+            required: [campo, modifica]
+            properties:
+              campo: {type: string}
+              modifica: {enum: [Aggiunto, Rimosso, Modificato]}
+              prima: {}
+              dopo: {}
     LocalizedText:
       type: object
       additionalProperties: false
@@ -117,7 +200,7 @@ components:
       properties:
         revisionId: {type: string, format: uuid}
         semanticId: {type: string}
-        artifactType: {type: string, enum: [CLASS, PROPERTY, RELATIONSHIP, VOCABULARY, CONCEPT, ONTOLOGY]}
+        artifactType: {type: string, enum: [CLASS, PROPERTY, RELATIONSHIP, VOCABULARY, CONCEPT, ONTOLOGY, DATATYPE, VALUE_MAP]}
         semanticVersion: {type: [string, 'null']}
         label: {$ref: '#/components/schemas/LocalizedText'}
         description: {$ref: '#/components/schemas/LocalizedText'}

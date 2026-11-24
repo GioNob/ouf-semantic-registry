@@ -56,9 +56,15 @@ public class SemanticProposalReceiptVerifier {
       if(!value.matches("[0-9a-fA-F]{64}"))throw new IllegalArgumentException();return value.getBytes(StandardCharsets.US_ASCII);
     }catch(Exception e){throw new IllegalStateException("SEM_PROPOSAL_KEY_CUSTODY_INVALID");}
   }
+  private static final int STANDARD_BODY_BYTES = 65536;
+  private static final int VALUE_MAP_BODY_BYTES = 1048576;
+  private static final String CREATE_PATH = "/api/semantic/v1/proposal-commands/create";
+  static int maxBodyBytes(String path) {
+    return CREATE_PATH.equals(path) ? VALUE_MAP_BODY_BYTES : STANDARD_BODY_BYTES;
+  }
   public Verified verify(String proof,String path,byte[] raw){
     try{
-      if(key.length!=64||issuer.isBlank()||audience.isBlank()||workload.isBlank()||proof==null||proof.length()>16384||raw.length>65536)throw new SecurityException();
+      if(key.length!=64||issuer.isBlank()||audience.isBlank()||workload.isBlank()||proof==null||proof.length()>16384||raw.length>maxBodyBytes(path))throw new SecurityException();
       String[] parts=proof.split("\\.",-1);
       if(parts.length!=2||!parts[0].matches("[A-Za-z0-9_-]+")||!parts[1].matches("[A-Za-z0-9_-]+"))throw new SecurityException();
       var mac=Mac.getInstance("HmacSHA256");mac.init(new SecretKeySpec(key,"HmacSHA256"));
@@ -85,6 +91,14 @@ public class SemanticProposalReceiptVerifier {
         if(!role.matches("[A-Za-z0-9_:./-]{1,128}")||!roles.add(role)||roles.size()>32)throw new SecurityException();
       }
       JsonNode envelope=json.readTree(raw);JsonNode args=envelope.required("Arguments");
+      boolean valueMap=CREATE_PATH.equals(path) && "VALUE_MAP".equals(args.path("artifactType").textValue());
+      if(raw.length>STANDARD_BODY_BYTES && !valueMap)
+        throw new SecurityException();
+      if(valueMap) {
+        // Preserve numeric token types until the proposal validator can reject them.
+        args=json.reader().with(com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+            .readTree(raw).required("Arguments");
+      }
       if(!args.isObject()||!r.idempotencyKey().equals(envelope.required("IdempotencyKey").asText()))throw new SecurityException();
       String transportCap=path.endsWith("/read")?"ouf.semantic.proposal.read":cap;
       if(!transportCap.equals(envelope.required("CapabilityID").asText())||!"semantic".equals(envelope.required("Owner").asText())

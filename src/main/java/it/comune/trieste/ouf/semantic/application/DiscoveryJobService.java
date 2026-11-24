@@ -7,11 +7,16 @@ import java.security.MessageDigest;
 import java.util.*;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import static it.comune.trieste.ouf.semantic.application.WorkflowAction.*;
 
 /** Native job access. MCP delegation and HUMAN governance are separate boundaries. */
 @Service
 public class DiscoveryJobService {
+  private static final long MIN_POLL_SECONDS=5;
+  enum State { PENDING, RUNNING, SUCCEEDED, FAILED, CANCELLED }
+  enum RecoveryState { ACTIVE, RETRY_WAIT, PAUSED_EXHAUSTED, BLOCKED, CANCELLED }
   private final JdbcClient db;
   private final DiscoveryService discovery;
   private final List<SemanticDiscoveryProvider> providers;
@@ -50,7 +55,14 @@ public class DiscoveryJobService {
     return status((UUID)row.get("request_id"),actor);
   }
   public Map<String,Object> status(UUID id,String actor){
-    var rows=db.sql("select r.request_id,r.state,r.attempt_count,r.recovery_state,r.next_attempt_at,r.budget_deadline,r.created_at,r.completed_at,r.last_error_code,r.rdf_invalid_count,r.rdf_bound_count,r.fetch_denied_count,(select count(*) from ouf_sem.discovery_candidate c where c.request_id=r.request_id and c.expires_at>transaction_timestamp()) as candidate_count from ouf_sem.discovery_request r where r.request_id=:id and r.created_by_subject=:actor")
+    var rows=db.sql("""
+        select r.request_id,r.state,r.attempt_count,r.recovery_state,r.next_attempt_at,r.budget_deadline,
+          r.created_at,r.completed_at,r.last_error_code,r.rdf_invalid_count,r.rdf_bound_count,r.fetch_denied_count,
+          (select count(*) from ouf_sem.discovery_candidate c
+           where c.request_id=r.request_id and c.expires_at>transaction_timestamp()) as candidate_count,
+          ceil(extract(epoch from r.next_attempt_at-transaction_timestamp()))::bigint as seconds_until_retry
+        from ouf_sem.discovery_request r where r.request_id=:id and r.created_by_subject=:actor
+        """)
       .param("id",id).param("actor",actor).query().listOfRows();
     if(rows.isEmpty())throw new NoSuchElementException("SEM_DISCOVERY_REQUEST_NOT_FOUND");
     var row=rows.getFirst();var out=new LinkedHashMap<String,Object>();
@@ -61,6 +73,19 @@ public class DiscoveryJobService {
         "CANDIDATE_RDF_BOUND",row.get("rdf_bound_count"),"CANDIDATE_FETCH_DENIED",row.get("fetch_denied_count")));
     // Provider exception text may contain endpoint/credential details; never expose it.
     if(row.get("last_error_code")!=null)out.put("errorCode","SEM_DISCOVERY_NO_ENABLED_PROVIDER".equals(row.get("last_error_code"))?"SEM_DISCOVERY_NO_ENABLED_PROVIDER":"SEM_DISCOVERY_PROVIDER_FAILED");
+    var state=State.valueOf((String)row.get("state"));
+    var recovery=RecoveryState.valueOf((String)row.get("recovery_state"));
+    WorkflowAction action=switch(state) {
+      case PENDING, RUNNING -> switch(recovery) {
+        case ACTIVE, RETRY_WAIT -> POLL_DISCOVERY;
+        case PAUSED_EXHAUSTED, BLOCKED, CANCELLED -> NONE;
+      };
+      case SUCCEEDED -> ((Number)row.get("candidate_count")).longValue()>0 ? LIST_CANDIDATES : NONE;
+      case FAILED, CANCELLED -> NONE;
+    };
+    out.put("allowedActions",List.of(action));
+    if(action==POLL_DISCOVERY)
+      out.put("pollAfterSeconds",Math.max(MIN_POLL_SECONDS,((Number)row.get("seconds_until_retry")).longValue()));
     return out;
   }
   public Map<String,Object> providerStatus(String provider,boolean enabled,String actor){
@@ -71,6 +96,21 @@ public class DiscoveryJobService {
     if(!rows.isEmpty())out.putAll(rows.getFirst());return out;
   }
   public List<Map<String,Object>> candidates(UUID id,String actor){status(id,actor);return discovery.candidates(id);}
+  @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
+  public Map<String,Object> candidatesWithState(UUID id,String actor) {
+    var response=status(id,actor);
+    var candidates=discovery.candidates(id,true);
+    var adoptable=new ArrayList<UUID>();
+    for(var candidate:candidates) {
+      if(candidate.remove("adopted_artifact_id")==null && State.SUCCEEDED.name().equals(response.get("state")))
+        adoptable.add((UUID)candidate.get("candidate_id"));
+    }
+    if(State.SUCCEEDED.name().equals(response.get("state")))
+      response.put("allowedActions",List.of(adoptable.isEmpty()?NONE:ADOPT_CANDIDATE));
+    response.put("candidates",candidates);
+    response.put("adoptableCandidateIds",adoptable);
+    return response;
+  }
   private String write(Object value){try{return json.writeValueAsString(value);}catch(Exception e){throw new IllegalArgumentException("SEM_DISCOVERY_REQUEST_INVALID");}}
   private static String hash(String value){try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));}catch(Exception e){throw new IllegalStateException("SEM_DISCOVERY_HASH_UNAVAILABLE");}}
 }

@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 @AutoConfigureMockMvc
 class ProposalCommandRuntimeTest {
   @Autowired ProposalCommandService commands;
+  @Autowired ProposalObservation observations;
   @Autowired ArtifactService artifacts;
   @Autowired GovernanceService governance;
   @Autowired JdbcClient db;
@@ -134,6 +135,12 @@ class ProposalCommandRuntimeTest {
         values(:c,:r,:h,'OPEN',now()-interval '16 minutes',now()-interval '1 minute','agent')
         """).param("c",old).param("r",r).param("h",original.get("validated_content_hash")).update();
     assertThat(governance.card(old)).containsEntry("status","EXPIRED");
+    var expired=observations.current(r);
+    assertThat(expired.get("state").toString()).isEqualTo("EXPIRED");
+    assertThat(expired).containsEntry("allowedActions",List.of(WorkflowAction.REVISE_PROPOSAL))
+        .doesNotContainKey("pollAfterSeconds");
+    assertThat(db.sql("select status from ouf_sem.approval_challenge where challenge_id=:c")
+        .param("c",old).query(String.class).single()).isEqualTo("OPEN");
     long version=0;
     if(prepareFirst) {
       var fresh=commands.validate("tenant-a","agent",key(),r,version);
@@ -164,7 +171,25 @@ class ProposalCommandRuntimeTest {
     UUID r=revision(commands.create("tenant-a","agent","AI_AGENT",key(),broken,"test"));
     var run=commands.validate("tenant-a","agent",key(),r,0);
     assertThat(run.get("status")).isEqualTo("FAIL");assertThat(((Number)run.get("warning_count")).intValue()).isPositive();
+    var failed=observations.current(r);
+    assertThat(failed.get("state").toString()).isEqualTo("VALIDATION_FAILED");
+    assertThat(failed).containsEntry("allowedActions",List.of(WorkflowAction.REVISE_PROPOSAL));
     assertThatThrownBy(()->commands.review("tenant-a","agent","AI_AGENT",key(),r,0,UUID.fromString(run.get("validation_run_id").toString()),"test")).hasMessage("CURRENT_GREEN_VALIDATION_REQUIRED");
+  }
+  @Test void rejectionChangesObservationAndKeepsHistoricalReceipt() {
+    UUID revision=revision(commands.create("tenant-a","agent","AI_AGENT",key(),command(),"test"));
+    var validation=commands.validate("tenant-a","agent",key(),revision,0);
+    String reviewKey=key();
+    var review=commands.review("tenant-a","agent","AI_AGENT",reviewKey,revision,0,
+        UUID.fromString(validation.get("validation_run_id").toString()),"test");
+    var before=observations.current(revision);
+    governance.decide(UUID.fromString(review.get("challengeId").toString()),
+        "REJECTED","reviewer","HUMAN","fixture","test");
+    var after=observations.current(revision);
+    assertThat(after.get("state").toString()).isEqualTo("REJECTED");
+    assertThat(after).containsEntry("allowedActions",List.of(WorkflowAction.REVISE_PROPOSAL))
+        .doesNotContainEntry("version",before.get("version"));
+    assertThat(commands.receipt("tenant-a","agent",reviewKey)).containsEntry("result",review);
   }
   @Test void denialAndRevocationPreventFreshOrRepeatedCommands()throws Exception{
     var c=command();String k=key();postCommand("create",c,k,CAPS,200);

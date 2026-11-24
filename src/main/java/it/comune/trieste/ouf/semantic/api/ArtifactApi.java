@@ -20,7 +20,7 @@ public class ArtifactApi {
   public ArtifactApi(ArtifactService service,TrustedActorResolver actors) { this.service = service;this.actors=actors; }
 
   public record CreateArtifact(@NotBlank String semanticId,
-      @Pattern(regexp="CLASS|PROPERTY|RELATIONSHIP|VOCABULARY|CONCEPT|ONTOLOGY") String artifactType,
+      @Pattern(regexp="CLASS|PROPERTY|RELATIONSHIP|VOCABULARY|CONCEPT|ONTOLOGY|DATATYPE|VALUE_MAP") String artifactType,
       @NotBlank String namespace, @NotBlank String localName, @NotBlank String ownerRef,
       @NotBlank String authorityRef, @NotBlank String semanticVersion,
       Map<String,Object> labels, Map<String,Object> definition) {}

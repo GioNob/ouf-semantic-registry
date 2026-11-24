@@ -35,7 +35,7 @@ public class InterchangeService {
       if(!"VOCABULARY".equals(type)&&!"CONCEPT".equals(type))throw new IllegalArgumentException("CSV_ONLY_FOR_VOCABULARY");
       return new Representation(codec.vocabularyCsv(row.get("semantic_id").toString(),labels,definition),accept);
     }
-    if(row.get("snapshot_id")!=null && accept.equals(row.get("media_type"))) {
+    if((row.get("snapshot_id")!=null || "DATATYPE".equals(type)) && accept.equals(row.get("media_type"))) {
       byte[] bytes=(byte[])row.get("content_bytes");
       PublishedRdfSnapshot.verifyHash(bytes,(String)row.get("snapshot_hash"));
       return new Representation(bytes,accept);

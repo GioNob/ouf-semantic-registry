@@ -27,7 +27,7 @@ public class GovernedPublicationFixture {
  public static Map<String,Object> runImported(ProposalCommandService proposals,ValidationService validation,GovernanceService governance,ObjectMapper json,Path path)throws Exception {
   var retained=json.readTree(Files.readAllBytes(path));var input=retained.required("importCommand");
   var c=json.treeToValue(input,it.comune.trieste.ouf.semantic.api.ProposalCommandApi.Create.class);
-  var artifact=new it.comune.trieste.ouf.semantic.api.ArtifactApi.CreateArtifact(c.semanticId(),c.artifactType(),c.namespace(),c.localName(),c.ownerRef(),c.authorityRef(),c.semanticVersion(),c.labels(),c.definition());
+  var artifact=c.artifact();
   String key="r4a-import-"+retained.required("rdfSha256").asText();
   var created=proposals.createImported("tenant-a","fixture-agent","AI_AGENT",key,artifact,c.rdfTurtle(),c.mediaType(),"r4a-import");
   if(!created.equals(proposals.createImported("tenant-a","fixture-agent","AI_AGENT",key,artifact,c.rdfTurtle(),c.mediaType(),"r4a-import")))throw new IllegalStateException("R4A_IMPORT_NOT_IDEMPOTENT");

@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.comune.trieste.ouf.authorization.PrincipalContext;
 import it.comune.trieste.ouf.semantic.api.SemanticDiscoveryDelegation;
 import it.comune.trieste.ouf.semantic.api.ArtifactApi.CreateArtifact;
+import it.comune.trieste.ouf.semantic.api.ProposalCommandApi.SourceColumn;
 import java.time.Duration;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,8 +65,25 @@ public class ProposalCommandService {
   }
   @Transactional(timeout=10) public Map<String,Object> create(String tenant,String principal,String type,String key,
       CreateArtifact command,String correlation) {
-    return execute(tenant,principal,key,"CREATE",command,
-        ()->artifacts.create(command,principal,type,correlation));
+    return create(tenant,principal,type,key,command,null,correlation);
+  }
+  @Transactional(timeout=10) public Map<String,Object> create(String tenant,String principal,String type,String key,
+      CreateArtifact command,SourceColumn sourceColumn,String correlation) {
+    boolean valueMap="VALUE_MAP".equals(command.artifactType());
+    if(sourceColumn!=null && !valueMap) throw new IllegalArgumentException("SEM_REQUEST_INVALID");
+    Object payload=sourceColumn==null?command:Map.of("artifact",command,"sourceColumn",sourceColumn);
+    try {
+      return execute(tenant,principal,key,"CREATE",payload,()->{
+        var result=artifacts.create(command,principal,type,correlation);
+        if(sourceColumn!=null) db.sql("""
+            insert into ouf_sem.value_map_proposal_source(revision_id,field_name,source_id) values(:r,:f,:s)
+            """).param("r",result.get("revisionId")).param("f",sourceColumn.fieldName())
+            .param("s",sourceColumn.sourceId()).update();
+        return result;
+      });
+    } catch (DataAccessException error) {
+      throw valueMap?ArtifactService.valueMapError(error):error;
+    }
   }
   @Transactional(timeout=10) public Map<String,Object> validate(String tenant,String principal,String key,
       UUID revision,long expectedVersion) {
@@ -106,6 +125,26 @@ public class ProposalCommandService {
         .param("t",tenant).param("p",principal).param("k",key).query().listOfRows();
     if(rows.size()!=1)throw new NoSuchElementException("PROPOSAL_RECEIPT_NOT_FOUND");
     return Map.of("operation",rows.get(0).get("operation"),"result",decode(rows.get(0).get("result")),"historicalSnapshot",true,"ownerStateMustBeRechecked",true);
+  }
+  public record ReceiptIdentity(String operation,UUID revisionId) {}
+  public ReceiptIdentity receiptIdentity(String tenant,String principal,String key) {
+    validKey(key);
+    return db.sql("""
+        select operation,coalesce(result_json->>'revisionId',result_json->>'revision_id') revision
+        from ouf_sem.proposal_command_receipt
+        where tenant_id=:t and principal_id=:p and idempotency_key=:k and result_json is not null
+        """).param("t",tenant).param("p",principal).param("k",key)
+        .query((rs,n)->new ReceiptIdentity(rs.getString("operation"),receiptRevision(rs.getString("revision"))))
+        .optional().orElseThrow(()->new NoSuchElementException("PROPOSAL_RECEIPT_NOT_FOUND"));
+  }
+
+  public static UUID receiptRevision(Object value) {
+    if(value instanceof UUID id)return id;
+    if(value instanceof String id && id.length()==36) {
+      try { return UUID.fromString(id); }
+      catch(IllegalArgumentException historical) { return null; }
+    }
+    return null;
   }
   private Map<String,Object> lockDraft(UUID revision,long expected,String actor) {
     var rows=db.sql("select row_version,lifecycle_status,encode(public.digest("+

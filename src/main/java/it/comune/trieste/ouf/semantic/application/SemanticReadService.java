@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 /** Internal search and exact historical reads; no discovery or lifecycle mutation. */
 @Service
 public class SemanticReadService {
+  private static final int MAX_VALUE_MAP_RESULT_BYTES = 32 * 1024 * 1024;
   private final JdbcClient db;
   private final ObjectMapper json;
   private final int maxResultBytes;
@@ -81,7 +82,7 @@ public class SemanticReadService {
     if (limit<1 || limit>100) throw new IllegalArgumentException("SEM_SEARCH_LIMIT_INVALID");
     if (!Set.of("ACTIVE","DEPRECATED","RETIRED","DRAFT","UNDER_REVIEW").contains(status))
       throw new IllegalArgumentException("SEM_SEARCH_STATUS_INVALID");
-    if (type!=null && !Set.of("CLASS","PROPERTY","RELATIONSHIP","VOCABULARY","CONCEPT","ONTOLOGY").contains(type))
+    if (type!=null && !Set.of("CLASS","PROPERTY","RELATIONSHIP","VOCABULARY","CONCEPT","ONTOLOGY","DATATYPE","VALUE_MAP").contains(type))
       throw new IllegalArgumentException("SEM_SEARCH_TYPE_INVALID");
     String sql="""
         select %s,p.publication_set_id,p.checksum publication_checksum,
@@ -127,7 +128,7 @@ public class SemanticReadService {
 
   public Map<String,Object> resolve(String semanticId,UUID revision,UUID publicationSet) {
     bounded(semanticId,"semanticId",2048,true);
-    if(revision==null || publicationSet==null)throw new IllegalArgumentException("SEM_REFERENCE_INVALID");
+    if(publicationSet==null)throw new IllegalArgumentException("SEM_REFERENCE_INVALID");
     var rows=db.sql("select "+DETAIL+"""
         ,coalesce(o.canonical_uri,a.semantic_id) canonical_uri,m.publication_set_id,
         s.checksum publication_checksum
@@ -137,11 +138,27 @@ public class SemanticReadService {
         join ouf_sem.semantic_artifact a on a.artifact_id=r.artifact_id
         left join lateral (select canonical_uri from ouf_sem.external_semantic_origin x
           where x.artifact_id=a.artifact_id order by canonical_uri limit 1) o on true
-        where m.publication_set_id=:p and m.revision_id=:r and m.semantic_id=:s
+        where m.publication_set_id=:p and m.semantic_id=:s
+          and (m.revision_id=cast(:r as uuid) or (cast(:r as uuid) is null and a.artifact_type in ('DATATYPE','VALUE_MAP')))
           and a.semantic_id=m.semantic_id and s.status='PUBLISHED'
+          and r.lifecycle_status in ('ACTIVE','DEPRECATED','RETIRED')
         """).param("p",publicationSet).param("r",revision).param("s",semanticId).query().listOfRows();
     if(rows.size()!=1)throw new NoSuchElementException("SEMANTIC_REFERENCE_NOT_FOUND");
-    var row=rows.get(0); decode(row);
+    var row=rows.get(0);
+    decode(row);
+    boolean valueMap="VALUE_MAP".equals(row.get("artifact_type"));
+    if (valueMap || "DATATYPE".equals(row.get("artifact_type"))) {
+      try {
+        String canonical=json.writer(com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+            .without(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT).writeValueAsString(row.get("definition"));
+        row.put("definition",json.readValue(canonical,Map.class));
+        var digest=java.security.MessageDigest.getInstance("SHA-256").digest(canonical.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        row.put("definitionSha256",HexFormat.of().formatHex(digest));
+      } catch(JsonProcessingException | java.security.NoSuchAlgorithmException impossible) {
+        throw new IllegalStateException("SEM_READ_JSON_INVALID",impossible);
+      }
+    }
+    revision=(UUID)row.get("revision_id");
     var dependencies=db.sql("""
         select dependency_type,dependency_role,target_semantic_id,target_revision_id
         from ouf_sem.semantic_dependency where source_revision_id=:r
@@ -182,7 +199,7 @@ public class SemanticReadService {
           projection.put("content_base64",Base64.getEncoder().encodeToString(bytes));
       }
     }
-    return boundedResult(row);
+    return boundedResult(row,valueMap?MAX_VALUE_MAP_RESULT_BYTES:maxResultBytes);
   }
 
   private static void bounded(String value,String name,int max,boolean required) {
@@ -201,7 +218,10 @@ public class SemanticReadService {
     catch(JsonProcessingException e){throw new IllegalStateException("SEM_READ_JSON_INVALID",e);}
   }
   private <T> T boundedResult(T result) {
-    if(encodedSize(result)>maxResultBytes)throw new IllegalArgumentException("SEM_READ_RESULT_TOO_LARGE");
+    return boundedResult(result,maxResultBytes);
+  }
+  private <T> T boundedResult(T result,int maxBytes) {
+    if(encodedSize(result)>maxBytes)throw new IllegalArgumentException("SEM_READ_RESULT_TOO_LARGE");
     return result;
   }
 }
