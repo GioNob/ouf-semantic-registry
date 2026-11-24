@@ -17,6 +17,9 @@ record DiscoveryTrafficMeters(ObjectProvider<DiscoveryJobService> jobs) implemen
       Gauge.builder("ouf.semantic.discovery."+name, jobs, j -> j.getObject().trafficTotal(name,"",""))
           .register(meters);
     }
+    for (String name : List.of("slotOccupancy","slotWaits","slotUncertain","slotAcquisitionSeconds")) {
+      Gauge.builder("ouf.semantic.discovery."+name, jobs, j -> j.getObject().slotMetric(name)).register(meters);
+    }
     for (Route route : Route.values()) {
       for (Origin origin : Origin.values()) {
         Gauge.builder("ouf.semantic.discovery.http429", jobs,

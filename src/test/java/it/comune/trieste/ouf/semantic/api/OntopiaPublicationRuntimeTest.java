@@ -108,7 +108,10 @@ class OntopiaPublicationRuntimeTest extends SignedProposalFixture {
     assertThat(adopt(candidate,409).required("code").asText()).isEqualTo("CANDIDATE_PUBLISHER_MISSING");
     fixture.verifyOntologyFetches(1);
     assertThat(db.sql("select state from ouf_sem.discovery_dependency where active_request is null and provider_id='SCHEMA_GOV_IT' and scope_subject=(select created_by_subject from ouf_sem.discovery_request where request_id=?)")
-        .param(candidate.request()).query(String.class).single()).isEqualTo("HEALTHY");
+        .param(candidate.request()).query(String.class).single())
+        // SEM-55F-04 / C.3: an optional transient (503) on provenance keeps the candidates
+        // but records the provider cooldown on the subject-provider dependency.
+        .isEqualTo("RETRY_WAIT");
   }
 
   @Test void realPoiIsReviewedByAHumanPublishedReadAndRediscovered()throws Exception{
