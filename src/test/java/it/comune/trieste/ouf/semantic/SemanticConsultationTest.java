@@ -226,7 +226,7 @@ class SemanticConsultationTest {
       TestAuthorization.install(owner,new PolicyBundle("fixture",2,Instant.now(),List.of(descriptor(cap),descriptor(batchCap)),
           List.of(grant(batchCap,null))));
       assertThat(json.readTree(expect(raw,403,"NO_APPLICABLE_GRANT"))).isEqualTo(json.createObjectNode()
-          .put("code","NO_APPLICABLE_GRANT").put("denial","POLICY").put("capability",cap));
+          .put("code","NO_APPLICABLE_GRANT").put("denial","POLICY").put("capability",cap).put("policyVersion",2));
       verify(service,times(1)).search(anyList(),anyInt(),any());
     }
     @Test void signedThreeTypeBatchTraversesTheOwnerRouteAndCatalog() throws Exception {
