@@ -99,6 +99,9 @@ if [[ "$(git rev-parse "$PREDECESSOR_COMMIT^{commit}")" == d9f0bf9cc3ed074371a8e
   [[ "$(tail -1 <<<"$old_history")" == 18:V18__* ]]
 elif [[ "$(git rev-parse "$PREDECESSOR_COMMIT^{commit}")" == 528881d59a018d5fd3ad4ff62b2b3b95a2b62cd3 ]]; then
   [[ "$(tail -1 <<<"$old_history")" == 19:V19__* ]]
+elif [[ "$(git rev-parse "$PREDECESSOR_COMMIT^{commit}")" == f630cc5c92297aaaf1ebc27d15f28122e963d0ee ]]; then
+  # SEM-58A-01: Semantic 36 in esercizio stops at V24; the T2 candidate adds V25.
+  [[ "$(tail -1 <<<"$old_history")" == 24:V24__* ]]
 fi
 exercise "$previous" "$old_id" baseline
 docker stop "$previous" >/dev/null
@@ -114,6 +117,7 @@ grep -Eq '^21:V21__published_component_vocabulary.sql:-?[0-9]+:true$' <<<"$new_h
 grep -Eq '^22:V22__published_value_maps.sql:-?[0-9]+:true$' <<<"$new_history"
 grep -Eq '^23:V23__published_batch_terms.sql:-?[0-9]+:true$' <<<"$new_history"
 grep -Eq '^24:V24__discovery_traffic\.sql:-?[0-9]+:true$' <<<"$new_history"
+grep -Eq '^25:V25__discovery_provider_slots\.sql:-?[0-9]+:true$' <<<"$new_history"
 exercise "$candidate" "$new_id" candidate
 docker stop "$candidate" >/dev/null
 [[ "$(history)" == "$new_history" ]]
