@@ -4,13 +4,15 @@ import java.net.URI;
 import java.net.http.*;
 import java.time.Duration;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import it.comune.trieste.ouf.semantic.ports.DiscoveryTraffic;
 import it.comune.trieste.ouf.semantic.ports.DiscoveryTraffic.Route;
 import it.comune.trieste.ouf.semantic.ports.DiscoveryTraffic.Origin;
 
 public class BoundedGatewayClient {
-  private final HttpClient http;
+  private static final String EXCHANGE_ID = "X-OUF-Exchange-Id";
+  private final Duration connectTimeout;
   private final java.util.function.Supplier<String> tokenSource;
   private final RateLimitOriginVerifier originVerifier;
   public BoundedGatewayClient(Duration connectTimeout){this(connectTimeout,null);}
@@ -19,7 +21,7 @@ public class BoundedGatewayClient {
   }
   BoundedGatewayClient(Duration connectTimeout,java.util.function.Supplier<String> tokenSource,RateLimitOriginVerifier originVerifier){
     this.tokenSource=tokenSource;this.originVerifier=originVerifier;
-    this.http=HttpClient.newBuilder().connectTimeout(connectTimeout).followRedirects(HttpClient.Redirect.NEVER).build();
+    this.connectTimeout=connectTimeout;
   }
   public Response get(URI base,URI uri,Duration timeout,int maxBytes,Set<String> mediaTypes){
     return get(base,uri,timeout,maxBytes,mediaTypes,DiscoveryTraffic.NONE,null);
@@ -39,31 +41,64 @@ public class BoundedGatewayClient {
   private Response send(URI base,HttpRequest req,int maxBytes,Set<String> mediaTypes,DiscoveryTraffic traffic,Route route,String resource){
     URI uri=req.uri();
     requireSameOrigin(base,uri);
+    var outstanding=new AtomicReference<>(req.headers().firstValue(EXCHANGE_ID).orElseThrow());
     var limited=new AtomicReference<Origin>();
+    var rejected=new AtomicReference<ProviderFailurePolicy.Decision>();
+    var boundedBody=BoundedResponseBody.handler(maxBytes);
+    var reservation=traffic.acquire();
+    var outcome=DiscoveryTraffic.Outcome.UNCERTAIN;
+    Duration retryAfter=null;
     try{
-      var boundedBody=BoundedResponseBody.handler(maxBytes);
-      var res=BoundedResponseBody.send(http,req,headers->{
-        // Once the 429 headers arrive, an oversized or slow error body cannot mask the limit.
-        if(headers.statusCode()==429){
-          limited.set(origin(req,headers));
-          throw new ProviderFailure(ProviderFailurePolicy.http(
-              429,headers.headers().firstValue("Retry-After").orElse(null),java.time.Clock.systemUTC()));
+      var res=dispatchOnce(req,headers->{
+        String exchangeId=outstanding.getAndSet(null);
+        // A slow error body cannot mask an explicitly transient status or its cooldown.
+        if(headers.statusCode()!=200){
+          var failure=ProviderFailurePolicy.http(headers.statusCode(),
+              headers.headers().firstValue("Retry-After").orElse(null),java.time.Clock.systemUTC());
+          if(headers.statusCode()==429 && exchangeId!=null)limited.set(origin(req,exchangeId,headers));
+          if(headers.statusCode()==429 || failure.kind()==ProviderFailurePolicy.Kind.TRANSIENT
+              || failure.code().equals("PROVIDER_RETRY_AFTER_INVALID")){
+            rejected.set(failure);
+            throw new ProviderFailure(failure);
+          }
         }
         return boundedBody.apply(headers);
-      },()->traffic.sent(route,resource));
+      },()->traffic.sent(route,resource),reservation);
+      outcome=DiscoveryTraffic.Outcome.KNOWN_ERROR;
       if(res.statusCode()/100==3)throw new ProviderFailure("PROVIDER_REDIRECT_FORBIDDEN");
       if(res.statusCode()!=200)throw new ProviderFailure(ProviderFailurePolicy.http(res.statusCode(),res.headers().firstValue("retry-after").orElse(null),java.time.Clock.systemUTC()));
       var type=res.headers().firstValue("content-type").orElse("").split(";",2)[0].trim().toLowerCase(java.util.Locale.ROOT);
       if(!mediaTypes.contains(type))throw new ProviderFailure("PROVIDER_MEDIA_TYPE_REJECTED");
+      outcome=DiscoveryTraffic.Outcome.SUCCESS;
       return new Response(res.body(),type);
-    }catch(RuntimeException e){throw e;}catch(Exception e){var decision=ProviderFailurePolicy.exception(e);if(decision.kind()==ProviderFailurePolicy.Kind.CANCELLED)Thread.currentThread().interrupt();throw new ProviderFailure(decision,e);}
-    finally{
-      Origin observed=limited.get();
-      if(observed!=null)traffic.http429(route,observed);
+    }catch(Exception e){
+      var decision=ProviderFailurePolicy.exception(e);
+      if(decision.kind()==ProviderFailurePolicy.Kind.TRANSIENT)retryAfter=decision.retryAfter();
+      if(rejected.get()!=null || decision.code().equals("PROVIDER_UNAVAILABLE"))
+        outcome=DiscoveryTraffic.Outcome.KNOWN_ERROR;
+      if(decision.kind()==ProviderFailurePolicy.Kind.CANCELLED)Thread.currentThread().interrupt();
+      if(e instanceof RuntimeException runtime)throw runtime;
+      throw new ProviderFailure(decision,e);
+    }finally{
+      outstanding.set(null);
+      try{
+        Origin observed=limited.get();
+        if(observed!=null)traffic.http429(route,observed);
+      }finally{reservation.finish(outcome,retryAfter);}
     }
   }
-  private Origin origin(HttpRequest request,HttpResponse.ResponseInfo response){
-    try{return java.util.Objects.requireNonNullElse(originVerifier.verifiedOrigin(request.method(),request.uri(),response),Origin.UNKNOWN);}
+  private HttpResponse<byte[]> dispatchOnce(HttpRequest request,HttpResponse.BodyHandler<byte[]> handler,
+      Runnable dispatched,DiscoveryTraffic.Reservation reservation) throws Exception {
+    // Isolate this HTTP/1.1 send from stale pooled connections and HTTP/2 stream retries.
+    var http=HttpClient.newBuilder().connectTimeout(connectTimeout).version(HttpClient.Version.HTTP_1_1)
+        .followRedirects(HttpClient.Redirect.NEVER).build();
+    try{return BoundedResponseBody.send(http,request,handler,dispatched,reservation);}
+    finally{http.shutdownNow();}
+  }
+  private Origin origin(HttpRequest request,String exchangeId,HttpResponse.ResponseInfo response){
+    try{
+      return java.util.Objects.requireNonNullElse(originVerifier.verifiedOrigin(request.method(),request.uri(),exchangeId,response),Origin.UNKNOWN);
+    }
     catch(RuntimeException unverifiable){return Origin.UNKNOWN;}
   }
   static Duration remaining(long deadline){
@@ -73,13 +108,13 @@ public class BoundedGatewayClient {
   }
   private HttpRequest.Builder request(URI base,URI target,Duration timeout){
     requireSameOrigin(base,target); // Never obtain or disclose a token to another origin.
-    var builder=HttpRequest.newBuilder(target);
+    var builder=HttpRequest.newBuilder(URI.create(target.toASCIIString()));
     long deadline=System.nanoTime()+timeout.toNanos();
     if(tokenSource!=null){
       String token=tokenSource instanceof ClientCredentialsTokenSource oauth?oauth.get(deadline):tokenSource.get();
       builder.header("Authorization","Bearer "+token);
     }
-    return builder.timeout(remaining(deadline));
+    return builder.header(EXCHANGE_ID,UUID.randomUUID().toString()).timeout(remaining(deadline));
   }
   static void requireSameOrigin(URI base,URI target){if(base==null||target==null||base.getHost()==null||target.getHost()==null||base.getUserInfo()!=null||base.getFragment()!=null||target.getFragment()!=null)throw new ProviderFailure("GATEWAY_ORIGIN_VIOLATION");if(!"https".equalsIgnoreCase(base.getScheme())&&!isLoopback(base))throw new ProviderFailure("GATEWAY_HTTPS_REQUIRED");if(!base.getScheme().equalsIgnoreCase(target.getScheme())||!base.getHost().equalsIgnoreCase(target.getHost())||effectivePort(base)!=effectivePort(target)||target.getUserInfo()!=null)throw new ProviderFailure("GATEWAY_ORIGIN_VIOLATION");}
   private static boolean isLoopback(URI u){return "http".equalsIgnoreCase(u.getScheme())&&Set.of("127.0.0.1","localhost","::1").contains(u.getHost());}

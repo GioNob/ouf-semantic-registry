@@ -230,10 +230,13 @@ jobs:
     permissions:
       contents: read
       actions: read
+    # D-080 (sprint-03 task-58a): the T2 release line pins Semantic 36 in esercizio
+    # (PR #65 f630cc5, run 45374573617, artifact 14911255788). Repository
+    # variables are not read: they serve the other lines.
     env:
-      PREDECESSOR_COMMIT: ${{ inputs.predecessor || vars.SEMANTIC_PREDECESSOR_COMMIT || 'b7b220166fa732abb5a8abcefd6ecf722ae253e7' }}
-      PREDECESSOR_RUN: ${{ inputs.predecessor_run || vars.SEMANTIC_PREDECESSOR_RUN || '45056629368' }}
-      PREDECESSOR_IMAGE_ID: ${{ inputs.predecessor_image_id || vars.SEMANTIC_PREDECESSOR_IMAGE_ID || 'sha256:4bcb65d7f64b1a3eedf8ecd3e9d5c9282ed52620002d0331c523242207afa703' }}
+      PREDECESSOR_COMMIT: ${{ inputs.predecessor || 'f630cc5c92297aaaf1ebc27d15f28122e963d0ee' }}
+      PREDECESSOR_RUN: ${{ inputs.predecessor_run || '45374573617' }}
+      PREDECESSOR_IMAGE_ID: ${{ inputs.predecessor_image_id || 'sha256:292232234f8740a514b8a5cf3eebb4bd7cf12d2b0dc55d4b0f2cfa4c8fc5fab5' }}
     steps:
       - uses: actions/checkout@v4
         with:

@@ -44,6 +44,37 @@ Un 429 sulla search o sul GET obbligatorio produce `SEM_DISCOVERY_RATE_LIMITED`.
 
 Gli errori della ricerca e i guasti del canale durante i fetch obbligatori seguono la politica di recupero del provider, inclusi 401/403, errori del token, 408/429, 5xx, timeout, limiti di trasporto e risposte malformate. Per un incidente `OPEN` con codice `PROVIDER_HTTP_400` aperto dalla 1.0.2, la 1.0.3 è eleggibile al sondaggio V15. Un tentativo ammesso e concluso con successo risolve l’incidente e riporta la dipendenza a `HEALTHY`. La migrazione V18 aggiunge il contatore inizializzato a zero e conserva la funzione di pubblicazione usata dalla 1.0.2.
 
+### Capacità condivisa della discovery
+
+Il profilo `ouf.semantic.discovery-capacity` identifica l’installazione e il provider logico nel database owner condiviso dalle repliche. La chiave predefinita `default` identifica l’installazione nel suo database dedicato. Il job conserva in `discovery_request` budget e scadenza assoluta. Ogni search o GET acquisisce la capacità corrente dell’installazione.
+
+| Parametro | Default | Valori ammessi |
+|---|---|---|
+| `installation-id`, `logical-provider-id`, `profile-version` | `default`, `SCHEMA_GOV_IT`, `1` | Da 1 a 64 caratteri ASCII. Il primo è alfanumerico. Sono ammessi anche punto, trattino e underscore dopo il primo carattere. |
+| `ProviderSlots` (`provider-slots`) | 1 | 1 per soggetto e provider |
+| `InstallationProviderInFlight` (`installation-provider-in-flight`) | 1 | Da 1 a 32 per installazione e provider logico |
+| `slot-max-seconds` | 60 s | Da 1 a 120 s, entro la lease residua dell’owner |
+| `slotWaitMaxSeconds` (`slot-wait-max-seconds`) | 30 s | Da 1 a 120 s, ulteriormente limitati dalla lease |
+| `reconciliation-timeout-seconds` | 300 s dalla prenotazione | Dalla durata massima dello slot a 86.400 s |
+
+La prenotazione precede ogni search e GET, compreso quello della provenienza facoltativa. La conclusione con esito noto libera la cella. Un timeout di trasporto con esito remoto incerto la lascia occupata. Il worker riconcilia le celle durante il polling, anche a coda vuota. Una cella scaduta si libera quando esiste un esito noto per il suo identificatore di prenotazione o quando è trascorso il timeout configurato. Dimensionare quel timeout in base alla durata massima degli invii nel percorso del provider.
+
+Alla prima contesa PostgreSQL registra un intento per l’invio e assegna un ticket crescente sotto il lock della capacità. L’ordine di arrivo è quello di registrazione in questo punto comune alle repliche. Il primo ticket valido acquisisce la prossima cella libera. Il worker mantiene i candidati già scaricati e ripete il controllo dopo 50–60 ms con jitter, a connessione rilasciata. Ogni controllo rivalida le generazioni dell’owner. La scadenza dell’intento è il minimo tra l’inizio dell’attesa più `slotWaitMaxSeconds` e la scadenza effettiva dell’owner meno `slotMaxSeconds`. Una cella già libera resta utilizzabile entro la lease residua. Con uno slot massimo di 120 s e una lease di 120 s, la prima contesa esaurisce subito il margine.
+
+Alla scadenza il job passa in `RETRY_WAIT / SEM_DISCOVERY_PROVIDER_SLOT_BUSY`, con ripresa dopo 1 s più jitter fino al 20%, entro la scadenza assoluta. La generazione cambia al claim successivo. Il tentativo sospeso conserva il proprio conteggio, anche al tentativo 128. Lo slot negato lascia aperto il tentativo provider senza registrarne un esito. Dopo questo timeout il worker ricalcola la ricerca e i contatori 55k registrano gli eventuali reinvii fisici.
+
+**Cambio governato di capacità (D-091).** Distribuire una versione inedita modificando un limite alla volta. Le versioni sono identificatori opachi. La prima registrazione sotto il lock di capacità determina il loro ordine. Verificare che la versione corrente sia registrata prima di avviare il cambio successivo.
+
+1. Il worker blocca le righe di lease del job e della dipendenza, poi la riga di capacità dell’adapter. Registra i limiti immutabili della versione presentata e individua l’ultima registrata.
+2. Se la versione cambia, tutti i richiedenti accodano l’invio finché le celle della versione corrente risultano chiuse. Nel drenaggio rientrano `RESERVED`, `IN_FLIGHT` e `UNCERTAIN`, secondo le scadenze originarie della prenotazione.
+3. A celle drenate, la transazione aggiorna il puntatore di versione e applica la FIFO. Anche un worker che presenta una versione precedente già registrata usa i limiti correnti. Per ripristinare limiti precedenti, distribuirli con una versione inedita.
+
+Un cambio di identità di installazione o provider logico, oppure limiti diversi per la stessa versione, produce `DRIFT`. Il job registra `BLOCKED / DISCOVERY_CAPACITY_CONFIG_DRIFT`. L’uscita è `OPERATOR` per verificare il binding e correggere la configurazione delle repliche.
+
+Durante il backoff, il job conserva la titolarità logica della coppia soggetto-provider. Un 429 sulla provenienza facoltativa consente di pubblicare le descrizioni già acquisite e imposta il backoff sulla dipendenza. Un worker Semantic 35 può continuare a usare le funzioni precedenti sullo schema V25. Il tetto condiviso diventa verificabile per l’intera installazione dopo il drenaggio dei worker precedenti e dei loro invii.
+
+Actuator espone `slotOccupancy` (celle occupate, incerte incluse), `slotWaits` (una contesa per intento di invio, incluso il drenaggio), `slotUncertain` (prenotazioni incerte aperte) e `slotAcquisitionSeconds` (tempo medio delle acquisizioni riuscite, dal primo controllo alla concessione, inclusa l’attesa). Sono aggregati del database con il prefisso `ouf.semantic.discovery.`.
+
 ### Misure della quota
 
 Actuator espone le misure con il prefisso `ouf.semantic.discovery.`. Ogni replica legge lo stesso totale PostgreSQL dei job conservati. Per ottenere il totale del database da più repliche, selezionare una sola serie per misura e coppia di etichette. La copertura inizia con la prima esecuzione del worker strumentato sullo schema V24.

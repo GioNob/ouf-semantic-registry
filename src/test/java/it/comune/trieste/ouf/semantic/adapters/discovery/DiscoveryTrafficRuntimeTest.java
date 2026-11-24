@@ -16,7 +16,6 @@ import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
 import it.comune.trieste.ouf.semantic.ports.DiscoveryTraffic.Origin;
 import java.io.IOException;
 import java.net.*;
-import java.security.*;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -146,6 +145,9 @@ class DiscoveryTrafficRuntimeTest {
     assertThat(db.sql("select last_error_code from ouf_sem.discovery_request where request_id=?")
         .param(id).query(String.class).single()).isEqualTo("PROVIDER_TIMEOUT");
     unfinished.get().close();
+    // Advance the uncertainty horizon as well as the retry clock.
+    db.sql("update ouf_sem.discovery_provider_slot set expires_at=now(),reconcile_at=now() where request_id=? and outcome='UNCERTAIN'")
+        .param(id).update();
     db.sql("update ouf_sem.discovery_dependency set next_attempt_at=now() where scope_subject=?").param(actor).update();
     db.sql("update ouf_sem.discovery_request set next_attempt_at=now() where request_id=?").param(id).update();
     var successor=worker();
@@ -180,6 +182,13 @@ class DiscoveryTrafficRuntimeTest {
             .andExpect(jsonPath("$.measurements[0].value").value(expected));
       }
     }
+    for(String name:List.of("slotOccupancy","slotWaits","slotUncertain","slotAcquisitionSeconds")){
+      var gauge=meters.get(PREFIX+name).gauge();
+      assertThat(gauge.getId().getTags()).extracting(Tag::getKey).isSubsetOf("application");
+      double value=gauge.value();
+      assertThat(value).isGreaterThanOrEqualTo(0);
+      assertThat(gauge.value()).isEqualTo(value);
+    }
     counts(id,1,0,0,0,0);
     assertThat(searches.get()).isOne();
     var refused=worker(new BoundedGatewayClient(cfg.connectTimeout(),()->{
@@ -191,15 +200,12 @@ class DiscoveryTrafficRuntimeTest {
     assertThat(searches.get()).isOne();
   }
 
-  @ParameterizedTest(name="SEM-55K-04 {0} 429 becomes {1}")
+  // PET-semantic-294/307 · Gateway 55l proof through the 55k persistent counter and Actuator.
+  @ParameterizedTest(name="SEM-58G-05 / SEM-55K-04 {0} 429 becomes {1}")
   @CsvSource({"search,UNKNOWN","fetch,UNKNOWN","search,APISIX","fetch,UPSTREAM"})
   void attributesOnlyVerifiedRejections(String route,Origin expected) throws Exception {
     boolean fetch=route.equals("fetch");
     if(fetch)search(A);
-    // Test-only, out-of-band attestation for this single exchange. No wire format is assumed.
-    record Hop(Origin origin,byte[] signature) {}
-    var keys=KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
-    var proof=new AtomicReference<Hop>();
     gateway.createContext("/"+route,x->{
       try(x){
         (fetch?fetches:searches).incrementAndGet();
@@ -207,31 +213,24 @@ class DiscoveryTrafficRuntimeTest {
         x.getResponseHeaders().add("Retry-After","35");
         if(fetch || expected!=Origin.UNKNOWN){
           Origin producer=fetch?Origin.UPSTREAM:Origin.APISIX;
-          try{
-            var signer=Signature.getInstance("Ed25519");
-            signer.initSign(keys.getPrivate());
-            signer.update(hopMessage(x.getRequestMethod(),cfg.gatewayBaseUrl().resolve(x.getRequestURI()),producer));
-            byte[] signature=signer.sign();
-            if(expected==Origin.UNKNOWN)signature[0]^=1;
-            proof.set(new Hop(producer,signature));
-          }
-          catch(GeneralSecurityException e){throw new IOException(e);}
+          String nonce=x.getRequestHeaders().getFirst("X-OUF-Exchange-Id");
+          if(expected==Origin.UNKNOWN)nonce=OriginAttestationFixture.NONCE; // replay from another exchange
+          var proof=OriginAttestationFixture.sign(x.getRequestMethod(),x.getRequestURI().toASCIIString(),nonce,
+              producer.name(),OriginAttestationFixture.IAT,OriginAttestationFixture.EXP);
+          x.getResponseHeaders().add(OriginAttestationFixture.HEADER,proof);
         }
         x.sendResponseHeaders(429,-1);
       }
     });
-    RateLimitOriginVerifier verifier=(method,target,response)->{
-      var evidence=proof.getAndSet(null);
-      if(evidence==null)return Origin.UNKNOWN;
-      try{
-        var signature=Signature.getInstance("Ed25519");
-        signature.initVerify(keys.getPublic());
-        signature.update(hopMessage(method,target,evidence.origin()));
-        return signature.verify(evidence.signature())?evidence.origin():Origin.UNKNOWN;
-      }catch(GeneralSecurityException invalid){return Origin.UNKNOWN;}
+    var verifier=new Ed25519RateLimitOriginVerifier(OriginAttestationFixture.routes("/search","/fetch"),
+        OriginAttestationFixture.PUBLIC_KEY,OriginAttestationFixture.INSTALLATION,0,
+        OriginAttestationFixture.clock(OriginAttestationFixture.IAT));
+    // The fixture uses loopback HTTP. Substitute only its authority, retaining the actual request target.
+    RateLimitOriginVerifier.ExchangeBound loopback=(method,target,nonce,response)->{
+      var rawTarget=cfg.gatewayBaseUrl().resolve("/").relativize(target);
+      return verifier.verifiedOrigin(method,OriginAttestationFixture.GATEWAY.resolve(rawTarget),nonce,response);
     };
-    var client=new BoundedGatewayClient(cfg.connectTimeout(),null,
-        !fetch && expected==Origin.UNKNOWN?RateLimitOriginVerifier.UNATTESTED:verifier);
+    var client=new BoundedGatewayClient(cfg.connectTimeout(),null,loopback);
     var gauge=meters.get(PREFIX+"http429").tags("route",route,"origin",expected.name()).gauge();
     assertThat(gauge.getId().getTags()).extracting(Tag::getKey)
         .contains("route","origin").isSubsetOf("route","origin","application");
@@ -250,10 +249,6 @@ class DiscoveryTrafficRuntimeTest {
           .param("tag","route:"+route,"origin:"+expected.name())).andExpect(status().isOk())
           .andExpect(jsonPath("$.measurements[0].value").value(before+1));
     }
-  }
-
-  static byte[] hopMessage(String method,URI target,Origin producer){
-    return (method+"\n"+target.toASCIIString()+"\n"+producer.name()).getBytes(UTF_8);
   }
 
   @Test @DisplayName("SEM-55K-04 optional ontology rejection and unavailable attestation")
@@ -276,6 +271,10 @@ class DiscoveryTrafficRuntimeTest {
     assertThat(service.executeOne()).isOne();
     assertThat(service.candidates(id)).hasSize(1);
     counts(id,1,2,0,1,0);
+    assertThat(db.sql("""
+        select state='RETRY_WAIT' and next_attempt_at>now() and busy_until is null
+        from ouf_sem.discovery_dependency where scope_subject=?
+        """).param(actor).query(Boolean.class).single()).isTrue();
     assertThat(db.sql("select origin from ouf_sem.discovery_job_traffic where request_id=? and metric='http429' and route='fetch'")
         .param(id).query(String.class).single()).isEqualTo("UNKNOWN");
   }

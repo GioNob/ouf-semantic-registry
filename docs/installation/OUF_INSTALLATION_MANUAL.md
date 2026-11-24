@@ -463,6 +463,23 @@ L'identificatore dell'evento coincide con quello del job. Status e candidates co
 leggono questa evidenza per chiave primaria. I job completati dal predecessore possono quindi omettere
 `completedCandidateCount`.
 
+### 14.2 Registro D-065 per l'origine dei 429 del provider (D-091 T2)
+
+Il profilo d'installazione distribuisce a Semantic la chiave pubblica Ed25519 del Gateway 55l e
+lo stesso identificativo usato dal firmatario. Coordinare la rotazione della chiave con il Gateway.
+Le proprietà seguenti hanno prefisso `ouf.semantic.providers.schema-gov.origin-attestation`.
+
+| Proprietà | Variabile d'ambiente | Valori | Default |
+|---|---|---|---|
+| `public-key` | `OUF_SCHEMA_GOV_429_PUBLIC_KEY` | 32 byte in base64url o 64 cifre esadecimali | Vuoto. I 429 sono conteggiati con origine `UNKNOWN`. |
+| `installation-id` | `OUF_SCHEMA_GOV_429_INSTALLATION_ID` | ASCII visibile, sensibile alle maiuscole, obbligatorio con chiave | Vuoto |
+| `clock-skew-seconds` | `OUF_SCHEMA_GOV_429_CLOCK_SKEW_SECONDS` | Secondi interi da 0 a 30 | 0 |
+
+Con la chiave configurata, Semantic verifica l'autorità HTTPS di `gateway-base-url`,
+le rotte `search-path` (POST) e `fetch-path` (GET) e la firma del singolo scambio.
+Con tolleranza zero vale `iat <= now < exp`. Una tolleranza esplicita di S secondi
+ammette `iat - S <= now < exp + S`. La durata firmata deve sempre essere compresa tra 1 e 30 secondi.
+
 ## 15. Esempio laboratorio — lifecycle InstallationConfiguration
 
 Nel laboratorio Netcup la futura revisione di installazione deve rappresentare, come esempio concreto e non come default di prodotto:
