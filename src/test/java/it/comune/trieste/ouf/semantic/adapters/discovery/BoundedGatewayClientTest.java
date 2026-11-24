@@ -3,12 +3,53 @@ package it.comune.trieste.ouf.semantic.adapters.discovery;
 import static org.assertj.core.api.Assertions.*;
 import com.sun.net.httpserver.HttpServer;
 import java.net.*;import java.time.Duration;import java.util.Set;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.junit.jupiter.api.*;
 
 class BoundedGatewayClientTest {
   HttpServer server;URI base;BoundedGatewayClient client=new BoundedGatewayClient(Duration.ofSeconds(1));
   @BeforeEach void start() throws Exception{server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);server.start();base=URI.create("http://127.0.0.1:"+server.getAddress().getPort());}
   @AfterEach void stop(){server.stop(0);}
+  // PET-semantic-294/307 · Gateway 55l
+  @Test @DisplayName("SEM-58G-06 one exchange ID on the wire per attempt, including two retries")
+  void retriesOfTheSameIntentUseFreshNonces(){
+    var wire=new CopyOnWriteArrayList<List<String>>();
+    server.createContext("/limited",exchange->{
+      try(exchange){
+        wire.add(List.copyOf(exchange.getRequestHeaders().get("X-OUF-Exchange-Id")));
+        exchange.sendResponseHeaders(429,-1);
+      }
+    });
+    var observed=new CopyOnWriteArrayList<String>();
+    RateLimitOriginVerifier.ExchangeBound recorder=(method,target,nonce,response)->{
+      observed.add(nonce);
+      return it.comune.trieste.ouf.semantic.ports.DiscoveryTraffic.Origin.UNKNOWN;
+    };
+    var transport=new BoundedGatewayClient(Duration.ofSeconds(1),null,recorder);
+    var target=base.resolve("/limited?x=a%2Fb&x=");
+    var timeout=Duration.ofSeconds(2);
+    var types=Set.of("application/json");
+    for(int attempt=0;attempt<3;attempt++){
+      assertThatThrownBy(()->transport.postForm(base,target,"query=same",timeout,64,types)).hasMessage("PROVIDER_HTTP_429");
+      assertThatThrownBy(()->transport.get(base,target,timeout,64,types)).hasMessage("PROVIDER_HTTP_429");
+    }
+    assertThat(observed).hasSize(6).doesNotHaveDuplicates().allMatch(nonce->
+        nonce.matches("[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"));
+    assertThat(wire).containsExactlyElementsOf(observed.stream().map(nonce->List.of(nonce)).toList());
+  }
+
+  @Test @DisplayName("SEM-58G-07 lost response cannot replay a GET with the same exchange ID")
+  void lostResponseDoesNotRedispatchTheRequest(){
+    var received=new java.util.concurrent.atomic.AtomicInteger();
+    server.createContext("/lost",exchange->{
+      received.incrementAndGet();
+      exchange.close();
+    });
+    assertThatThrownBy(()->client.get(base,base.resolve("/lost"),Duration.ofSeconds(2),64,Set.of("application/json")))
+        .isInstanceOf(BoundedGatewayClient.ProviderFailure.class);
+    assertThat(received.get()).isOne();
+  }
   @Test void rateLimitKeepsRetryAfterAndIgnoresClaimedOrigin(){
     server.createContext("/limited",exchange->{
       exchange.getResponseHeaders().add("Retry-After","35");
