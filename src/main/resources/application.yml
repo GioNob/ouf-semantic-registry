@@ -26,6 +26,9 @@ server:
   port: ${PORT:8080}
 ouf:
   semantic:
+    reference-batch:
+      max-request-bytes: ${OUF_SEM_REFERENCE_BATCH_MAX_REQUEST_BYTES:262144}
+      max-items: ${OUF_SEM_REFERENCE_BATCH_MAX_ITEMS:1024}
     providers:
       schema-gov:
         enabled: ${OUF_SCHEMA_GOV_ENABLED:false}

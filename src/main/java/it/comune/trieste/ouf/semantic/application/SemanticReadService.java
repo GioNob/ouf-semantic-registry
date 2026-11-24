@@ -21,11 +21,23 @@ public class SemanticReadService {
     this.db=db; this.json=json; this.maxResultBytes=maxResultBytes;
   }
 
+  private static final String REVISION_FIELDS = "r.revision_id,r.semantic_version,r.lifecycle_status status,r.content_hash";
+  static final String REFERENCE_DETAIL = "a.semantic_id,a.artifact_type,"+REVISION_FIELDS;
   private static final String DETAIL = """
       a.semantic_id,a.artifact_id,a.artifact_type,a.namespace,a.local_name,
-      a.owner_ref,a.authority_ref,a.origin_kind,r.revision_id,r.semantic_version,
-      r.lifecycle_status status,r.content_hash,r.label_json::text label,
+      a.owner_ref,a.authority_ref,a.origin_kind,%s,r.label_json::text label,
       r.description_json::text description,r.definition_json::text definition
+      """.formatted(REVISION_FIELDS);
+  static final String PUBLICATION_FIELDS = "m.publication_set_id,s.checksum publication_checksum";
+  static final String PUBLICATION_JOINS = """
+      from ouf_sem.semantic_publication_member m
+      join ouf_sem.semantic_publication_set s using(publication_set_id)
+      join ouf_sem.artifact_revision r on r.revision_id=m.revision_id
+      join ouf_sem.semantic_artifact a on a.artifact_id=r.artifact_id
+      """;
+  static final String VISIBLE_REFERENCE = """
+      a.semantic_id=m.semantic_id and s.status='PUBLISHED'
+      and r.lifecycle_status in ('ACTIVE','DEPRECATED','RETIRED')
       """;
 
   public record LocalizedText(String it, String en) {}
@@ -130,31 +142,24 @@ public class SemanticReadService {
     bounded(semanticId,"semanticId",2048,true);
     if(publicationSet==null)throw new IllegalArgumentException("SEM_REFERENCE_INVALID");
     var rows=db.sql("select "+DETAIL+"""
-        ,coalesce(o.canonical_uri,a.semantic_id) canonical_uri,m.publication_set_id,
-        s.checksum publication_checksum
-        from ouf_sem.semantic_publication_member m
-        join ouf_sem.semantic_publication_set s using(publication_set_id)
-        join ouf_sem.artifact_revision r on r.revision_id=m.revision_id
-        join ouf_sem.semantic_artifact a on a.artifact_id=r.artifact_id
+        ,coalesce(o.canonical_uri,a.semantic_id) canonical_uri,
+        """+PUBLICATION_FIELDS+" "+PUBLICATION_JOINS+"""
         left join lateral (select canonical_uri from ouf_sem.external_semantic_origin x
           where x.artifact_id=a.artifact_id order by canonical_uri limit 1) o on true
         where m.publication_set_id=:p and m.semantic_id=:s
           and (m.revision_id=cast(:r as uuid) or (cast(:r as uuid) is null and a.artifact_type in ('DATATYPE','VALUE_MAP')))
-          and a.semantic_id=m.semantic_id and s.status='PUBLISHED'
-          and r.lifecycle_status in ('ACTIVE','DEPRECATED','RETIRED')
-        """).param("p",publicationSet).param("r",revision).param("s",semanticId).query().listOfRows();
+          and
+        """+VISIBLE_REFERENCE).param("p",publicationSet).param("r",revision).param("s",semanticId).query().listOfRows();
     if(rows.size()!=1)throw new NoSuchElementException("SEMANTIC_REFERENCE_NOT_FOUND");
     var row=rows.get(0);
     decode(row);
     boolean valueMap="VALUE_MAP".equals(row.get("artifact_type"));
     if (valueMap || "DATATYPE".equals(row.get("artifact_type"))) {
       try {
-        String canonical=json.writer(com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
-            .without(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT).writeValueAsString(row.get("definition"));
+        String canonical=canonicalDefinition(json,row.get("definition"));
         row.put("definition",json.readValue(canonical,Map.class));
-        var digest=java.security.MessageDigest.getInstance("SHA-256").digest(canonical.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        row.put("definitionSha256",HexFormat.of().formatHex(digest));
-      } catch(JsonProcessingException | java.security.NoSuchAlgorithmException impossible) {
+        row.put("definitionSha256",definitionSha256(canonical));
+      } catch(JsonProcessingException impossible) {
         throw new IllegalStateException("SEM_READ_JSON_INVALID",impossible);
       }
     }
@@ -200,6 +205,21 @@ public class SemanticReadService {
       }
     }
     return boundedResult(row,valueMap?MAX_VALUE_MAP_RESULT_BYTES:maxResultBytes);
+  }
+
+  static String canonicalDefinition(ObjectMapper json,Object definition) throws JsonProcessingException {
+    return json.writer(com.fasterxml.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+        .without(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT).writeValueAsString(definition);
+  }
+
+  static String definitionSha256(String canonical) {
+    try {
+      byte[] digest=java.security.MessageDigest.getInstance("SHA-256")
+          .digest(canonical.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+      return HexFormat.of().formatHex(digest);
+    } catch(java.security.NoSuchAlgorithmException impossible) {
+      throw new IllegalStateException(impossible);
+    }
   }
 
   private static void bounded(String value,String name,int max,boolean required) {

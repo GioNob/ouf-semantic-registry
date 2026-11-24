@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ouf.trieste.it/contracts/semantic/semantic-reference-batch-v1.json",
+  "title": "OUF pinned semantic reference batch",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "registryVersion", "results"],
+  "properties": {
+    "contract": {"const": "ouf.semantic.reference-batch.v1"},
+    "registryVersion": {"type": "string", "minLength": 1},
+    "results": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/result"}}
+  },
+  "$defs": {
+    "pin": {
+      "type": "object",
+      "required": ["semanticId", "revisionId", "publicationSetId"],
+      "properties": {
+        "semanticId": {"type": "string", "format": "iri", "minLength": 1, "maxLength": 2048},
+        "revisionId": {"type": "string", "format": "uuid"},
+        "publicationSetId": {"type": "string", "format": "uuid"}
+      }
+    },
+    "result": {
+      "$ref": "#/$defs/pin",
+      "required": ["index", "outcome"],
+      "properties": {
+        "index": {"type": "integer", "minimum": 0},
+        "outcome": {"enum": ["RESOLVED", "NOT_RESOLVABLE"]},
+        "resolved": {"$ref": "#/$defs/resolved"}
+      },
+      "if": {"properties": {"outcome": {"const": "RESOLVED"}}},
+      "then": {"required": ["resolved"]},
+      "else": {"not": {"required": ["resolved"]}},
+      "unevaluatedProperties": false
+    },
+    "resolved": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["semantic_id", "semantic_version", "revision_id", "publication_set_id", "publication_checksum", "status", "artifact_type", "content_hash"],
+      "properties": {
+        "semantic_id": {"type": "string"},
+        "semantic_version": {"type": ["string", "null"]},
+        "revision_id": {"type": "string", "format": "uuid"},
+        "publication_set_id": {"type": "string", "format": "uuid"},
+        "publication_checksum": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "status": {"enum": ["ACTIVE", "DEPRECATED", "RETIRED"]},
+        "artifact_type": {"type": "string"},
+        "content_hash": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "definitionSha256": {"$ref": "semantic-reference-v1.json#/properties/definitionSha256"},
+        "definition": {"type": "object", "description": "Only for CONCEPT: the same definition as the GET, including vocabularyRef (vocabulary membership)."}
+      },
+      "allOf": [
+        {"if": {"properties": {"artifact_type": {"enum": ["DATATYPE", "VALUE_MAP"]}}},
+         "then": {"required": ["definitionSha256"]},
+         "else": {"not": {"required": ["definitionSha256"]}}},
+        {"if": {"properties": {"artifact_type": {"const": "CONCEPT"}}},
+         "then": {"required": ["definition"], "properties": {"definition": {"required": ["vocabularyRef"]}}},
+         "else": {"not": {"required": ["definition"]}}}
+      ]
+    }
+  }
+}
