@@ -29,6 +29,12 @@ ouf:
     reference-batch:
       max-request-bytes: ${OUF_SEM_REFERENCE_BATCH_MAX_REQUEST_BYTES:262144}
       max-items: ${OUF_SEM_REFERENCE_BATCH_MAX_ITEMS:1024}
+    published-batch:
+      enabled: ${OUF_SEM_PUBLISHED_BATCH_ENABLED:true}
+      max-intents: ${OUF_SEM_PUBLISHED_BATCH_MAX_INTENTS:64}
+      max-hits: ${OUF_SEM_PUBLISHED_BATCH_MAX_HITS:3}
+      max-request-bytes: ${OUF_SEM_PUBLISHED_BATCH_MAX_REQUEST_BYTES:65536}
+      max-response-bytes: ${OUF_SEM_PUBLISHED_BATCH_MAX_RESPONSE_BYTES:262144}
     providers:
       schema-gov:
         enabled: ${OUF_SCHEMA_GOV_ENABLED:false}
