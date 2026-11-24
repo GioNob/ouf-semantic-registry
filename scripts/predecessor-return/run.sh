@@ -113,6 +113,7 @@ grep -Eq '^20:V20__structured_datatypes.sql:-?[0-9]+:true$' <<<"$new_history"
 grep -Eq '^21:V21__published_component_vocabulary.sql:-?[0-9]+:true$' <<<"$new_history"
 grep -Eq '^22:V22__published_value_maps.sql:-?[0-9]+:true$' <<<"$new_history"
 grep -Eq '^23:V23__published_batch_terms.sql:-?[0-9]+:true$' <<<"$new_history"
+grep -Eq '^24:V24__discovery_traffic\.sql:-?[0-9]+:true$' <<<"$new_history"
 exercise "$candidate" "$new_id" candidate
 docker stop "$candidate" >/dev/null
 [[ "$(history)" == "$new_history" ]]

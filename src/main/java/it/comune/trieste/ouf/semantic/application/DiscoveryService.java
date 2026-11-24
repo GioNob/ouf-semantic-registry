@@ -13,22 +13,26 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class DiscoveryService {
   private static final Logger log=LoggerFactory.getLogger(DiscoveryService.class);
   private final String workerVersion;
+  private final TransactionTemplate transactions;
   private final JdbcClient db;private final List<SemanticDiscoveryProvider> providers;private final SafeRdfParser parser;private final ObjectMapper json;
-  public DiscoveryService(JdbcClient db,List<SemanticDiscoveryProvider> providers,SafeRdfParser parser,ObjectMapper json){
-    this(db,providers,parser,json,null);
+  public DiscoveryService(JdbcClient db,List<SemanticDiscoveryProvider> providers,SafeRdfParser parser,ObjectMapper json,
+      TransactionTemplate transactions){
+    this(db,providers,parser,json,transactions,null);
   }
   @Autowired
   public DiscoveryService(JdbcClient db,List<SemanticDiscoveryProvider> providers,SafeRdfParser parser,ObjectMapper json,
-      BuildProperties build){
+      TransactionTemplate transactions,BuildProperties build){
     String workerVersion=build==null?null:build.getVersion();
     if(build!=null && (workerVersion==null || !workerVersion.matches("[A-Za-z0-9][A-Za-z0-9._-]{0,63}")))
       throw new IllegalArgumentException("DISCOVERY_WORKER_VERSION_INVALID");
     this.db=db;this.providers=List.copyOf(providers);this.parser=parser;this.json=json;this.workerVersion=workerVersion;
+    this.transactions=transactions;
   }
   public static final class ProviderUnavailable extends RuntimeException {
     public ProviderUnavailable(){super("SEM_DISCOVERY_NO_ENABLED_PROVIDER");}
@@ -84,7 +88,7 @@ public class DiscoveryService {
     if(jobs.isEmpty())return 0;
     var job=jobs.getFirst();UUID id=(UUID)job.get("request_id");long generation=((Number)job.get("worker_generation")).longValue();
     var candidates=new ArrayList<Map<String,Object>>();
-    int invalid=0, bound=0, fetchDenied=0;
+    int invalid=0, bound=0, fetchDenied=0, namespaceExcluded=0;
     if(enabled.isEmpty()){finish(id,generation,"BLOCKED","SEM_DISCOVERY_NO_ENABLED_PROVIDER",List.of(),null);return 1;}
     // Provider identity must be unique: sharing tokens between adapters is unsafe.
     if(enabled.stream().map(SemanticDiscoveryProvider::providerId).distinct().count()!=enabled.size()){
@@ -108,7 +112,14 @@ public class DiscoveryService {
         if(remaining.isEmpty())return 1;
         var query=new SemanticDiscoveryProvider.Query(job.get("requested_artifact_type").toString(),job.get("intent").toString(),
             languages(job.get("preferred_languages")),started.plusMillis(remaining.get()));
-        var result=p.searchWithExclusions(query);
+        SemanticDiscoveryProvider.SearchResult result;
+        if(p instanceof NamespaceFilteredDiscoveryProvider filtered){
+          var response=filtered.searchWithNamespaceFilter(query,new JobDiscoveryTraffic(db,id));
+          namespaceExcluded=Math.addExact(namespaceExcluded,response.namespaceExcluded());
+          result=response.fetched();
+        }else{
+          result=p.searchWithExclusions(query);
+        }
         long attempted=(long)result.candidates().size()+result.fetchDenied()+result.rdfInvalid()+result.rdfBound();
         if(attempted>64 || candidates.size()+invalid+bound+fetchDenied+attempted>256)throw new IllegalArgumentException("candidate bound");
         fetchDenied+=result.fetchDenied();
@@ -134,7 +145,9 @@ public class DiscoveryService {
         var decision=ProviderFailurePolicy.exception(error);
         if("PROVIDER_UNKNOWN".equals(decision.code()))logUnknown(error);
         if(decision.kind()==ProviderFailurePolicy.Kind.CANCELLED)Thread.currentThread().interrupt();
-        if(!providerFinished(id,generation,p.providerId(),token,decision.kind().name(),decision.code(),decision.retryAfter().toSeconds()))return 1;
+        var delay=decision.retryAfter();
+        long seconds=delay.getSeconds()+(delay.getNano()==0?0:1);
+        if(!providerFinished(id,generation,p.providerId(),token,decision.kind().name(),decision.code(),seconds))return 1;
         var dependency=db.sql("select state,next_attempt_at from ouf_sem.discovery_dependency where scope_subject=:a and provider_id=:p")
           .param("a",job.get("created_by_subject")).param("p",p.providerId()).query().singleRow();
         String state=decision.kind()==ProviderFailurePolicy.Kind.CANCELLED?"CANCELLED":dependency.get("state").toString();
@@ -142,17 +155,31 @@ public class DiscoveryService {
       }
       if(!providerFinished(id,generation,p.providerId(),token,"SUCCESS",null,0))return 1;
     }
-    // V17 inserts every supplied candidate or rolls back. A failed generation CAS emits no evidence.
-    db.sql("""
-        insert into ouf_sem.audit_event(event_id,event_type,subject_ref,resource_type,resource_id,detail_json)
-        select :r,'DISCOVERY_COMPLETED',:actor,'DISCOVERY_REQUEST',cast(:r as text),
-               jsonb_build_object('completedCandidateCount',cast(:count as integer))
-        from ouf_sem.publish_discovery_candidates(:r,:g,cast(:b as jsonb),:invalid,:bound,:denied) as p(succeeded)
-        where p.succeeded
-        """)
-      .param("r",id).param("g",generation).param("b",write(candidates)).param("invalid",invalid).param("bound",bound)
-      .param("denied",fetchDenied).param("actor",job.get("created_by_subject")).param("count",candidates.size()).update();
+    publish(id,generation,(String)job.get("created_by_subject"),candidates,invalid,bound,fetchDenied,namespaceExcluded);
     return 1;
+  }
+  private void publish(UUID id,long generation,String actor,List<Map<String,Object>> candidates,
+      int invalid,int bound,int denied,int namespaceExcluded){
+    String payload=write(candidates);
+    transactions.executeWithoutResult(tx->{
+      // V17 inserts every supplied candidate or rolls back. A failed generation CAS emits no evidence.
+      int completed=db.sql("""
+          insert into ouf_sem.audit_event(event_id,event_type,subject_ref,resource_type,resource_id,detail_json)
+          select :r,'DISCOVERY_COMPLETED',:actor,'DISCOVERY_REQUEST',cast(:r as text),
+                 jsonb_build_object('completedCandidateCount',cast(:count as integer))
+          from ouf_sem.publish_discovery_candidates(:r,:g,cast(:b as jsonb),:invalid,:bound,:denied) as p(succeeded)
+          where p.succeeded
+          """)
+          .param("r",id).param("g",generation).param("b",payload).param("invalid",invalid).param("bound",bound)
+          .param("denied",denied).param("actor",actor).param("count",candidates.size()).update();
+      if(completed==1 && namespaceExcluded>0){
+        db.sql("""
+            update ouf_sem.discovery_request
+            set provider_policy=jsonb_set(provider_policy,'{namespaceExcluded}',to_jsonb(cast(:count as integer)))
+            where request_id=:r
+            """).param("count",namespaceExcluded).param("r",id).update();
+      }
+    });
   }
   private static void logUnknown(Throwable error){
     String location="unavailable";

@@ -480,6 +480,21 @@ components:
           minimum: 0
           description: Immutable count attested at successful publication. Absent for jobs without owner evidence.
         recoveryState: {type: string, enum: [ACTIVE, RETRY_WAIT, PAUSED_EXHAUSTED, BLOCKED, CANCELLED]}
+        excludedCandidates:
+          type: object
+          description: Counts published with the successful attempt. Consumers may encounter additional reasons.
+          properties:
+            CANDIDATE_NAMESPACE_EXCLUDED:
+              type: integer
+              minimum: 0
+              description: Required description or optional provenance GETs skipped by the namespace filter.
+          additionalProperties: {type: integer, minimum: 0}
+        errorCode:
+          type: string
+          description: >
+            SEM_DISCOVERY_RATE_LIMITED reports HTTP 429 with unattested origin.
+            While retrying, nextAttemptAt respects both Retry-After and the durable backoff.
+            Provider timeouts and HTTP 5xx use SEM_DISCOVERY_PROVIDER_FAILED.
         allowedActions:
           type: array
           minItems: 1

@@ -32,6 +32,7 @@ ouf:
     providers:
       schema-gov:
         enabled: ${OUF_SCHEMA_GOV_ENABLED:false}
+        namespace-prefixes: "${OUF_SCHEMA_GOV_NAMESPACE_PREFIXES:https://w3id.org/italia/onto/}"
         gateway-base-url: ${OUF_SCHEMA_GOV_GATEWAY_BASE_URL:}
         # Deployment bindings: the Gateway owns the concrete schema.gov.it routes.
         # No undocumented public endpoint is hard-coded in this module.
