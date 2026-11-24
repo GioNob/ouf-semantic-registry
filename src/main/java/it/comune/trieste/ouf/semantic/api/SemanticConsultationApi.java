@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.*;
 import it.comune.trieste.ouf.semantic.application.SemanticReadService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/internal/v1/semantic/consultation")
 public class SemanticConsultationApi {
+  private static final Logger log = LoggerFactory.getLogger(SemanticConsultationApi.class);
   private final SemanticReadDelegation receipts;
   private final SemanticReadService reads;
   private final ObjectMapper json;
@@ -19,6 +22,7 @@ public class SemanticConsultationApi {
     this.json=json.copy().enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
   }
   private JsonNode arguments(byte[] raw,HttpServletRequest request,String capability,String operation,String resourceType,Set<String> keys) {
+    request.setAttribute(ReadDenial.ROUTE_CAPABILITY, capability);
     receipts.authorize(request,raw,capability,resourceType);
     try {
       JsonNode e=json.readTree(raw),a=e.required("Arguments");
@@ -51,5 +55,8 @@ public class SemanticConsultationApi {
     if(!node.hasNonNull(key)||!node.get(key).isTextual())throw new IllegalArgumentException("SEM_CONSULTATION_ARGUMENTS_INVALID");
     return node.get(key).textValue();
   }
-  @ExceptionHandler(SecurityException.class) ResponseEntity<?> denied(){return ResponseEntity.status(403).body(Map.of("code","SEM_READ_RECEIPT_OR_POLICY_DENIED"));}
+  @ExceptionHandler(SecurityException.class)
+  ResponseEntity<?> denied(SecurityException denied, HttpServletRequest request) {
+    return ReadDenial.READ.respond(log, denied, request);
+  }
 }

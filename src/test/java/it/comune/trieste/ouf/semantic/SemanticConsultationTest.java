@@ -216,7 +216,8 @@ class SemanticConsultationTest {
       byte[] changed=Arrays.copyOf(raw,raw.length+1);changed[raw.length]=' ';
       var denied=post(changed,proof(raw)).andReturn().getResponse();
       assertThat(denied.getStatus()).isEqualTo(403);
-      assertThat(json.readTree(denied.getContentAsByteArray()).path("code").textValue()).isEqualTo("SEM_READ_RECEIPT_OR_POLICY_DENIED");
+      assertThat(json.readTree(denied.getContentAsByteArray())).isEqualTo(json.createObjectNode()
+          .put("code","SEM_READ_RECEIPT_INVALID").put("denial","RECEIPT"));
       assertThat(post(raw,sign(receipt(raw))).andReturn().getResponse().getStatus()).isEqualTo(403);
       var claims=receipt(raw);claims.put("capability",batchCap);claims.put("path",batchPath);claims.put("scope",batchCap);
       assertThat(post(raw,sign(claims)).andReturn().getResponse().getStatus()).isEqualTo(403);
@@ -224,7 +225,8 @@ class SemanticConsultationTest {
       assertThat(post(raw,sign(claims)).andReturn().getResponse().getStatus()).isEqualTo(403);
       TestAuthorization.install(owner,new PolicyBundle("fixture",2,Instant.now(),List.of(descriptor(cap),descriptor(batchCap)),
           List.of(grant(batchCap,null))));
-      expect(raw,403,"SEM_READ_RECEIPT_OR_POLICY_DENIED");
+      assertThat(json.readTree(expect(raw,403,"NO_APPLICABLE_GRANT"))).isEqualTo(json.createObjectNode()
+          .put("code","NO_APPLICABLE_GRANT").put("denial","POLICY").put("capability",cap));
       verify(service,times(1)).search(anyList(),anyInt(),any());
     }
     @Test void signedThreeTypeBatchTraversesTheOwnerRouteAndCatalog() throws Exception {
