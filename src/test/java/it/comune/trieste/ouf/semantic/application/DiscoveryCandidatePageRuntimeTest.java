@@ -82,18 +82,13 @@ class DiscoveryCandidatePageRuntimeTest {
         assertThatThrownBy(()->tx.execute(status->service.candidatePage(request,"different-owner",LIMIT,true,null)))
             .isInstanceOf(java.util.NoSuchElementException.class).hasMessage("SEM_DISCOVERY_REQUEST_NOT_FOUND");
 
-        var afterUpgrade=publishThroughV24Signature(db);
-        assertThat(service.candidates(afterUpgrade)).hasSize(2);
-        assertContinuationExpiresBetweenValidationAndQuery(db,new TransactionTemplate(manager),tx,service,afterUpgrade);
         String term="\u00e9".repeat(100);
         String uri="https://fixture.test/"+term;
         String labelPrefix="\u0001".repeat(26)+"abc";
         String label=labelPrefix+"\uD83D\uDE00";
-        db.sql("""
-            update ouf_sem.discovery_candidate
-            set canonical_uri=:uri,discovery_labels=jsonb_build_object('en',cast(:label as text))
-            where request_id=:request and canonical_uri='https://fixture.test/2'
-            """).param("request",afterUpgrade).param("uri",uri).param("label",label).update();
+        var afterUpgrade=publishThroughV24Signature(db,uri,label);
+        assertThat(service.candidates(afterUpgrade)).hasSize(2);
+        assertContinuationExpiresBetweenValidationAndQuery(db,new TransactionTemplate(manager),tx,service,afterUpgrade);
         var legacy=service.candidates(afterUpgrade);
         assertThat(legacy).hasSize(1);
         var remaining=tx.execute(status->service.candidatePage(afterUpgrade,ACTOR,LIMIT,true,null));
@@ -132,7 +127,7 @@ class DiscoveryCandidatePageRuntimeTest {
         .isInstanceOf(ArtifactService.Conflict.class).hasMessage("SEM_DISCOVERY_CURSOR_EXPIRED");
   }
 
-  private static UUID publishThroughV24Signature(JdbcClient db) {
+  private static UUID publishThroughV24Signature(JdbcClient db,String uri,String label) {
     UUID request=UUID.randomUUID();
     db.sql("""
         insert into ouf_sem.discovery_request(request_id,requested_artifact_type,intent,state,created_by_subject,
@@ -141,11 +136,12 @@ class DiscoveryCandidatePageRuntimeTest {
         """).param("request",request).param("actor",ACTOR).update();
     boolean published=db.sql("""
         select ouf_sem.publish_discovery_candidates(:request,1,jsonb_agg(jsonb_build_object(
-          'provider','fixture','uri','https://fixture.test/'||i,'source','https://fixture.test/',
+          'provider','fixture','uri',candidate.uri,'source','https://fixture.test/','labels',candidate.labels,
           'type','CLASS','trust','HIGH','score',0.85,'reasons','[]'::jsonb,'gaps','[]'::jsonb,
           'hash',repeat('a',64),'mediaType','text/turtle','bytes','Zml4dHVyZQ==')),0,0,0)
-        from generate_series(1,2) i
-        """).param("request",request).query(Boolean.class).single();
+        from (values ('https://fixture.test/1','{}'::jsonb),
+          (cast(:uri as text),jsonb_build_object('en',cast(:label as text)))) as candidate(uri,labels)
+        """).param("request",request).param("uri",uri).param("label",label).query(Boolean.class).single();
     assertThat(published).isTrue();
     return request;
   }
