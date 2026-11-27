@@ -19,7 +19,7 @@ final class DiscoveryCandidateCursor {
   private final SemanticDiscoveryDelegation delegation;
 
   record Options(boolean compact,boolean includeState) {}
-  record Continuation(CandidatePosition position,Options options,Instant expiresAt) {}
+  record Continuation(CandidatePosition position,Options options) {}
 
   DiscoveryCandidateCursor(SemanticDiscoveryDelegation delegation) {
     this.delegation=delegation;
@@ -31,7 +31,7 @@ final class DiscoveryCandidateCursor {
     int flags=(cursor.options().compact()?1:0)|(cursor.options().includeState()?2:0);
     byte[] frame=ByteBuffer.allocate(FRAME_SIZE).put(VERSION).put((byte)flags)
         .putLong(position.evidenceVersion()).putLong(id.getMostSignificantBits()).putLong(id.getLeastSignificantBits())
-        .putLong(cursor.expiresAt().toEpochMilli()).array();
+        .putLong(position.expiresAt().toEpochMilli()).array();
     return ENCODER.encodeToString(ByteBuffer.allocate(FRAME_SIZE+MAC_SIZE)
         .put(frame).put(delegation.candidateCursorMac(binding,frame)).array());
   }
@@ -50,10 +50,11 @@ final class DiscoveryCandidateCursor {
     if(data.get()!=VERSION)throw invalid();
     byte flags=data.get();
     if((flags & ~3)!=0)throw invalid();
-    var position=new CandidatePosition(data.getLong(),new UUID(data.getLong(),data.getLong()));
+    long version=data.getLong();
+    var candidate=new UUID(data.getLong(),data.getLong());
     Instant expires=Instant.ofEpochMilli(data.getLong());
     if(!expires.isAfter(now))throw new ArtifactService.Conflict("SEM_DISCOVERY_CURSOR_EXPIRED");
-    return new Continuation(position,new Options((flags&1)!=0,(flags&2)!=0),expires);
+    return new Continuation(new CandidatePosition(version,candidate,expires),new Options((flags&1)!=0,(flags&2)!=0));
   }
 
   static Instant deadline(Instant now,Instant evidenceExpiresAt) {

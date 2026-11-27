@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
 import java.sql.DriverManager;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +36,8 @@ class DiscoveryCandidatePageRuntimeTest {
         var flyway=Flyway.configure().dataSource(source).schemas("ouf_sem").defaultSchema("ouf_sem");
         flyway.target("24").load().migrate();
         var db=JdbcClient.create(source);
-        var tx=new TransactionTemplate(new JdbcTransactionManager(source));
+        var manager=new JdbcTransactionManager(source);
+        var tx=new TransactionTemplate(manager);
         tx.setReadOnly(true);
         tx.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
         var service=new DiscoveryService(db,List.of(),new SafeRdfParser(),JSON,tx);
@@ -63,7 +66,7 @@ class DiscoveryCandidatePageRuntimeTest {
                 .containsEntry("label","Preferred English").containsEntry("state","AVAILABLE");
             actual.add((UUID)row.get("candidateId"));
           }
-          after=new DiscoveryService.CandidatePosition(page.evidenceVersion(),actual.getLast());
+          after=new DiscoveryService.CandidatePosition(page.evidenceVersion(),actual.getLast(),page.evidenceExpiresAt());
           if(page.candidates().size()<=LIMIT)lastAnchor=position.candidateId();
         }
         assertThat(actual).containsExactlyElementsOf(expected).doesNotHaveDuplicates();
@@ -81,12 +84,7 @@ class DiscoveryCandidatePageRuntimeTest {
 
         var afterUpgrade=publishThroughV24Signature(db);
         assertThat(service.candidates(afterUpgrade)).hasSize(2);
-        var current=tx.execute(status->service.candidatePage(afterUpgrade,ACTOR,LIMIT,true,null));
-        assertThat(current.candidateCount()).isEqualTo(2);
-        db.sql("""
-            update ouf_sem.discovery_candidate set expires_at=now()-interval '1 second'
-            where request_id=:request and canonical_uri='https://fixture.test/1'
-            """).param("request",afterUpgrade).update();
+        assertContinuationExpiresBetweenValidationAndQuery(db,new TransactionTemplate(manager),tx,service,afterUpgrade);
         String term="\u00e9".repeat(100);
         String uri="https://fixture.test/"+term;
         String labelPrefix="\u0001".repeat(26)+"abc";
@@ -111,6 +109,27 @@ class DiscoveryCandidatePageRuntimeTest {
         ddl.execute("drop database "+database+" with (force)");
       }
     }
+  }
+
+  private static void assertContinuationExpiresBetweenValidationAndQuery(JdbcClient db,TransactionTemplate write,
+      TransactionTemplate read,DiscoveryService service,UUID request) {
+    var continuation=write.execute(status->{
+      db.sql("""
+          update ouf_sem.discovery_candidate
+          set expires_at=date_trunc('milliseconds',transaction_timestamp())+interval '10 milliseconds'
+          where request_id=:request and canonical_uri='https://fixture.test/1'
+          """).param("request",request).update();
+      var current=service.candidatePage(request,ACTOR,1,true,null);
+      assertThat(current.candidateCount()).isEqualTo(2);
+      var validatedAt=db.sql("select transaction_timestamp()").query(OffsetDateTime.class).single().toInstant();
+      assertThat(validatedAt).isBefore(current.evidenceExpiresAt());
+      return new DiscoveryService.CandidatePosition(current.evidenceVersion(),
+          (UUID)current.candidates().getFirst().get("candidateId"),current.evidenceExpiresAt());
+    });
+    db.sql("select 1 from pg_sleep_until(:expiry)").param("expiry",continuation.expiresAt().atOffset(ZoneOffset.UTC))
+        .query(Integer.class).single();
+    assertThatThrownBy(()->read.execute(status->service.candidatePage(request,ACTOR,1,true,continuation)))
+        .isInstanceOf(ArtifactService.Conflict.class).hasMessage("SEM_DISCOVERY_CURSOR_EXPIRED");
   }
 
   private static UUID publishThroughV24Signature(JdbcClient db) {

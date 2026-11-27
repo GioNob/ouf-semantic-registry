@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.security.MessageDigest;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -154,7 +155,8 @@ class SemanticDiscoveryMcpTest {
       rows.add(Map.of("candidateId",UUID.randomUUID(),"canonicalUri","https://fixture.test/T"+i,"term","T"+i,
           "label","\u0001".repeat(157)+"𐀀\"\\","score",new BigDecimal("0.85"),"state","AVAILABLE"));
     }
-    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),isNull())).thenReturn(page(17,rows));
+    var snapshot=page(17,rows);
+    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),isNull())).thenReturn(snapshot);
     byte[] start=body(cap,"READ",Map.of("requestId",id.toString(),"projection","COMPACT","includeState",true));
     JsonNode first=json.valueToTree(api.candidates(start,request(start,cap,"candidates",Set.of(cap))));
     assertThat(first.path("candidateCount").asInt()).isEqualTo(17);
@@ -168,7 +170,7 @@ class SemanticDiscoveryMcpTest {
     assertThat(json.writeValueAsBytes(wrapped).length).isLessThanOrEqualTo(8192);
 
     UUID last=UUID.fromString(first.path("candidates").get(emitted-1).path("candidateId").asText());
-    var position=new CandidatePosition(7,last);
+    var position=new CandidatePosition(7,last,snapshot.evidenceExpiresAt());
     when(jobs.candidatePage(eq(id),anyString(),eq(1),eq(true),eq(position)))
         .thenReturn(page(17,rows.subList(emitted,emitted+2)));
     byte[] later=body(cap,"READ",Map.of("requestId",id.toString(),"cursor",first.required("nextCursor").asText(),"limit",1));
@@ -188,10 +190,13 @@ class SemanticDiscoveryMcpTest {
         Map.<String,Object>of("candidateId",before,"state","AVAILABLE"),
         Map.<String,Object>of("candidateId",oversized,"canonicalUri",uri,"state","AVAILABLE"),
         Map.<String,Object>of("candidateId",after,"state","AVAILABLE"));
-    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),isNull())).thenReturn(page(3,rows));
-    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),eq(new CandidatePosition(7,before))))
+    var snapshot=page(3,rows);
+    var beforePosition=new CandidatePosition(7,before,snapshot.evidenceExpiresAt());
+    var oversizedPosition=new CandidatePosition(7,oversized,snapshot.evidenceExpiresAt());
+    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),isNull())).thenReturn(snapshot);
+    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),eq(beforePosition)))
         .thenReturn(page(3,rows.subList(1,3)));
-    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),eq(new CandidatePosition(7,oversized))))
+    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),eq(oversizedPosition)))
         .thenReturn(page(3,rows.subList(2,3)));
 
     byte[] start=body(cap,"READ",Map.of("requestId",id.toString(),"projection","COMPACT","includeState",true));
@@ -252,7 +257,7 @@ class SemanticDiscoveryMcpTest {
   }
 
   private static CandidatePage page(int total,List<Map<String,Object>> rows) {
-    return new CandidatePage(7,total,Instant.now().plusSeconds(3600),DiscoveryJobService.State.SUCCEEDED,
+    return new CandidatePage(7,total,Instant.now().plusSeconds(60).truncatedTo(ChronoUnit.MILLIS),DiscoveryJobService.State.SUCCEEDED,
         DiscoveryJobService.RecoveryState.ACTIVE,5,rows);
   }
   @Test void readReceiptCannotAuthorizeDiscoveryAndReceiptCannotAuthorizePublication() throws Exception {

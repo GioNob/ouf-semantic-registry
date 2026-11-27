@@ -141,9 +141,9 @@ public class SemanticDiscoveryMcpApi {
       if(oversized)break;
     }
     if(more) {
-      Instant deadline=continuation==null?DiscoveryCandidateCursor.deadline(now,page.evidenceExpiresAt()):continuation.expiresAt();
-      String next=cursors.encode(new DiscoveryCandidateCursor.Continuation(new CandidatePosition(page.evidenceVersion(),last),
-          options,deadline),binding);
+      Instant deadline=continuation==null?DiscoveryCandidateCursor.deadline(now,page.evidenceExpiresAt()):continuation.position().expiresAt();
+      String next=cursors.encode(new DiscoveryCandidateCursor.Continuation(
+          new CandidatePosition(page.evidenceVersion(),last,deadline),options),binding);
       completePage(response,options,adoptable,next);
     }
     return response;

@@ -24,8 +24,8 @@ class DiscoveryCandidateCursorTest {
     Instant evidence=now.plusSeconds(60);
     assertThat(DiscoveryCandidateCursor.deadline(now,now.plusSeconds(900))).isEqualTo(now.plusSeconds(300));
     assertThat(DiscoveryCandidateCursor.deadline(now,evidence)).isEqualTo(evidence);
-    var continuation=new DiscoveryCandidateCursor.Continuation(new CandidatePosition(7,UUID.randomUUID()),
-        new DiscoveryCandidateCursor.Options(true,false),evidence);
+    var continuation=new DiscoveryCandidateCursor.Continuation(new CandidatePosition(7,UUID.randomUUID(),evidence),
+        new DiscoveryCandidateCursor.Options(true,false));
     byte[] binding={1,2,3};
     String cursor=cursors.encode(continuation,binding);
     assertThat(cursors.decode(cursor,binding,evidence.minusMillis(1))).isEqualTo(continuation);
