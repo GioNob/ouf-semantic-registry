@@ -5,7 +5,14 @@ import static org.mockito.Mockito.*;
 import com.fasterxml.jackson.databind.*;
 import it.comune.trieste.ouf.semantic.api.*;
 import it.comune.trieste.ouf.semantic.application.DiscoveryJobService;
+import it.comune.trieste.ouf.semantic.application.DiscoveryService.CandidatePage;
+import it.comune.trieste.ouf.semantic.application.DiscoveryService.CandidatePosition;
+import it.comune.trieste.ouf.authorization.AuthorizationPolicy.*;
+import it.comune.trieste.ouf.authorization.LocalAuthorization;
+import it.comune.trieste.ouf.authorization.PrincipalContext;
+import it.comune.trieste.ouf.authorization.ServletAuthorization;
 import it.comune.trieste.ouf.authorization.TestAuthorization;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.security.MessageDigest;
@@ -136,6 +143,84 @@ class SemanticDiscoveryMcpTest {
         .hasMessage("SEM_DISCOVERY_ARGUMENTS_INVALID");
     verify(jobs).candidates(eq(id),anyString());
     verify(jobs).candidatesWithState(eq(id),anyString());
+  }
+  @Test void compactPageFitsTheWireBudgetAndContinuesAfterTheLastEmittedCandidate() throws Exception {
+    var jobs=mock(DiscoveryJobService.class);
+    var api=new SemanticDiscoveryMcpApi(verifier(),jobs,json);
+    String cap="ouf.semantic.discovery.candidates";
+    UUID id=UUID.randomUUID();
+    var rows=new ArrayList<Map<String,Object>>();
+    for(int i=0;i<17;i++) {
+      rows.add(Map.of("candidateId",UUID.randomUUID(),"canonicalUri","https://fixture.test/T"+i,"term","T"+i,
+          "label","\u0001".repeat(157)+"𐀀\"\\","score",new BigDecimal("0.85"),"state","AVAILABLE"));
+    }
+    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),isNull())).thenReturn(page(17,rows));
+    byte[] start=body(cap,"READ",Map.of("requestId",id.toString(),"projection","COMPACT","includeState",true));
+    JsonNode first=json.valueToTree(api.candidates(start,request(start,cap,"candidates",Set.of(cap))));
+    assertThat(first.path("candidateCount").asInt()).isEqualTo(17);
+    int emitted=first.path("candidates").size();
+    assertThat(emitted).isBetween(1,15);
+    assertThat(first.path("adoptableCandidateIds").size()).isEqualTo(emitted);
+    assertThat(json.writeValueAsBytes(first).length).isLessThanOrEqualTo(4096);
+    var decorated=first.<com.fasterxml.jackson.databind.node.ObjectNode>deepCopy();
+    decorated.putObject("next").put("message","x".repeat(3800));
+    var wrapped=Map.of("structuredContent",decorated,"content",List.of(Map.of("type","text","text","Candidate page")));
+    assertThat(json.writeValueAsBytes(wrapped).length).isLessThanOrEqualTo(8192);
+
+    UUID last=UUID.fromString(first.path("candidates").get(emitted-1).path("candidateId").asText());
+    var position=new CandidatePosition(7,last);
+    when(jobs.candidatePage(eq(id),anyString(),eq(1),eq(true),eq(position)))
+        .thenReturn(page(17,rows.subList(emitted,emitted+2)));
+    byte[] later=body(cap,"READ",Map.of("requestId",id.toString(),"cursor",first.required("nextCursor").asText(),"limit",1));
+    JsonNode second=json.valueToTree(api.candidates(later,request(later,cap,"candidates",Set.of(cap))));
+    assertThat(second.path("candidates").get(0).path("candidateId").asText())
+        .isEqualTo(rows.get(emitted).get("candidateId").toString());
+    verify(jobs).candidatePage(eq(id),anyString(),eq(1),eq(true),eq(position));
+  }
+
+  @Test void continuationRechecksRevocationAndBindsTheCurrentScopeAndRequest() throws Exception {
+    var jobs=mock(DiscoveryJobService.class);
+    var api=new SemanticDiscoveryMcpApi(verifier(),jobs,json);
+    String cap="ouf.semantic.discovery.candidates";
+    UUID id=UUID.randomUUID();
+    var row=Map.<String,Object>of("candidate_id",UUID.randomUUID(),"canonical_uri","https://fixture.test/term");
+    when(jobs.candidatePage(eq(id),anyString(),eq(1),eq(false),isNull())).thenReturn(page(2,List.of(row,row)));
+    byte[] start=body(cap,"READ",Map.of("requestId",id.toString(),"limit",1));
+    var firstRequest=request(start,cap,"candidates",Set.of(cap));
+    JsonNode first=json.valueToTree(api.candidates(start,firstRequest));
+    String cursor=first.required("nextCursor").asText();
+    byte[] next=body(cap,"READ",Map.of("requestId",id.toString(),"cursor",cursor));
+
+    var changedScope=request(next,cap,"candidates",Set.of(cap));
+    var receipt=receipt(next,cap,prefix+"candidates");
+    receipt.put("scope","ouf.semantic.discovery another.scope");
+    changedScope.removeHeader("X-OUF-Semantic-Discovery-Receipt");
+    changedScope.addHeader("X-OUF-Semantic-Discovery-Receipt",sign(receipt,"ouf-semantic-discovery-owner-v1."));
+    assertThatThrownBy(()->api.candidates(next,changedScope)).hasMessage("SEM_DISCOVERY_CURSOR_INVALID");
+
+    byte[] other=body(cap,"READ",Map.of("requestId",UUID.randomUUID().toString(),"cursor",cursor));
+    assertThatThrownBy(()->api.candidates(other,request(other,cap,"candidates",Set.of(cap))))
+        .hasMessage("SEM_DISCOVERY_CURSOR_INVALID");
+
+    String altered=cursor.substring(0,cursor.length()-1)+(cursor.endsWith("A")?"B":"A");
+    byte[] tampered=body(cap,"READ",Map.of("requestId",id.toString(),"cursor",altered));
+    assertThatThrownBy(()->api.candidates(tampered,request(tampered,cap,"candidates",Set.of(cap))))
+        .hasMessage("SEM_DISCOVERY_CURSOR_INVALID");
+
+    var runtime=(LocalAuthorization)firstRequest.getServletContext().getAttribute(ServletAuthorization.RUNTIME);
+    var descriptor=new CapabilityDescriptor(cap,"READ","ouf.semantic.discovery",Set.of(PrincipalContext.ActorType.HUMAN));
+    TestAuthorization.install(runtime,new PolicyBundle("discovery-fixture",2,Instant.now(),List.of(descriptor),List.of()));
+    var revoked=request(next,cap,"candidates",Set.of());
+    revoked.getServletContext().setAttribute(ServletAuthorization.RUNTIME,runtime);
+    assertThatThrownBy(()->api.candidates(next,revoked)).isInstanceOf(SecurityException.class)
+        .hasMessageEndingWith(":NO_APPLICABLE_GRANT");
+    verify(jobs).candidatePage(eq(id),anyString(),eq(1),eq(false),isNull());
+    verifyNoMoreInteractions(jobs);
+  }
+
+  private static CandidatePage page(int total,List<Map<String,Object>> rows) {
+    return new CandidatePage(7,total,Instant.now().plusSeconds(3600),DiscoveryJobService.State.SUCCEEDED,
+        DiscoveryJobService.RecoveryState.ACTIVE,5,rows);
   }
   @Test void readReceiptCannotAuthorizeDiscoveryAndReceiptCannotAuthorizePublication() throws Exception {
     var v=verifier();String cap="ouf.semantic.discovery";byte[] raw=body(cap,"COMMAND",Map.of());

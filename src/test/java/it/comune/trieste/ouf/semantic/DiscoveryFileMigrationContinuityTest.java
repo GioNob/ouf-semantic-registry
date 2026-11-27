@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/** Disposable CI database only: exercise upgrades through V24 using populated schemas. */
+/** Disposable CI database only: exercise upgrades through V25 using populated schemas. */
 class DiscoveryFileMigrationContinuityTest {
   @Test void fileReceiptsHistoryAndDiscoveryBudgetsSurviveAdditiveUpgradeAndReconnect() throws Exception {
     String url=Objects.requireNonNull(System.getenv("OUF_SEM_DB_URL"),"isolated PostgreSQL fixture required");
@@ -172,11 +172,11 @@ class DiscoveryFileMigrationContinuityTest {
         // Reopening the fully upgraded database must preserve the history and all claims.
         var reopened=Flyway.configure().dataSource(dbUrl,user,password).schemas("ouf_sem")
             .defaultSchema("ouf_sem").locations("classpath:db/migration").load();
-        assertThat(reopened.migrate().migrationsExecuted).isEqualTo(6); // V19 through V24
+        assertThat(reopened.migrate().migrationsExecuted).isEqualTo(7); // V19 through V25
         assertThat(reopened.migrate().migrationsExecuted).isZero();
         reopened.validate();
         try(var connection=DriverManager.getConnection(dbUrl,user,password)) {
-          assertThat(history(connection)).hasSize(24);
+          assertThat(history(connection)).hasSize(25);
           assertThat(value(connection,"select count(*) from ouf_sem.discovery_job_traffic")).isEqualTo("0");
           assertThat(value(connection,published)).isEqualTo(beforeDescriptionUpgrade);
           assertThat(value(connection,"select count(*) from ouf_sem.discovery_request where fetch_denied_count<>0")).isEqualTo("0");

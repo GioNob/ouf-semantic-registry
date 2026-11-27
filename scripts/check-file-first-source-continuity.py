@@ -36,6 +36,7 @@ expected.add('src/main/resources/db/migration/V21__published_component_vocabular
 expected.add('src/main/resources/db/migration/V22__published_value_maps.sql')
 expected.add('src/main/resources/db/migration/V23__published_batch_terms.sql')
 expected.add('src/main/resources/db/migration/V24__discovery_traffic.sql')
+expected.add('src/main/resources/db/migration/V25__discovery_candidate_pages.sql')
 actual = {p.relative_to(root).as_posix() for p in (root / 'src/main/resources/db/migration').glob('*.sql')}
 if actual != expected:
     raise SystemExit('file-first migration set changed; target compatibility review required')
