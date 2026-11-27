@@ -87,10 +87,23 @@ class DiscoveryCandidatePageRuntimeTest {
             update ouf_sem.discovery_candidate set expires_at=now()-interval '1 second'
             where request_id=:request and canonical_uri='https://fixture.test/1'
             """).param("request",afterUpgrade).update();
-        assertThat(service.candidates(afterUpgrade)).hasSize(1);
-        var expired=tx.execute(status->service.candidatePage(afterUpgrade,ACTOR,LIMIT,true,null));
-        assertThat(expired.candidates()).isEmpty();
-        assertThat(expired.candidateCount()).isZero();
+        String term="\u00e9".repeat(100);
+        String uri="https://fixture.test/"+term;
+        String labelPrefix="\u0001".repeat(26)+"abc";
+        String label=labelPrefix+"\uD83D\uDE00";
+        db.sql("""
+            update ouf_sem.discovery_candidate
+            set canonical_uri=:uri,discovery_labels=jsonb_build_object('en',cast(:label as text))
+            where request_id=:request and canonical_uri='https://fixture.test/2'
+            """).param("request",afterUpgrade).param("uri",uri).param("label",label).update();
+        var legacy=service.candidates(afterUpgrade);
+        assertThat(legacy).hasSize(1);
+        var remaining=tx.execute(status->service.candidatePage(afterUpgrade,ACTOR,LIMIT,true,null));
+        assertThat(remaining.candidateCount()).isEqualTo(1);
+        assertThat(remaining.candidates()).singleElement().satisfies(row->assertThat(row)
+            .containsEntry("candidateId",legacy.getFirst().get("candidate_id"))
+            .containsEntry("canonicalUri",uri).containsEntry("term","\u00e9".repeat(80))
+            .containsEntry("label",labelPrefix).containsEntry("truncatedFields",List.of("term","label")));
         db.sql("delete from ouf_sem.discovery_request where request_id=:request").param("request",afterUpgrade).update();
         assertThat(db.sql("select count(*) from ouf_sem.discovery_candidate_page_head where request_id=:request")
             .param("request",afterUpgrade).query(Long.class).single()).isZero();

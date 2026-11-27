@@ -130,14 +130,15 @@ public class SemanticDiscoveryMcpApi {
       if(options.includeState() && available)adoptable.add(candidate);
       more=i+1<rows.size();
       completePage(response,options,adoptable,more?CURSOR_SPACE:null);
-      if(serialized(response).length>CANDIDATE_PAGE_BYTES) {
+      boolean oversized=serialized(response).length>CANDIDATE_PAGE_BYTES;
+      if(oversized && items.size()>1) {
         items.removeLast();
         if(options.includeState() && available)adoptable.removeLast();
-        if(items.isEmpty())throw new IllegalArgumentException("SEM_DISCOVERY_CANDIDATE_PAGE_ITEM_TOO_LARGE");
         more=true;
         break;
       }
       last=candidate;
+      if(oversized)break;
     }
     if(more) {
       Instant deadline=continuation==null?DiscoveryCandidateCursor.deadline(now,page.evidenceExpiresAt()):continuation.expiresAt();

@@ -178,6 +178,39 @@ class SemanticDiscoveryMcpTest {
     verify(jobs).candidatePage(eq(id),anyString(),eq(1),eq(true),eq(position));
   }
 
+  @Test void oversizedCandidateGetsItsOwnPageAndAdvancesTheCursor() throws Exception {
+    var jobs=mock(DiscoveryJobService.class);
+    var api=new SemanticDiscoveryMcpApi(verifier(),jobs,json);
+    String cap="ouf.semantic.discovery.candidates";
+    UUID id=UUID.randomUUID(), before=UUID.randomUUID(), oversized=UUID.randomUUID(), after=UUID.randomUUID();
+    String uri="https://fixture.test/"+"x".repeat(4096);
+    var rows=List.of(
+        Map.<String,Object>of("candidateId",before,"state","AVAILABLE"),
+        Map.<String,Object>of("candidateId",oversized,"canonicalUri",uri,"state","AVAILABLE"),
+        Map.<String,Object>of("candidateId",after,"state","AVAILABLE"));
+    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),isNull())).thenReturn(page(3,rows));
+    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),eq(new CandidatePosition(7,before))))
+        .thenReturn(page(3,rows.subList(1,3)));
+    when(jobs.candidatePage(eq(id),anyString(),eq(16),eq(true),eq(new CandidatePosition(7,oversized))))
+        .thenReturn(page(3,rows.subList(2,3)));
+
+    byte[] start=body(cap,"READ",Map.of("requestId",id.toString(),"projection","COMPACT","includeState",true));
+    JsonNode first=json.valueToTree(api.candidates(start,request(start,cap,"candidates",Set.of(cap))));
+    assertThat(first.required("candidates")).containsExactly(json.valueToTree(rows.getFirst()));
+    assertThat(first.required("adoptableCandidateIds")).containsExactly(json.valueToTree(before));
+
+    byte[] next=body(cap,"READ",Map.of("requestId",id.toString(),"cursor",first.required("nextCursor").asText()));
+    JsonNode second=json.valueToTree(api.candidates(next,request(next,cap,"candidates",Set.of(cap))));
+    assertThat(second.required("candidates")).containsExactly(json.valueToTree(rows.get(1)));
+    assertThat(second.required("adoptableCandidateIds")).containsExactly(json.valueToTree(oversized));
+    assertThat(json.writeValueAsBytes(second).length).isGreaterThan(4096);
+
+    byte[] end=body(cap,"READ",Map.of("requestId",id.toString(),"cursor",second.required("nextCursor").asText()));
+    JsonNode third=json.valueToTree(api.candidates(end,request(end,cap,"candidates",Set.of(cap))));
+    assertThat(third.required("candidates")).containsExactly(json.valueToTree(rows.getLast()));
+    assertThat(third.has("nextCursor")).isFalse();
+  }
+
   @Test void continuationRechecksRevocationAndBindsTheCurrentScopeAndRequest() throws Exception {
     var jobs=mock(DiscoveryJobService.class);
     var api=new SemanticDiscoveryMcpApi(verifier(),jobs,json);

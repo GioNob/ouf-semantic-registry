@@ -1,5 +1,6 @@
 package it.comune.trieste.ouf.semantic.application;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.comune.trieste.ouf.semantic.domain.SafeRdfParser;
 import it.comune.trieste.ouf.semantic.adapters.discovery.ProviderFailurePolicy;
@@ -20,6 +21,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Service
 public class DiscoveryService {
   private static final Logger log=LoggerFactory.getLogger(DiscoveryService.class);
+  private static final int COMPACT_TEXT_BYTES=160;
   private final String workerVersion;
   private final TransactionTemplate transactions;
   private final JdbcClient db;private final List<SemanticDiscoveryProvider> providers;private final SafeRdfParser parser;private final ObjectMapper json;
@@ -60,31 +62,35 @@ public class DiscoveryService {
   private static final String CANDIDATE_PAGE_ORDER = " order by (-score),canonical_uri collate \"C\",candidate_id limit :fetch";
   private static final String CANDIDATE_PAGE_SEEK =
       " and ((-score),canonical_uri collate \"C\",candidate_id) > (:rank,:uri,:candidate)";
-  private static final String CANDIDATE_PAGE_FROM = " from ouf_sem.discovery_candidate where request_id=:request";
+  private static final String CANDIDATE_PAGE_FROM =
+      " from ouf_sem.discovery_candidate where request_id=:request and expires_at>transaction_timestamp()";
 
   @Transactional(readOnly=true,isolation=Isolation.REPEATABLE_READ)
   public CandidatePage candidatePage(UUID request,String actor,int limit,boolean compact,CandidatePosition after) {
     var head=db.sql("""
         select r.state,r.recovery_state,r.preferred_languages,
-          coalesce(h.evidence_version,0) as version,coalesce(h.candidate_count,0) as total,
-          greatest(5,ceil(extract(epoch from r.next_attempt_at-transaction_timestamp())))::bigint as poll_after,
-          transaction_timestamp() as observed_at,
-          (select c.expires_at from ouf_sem.discovery_candidate c where c.request_id=r.request_id
-           order by c.expires_at limit 1) as expires_at
+          coalesce(h.evidence_version,0) as version,live.expires_at,
+          case when live.expires_at is null then 0 else h.candidate_count-(
+            select count(*) from ouf_sem.discovery_candidate c
+            where c.request_id=r.request_id and c.expires_at<=transaction_timestamp()
+          ) end as total,
+          greatest(5,ceil(extract(epoch from r.next_attempt_at-transaction_timestamp())))::bigint as poll_after
         from ouf_sem.discovery_request r left join ouf_sem.discovery_candidate_page_head h using(request_id)
+        left join lateral (
+          select c.expires_at
+          from ouf_sem.discovery_candidate c where c.request_id=r.request_id and c.expires_at>transaction_timestamp()
+          order by c.expires_at limit 1
+        ) live on true
         where r.request_id=:request and r.created_by_subject=:actor
         """).param("request",request).param("actor",actor)
         .query((rs,n)->new CandidateHead(rs.getLong("version"),rs.getLong("total"),
-            rs.getObject("observed_at",OffsetDateTime.class),rs.getObject("expires_at",OffsetDateTime.class),
+            rs.getObject("expires_at",OffsetDateTime.class),
             DiscoveryJobService.State.valueOf(rs.getString("state")),
             DiscoveryJobService.RecoveryState.valueOf(rs.getString("recovery_state")),rs.getLong("poll_after"),
             Arrays.asList((String[])rs.getArray("preferred_languages").getArray())))
         .optional().orElseThrow(()->new NoSuchElementException("SEM_DISCOVERY_REQUEST_NOT_FOUND"));
-    // The paged snapshot expires as a unit, at its earliest evidence expiry.
-    // This preserves exact membership and count across pages without scanning
-    // expired rows. The legacy candidate view retains per-row expiry.
-    boolean available=head.state()==DiscoveryJobService.State.SUCCEEDED &&
-        head.expiresAt()!=null && head.expiresAt().isAfter(head.observedAt());
+    // The cursor expires when the first row in the current valid set expires.
+    boolean available=head.state()==DiscoveryJobService.State.SUCCEEDED && head.expiresAt()!=null;
     if(after!=null && (!available || head.version()!=after.evidenceVersion()))
       throw new ArtifactService.Conflict("SEM_DISCOVERY_CURSOR_STALE");
     List<Map<String,Object>> rows=available?candidateRows(request,limit,compact,after,head.languages()):List.of();
@@ -92,7 +98,7 @@ public class DiscoveryService {
         head.state(),head.recoveryState(),head.pollAfterSeconds(),rows);
   }
 
-  private record CandidateHead(long version,long total,OffsetDateTime observedAt,OffsetDateTime expiresAt,
+  private record CandidateHead(long version,long total,OffsetDateTime expiresAt,
       DiscoveryJobService.State state,DiscoveryJobService.RecoveryState recoveryState,long pollAfterSeconds,
       List<String> languages) {}
 
@@ -139,11 +145,20 @@ public class DiscoveryService {
     return out;
   }
 
-  private static String shortText(String value,String field,List<String> truncated) {
-    int max=160;
-    if(value.codePointCount(0,value.length())<=max)return value;
-    truncated.add(field);
-    return value.substring(0,value.offsetByCodePoints(0,max));
+  private String shortText(String value,String field,List<String> truncated) {
+    int low=0,high=Math.min(COMPACT_TEXT_BYTES,value.codePointCount(0,value.length()));
+    try {
+      while(low<high) {
+        int middle=(low+high+1)/2;
+        String prefix=value.substring(0,value.offsetByCodePoints(0,middle));
+        // Count the escaped UTF-8 bytes, excluding the two JSON quotes.
+        if(json.writeValueAsBytes(prefix).length<=COMPACT_TEXT_BYTES+2)low=middle;
+        else high=middle-1;
+      }
+    }catch(JsonProcessingException e){throw new IllegalStateException("SEM_DISCOVERY_PAGE_SERIALIZATION_FAILED",e);}
+    int end=value.offsetByCodePoints(0,low);
+    if(end<value.length())truncated.add(field);
+    return value.substring(0,end);
   }
   @Transactional public UUID adopt(UUID candidate,String semanticId,String namespace,String localName,String owner,String authority,String actor){
     UUID request=db.sql("select request_id from ouf_sem.discovery_candidate where candidate_id=:c")
