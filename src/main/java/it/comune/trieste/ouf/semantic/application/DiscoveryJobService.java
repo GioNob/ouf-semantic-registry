@@ -15,8 +15,8 @@ import static it.comune.trieste.ouf.semantic.application.WorkflowAction.*;
 @Service
 public class DiscoveryJobService {
   private static final long MIN_POLL_SECONDS=5;
-  enum State { PENDING, RUNNING, SUCCEEDED, FAILED, CANCELLED }
-  enum RecoveryState { ACTIVE, RETRY_WAIT, PAUSED_EXHAUSTED, BLOCKED, CANCELLED }
+  public enum State { PENDING, RUNNING, SUCCEEDED, FAILED, CANCELLED }
+  public enum RecoveryState { ACTIVE, RETRY_WAIT, PAUSED_EXHAUSTED, BLOCKED, CANCELLED }
   private final JdbcClient db;
   private final DiscoveryService discovery;
   private final List<SemanticDiscoveryProvider> providers;
@@ -108,6 +108,10 @@ public class DiscoveryJobService {
     if(!rows.isEmpty())out.putAll(rows.getFirst());return out;
   }
   public List<Map<String,Object>> candidates(UUID id,String actor){status(id,actor);return discovery.candidates(id);}
+  public DiscoveryService.CandidatePage candidatePage(UUID id,String actor,int limit,boolean compact,
+      DiscoveryService.CandidatePosition after){
+    return discovery.candidatePage(id,actor,limit,compact,after);
+  }
   long trafficTotal(String metric,String route,String origin){
     return db.sql("""
         select coalesce(sum(amount),0) from ouf_sem.discovery_job_traffic

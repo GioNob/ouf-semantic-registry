@@ -43,6 +43,16 @@ public class SemanticDiscoveryDelegation {
       throw new IllegalStateException("SEM_DISCOVERY_IDENTITY_INVALID",e);
     }
   }
+  byte[] candidateCursorMac(byte[] binding,byte[] payload) {
+    if(key.length!=64)throw new SecurityException("SEM_DISCOVERY_DELEGATION_KEY_UNAVAILABLE");
+    try {
+      var mac=Mac.getInstance("HmacSHA256");
+      mac.init(new SecretKeySpec(key,"HmacSHA256"));
+      mac.update("ouf-semantic-discovery-candidate-cursor-v1\0".getBytes(StandardCharsets.US_ASCII));
+      mac.update(payload); // Fixed-size cursor frame followed by the serialized authorization binding.
+      return mac.doFinal(binding);
+    } catch(GeneralSecurityException e){throw new IllegalStateException("SEM_DISCOVERY_CURSOR_SIGNING_UNAVAILABLE",e);}
+  }
   public PrincipalContext verify(String proof,String path,String capability,byte[] body) {
     try {
       if(key.length!=64 || !Set.of("ouf.semantic.discovery","ouf.semantic.discovery.status","ouf.semantic.discovery.candidates").contains(capability)
